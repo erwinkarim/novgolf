@@ -1,0 +1,29 @@
+.container
+  .row
+    .col-xs-12
+      = render :template => "welcome/_queryForm.tpl.haml"
+  .row{ :style => 'padding-top:15px;'}
+    - @clubs.each do |club|
+      .col-xs-12.col-md-6.col-lg-6
+        .card
+          %img.img-responsive.card-img-top{ :src => "images/golf_course_#{rand(1..4)}.jpg", :alt => "Golf Club Image"}
+          .card-block
+            %h4.card-title #{club.name}
+            %p Location
+            = form_tag reserve_golf_club_user_reservations_path(club) do
+              %fieldset.form-group
+                %h5 Available Dates
+                .btn-group{ :'data-toggle' => 'buttons'}
+                  - (DateTime.now..(DateTime.now+3.days)).each do |thisday|
+                    %label.btn.btn-secondary
+                      %input{:type => "radio", :name => "date", }
+                      #{ thisday.strftime('%e-%b')}
+              %fieldset.form-group
+                %h5 Available Flights
+                .btn-group{ :'data-toggle' => 'button' }
+                  %label.btn.btn-secondary
+                    %input{ :type => 'checkbox', :name => 'flight[]', :autocomplete => 'off'} 7:15pm
+                  %label.btn.btn-secondary
+                    %input{ :type => 'checkbox', :name => 'flight[]', :autocomplete => 'off'} 7:30pm
+              %p clicked and show available times
+              %button.btn.btn-primary{ :type => 'submit'} Reserve

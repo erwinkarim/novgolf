@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  golf_club_id: 
+  caddy: 
+  cart: 
+  sessions_per_hour: 1
+  slots_per_session: 1
+  pax_per_slot: 1
+
+two:
+  golf_club_id: 
+  caddy: 
+  cart: 
+  sessions_per_hour: 1
+  slots_per_session: 1
+  pax_per_slot: 1

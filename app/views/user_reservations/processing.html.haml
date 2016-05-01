@@ -1,0 +1,10 @@
+.container{ :style => 'margin-top:60px;'}
+  .row
+    .col-xs-12
+      %p Procesing Here
+    .col-xs-12
+      %p Wait around 5 seconds before moving on to confirmation!!
+:javascript
+  setTimeout(function(){
+    window.location = "#{confirmation_golf_club_user_reservations_path(params[:golf_club_id])}"
+  } , 5000);

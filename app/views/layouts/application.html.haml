@@ -1,0 +1,35 @@
+!!!!
+%html{ :lang => 'en'}
+  %head
+    %meta{:charset => 'utf-8'}
+    %meta{:name => 'viewport', :content => 'width=device-width, initial-scale=1,shrink-to-fit=no'}
+    %meta{:'http-equiv' => 'x-ua-compatible', :content => 'ie=edge'}
+    %title JomGolf
+    = stylesheet_link_tag 'application', :href => "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css",
+      :integrity => "sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd"
+    = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
+    = csrf_meta_tags
+    = javascript_include_tag 'application', 'data-turbolinks-track' => true
+    = javascript_include_tag 'application', :src => "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js", :integrity => "sha384-vZ2WRJMwsjRMW/8U7i6PWi6AlO1L79snBrmgiDpgIWJ82z8eA5lenwvxbMV1PAh7",  :crossorigin => "anonymous"
+  %body{ :style => 'padding-top:60px;'}
+    %nav.navbar.navbar-fixed-top
+      %a.navbar-brand{ :href => root_path } JomGolf
+      %ul.nav.navbar-nav
+        %li.nav-item
+          %a.btn.btn-primary{ :href => new_golf_club_path } New Club
+        %li.nav-item
+          - if user_signed_in? then
+            .dropdown
+              %a.nav-link{ :href => '#', :'data-toggle' => 'dropdown' } #{current_user.name}
+              .dropdown-menu
+                %a.dropdown-item{ :href => '#'} Reservations
+                .dropdown-divider
+                = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
+          - else
+            %a.nav-link{ :href => '#login-modal', :data => { :toggle => 'modal'} }
+              Login
+    = yield
+    = insert_paloma_hook
+    = render :file => "layouts/modal.template"
+    %footer
+      %p &copy; JomGolf 2016

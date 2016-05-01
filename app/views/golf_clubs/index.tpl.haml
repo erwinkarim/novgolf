@@ -1,0 +1,13 @@
+.card-columns
+  - @golf_clubs.each do |golf_club|
+    - random_id = SecureRandom.hex(6)
+    .card
+      .card-block
+        %h4.card-title #{golf_club.name}
+        = simple_format(golf_club.description, :class => 'card-text')
+        %p.card-text #{number_to_currency(golf_club.latest_charge_schedule.session_price, :unit => "MYR")}
+        %button.btn.btn-primary{ :type => 'button', :data => { :toggle => "collapse", :target => "#book-#{random_id}"}} Select
+      %ul.list-group.list-group-flush.collapse{ :id => "book-#{random_id}",
+        :data => { :plsload => 'yes', :source => golf_club_price_schedules_path(golf_club, :format => :tpl) } }
+        %li
+          %i.fa.fa-cog.fa-spin

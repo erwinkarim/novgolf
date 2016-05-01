@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user_id: 
+  price_schedule_id: 
+  actual_caddy: 1
+  actual_buggy: 1
+  actual_pax: 1
+
+two:
+  user_id: 
+  price_schedule_id: 
+  actual_caddy: 1
+  actual_buggy: 1
+  actual_pax: 1

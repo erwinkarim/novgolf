@@ -1,0 +1,6 @@
+%li.list-group-item
+  Show to this place is free for the next 7 days
+  Price schedule
+  Click Search to really book
+%li.list-group-item
+  = button_to :reserve, reserve_golf_club_user_reservations_path(params[:golf_club_id]), { :method => :post, :class => 'btn btn-primary'}

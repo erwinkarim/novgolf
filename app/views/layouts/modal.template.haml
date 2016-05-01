@@ -1,0 +1,48 @@
+.modal.fade#login-modal
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{ :type => 'button', :'data-dismiss' => 'modal'}
+          %span &times;
+        %h4.modal-title Login
+      .modal-body
+        %a.btn.btn-secondary{ :href => user_omniauth_authorize_path(:facebook) }
+          %i.fa.fa-facebook-square.fa-3x
+        Login with Facebook
+      .modal-footer
+        %button.btn.btn-secondary{ :type => "button", :'data-dismiss' => 'modal'} Close
+        %button.btn.btn-primary#generate-club{ :type => "button"} Generate!
+:javascript
+  $('#generate-club').on('click', function(){
+    console.log('generate clicked !')
+
+    //sanity check
+    var everythings_there = true;
+    $('#new-club-form').find('input').each(function(){
+      if( $(this).val() == "" ){
+        everythings_there = false;
+        $('#modal-alerts').text('somethings are not there');
+      }
+
+    });
+
+    if(!everythings_there){
+      return;
+    }
+
+    //if not return start generate
+    console.log('sanity check ok');
+    $.post("#{golf_clubs_path}", $('#new-club-form').serialize(), function(data){
+      //successfully generate, reload the golf clubs
+      $('#gc-list').empty();
+      load_main( $('#gc-list'));
+
+      //reset the form and close the modal
+      $('.form-group').each( function(index){
+          $(this).find('input').each(function(index){
+            $(this).val();
+          })
+      })
+      $('#new-golf-club-modal').modal('hide');
+    });
+  })

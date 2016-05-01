@@ -1,0 +1,21 @@
+= form_tag search_path, {:method => :get, :class => 'form-inline'} do
+  .form-inline
+    %fieldset.form-group
+      %label I would like to play in
+      %input.form-control#query{ :type => "text", :placeholder => "Golf Club", :name => 'q', :value => params[:query]}
+    %fieldset.form-group
+      %label on
+      %input.form-control#flight-date.datepicker{ :type => "text", :name => 'date', :value =>params.has_key?(:date) ? params[:date] : "#{DateTime.now.strftime('%e/%m/%Y')}" }
+    %fieldset.form-group
+      %label @
+      %input.form-control#fligt-time.timepicker-query{ :type => "text", :name => 'time', :value => params.has_key?(:time) ?  params[:time] : '7:00am' }
+    %button.btn.btn-primary{ :type => "submit" } Search
+  %div{:style => "color:black"}
+    %br
+    .card.col-md-4.col-xs-12
+      %ul.list-group-flush.list-group
+        %li.list-group-item
+          I have
+          %select.form-control{ :name => "pax"}
+            = options_for_select 2..10
+          pax in my party
