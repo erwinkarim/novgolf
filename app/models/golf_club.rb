@@ -31,6 +31,17 @@ class GolfClub < ActiveRecord::Base
     return current_reservations.to_f / max_reservations
   end
 
+  #shows how many many slots are available in this club
+  # params queryDate date in string fromat
+  def get_flight_matrix options = {}
+
+      default_options = { :queryDateTime => DateTime.now, :spread => 30.minutes }
+      options = default_options.merge(options)
+      queryDay = Date.parse(options[:queryDate]).cwday
+      dateRange = (options[:queryDateTime] - options[:spread])..(options[:queryDateTime] + options[:spread])
+
+  end
+
   #creates a new club in one shot
   # this function is suppose to be atomic
   # expected params :-

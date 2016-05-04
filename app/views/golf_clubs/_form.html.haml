@@ -6,7 +6,7 @@
         .card-block
           %fieldset.form-group
             %label Club Name
-            = f.text_field :name, :class => 'form-control'
+            = f.text_field :name, :class => 'form-control', :value => @club.name
           %fieldset.form-group
             %label Description
             = f.text_area :description, :class => 'form-control', :rows => 10
@@ -58,9 +58,12 @@
             %label Days Available
             %br
             .btn-group{:'data-toggle' => 'buttons'}
+              - dayIndex = 0
               - DateTime::DAYNAMES.each do |day|
-                %label.btn.btn-secondary
-                  %input{:type => "checkbox", :name => "flight_sch[#{random_id}][days][]", :autocomplete => "off", :value => day } #{day}
+                - dayIndex += 1
+                %label.btn.btn-secondary.active
+                  %input{:type => "checkbox", :name => "flight_sch[#{random_id}][days][]",
+                    :autocomplete => "off", :value => dayIndex, :checked => true } #{day}
           %fieldset.form-group
             %label Flight Time
             = react_component 'FlightTimes', { times:['9:00am'], randomId:random_id}

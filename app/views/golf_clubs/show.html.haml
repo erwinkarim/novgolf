@@ -1,0 +1,20 @@
+.jumbotron.jumbotron-fluid{ :style => "background: url(/images/golf_course_#{rand(1..4)}.jpg); height:400px;"}
+  .container
+.container
+  .row
+    .col-xs-12.col-md-8
+      %h1 #{ @club.name }
+      %div
+        = simple_format(@club.description)
+    .col-xs-12.col-md-4
+      .card
+        .card-block
+          %h4 Availablity
+        = react_component 'FlightListing', flightDate: Time.now.strftime("%d/%m/%Y")
+        .card-block
+          %h4.card-title Flight Prices
+        .ul.list-group.list-group-flush
+          %li.list-group-item Pax RM100.00
+          %li.list-group-item Caddy RM40.00
+          %li.list-group-item Buggy RM50.00
+          %li.list-group-item Insurance RM50.00

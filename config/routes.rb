@@ -11,7 +11,10 @@ Rails.application.routes.draw do
   root 'welcome#index'
   get 'search' => 'welcome#search'
 
-  resources :golf_clubs, :only => [:index, :create, :new] do
+  resources :golf_clubs, :only => [:index, :create, :new, :show] do
+    resources :flight_matrices, :only => [:index] do
+
+    end
     resources :user_reservations, :only => [:index] do
       collection do
         post 'reserve'

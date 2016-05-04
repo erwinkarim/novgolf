@@ -6,24 +6,11 @@
     - @clubs.each do |club|
       .col-xs-12.col-md-6.col-lg-6
         .card
-          %img.img-responsive.card-img-top{ :src => "images/golf_course_#{rand(1..4)}.jpg", :alt => "Golf Club Image"}
-          .card-block
-            %h4.card-title #{club.name}
-            %p Location
-            = form_tag reserve_golf_club_user_reservations_path(club) do
-              %fieldset.form-group
-                %h5 Available Dates
-                .btn-group{ :'data-toggle' => 'buttons'}
-                  - (DateTime.now..(DateTime.now+3.days)).each do |thisday|
-                    %label.btn.btn-secondary
-                      %input{:type => "radio", :name => "date", }
-                      #{ thisday.strftime('%e-%b')}
-              %fieldset.form-group
-                %h5 Available Flights
-                .btn-group{ :'data-toggle' => 'button' }
-                  %label.btn.btn-secondary
-                    %input{ :type => 'checkbox', :name => 'flight[]', :autocomplete => 'off'} 7:15pm
-                  %label.btn.btn-secondary
-                    %input{ :type => 'checkbox', :name => 'flight[]', :autocomplete => 'off'} 7:30pm
-              %p clicked and show available times
-              %button.btn.btn-primary{ :type => 'submit'} Reserve
+          %a{ :href => golf_club_path(club), :target => "_blank"}
+            %img.img-responsive.card-img-top{ :src => "images/golf_course_#{rand(1..4)}.jpg", :alt => "Golf Club Image"}
+            .card-img-overlay{ :style => 'color:white;'}
+              %h4.card-title
+                = number_to_currency(club.charge_schedules.first.session_price, unit: "RM")
+            .card-block
+              %h4.card-title #{club.name}
+              %p #{ club.address}
