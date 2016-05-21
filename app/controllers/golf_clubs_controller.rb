@@ -36,8 +36,7 @@ class GolfClubsController < ApplicationController
     params[:flight_sch].each do |key,value|
       @flight_sch << FlightSchedule.new( :min_pax => value[:min_pax], :max_pax => value[:max_pax] )
       value[:times].each do |thistime|
-        Rails.logger.info "value[:days] is #{value[:days]}"
-        @flight_mtx << FlightMatrix.new(value[:days].inject({:tee_time => Time.parse(thistime)}){ |p,n| p.merge({ "day#{n}".to_sym => 1 }) } )
+        @flight_mtx << FlightMatrix.new(value[:days].inject({:tee_time => thistime}){ |p,n| p.merge({ "day#{n}".to_sym => 1 }) } )
       end
       Rails.logger.info @flight_mtx.inspect
     end
@@ -85,6 +84,10 @@ class GolfClubsController < ApplicationController
 
   def show
     @club = GolfClub.find(params[:id])
+    @charge_schedule = @club.charge_schedules.last
+
+    result = GolfClub.search({ :dateTimeQuery => Time.parse("2016-05-18 14:00 +0000"), :spread => 9.hours, :club_id => params[:id]})
+    @tee_times = result.first[:tee_times]
   end
 
   def golf_club_params

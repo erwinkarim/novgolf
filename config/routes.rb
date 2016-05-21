@@ -1,5 +1,8 @@
 Rails.application.routes.draw do
   devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
+  resources :users, :only => [:show] do
+    get 'reservations' => 'user_reservations#user_index'
+  end
   devise_scope :user do
     delete 'sign_out', :to => 'devise/sessions#destroy', :as => :destroy_user_session
   end
@@ -10,6 +13,7 @@ Rails.application.routes.draw do
   # You can have the root of your site routed with "root"
   root 'welcome#index'
   get 'search' => 'welcome#search'
+  get 'reset' => 'welcome#reset'
 
   resources :golf_clubs, :only => [:index, :create, :new, :show] do
     resources :flight_matrices, :only => [:index] do
@@ -18,6 +22,9 @@ Rails.application.routes.draw do
     resources :user_reservations, :only => [:index] do
       collection do
         post 'reserve'
+        post 'processing'
+        post 'confirmation'
+        get 'failure'
       end
     end
     collection do

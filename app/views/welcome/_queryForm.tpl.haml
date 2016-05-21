@@ -2,13 +2,15 @@
   .form-inline
     %fieldset.form-group
       %label I would like to play in
-      %input.form-control#query{ :type => "text", :placeholder => "Golf Club", :name => 'q', :value => params[:query]}
+      %input.form-control#query{ :type => "text", :placeholder => "Golf Club", :name => 'q', :value => params[:q]}
     %fieldset.form-group
       %label on
-      %input.form-control#flight-date.datepicker{ :type => "text", :name => 'date', :value =>params.has_key?(:date) ? params[:date] : "#{DateTime.now.strftime('%e/%m/%Y')}" }
+      %input.form-control#flight-date.datepicker{ :type => "text", :name => 'date',
+        :value =>params.has_key?(:date) ? params[:date] : "#{DateTime.now.strftime('%e/%m/%Y')}" }
     %fieldset.form-group
       %label @
-      %input.form-control#fligt-time.timepicker-query{ :type => "text", :name => 'time', :value => params.has_key?(:time) ?  params[:time] : '7:00am' }
+      %input.form-control#fligt-time.timepicker-query{ :type => "text", :name => 'time',
+        :value => params.has_key?(:time) ?  params[:time] : (Time.now+1.hour).strftime("%H:%I") }
     %button.btn.btn-primary{ :type => "submit" } Search
   %div{:style => "color:black"}
     %br
@@ -17,5 +19,5 @@
         %li.list-group-item
           I have
           %select.form-control{ :name => "pax"}
-            = options_for_select 2..10
+            = options_for_select 2..10, :selected => params[:pax]
           pax in my party

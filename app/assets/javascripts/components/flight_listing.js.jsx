@@ -16,15 +16,6 @@ var FlightListing = React.createClass({
         </li>
         <li className="list-group-item">
           <div className="btn-group" data-toggle="buttons">
-            <label className="btn btn-secondary">
-              <input type="checkbox" autoComplete="off" /> 9.00am
-            </label>
-            <label className="btn btn-secondary">
-              <input type="checkbox" autoComplete="off" /> 9.30am
-            </label>
-            <label className="btn btn-secondary">
-              <input type="checkbox" autoComplete="off" /> 10.00am
-            </label>
           </div>
         </li>
       </ul>

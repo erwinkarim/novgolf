@@ -2,6 +2,7 @@ class GolfClub < ActiveRecord::Base
   has_many :charge_schedules
   has_many :user_reservations
   has_many :flight_schedules
+  has_many :flight_matrices, :through => :flight_schedules
 
   validates_presence_of :name, :description, :address, :open_hour, :close_hour
 
@@ -37,9 +38,82 @@ class GolfClub < ActiveRecord::Base
 
       default_options = { :queryDateTime => DateTime.now, :spread => 30.minutes }
       options = default_options.merge(options)
-      queryDay = Date.parse(options[:queryDate]).cwday
-      dateRange = (options[:queryDateTime] - options[:spread])..(options[:queryDateTime] + options[:spread])
+      if options[:queryDateTime].class == "string" then
+        queryDay = Date.parse(options[:queryDateTime]).cwday
+      else
+        queryDay = options[:queryDateTime].cwday
+      end
 
+      startHour = (options[:queryDateTime] - options[:spread]).strftime("%H:%M")
+      endHour = (options[:queryDateTime] + options[:spread]).strftime("%H:%M")
+
+
+      self.flight_matrices.where("day#{queryDay}".to_sym => 1, :tee_time => startHour..endHour)
+
+  end
+
+  #look for clus and give the tee_time at near
+  #expected output [ {:club => {:id, :name, :link}, :tee_time => [..]}, { ... }]
+  def self.search options = {}
+    default_options = { :query => "", :dateTimeQuery => Time.now, :spread => 30.minutes, :pax => 2, :club_id => 0..10000000 }
+
+    options = default_options.merge(options)
+
+    query = options[:query]
+
+    #get day of the week
+    if options[:dateTimeQuery].class == String then
+      queryDay = Date.parse(options[:dateTimeQuery]).cwday
+    elsif options[:dateTimeQuery].class == Time
+      queryDay = options[:dateTimeQuery].to_date.cwday
+    else
+      queryDay = options[:dateTimeQuery].cwday
+    end
+
+    #set time range
+    startHour = (options[:dateTimeQuery] - options[:spread]).strftime("%H:%M")
+    endHour = (options[:dateTimeQuery] + options[:spread]).strftime("%H:%M")
+    timeRange = startHour..endHour
+
+=begin
+    puts "options = #{options}"
+    puts "queryDay = #{queryDay}"
+    puts "startHour = #{startHour}"
+    puts "endHour = #{endHour}"
+=end
+
+    # todo: remove clubs that is fully booked in the time period
+    #get current reservations
+    tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).to_sql
+    self.joins{
+        flight_schedules.flight_matrices
+      }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time)").joins{
+          charge_schedules
+      }.where{
+        # this doesn't really work
+        ( (name.like "%#{query}%") | (description.like "%#{query}%")) &
+        (flight_matrices.tee_time.in timeRange ) &
+        (flight_schedules.min_pax.lte options[:pax]) &
+        (id.in options[:club_id])
+      }.limit(30
+      ).group(:id).having("count(tr.booking_time) < count(flight_matrices.tee_time)"
+      ).pluck(:id, :name, :session_price, :tee_time, :min_pax, :max_pax, :cart, :caddy, :insurance,
+        :'flight_matrices.id', :'tr.booking_time', :'tr.status'
+      ).inject([]){ |p,n|
+        club = p.select{ |x| x[:club][:id] == n[0] }.first
+        booked_time = n[10].nil? ? nil : n[10].strftime("%H:%M")
+        if club.nil? then
+          p << {
+            :club => { :id => n[0], :name => n[1]},
+            :tee_times => [ {:tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] }],
+            :flight => { :minPax => n[4], :maxPax => n[5], :matrix_id => n[9]},
+            :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8]}
+          }
+        else
+          club[:tee_times] << { :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] }
+          p
+        end
+      }
   end
 
   #creates a new club in one shot

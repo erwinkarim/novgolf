@@ -30,7 +30,7 @@ var FlightTimes = React.createClass({
   },
   handleClick: function(e){
     //make sure that it's good
-    if( /[01]?[0-9][:.][0-9]{2}(am|pm)/.test(this.state.text) ) {
+    if( /[0-2]?[0-9][:.][0-9]{2}/.test(e.target.value) ) {
       var newFlightTimes = this.state.times.concat(this.state.text).sort();
       this.setState({times:newFlightTimes, text:''});
     }
@@ -51,7 +51,7 @@ var FlightTimes = React.createClass({
   },
   onChange: function(e){
     //check if the format is correct
-    if( /[01]?[0-9][:.][0-9]{2}(am|pm)/.test(e.target.value) ) {
+    if( /[0-2]?[0-9][:.][0-9]{2}/.test(e.target.value) ) {
         this.refs.flightTimeInput.className = "input-group";
     } else {
         this.refs.flightTimeInput.className = "input-group has-danger";
@@ -60,7 +60,7 @@ var FlightTimes = React.createClass({
   },
   componentDidMount: function(){
     var handle = this;
-    $(this.refs.textInput).timepicker({minTime:'6:00am', maxTime:'9:00pm'}).on('change', function(e){
+    $(this.refs.textInput).timepicker({minTime:'6:00am', maxTime:'9:00pm', timeFormat:'H:i'}).on('change', function(e){
       //handle.setState({text:e.target.value})
       handle.onChange(e);
     });

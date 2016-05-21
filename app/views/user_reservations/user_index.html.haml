@@ -1,0 +1,22 @@
+.container
+  .row
+    .col-xs-12.col-md-12
+      - if @reservations.nil? then
+        %p You haven't reserved anything yet
+      - else
+        %table.table
+          %thead
+            %tr
+              %th ID
+              %th Club ID
+              %th Booking Date
+              %th Booking Time
+              %th Status
+          %tbody
+            - @reservations.each do |reservation|
+              %tr
+                %td #{ reservation.id }
+                %td #{ reservation.golf_club_id }
+                %td #{ reservation.booking_date }
+                %td #{ reservation.booking_time.strftime("%H:%M") }
+                %td #{ reservation.status }

@@ -9,7 +9,7 @@
     = csrf_meta_tags
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
   %body
-    %nav.navbar.navbar-fixed-top
+    %nav.navbar
       %a.navbar-brand{ :href => root_path } JomGolf
       %ul.nav.navbar-nav
         %li.nav-item
@@ -19,13 +19,13 @@
             .dropdown
               %a.nav-link{ :href => '#', :'data-toggle' => 'dropdown' } #{current_user.name}
               .dropdown-menu
-                %a.dropdown-item{ :href => '#'} Reservations
+                %a.dropdown-item{ :href => user_reservations_path(current_user)} Reservations
                 .dropdown-divider
                 = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
           - else
             %a.nav-link{ :href => '#login-modal', :data => { :toggle => 'modal'} }
               Login
-    .container{ :style => 'padding-top:60px;'}
+    .container{ :style => ''}
       - flash.each do |name, msg|
         .div.alert{ :class => "alert-#{ flash_class(name)  }" }
           #{ msg.to_s.html_safe }

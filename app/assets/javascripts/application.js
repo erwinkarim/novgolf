@@ -29,7 +29,7 @@ $(document).ready(function(){
     });
 
     $('.timepicker-query').each(function(){
-        $(this).timepicker({ disableTextInput:'true', minTime:'6:00am', maxTime:'11:00pm'});
+        $(this).timepicker({ disableTextInput:'true', minTime:'6:00am', maxTime:'11:00pm', timeFormat:'H:i'});
     });
 });
 

@@ -66,7 +66,7 @@
                     :autocomplete => "off", :value => dayIndex, :checked => true } #{day}
           %fieldset.form-group
             %label Flight Time
-            = react_component 'FlightTimes', { times:['9:00am'], randomId:random_id}
+            = react_component 'FlightTimes', { times:['09:00'], randomId:random_id}
           %fieldset.form-group
             %label Min Pax per Flight
             %select.form-control{ :name => "flight_sch[#{random_id}][min_pax]"}

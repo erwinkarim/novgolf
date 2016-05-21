@@ -1,3 +1,52 @@
-.row
-  .col-xs-12
-    %p Reserve Here
+.container
+  .row
+    .col-xs-12.col-md-8.col-md-offset-2
+      %table.table
+        %tbody
+          %tr
+            %td Club Name
+            %td #{ @club.name }
+          %tr
+            %td Flight Date
+            %td #{ params[:flight][:date]}
+          %tr
+            %td Flight Time
+            %td #{ params[:teeTimes].map{|x| x.split(",")[0] }.to_sentence }
+  .row
+    .col-xs-12.col-md-8.col-md-offset-2
+      %table.table
+        %thead
+          %tr
+            %th Qty
+            %th Item
+            %th Total
+        %tbody
+          %tr
+            %td #{ params[:flight][:pax]}
+            %td Pax
+            %td #{ params[:price][:pax]}
+          %tr
+            %td #{ params[:flight][:caddy]}
+            %td Caddy
+            %td #{ params[:price][:caddy]}
+          %tr
+            %td #{ params[:flight][:cart]}
+            %td Buggy
+            %td #{ params[:price][:cart]}
+          %tr
+            %td #{ params[:flight][:insurance]}
+            %td Insurance
+            %td #{ params[:price][:insurance]}
+          %tr
+            %td
+            %td Grand Total
+            %td #{ params[:price][:total]}
+  .row
+    .col-xs-12.col-md-8.col-md-offset-2
+      = form_tag processing_golf_club_user_reservations_path(params[:golf_club_id]) do
+        %p When you start processing, you will have 10 minutes to complete the transaction. Otherwise, your booking will be make free again.
+        %p session[:price] = #{ session[:price]}
+        %p session[:flight] = #{ session[:flight]}
+        %p session[:golf_club_id] = #{ session[:golf_club_id]}
+        %p session[:teeTimes] = #{ session[:teeTimes]}
+        %button.btn.btn-primary{ :type => 'submit'} Proceed to Payment

@@ -57,3 +57,4 @@ gem 'font-awesome-rails'
 gem 'react-rails'
 
 gem 'squeel'
+gem 'mysql2'
