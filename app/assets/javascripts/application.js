@@ -12,6 +12,7 @@
 //
 //= require jquery
 //= require jquery-ui/datepicker
+//= require jquery.timepicker.js
 //= require jquery_ujs
 //= require paloma
 //= require turbolinks
