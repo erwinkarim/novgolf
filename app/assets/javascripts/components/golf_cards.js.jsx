@@ -9,22 +9,24 @@ var GolfCardTimes = React.createClass({
 
     return (
       <label className={"btn btn-"+reserve_status} onClick={this.props.handleClick} data-tee-time={this.props.teeTime.tee_time}>
-        <input type="checkbox" name="teeTimes[]" value={[this.props.teeTime.tee_time, this.props.teeTime.matrix_id]}>
-          {this.props.teeTime.tee_time}
-        </input>
+        <input key={this.props.teeTime.matrix_id} type="checkbox" name="teeTimes[]" value={[this.props.teeTime.tee_time, this.props.teeTime.matrix_id]} />
+        {this.props.teeTime.tee_time}
       </label>
     );
   }
 });
 
 var GolfCardTimesGroup = React.createClass({
-    render: function(){
-     return (
-      <div className="btn-group" data-toggle="buttons">{ this.props.teeTimes.map( (teeTime, teeTimeIndex) =>
-        <GolfCardTimes teeTime={teeTime} handleClick={this.props.handleClick} />
-      )}</div>
-     );
-    }
+  componentDidMount: function(){
+      //console.log(this.props)
+  },
+  render: function(){
+   return (
+    <div className="btn-group" data-toggle="buttons">{ this.props.teeTimes.map( (teeTime, teeTimeIndex) =>
+      <GolfCardTimes key={teeTimeIndex} teeTime={teeTime} handleClick={this.props.handleClick} />
+    )}</div>
+   );
+  }
 })
 
 var GolfCards = React.createClass({
@@ -78,7 +80,7 @@ var GolfCards = React.createClass({
   },
   render: function() {
     return (
-      <div className="col-xs-12 col-md-6 col-lg-6">
+      <div className="col-xs-12 col-md-6 col-lg-6" key={this.props.club.id}>
         <div className="card card-inverse">
           <img className="img-responsive card-img-top" src={this.props.paths.img} />
           <div className="card-img-overlay">
@@ -102,7 +104,7 @@ var GolfCards = React.createClass({
                 <div className="form-group row">
                   <div className="col-xs-2">
                     <select name="flight[pax]" onChange={this.updatePrice} ref="paxCount" className="from-control">{ [2,3,4].map( (e,i) =>
-                      <option>{e}</option>
+                      <option key={i}>{e}</option>
                     )}</select>
                   </div>
                   <label className="col-xs-6"> x Pax </label>
@@ -112,7 +114,7 @@ var GolfCards = React.createClass({
                 <div className="form-group row">
                   <div className="col-xs-2">
                     <select className="from-control" onChange={this.updatePrice} ref="cartCount" name="flight[cart]">{ [0,1,2].map( (e,i) =>
-                      <option>{e}</option>
+                      <option key={i}>{e}</option>
                     )}</select>
                   </div>
                   <label className="col-xs-6"> x Cart </label>
@@ -122,7 +124,7 @@ var GolfCards = React.createClass({
                 <div className="form-group row">
                   <div className="col-xs-2">
                     <select className="from-control" onChange={this.updatePrice} ref="caddyCount" name="flight[caddy]">{ [0,1,2].map( (e,i) =>
-                      <option>{e}</option>
+                      <option key={e}>{e}</option>
                     )}</select>
                   </div>
                   <label className="col-xs-6"> x Caddy</label>
@@ -132,7 +134,7 @@ var GolfCards = React.createClass({
                 <div className="form-group row">
                   <div className="col-xs-2">
                     <select className="from-control" onChange={this.updatePrice} ref="insuranceCount" name="flight[insurance]">{ [0,1,2].map( (e,i) =>
-                      <option>{e}</option>
+                      <option key={e}>{e}</option>
                     )}</select>
                   </div>
                   <label className="col-xs-6"> x Insurance</label>

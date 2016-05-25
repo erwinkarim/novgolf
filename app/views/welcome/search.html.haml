@@ -1,7 +1,10 @@
 .container
   .row
     .col-xs-12
-      = render :template => "welcome/_queryForm.tpl.haml"
+      = react_component "QueryForm", { crsfToken: form_authenticity_token, queryString:"",
+        queryTarget: search_path,
+        queryDate:params.has_key?(:date) ? params[:date] : "#{DateTime.now.strftime('%e/%m/%Y')}",
+        queryTime:params.has_key?(:time) ?  params[:time] : (Time.now+1.hour).strftime("%H:%I") }
   .row{ :style => 'padding-top:15px;'}
     - @clubs.each do |club|
       = react_component "GolfCards", { crsfToken: form_authenticity_token,

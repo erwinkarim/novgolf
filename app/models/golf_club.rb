@@ -96,7 +96,6 @@ class GolfClub < ActiveRecord::Base
         (flight_schedules.min_pax.lte options[:pax]) &
         (id.in options[:club_id])
       }.limit(30
-      ).group(:id).having("count(tr.booking_time) < count(flight_matrices.tee_time)"
       ).pluck(:id, :name, :session_price, :tee_time, :min_pax, :max_pax, :cart, :caddy, :insurance,
         :'flight_matrices.id', :'tr.booking_time', :'tr.status'
       ).inject([]){ |p,n|
