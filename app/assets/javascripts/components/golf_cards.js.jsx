@@ -107,7 +107,7 @@ var GolfCards = React.createClass({
                       <option key={i}>{e}</option>
                     )}</select>
                   </div>
-                  <label className="col-xs-6"> x Pax </label>
+                  <label className="col-xs-6"> x Balls </label>
                   <label className="col-xs-4">{this.props.prices.flight}</label>
                   <input type="hidden" value={this.props.prices.flight} name="price[pax]" />
                 </div>
@@ -117,7 +117,7 @@ var GolfCards = React.createClass({
                       <option key={i}>{e}</option>
                     )}</select>
                   </div>
-                  <label className="col-xs-6"> x Cart </label>
+                  <label className="col-xs-6"> x Buggy </label>
                   <label className="col-xs-4">{this.props.prices.cart}</label>
                   <input type="hidden" value={this.props.prices.cart} name="price[cart]" />
                 </div>

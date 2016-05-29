@@ -90,6 +90,9 @@ class GolfClubsController < ApplicationController
     @tee_times = result.first[:tee_times]
   end
 
+  def join
+  end
+  
   def golf_club_params
     params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour);
   end

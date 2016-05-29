@@ -1,15 +1,21 @@
 .container
   .row
     .col-xs-12
-      = react_component "QueryForm", { crsfToken: form_authenticity_token, queryString:"",
+      = react_component "QueryForm", { crsfToken: form_authenticity_token,
+        queryString:params.has_key?(:q) ? params[:q] : "",
         queryTarget: search_path,
         queryDate:params.has_key?(:date) ? params[:date] : "#{DateTime.now.strftime('%e/%m/%Y')}",
-        queryTime:params.has_key?(:time) ?  params[:time] : (Time.now+1.hour).strftime("%H:%I") }
+        queryTime:params.has_key?(:time) ?  params[:time] : (Time.now+1.hour).strftime("%H:%I"),
+        showSearchNav:true, collapseSearchForm:true }
   .row{ :style => 'padding-top:15px;'}
-    - @clubs.each do |club|
-      = react_component "GolfCards", { crsfToken: form_authenticity_token,
-        club: club[:club],
-        paths: { img: "images/golf_course_#{rand(1..4)}.jpg", club:golf_club_path(club[:club][:id]), reserve:reserve_golf_club_user_reservations_path(club[:club][:id]) },
-        prices:club[:prices]  ,
-        teeTimes: club[:tee_times],
-        flight: club[:flight].merge( { selectedPax:params[:pax], date:params[:date]})}
+    - if @clubs.empty? then
+      .col-xs-12
+        %p.lead Sorry, no nothing found!
+    - else
+      - @clubs.each do |club|
+        = react_component "GolfCards", { crsfToken: form_authenticity_token,
+          club: club[:club],
+          paths: { img: "images/golf_course_#{rand(1..4)}.jpg", club:golf_club_path(club[:club][:id]), reserve:reserve_golf_club_user_reservations_path(club[:club][:id]) },
+          prices:club[:prices]  ,
+          teeTimes: club[:tee_times],
+          flight: club[:flight].merge( { selectedPax:params[:pax], date:params[:date]})}

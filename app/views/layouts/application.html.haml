@@ -10,21 +10,22 @@
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
   %body
     %nav.navbar
-      %a.navbar-brand{ :href => root_path } JomGolf
-      %ul.nav.navbar-nav
-        %li.nav-item
-          %a.btn.btn-primary{ :href => new_golf_club_path } New Club
-        %li.nav-item
-          - if user_signed_in? then
-            .dropdown
-              %a.nav-link{ :href => '#', :'data-toggle' => 'dropdown' } #{current_user.name}
-              .dropdown-menu
-                %a.dropdown-item{ :href => user_reservations_path(current_user)} Reservations
-                .dropdown-divider
-                = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
-          - else
-            %a.nav-link{ :href => '#login-modal', :data => { :toggle => 'modal'} }
-              Login
+      %button.navbar-toggler.hidden-sm-up{ :type => "button", :data => { :toggle => 'collapse', :target => '#navbar-collapse'}} &#9776;
+      .collapse.navbar-toggleable-xs#navbar-collapse
+        %a.navbar-brand{ :href => root_path } JomGolf
+        %ul.nav.navbar-nav.pull-md-right
+          %li.nav-item
+            - if user_signed_in? then
+              .dropdown
+                %a.nav-link{ :href => '#', :'data-toggle' => 'dropdown' } #{current_user.name}
+                .dropdown-menu.dropdown-menu-right
+                  %a.dropdown-item{ :href => user_reservations_path(current_user)} My Bookings
+                  %a.dropdown-item{ :href => user_path(current_user)} My Profile
+                  .dropdown-divider
+                  = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
+            - else
+              %a.nav-link{ :href => '#login-modal', :data => { :toggle => 'modal'} }
+                Login
     .container{ :style => ''}
       - flash.each do |name, msg|
         .div.alert{ :class => "alert-#{ flash_class(name)  }" }
@@ -34,5 +35,9 @@
     = yield
     = insert_paloma_hook
     = render :file => "layouts/modal.template"
-    %footer
-      %p &copy; JomGolf 2016
+    %footer.footer.text-muted
+      .container
+        %p
+          &copy; JomGolf 2016
+          &#8226; Terms of service
+          &#8226; Privacy Policy

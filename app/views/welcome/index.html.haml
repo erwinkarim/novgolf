@@ -6,4 +6,13 @@
       = react_component "QueryForm", { crsfToken: form_authenticity_token, queryString:"",
         queryTarget: search_path,
         queryDate:params.has_key?(:date) ? params[:date] : "#{DateTime.now.strftime('%e/%m/%Y')}",
-        queryTime:params.has_key?(:time) ?  params[:time] : (Time.now+1.hour).strftime("%H:%I") }
+        queryTime:params.has_key?(:time) ?  params[:time] : (Time.now+1.hour).strftime("%H:%I") }, showSearchNav:true
+.container
+  .row
+    .col-xs-12.col-md-4
+      %img.img-responsive.img-rounded{ :src => "http://placehold.it/256x256"}
+    .col-xs-12.col-md-8{ :sytle => "min-height:256px; height:256px;"}
+      .card.card-block
+        %h4.card-title Golf Club Owner?
+        %p Contact us to have your club listed
+        %a.card-link.btn.btn-primary{ :href => join_golf_clubs_path } Join Us
