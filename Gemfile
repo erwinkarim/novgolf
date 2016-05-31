@@ -61,3 +61,9 @@ gem 'react-rails'
 
 gem 'squeel'
 gem 'mysql2'
+
+#tokenizer
+gem 'has_secure_token'
+
+#qr code
+gem 'rqrcode_png'

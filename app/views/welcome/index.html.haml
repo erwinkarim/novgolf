@@ -5,8 +5,8 @@
     .row
       = react_component "QueryForm", { crsfToken: form_authenticity_token, queryString:"",
         queryTarget: search_path,
-        queryDate:params.has_key?(:date) ? params[:date] : "#{DateTime.now.strftime('%e/%m/%Y')}",
-        queryTime:params.has_key?(:time) ?  params[:time] : (Time.now+1.hour).strftime("%H:%I") }, showSearchNav:true
+        queryDate:params.has_key?(:date) ? params[:date] : "#{1.day.from_now.strftime('%e/%m/%Y')}",
+        queryTime:params.has_key?(:time) ?  params[:time] : "07:00" }
 .container
   .row
     .col-xs-12.col-md-4
@@ -15,4 +15,4 @@
       .card.card-block
         %h4.card-title Golf Club Owner?
         %p Contact us to have your club listed
-        %a.card-link.btn.btn-primary{ :href => join_golf_clubs_path } Join Us
+        %a.card-link.btn.btn-primary{ :href => join_golf_clubs_path } More Info

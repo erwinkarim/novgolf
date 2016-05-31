@@ -30,4 +30,8 @@ class WelcomeController < ApplicationController
     reset_session
     redirect_to root_path
   end
+
+  def session_data
+  end
+  
 end

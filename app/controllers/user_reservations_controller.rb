@@ -19,14 +19,18 @@ class UserReservationsController < ApplicationController
     session[:timeout] = Time.now + 10.minutes
 
     #create a reservation w/o token to show that this flight is being reserved
+    #todo: think about splitting the pricing data into each reservation(s)
+    #   eg: if you booked 5 balls in 2 flights, flight a will have 3 balls and flight b will have 2 balls and are priced accordingly
     session[:teeTimes].each do |teetime|
 
       tee_time = teetime.split(",")[0]
       matrix_id = teetime.split(",")[1]
-      reservation = current_user.user_reservations.new( :golf_club_id => params[:golf_club_id], :booking_date => Date.today,
-        :booking_time => teetime, :actual_buggy => session[:price][:cart], :actual_caddy => session[:price][:caddy],
-        :actual_pax => session[:price][:pax], :flight_matrix_id => matrix_id )
-      reservation.save!
+      reservation = current_user.user_reservations.new( :golf_club_id => params[:golf_club_id], :booking_date => Date.parse(session[:flight]["date"]),
+        :booking_time => teetime, :actual_buggy => session[:price]["cart"], :actual_caddy => session[:price]["caddy"],
+        :actual_pax => session[:price]["pax"], :flight_matrix_id => matrix_id )
+      #generate the token will actually save the record
+      reservation.regenerate_token
+      #reservation.save!
       session[:reservation_ids] << reservation.id
       reservation.reservation_created!
       reservation.payment_attempted!
@@ -42,8 +46,6 @@ class UserReservationsController < ApplicationController
       reservations = UserReservation.find(session[:reservation_ids])
       reservations.each do |reservation|
         reservation.payment_confirmed!
-        #generate the token
-
       end
     else
       reservations.each do |reservation|
@@ -56,9 +58,20 @@ class UserReservationsController < ApplicationController
   def user_index
     #ensure that you are authorized to see this
     if current_user.id == params[:user_id].to_i then
-      @reservations = current_user.user_reservations.order(:booking_date => :desc, :booking_time => :desc)
+      @reservations = current_user.user_reservations.includes(:golf_club).order(:booking_date => :desc, :booking_time => :desc).limit(30)
+
+      #cutoff time between past and future is yesterday
+      cutoffDate = 1.day.ago
+      @futureFlights = @reservations.select{ |x| x.booking_date > cutoffDate }
+      @pastFlights = @reservations.select{ |x| x.booking_date < cutoffDate }
     else
       render :file => "public/500.html", :status => :unauthorized
     end
+  end
+
+  #  GET      /users/:user_id/reservations/:id(.:format)
+  def show
+    @user = User.find(params[:user_id])
+    @reservation = UserReservation.find(params[:id])
   end
 end

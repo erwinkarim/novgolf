@@ -1,0 +1,46 @@
+.container
+  .row
+    .col-xs-12.col-md-6
+      .card
+        - if @reservation.payment_confirmed? && !@reservation.token.nil? then
+          .card-block
+            %img.center-block{ :src => RQRCode::QRCode.new(@reservation.token, :size => 4, :level => :h).to_img.resize(256,256).to_data_url }
+        %ul.list-group.list-group-flush
+          %li.list-group-item
+            %strong Status:
+            #{ @reservation.status }
+          %li.list-group-item
+            %strong Club:
+            #{ @reservation.golf_club.name }
+          %li.list-group-item
+            %strong Flight Date and Time
+            #{ @reservation.booking_date} @ #{@reservation.booking_time.strftime("%H:%M")}
+          %li.list-group-item
+            %strong Location
+            #{ @reservation.golf_club.address } #{ link_to "link", "http://google.com.my/maps?q=#{@reservation.golf_club.address.html_safe}", :target => "_blank"}
+      .card
+        .card-header Details
+        .card-block
+          %table.table.table-responsive
+            %thead
+              %tr
+                %th Qty
+                %th Item
+                %th Total Price
+            %tbody
+              %tr
+                %td #x
+                %td Balls
+                %td #{ @reservation.actual_pax }
+              %tr
+                %td #x
+                %td Caddy
+                %td #{ @reservation.actual_pax }
+              %tr
+                %td #x
+                %td Buggy
+                %td #{ @reservation.actual_pax }
+              %tr
+                %td #x
+                %td Insurance
+                %td #{ @reservation.actual_pax }

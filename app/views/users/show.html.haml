@@ -1,1 +1,11 @@
-%p something about the users here
+.container
+  .row
+    .col-xs-12.col-md-2.col-md-offset-1
+      .card
+        %img.card-img-top.img-responsive{ :src => (@user.image.nil? || @user.image.empty?) ? 'http://placehold.it/256x256' : @user.image }
+        .card-block
+          %p.card-text Joined JomGolf since #{ @user.created_at.strftime("%b %Y")}
+    .col-xs-12.col-md-8
+      .card
+        .card-block
+          %p.card-text Suppose to write something about his reviews on golf clubs, etc

@@ -3,7 +3,11 @@ Rails.application.routes.draw do
 
   devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
   resources :users, :only => [:show] do
-    get 'reservations' => 'user_reservations#user_index'
+    resources :reservations, :only => [:show], :controller => "user_reservations" do
+      collection do
+        get '/' => 'user_reservations#user_index'
+      end
+    end
   end
   devise_scope :user do
     delete 'sign_out', :to => 'devise/sessions#destroy', :as => :destroy_user_session
@@ -14,8 +18,12 @@ Rails.application.routes.draw do
 
   # You can have the root of your site routed with "root"
   root 'welcome#index'
-  get 'search' => 'welcome#search'
-  get 'reset' => 'welcome#reset'
+  controller :welcome do
+    get 'search'
+    get 'terms'
+    get 'reset'
+    get 'session_data'
+  end
 
   resources :golf_clubs, :only => [:index, :create, :new, :show] do
     resources :flight_matrices, :only => [:index] do

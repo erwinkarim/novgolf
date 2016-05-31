@@ -10,6 +10,7 @@ var QueryForm = React.createClass({
   },
   getDefaultProps: function(){
       return {
+        showSearchNav:false, collapseSearchForm:false
       }
   },
   componentDidMount: function(){
@@ -57,21 +58,21 @@ var QueryForm = React.createClass({
           <form id="search-query-form" className={"form-inline collapse" + collapseClass }  method="get" action={this.props.queryTarget} key="query1">
             <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
             <div className="form-inline">
-              <fieldset className="form-group">
+              <div className="form-group">
                 <label>I would like to play in </label>
                 <input id="query" ref="query" ref="q" name="q" className="form-control" type="text"
-                  placeholder="Golf Club" value={this.state.queryString} onChange={this.handleChange}/>
-              </fieldset>
-              <fieldset className="form-group">
+                  placeholder="Golf Club" value={this.state.queryString} onChange={this.handleChange} />
+              </div>
+              <div className="form-group">
                 <label> on </label>
                 <input id="flight-date" name="date" className="datepicker" ref="queryDate" type="text"
                   className="form-control" placeholder="Date" value={this.state.queryDate} onChange={function(){}} />
-              </fieldset>
-              <fieldset className="form-group">
+              </div>
+              <div className="form-group">
                 <label> @ </label>
                 <input id="flight-time" name="time" ref="queryTime" className="form-control" type="text"
                   placeholder="Golf Club" value={this.state.queryTime} onChange={function(){}} />
-              </fieldset>
+              </div>
               <button className="btn btn-primary" type="submit">Search</button>
             </div>
             <div style={ {color:'black'}}>
