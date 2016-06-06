@@ -8,6 +8,7 @@ class UserReservation < ActiveRecord::Base
   validates :golf_club_id, uniqueness: { scope: [:booking_date, :booking_time]}
   validates :flight_matrix_id, presence: true
   #validates :token, uniqueness: true
+  #need to check when this feature is available
   has_secure_token
 
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,

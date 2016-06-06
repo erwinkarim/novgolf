@@ -54,6 +54,10 @@ class GolfClub < ActiveRecord::Base
 
   #look for clus and give the tee_time at near
   #expected output [ {:club => {:id, :name, :link}, :tee_time => [..]}, { ... }]
+  # to do:
+  # 1. remove clubs that is fully booked
+  # 2. club ranking algothrim
+  # 3. don't return results if looking for something in the past??
   def self.search options = {}
     default_options = { :query => "", :dateTimeQuery => Time.now, :spread => 30.minutes, :pax => 2, :club_id => 0..10000000 }
 
@@ -105,7 +109,7 @@ class GolfClub < ActiveRecord::Base
           p << {
             :club => { :id => n[0], :name => n[1]},
             :tee_times => [ {:tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] }],
-            :flight => { :minPax => n[4], :maxPax => n[5], :matrix_id => n[9]},
+            :flight => { :minPax => n[4], :maxPax => n[5], :matrix_id => n[9], :date => options[:dateTimeQuery].strftime('%d/%m/%Y')},
             :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8]}
           }
         else

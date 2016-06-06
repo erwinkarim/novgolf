@@ -10,11 +10,25 @@
       .card
         .card-block
           %h4 Availablity
-          = react_component "GolfCardTimesGroup", { teeTimes: @tee_times}
-        .card-block
-          %h4.card-title Flight Prices
-        .ul.list-group.list-group-flush
-          %li.list-group-item Pax #{ number_to_currency(@charge_schedule.session_price, :unit => "RM")}
-          %li.list-group-item Caddy #{ number_to_currency(@charge_schedule.caddy, :unit => "RM") }
-          %li.list-group-item Buggy #{ number_to_currency(@charge_schedule.cart, :unit => "RM") }
-          %li.list-group-item Insurance #{ number_to_currency(@charge_schedule.insurance, :unit => "RM") }
+        = react_component "GolfSchedule", {crsfToken:form_authenticity_token,
+          club: @result[:club],
+          path: { reserveTarget: reserve_golf_club_user_reservations_path(params[:id]),
+            golfClub:golf_club_path(params[:id]) },
+          reserveTarget: reserve_golf_club_user_reservations_path(params[:id]),
+          prices:@result[:prices]  ,
+          teeTimes: @result[:tee_times],
+          flight: @result[:flight].merge( { selectedPax:"2"})}
+.container
+  .row
+    .col-xs-12
+      %h2 Location (demo for now)
+#map{ :style => "height:70vh;"}
+:javascript
+  var map;
+  var initMap = function(){
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: -34.397, lng: 150.644},
+        zoom: 8
+      });
+  };
+  initMap();

@@ -5,9 +5,10 @@
     %meta{:name => 'viewport', :content => 'width=device-width, initial-scale=1,shrink-to-fit=no'}
     %meta{:'http-equiv' => 'x-ua-compatible', :content => 'ie=edge'}
     %title JomGolf
-    = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
+    = stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track' => true
     = csrf_meta_tags
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
+    = javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}"
   %body
     %nav.navbar
       %button.navbar-toggler.hidden-sm-up{ :type => "button", :data => { :toggle => 'collapse', :target => '#navbar-collapse'}} &#9776;

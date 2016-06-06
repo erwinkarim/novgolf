@@ -26,6 +26,7 @@ Rails.application.routes.draw do
   end
 
   resources :golf_clubs, :only => [:index, :create, :new, :show] do
+    get 'schedule'
     resources :flight_matrices, :only => [:index] do
     end
     resources :user_reservations, :only => [:index] do
