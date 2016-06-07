@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160515190557) do
+ActiveRecord::Schema.define(version: 20160607075837) do
 
   create_table "charge_schedules", force: :cascade do |t|
     t.integer  "golf_club_id",       limit: 4
@@ -28,8 +28,10 @@ ActiveRecord::Schema.define(version: 20160515190557) do
     t.integer  "max_buggy_per_slot", limit: 4
     t.decimal  "session_price",                precision: 8, scale: 2
     t.decimal  "insurance",                    precision: 8, scale: 2
+    t.integer  "flight_schedule_id", limit: 4
   end
 
+  add_index "charge_schedules", ["flight_schedule_id"], name: "index_charge_schedules_on_flight_schedule_id", using: :btree
   add_index "charge_schedules", ["golf_club_id"], name: "index_charge_schedules_on_golf_club_id", using: :btree
 
   create_table "flight_matrices", force: :cascade do |t|
@@ -62,14 +64,17 @@ ActiveRecord::Schema.define(version: 20160515190557) do
   add_index "flight_schedules", ["golf_club_id"], name: "index_flight_schedules_on_golf_club_id", using: :btree
 
   create_table "golf_clubs", force: :cascade do |t|
-    t.datetime "created_at",              null: false
-    t.datetime "updated_at",              null: false
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
     t.string   "name",        limit: 255
-    t.string   "description", limit: 255
+    t.text     "description", limit: 65535
     t.string   "address",     limit: 255
     t.time     "open_hour"
     t.time     "close_hour"
+    t.integer  "user_id",     limit: 4
   end
+
+  add_index "golf_clubs", ["user_id"], name: "index_golf_clubs_on_user_id", using: :btree
 
   create_table "user_reservations", force: :cascade do |t|
     t.integer  "user_id",            limit: 4
@@ -116,5 +121,13 @@ ActiveRecord::Schema.define(version: 20160515190557) do
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
 
+  add_foreign_key "charge_schedules", "flight_schedules"
+  add_foreign_key "charge_schedules", "golf_clubs"
+  add_foreign_key "flight_matrices", "flight_schedules"
+  add_foreign_key "flight_schedules", "golf_clubs"
+  add_foreign_key "golf_clubs", "users"
+  add_foreign_key "user_reservations", "charge_schedules"
   add_foreign_key "user_reservations", "flight_matrices"
+  add_foreign_key "user_reservations", "golf_clubs"
+  add_foreign_key "user_reservations", "users"
 end

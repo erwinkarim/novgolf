@@ -25,6 +25,13 @@ Rails.application.routes.draw do
     get 'session_data'
   end
 
+  #to manage golf clubs
+  namespace :admin do
+    resources :golf_clubs do
+      get 'dashboard'
+    end
+  end
+
   resources :golf_clubs, :only => [:index, :create, :new, :show] do
     get 'schedule'
     resources :flight_matrices, :only => [:index] do

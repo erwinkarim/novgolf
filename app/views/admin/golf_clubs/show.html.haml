@@ -1,0 +1,71 @@
+.container
+  .row
+    %ol.breadcrumb
+      %li
+        %a{ :href => admin_golf_clubs_path} Admin Page
+      %li.active #{ @golf_club.name }
+    %h1 Club Info
+    .col-xs-12.col-md-8
+      .card
+        .card-header Title
+        .card-block
+          %p.card-text #{ @golf_club.name}
+      .card
+        .card-header Description
+        .card-block
+          = simple_format( @golf_club.description, { :class => 'card-text'})
+      .card
+        .card-header Address
+        .card-block
+          = simple_format( @golf_club.address, { :class => 'card-text'})
+      .card
+        .card-header Hours
+        %ul.list-group.list-group-flush
+          %li.list-group-item
+            %strong Open Hour
+            #{ @golf_club.open_hour.strftime("%H:%M") }
+          %li.list-group-item
+            %strong Close Hour
+            #{ @golf_club.close_hour.strftime("%H:%M") }
+    .col-md-4.col-xs-12
+      .card
+        .card-header Tools
+        .card-block
+          %a.card-link.btn.btn-primary{ :href => admin_golf_club_dashboard_path(@golf_club) } Dashboard
+          %a.card-link.btn.btn-secondary{ :href => edit_admin_golf_club_path(@golf_club) } Edit
+      .card
+        .card-header Meta-Info
+        %ul.list-group.list-group-flush
+          %li.list-group-item
+            %strong Created At
+            #{ @golf_club.created_at }
+          %li.list-group-item
+            %strong Updated At
+            #{ @golf_club.updated_at }
+          %li.list-group-item
+            %strong Owner
+            #{ link_to @golf_club.user.name, user_path(@golf_club.user_id), { :target => "_blank"} }
+          %li.list-group-item
+            %strong URL
+            #{ link_to golf_club_path(@golf_club), golf_club_path(@golf_club), { :target => "_blank"} }
+  .row
+    %h2 Pricing And Scheduling
+    .col-xs-12.col-md-8
+      - @golf_club.flight_schedules.each do |flight_schedule|
+        .card
+          .card-header #{ flight_schedule.id }
+          %ul.list-group.list-group-flush
+            %li.list-group-item
+              %h4 Meta-data
+              %p created, updated
+            %li.list-group-item
+              %h4 Actual data
+              %p #{ flight_schedule.inspect }
+            %li.list-group-item
+              %h4 Flight Matrix Data
+              .btn-group
+                = flight_schedule.flight_matrices.first.inspect
+              %h4 Flight Times
+              .btn-group
+                - flight_schedule.flight_matrices.each do |flight_matrix|
+                  %button.btn.btn-secondary{ :type => 'button' } #{ flight_matrix.tee_time.strftime("%H:%M") }

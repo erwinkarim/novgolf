@@ -18,6 +18,9 @@
           %li.list-group-item
             %strong Location
             #{ @reservation.golf_club.address } #{ link_to "link", "http://google.com.my/maps?q=#{@reservation.golf_club.address.html_safe}", :target => "_blank"}
+            %li.list-group-item
+              %strong Note:
+              We detect that you attempting to pay for this booking. If you lost the payment page, please wait around 10 minutes for the booking to be released again
       .card
         .card-header Details
         .card-block

@@ -4,6 +4,8 @@ class GolfClub < ActiveRecord::Base
   has_many :flight_schedules
   has_many :flight_matrices, :through => :flight_schedules
 
+  belongs_to :user
+  
   validates_presence_of :name, :description, :address, :open_hour, :close_hour
 
   after_initialize :init
@@ -87,8 +89,8 @@ class GolfClub < ActiveRecord::Base
 =end
 
     # todo: remove clubs that is fully booked in the time period
-    #get current reservations
-    tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).to_sql
+    #get current reservations, excluding failed/canceled attempts
+    tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).where.not(:status => [4,5,6]).to_sql
     self.joins{
         flight_schedules.flight_matrices
       }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time)").joins{

@@ -1,15 +1,9 @@
 .container{ :style => 'margin-top:60px;'}
   .row
     .col-xs-12
-      %p these will be processed
-      %p session[:price] = #{ session[:price]}
-      %p session[:flight] = #{ session[:flight]}
-      %p session[:golf_club_id] = #{ session[:golf_club_id]}
-      %p session[:teeTimes] = #{ session[:teeTimes]}
-    .col-xs-12
       %p This part will depends on the online payment gateway that will be choosen later. now choose if this transaction is successful or not
       %p you will need to click the successful button within 10 minutes to ensure that it'd really works
       %p
         = button_to "Successful", confirmation_golf_club_user_reservations_path(session[:golf_club_id]) ,
           :method => :post, :class => 'btn btn-primary'
-        %a.btn.btn-danger{ :href=> "#"} Failed
+        %a.btn.btn-danger{ :href=> failure_golf_club_user_reservations_path(session[:golf_club_id])} Failed

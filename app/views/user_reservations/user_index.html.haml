@@ -14,7 +14,7 @@
                   %th Date and Time
                   %th Status
               %tbody
-                - @futureFlights.each do |reservation|
+                - @futureFlights.sort{ |x,y| y.id <=> x.id }.each do |reservation|
                   %tr
                     %td #{ link_to reservation.golf_club.name, user_reservation_path(params[:user_id],reservation) }
                     %td #{ reservation.booking_date }@#{ reservation.booking_time.strftime("%H:%M") }
@@ -34,7 +34,7 @@
                   %th Date and Time
                   %th Status
               %tbody
-                - @pastFlights.each do |reservation|
+                - @pastFlights.sort{ |x,y| y.id <=> x.id }.each do |reservation|
                   %tr
                     %td #{ link_to reservation.golf_club.name, user_reservation_path(params[:user_id],reservation) }
                     %td #{ reservation.booking_date }@#{ reservation.booking_time.strftime("%H:%M") }

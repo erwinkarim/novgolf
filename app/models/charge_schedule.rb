@@ -1,5 +1,7 @@
 class ChargeSchedule < ActiveRecord::Base
   belongs_to :golf_club
+  belongs_to :flight_schedule
+
   after_initialize :init
 
   validates_presence_of :session_price, :cart, :caddy, :insurance

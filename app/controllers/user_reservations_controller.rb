@@ -43,12 +43,12 @@ class UserReservationsController < ApplicationController
 
     #if token got before session timeout. generate token and show out the confirmation page
     if Time.now < grace then
-      reservations = UserReservation.find(session[:reservation_ids])
-      reservations.each do |reservation|
+      @reservations = UserReservation.find(session[:reservation_ids])
+      @reservations.each do |reservation|
         reservation.payment_confirmed!
       end
     else
-      reservations.each do |reservation|
+      @reservations.each do |reservation|
         reservation.payment_failed!
       end
     end
@@ -73,5 +73,16 @@ class UserReservationsController < ApplicationController
   def show
     @user = User.find(params[:user_id])
     @reservation = UserReservation.find(params[:id])
+  end
+
+  # GET      /golf_clubs/:golf_club_id/user_reservations/failure(.:format)
+  def failure
+    #failed to pay in time, due to time out of something
+    @reservations = UserReservation.find(session[:reservation_ids])
+    @reservations.each do |reservation|
+      reservation.payment_failed!
+    end
+
+    render
   end
 end
