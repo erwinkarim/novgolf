@@ -24,6 +24,15 @@ class Admin::GolfClubsController < ApplicationController
   # GET      /admin/golf_clubs/:golf_club_id/dashboard
   def dashboard
     @golf_club = GolfClub.find(params[:golf_club_id])
+
+    if current_user.id == @golf_club.id then
+      respond_to do |format|
+        format.html
+        format.json
+      end
+    else
+      render :file => "public/401.html", :code => :unauthorized
+    end
   end
 
   # GET      /admin/golf_clubs/:id/edit(.:format)
@@ -36,7 +45,7 @@ class Admin::GolfClubsController < ApplicationController
     @golf_club = GolfClub.new
     @flight_schedule = FlightSchedule.new
     @charge_schedule = ChargeSchedule.new
-    
+
   end
 
 end
