@@ -17,7 +17,7 @@ class Admin::GolfClubsController < ApplicationController
         format.json
       end
     else
-      render :file => "404", :code => :unauthorized
+      render :file => "public/401.html", :code => :unauthorized
     end
   end
 
@@ -25,4 +25,18 @@ class Admin::GolfClubsController < ApplicationController
   def dashboard
     @golf_club = GolfClub.find(params[:golf_club_id])
   end
+
+  # GET      /admin/golf_clubs/:id/edit(.:format)
+  def edit
+    @golf_club = GolfClub.find(params[:id])
+  end
+
+  # GET      /admin/golf_clubs/new
+  def new
+    @golf_club = GolfClub.new
+    @flight_schedule = FlightSchedule.new
+    @charge_schedule = ChargeSchedule.new
+    
+  end
+
 end

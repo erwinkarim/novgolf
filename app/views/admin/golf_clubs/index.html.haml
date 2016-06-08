@@ -14,3 +14,6 @@
             %td #{ golf_club.id }
             %td #{ link_to golf_club.name, admin_golf_club_path(golf_club) }
             %td #{ golf_club.created_at.strftime("%D/%M/%Y")}
+  .row
+    .col-xs-12
+      %a.btn.btn-primary{ :href => new_admin_golf_club_path } New

@@ -2,7 +2,7 @@
   .row
     %ol.breadcrumb
       %li
-        %a{ :href => admin_golf_clubs_path} Admin Page
+        %a{ :href => admin_golf_clubs_path} Admin
       %li.active #{ @golf_club.name }
     %h1 Club Info
     .col-xs-12.col-md-8
@@ -56,15 +56,25 @@
           .card-header #{ flight_schedule.id }
           %ul.list-group.list-group-flush
             %li.list-group-item
-              %h4 Meta-data
-              %p created, updated
+              %h4 Data Dump
+              %table.table
+                %thead
+                  %tr
+                    %th Item
+                    %th Value
+                %tbody
+                  %tr
+                    %td Min Balls per Flight
+                    %td #{ flight_schedule.min_pax }
+                  %tr
+                    %td Max Balls per Flight
+                    %td #{ flight_schedule.max_pax }
             %li.list-group-item
-              %h4 Actual data
-              %p #{ flight_schedule.inspect }
-            %li.list-group-item
-              %h4 Flight Matrix Data
-              .btn-group
-                = flight_schedule.flight_matrices.first.inspect
+              %h4 Flight Days
+              .btn-group{ :'data-toggle' => 'buttons'}
+                - flight_schedule.flight_matrices.first.attributes.select{ |k,v| k.to_s.match(/day[1-7]/)}.map do |x,y|
+                  %label.btn.btn-secondary{ :class => (y==1) ? "active" : "", :disabled => true }
+                    #{ DateTime::DAYNAMES[ (x[3].to_i - 1)]}
               %h4 Flight Times
               .btn-group
                 - flight_schedule.flight_matrices.each do |flight_matrix|

@@ -1,0 +1,9 @@
+.container
+  .row
+    .col-xs-12
+      %ol.breadcrumb
+        %li
+          %a{ :href => admin_golf_clubs_path} Admin
+        %li.active New
+  .row
+    = react_component( "GolfClubForm", { club:@golf_club, flightSchedules:@golf_club.flight_schedules, chargeSchedules:@golf_club.charge_schedules})
