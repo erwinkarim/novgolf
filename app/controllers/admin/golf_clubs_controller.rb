@@ -43,9 +43,16 @@ class Admin::GolfClubsController < ApplicationController
   # GET      /admin/golf_clubs/new
   def new
     @golf_club = GolfClub.new
-    @flight_schedule = FlightSchedule.new
-    @charge_schedule = ChargeSchedule.new
+    @flight_schedules = [FlightSchedule.new]
+    @charge_schedules = [ChargeSchedule.new]
 
   end
 
+  # POST     /admin/golf_clubs(.:format)
+  def create
+  end
+
+  def golf_club_params
+    params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour);
+  end
 end
