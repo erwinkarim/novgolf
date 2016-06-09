@@ -102,7 +102,8 @@ var GolfClubForm = React.createClass({
   propTypes: {
     club: React.PropTypes.object,
     flightSchedules: React.PropTypes.array,
-    chargeSchedules: React.PropTypes.array
+    chargeSchedules: React.PropTypes.array,
+    form: React.PropTypes.object
   },
 
   render: function() {
