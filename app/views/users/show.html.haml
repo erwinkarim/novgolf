@@ -1,11 +1,86 @@
-.container
-  .row
-    .col-xs-12.col-md-2.col-md-offset-1
+.jumbotron.jumbotron-fluid{ :style => "height:180px;"}
+  .container
+    .col-md-1.col-xs-4
       .card
         %img.card-img-top.img-responsive{ :src => (@user.image.nil? || @user.image.empty?) ? 'http://placehold.it/256x256' : @user.image }
-        .card-block
-          %p.card-text Joined JomGolf since #{ @user.created_at.strftime("%b %Y")}
-    .col-xs-12.col-md-8
+
+.container
+  .row
+    .col-xs-12.col-md-4
       .card
         .card-block
-          %p.card-text Suppose to write something about his reviews on golf clubs, etc
+          %p.card-text Joined JomGolf since #{ @user.created_at.strftime("%b %Y")}
+      .card
+        .card-header Info
+        .card-block
+          %table.table
+            %tbody
+              %tr
+                %th Name
+                %td #{ @user.name }
+              %tr
+                %th Home Club
+                %td Something
+              %tr
+                %th Handicap
+                %td Something
+      .card
+        .card-header Friends
+        .card-block
+          %p Show friends here
+      .card
+        .card-header Groups
+        .card-block
+          %p Show groups here
+    .col-xs-12.col-md-6
+      .card
+        .card-header Usual Spots
+        .card-block
+          %p.card-text
+            %ul
+              %li Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+              %li Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+              %li Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+      .card
+        .card-header Flight Reviews
+        %ul.list-group.list-group-flush
+          %li.list-group-item
+            .row
+              .col-xs-3.col-md-2
+                %img.img-circle{ :src => 'http://placehold.it/64x64'}
+              .col-xs-9.col-md-10
+                %h4.card-title Club Name@Date
+                %div
+                  %i.fa.fa-star
+                  %i.fa.fa-star
+                  %i.fa.fa-star
+                  %i.fa.fa-star
+                  %i.fa.fa-star
+            .row.card-text
+              .col-xs-12
+                %p.card-text
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+                  ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                  nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+                  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
+                  qui officia deserunt mollit anim id est laborum
+          %li.list-group-item
+            .row
+              .col-xs-3.col-md-2
+                %img.img-circle{ :src => 'http://placehold.it/64x64'}
+              .col-xs-9.col-md-10
+                %h4.card-title Extermly Long Club Name in the desert@Date
+                %div
+                  %i.fa.fa-star
+                  %i.fa.fa-star
+                  %i.fa.fa-star
+                  %i.fa.fa-star
+                  %i.fa.fa-star-o
+            .row.card-text
+              .col-xs-12
+                %p.card-text
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+                  ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                  nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+                  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
+                  qui officia deserunt mollit anim id est laborum

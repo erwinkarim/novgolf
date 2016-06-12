@@ -6,8 +6,7 @@
           %a{ :href => admin_golf_clubs_path} Admin
         %li.active New
   .row
-    = react_component( "GolfClubForm", { form:{ crsfToken:form_authenticity_token, action_path:admin_golf_clubs_path},
+    = react_component( "GolfClubForm", { form:{ crsfToken:form_authenticity_token, action_path:admin_golf_clubs_path, method:'post'},
       club:@golf_club,
       flightSchedules:@flight_schedules,
-      chargeSchedules:@charge_schedules,
-      flightDummy:FlightSchedule.new})
+      flightDummy:@flight_schedules.first })

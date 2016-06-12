@@ -38,13 +38,22 @@ class Admin::GolfClubsController < ApplicationController
   # GET      /admin/golf_clubs/:id/edit(.:format)
   def edit
     @golf_club = GolfClub.find(params[:id])
+    @flight_schedules = @golf_club.flight_schedules.map do |fs|
+      (fs.attributes.merge("charge_schedule" => fs.charge_schedule.attributes)).
+      merge("flight_matrices" => fs.flight_matrices.map{|x| x.attributes})
+    end
+    @dummy = (FlightSchedule.new.attributes.merge("charge_schedule" => ChargeSchedule.new.attributes)).
+      merge("flight_matrices" => [FlightMatrix.new.attributes])
   end
 
   # GET      /admin/golf_clubs/new
   def new
     @golf_club = GolfClub.new
-    @flight_schedules = [FlightSchedule.new]
-    @charge_schedules = [ChargeSchedule.new]
+    #need to merge w/ default
+    @flight_schedules = [
+      (FlightSchedule.new.attributes.merge("charge_schedule" => ChargeSchedule.new.attributes)).
+      merge("flight_matrices" => [FlightMatrix.new.attributes])
+    ]
 
   end
 

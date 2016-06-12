@@ -1,9 +1,14 @@
 .container
-  .col-xs-12
-    %ol.breadcrumb
-      %li
-        %a{ :href => admin_golf_clubs_path} Admin
-      %li
-        %a{ :href => admin_golf_club_path(@golf_club) } #{ @golf_club.name }
-      %li.active Edit
-    = react_component( "GolfClubForm", { club:@golf_club, flightSchedules:@golf_club.flight_schedules, chargeSchedules:@golf_club.charge_schedules})
+  .row
+    .col-xs-12
+      %ol.breadcrumb
+        %li
+          %a{ :href => admin_golf_clubs_path} Admin
+        %li
+          %a{ :href => admin_golf_club_path(@golf_club) } #{ @golf_club.name }
+        %li.active Edit
+  .row
+    = react_component( "GolfClubForm", { form:{ crsfToken:form_authenticity_token, action_path:admin_golf_club_path(params[:id]), method:'patch'},
+      club:@golf_club,
+      flightSchedules:@flight_schedules,
+      flightDummy:@dummy })

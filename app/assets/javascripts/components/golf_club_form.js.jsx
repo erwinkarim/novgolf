@@ -9,6 +9,7 @@ var GeneralBox = React.createClass({
     var handle = this;
 
     //disable this if there's no internet
+    /*
     var initMap = function(){
         map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 3.15785, lng: 101.71165 },
@@ -24,6 +25,7 @@ var GeneralBox = React.createClass({
         });
     };
     initMap();
+    */
 
     console.log(this.state);
 
@@ -62,7 +64,8 @@ var GeneralBox = React.createClass({
             <div className="card-block">
               <div className="form-group">
                 <label>Name</label>
-                <input type="text" className="form-control" placeholder="Club Name" name="golf_club[name]" defaultValue={this.state.club.name} />
+                <input type="text" className="form-control" placeholder="Club Name" name="golf_club[name]"
+                  defaultValue={this.props.club.name} onChange={this.props.contentChanged} />
               </div>
               <div className="form-group">
                 <label>Description</label>
@@ -107,7 +110,7 @@ var FlightScheduleControl = React.createClass({
   },
   getDefaultProps: function(){
       return {
-        flightTimes: ["07:00am", "07:07am", "07:14am"]
+        flightTimes: [ "07:00", "07:07", "07:14" ]
       }
   },
   render: function(){
@@ -116,8 +119,9 @@ var FlightScheduleControl = React.createClass({
         <div className="card">
           <div className="card-block btn-toolbar">{ this.props.flightTimes.map( (e,i) =>
             <div className="btn-group" key={i}>
+              <input type="hidden" name={"flight[" + this.props.random_id + "][times][]"} value={e} />
               <div className="btn btn-secondary">{e}</div>
-              <div className="btn btn-secondary" value={i}><i className="fa fa-close" value={i}></i></div>
+              <div className="btn btn-secondary"><i className="fa fa-close" value={i}></i></div>
             </div>
           ) }</div>
         </div>
@@ -139,11 +143,21 @@ var FlightSchedulePriceCard = React.createClass({
     scheduleIndex:React.PropTypes.number
   },
   componentDidMount: function(){
-    console.log("scheduleIndex = " + this.props.scheduleIndex);
+    //console.log("scheduleIndex = " + this.props.scheduleIndex);
+  },
+  getInitialState: function(){
+    return { random_id:(Math.floor(Math.random()*16777215).toString(16)) }
+  },
+  getDefaultProps: function(){
+    return {
+      random_id:(Math.floor(Math.random()*16777215).toString(16))
+    }
   },
   render: function(){
     return (
       <div className="card">
+        <input type="hidden" name={"flight[" + this.state.random_id + "][flight_id]"} value={this.props.flightSchedule.id} />
+        <input type="hidden" name={"flight[" + this.state.random_id + "][charge_id]"} value={this.props.flightSchedule.charge_schedule.id} />
         <div className="card-header">
           Flight Schedule / Pricing
           <div className="pull-right">
@@ -159,7 +173,8 @@ var FlightSchedulePriceCard = React.createClass({
               <label>Flight Price</label>
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
-                <input className="form-control" type="number" name="price[flight]" />
+                <input className="form-control" type="number" name={"flight[" + this.state.random_id + "][session_price]"}
+                  defaultValue={this.props.flightSchedule.charge_schedule.session_price} />
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -167,7 +182,8 @@ var FlightSchedulePriceCard = React.createClass({
               <label>Buggy Price</label>
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
-                <input className="form-control" type="number" name="price[buggy]" />
+                <input className="form-control" type="number" name={"flight["+ this.state.random_id + "][buggy]"}
+                  defaultValue={this.props.flightSchedule.charge_schedule.cart} />
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -175,7 +191,8 @@ var FlightSchedulePriceCard = React.createClass({
               <label>Caddy Price</label>
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
-                <input className="form-control" type="number" name="price[caddy]" />
+                <input className="form-control" type="number" name={"flight[" + this.state.random_id + "][caddy]"}
+                  defaultValue={this.props.flightSchedule.charge_schedule.caddy}/>
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -183,7 +200,8 @@ var FlightSchedulePriceCard = React.createClass({
               <label>Insurance Price</label>
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
-                <input className="form-control" type="number" name="price[insurance]" />
+                <input className="form-control" type="number" name={"flight["+ this.state.random_id + "][insurance]"}
+                  defaultValue={this.props.flightSchedule.charge_schedule.insurance}/>
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -192,13 +210,13 @@ var FlightSchedulePriceCard = React.createClass({
             <h4>Settings:</h4>
             <div className="form-group">
               <label>Minimum balls per flight:</label>
-              <select className="form-control">{ [2,3,4].map ( (e,i) =>
+              <select className="form-control" defaultValue={this.props.flightSchedule.min_pax} name={"flight[" + this.state.random_id + "][min_pax]"}>{ [2,3,4].map ( (e,i) =>
                   <option key={i}>{e}</option>
               )}</select>
             </div>
             <div className="form-group">
               <label>Maximum balls per flight:</label>
-              <select className="form-control">{ [4,5,6].map ( (e,i) =>
+              <select className="form-control" defaultValue={this.props.flightSchedule.max_pax} name={ "flight[" + this.state.random_id + "][max_pax]"}>{ [4,5,6].map ( (e,i) =>
                   <option key={i}>{e}</option>
               )}</select>
             </div>
@@ -208,13 +226,13 @@ var FlightSchedulePriceCard = React.createClass({
             <div className="btn-group" data-toggle="buttons">{
               daysNames.map( (e,i) =>
               <label className="btn btn-secondary" key={i+1}>
-                <input type="checkbox" autocomplete="off" value={i+1} />{ e }
+                <input type="checkbox" autocomplete="off" name={ "flight[" + this.state.random_id + "][days][]"} value={i+1} />{ e }
               </label>
             )}</div>
           </li>
           <li className="list-group-item">
             <h4>Times Active</h4>
-            <FlightScheduleControl />
+            <FlightScheduleControl random_id={this.state.random_id} flightMatrices={this.props.flightSchedule.flight_matrices}/>
           </li>
         </ul>
       </div>
@@ -228,21 +246,35 @@ var FlightBox = React.createClass({
     flightDummy:React.PropTypes.object
   },
   getInitialState: function(){
-      return {
-          flightSchedules:this.props.flightSchedules
-      };
+    return {
+        flightSchedules:this.props.flightSchedules
+    };
   },
   componentDidMount: function(){
   },
-  handleClick: function(e){
-    console.log('suppose to add new price/flight panel here');
+  newSchedule: function(e){
     newFlightSchedules = this.state.flightSchedules;
     newFlightSchedules.push(this.props.flightDummy);
-    this.setState({ filghtSchedules:newFlightSchedules});
+    this.setState({ flightSchedules:newFlightSchedules});
   },
   handleClose: function(e){
-    console.log("handle when flight times button close is pressed");
-    console.log(e.target.value);
+    //console.log("handle when flight times button close is pressed");
+
+    //can't delete the first one
+    if(e.target.value == 0){
+      return;
+    }
+
+    //figure out why this doesn't work
+    var arrayIndex = parseInt(e.target.value, 10);
+    var newFlightSchedules = this.state.flightSchedules;
+
+    console.log("deleting flight schedule index " + arrayIndex);
+    console.log(newFlightSchedules);
+    newFlightSchedules.splice(arrayIndex,1);
+    this.setState({flightSchedules:newFlightSchedules});
+    console.log(newFlightSchedules);
+
   },
   render: function(){
     return (
@@ -254,7 +286,7 @@ var FlightBox = React.createClass({
               { this.state.flightSchedules.map( (e,i) =>
                   <FlightSchedulePriceCard key={i} flightSchedule={e} handleClose={this.handleClose} scheduleIndex={i} />
               )}
-              <button type="button" onClick={this.handleClick} className="btn btn-primary">
+              <button type="button" onClick={this.newSchedule} className="btn btn-primary">
                 <i className="fa fa-plus"></i>
               </button>
             </div>
@@ -265,7 +297,35 @@ var FlightBox = React.createClass({
   }
 });
 
+var AmmenitiesCheckBox = React.createClass({
+  propTypes: { ammenity: React.PropTypes.object },
+  render: function(){
+    return (
+        <div className="col-xs-12 col-md-4">
+          <div className="checkbox">
+            <label>
+              <input type="checkbox" name={ "amm[" + this.props.ammenity.name + "]"} /> { this.props.ammenity.label }
+            </label>
+          </div>
+        </div>
+    );
+  }
+});
+
 var AmmenitiesBox = React.createClass({
+  propTypes: { ammenities: React.PropTypes.array },
+  getDefaultProps: function(){
+      return { ammenities:[
+          { name:'hut', label:'Hut'},
+          { name:'restaurant', label:'Restaurant'},
+          { name:'atm', label:'ATM'},
+          { name:'shops', label:'Shops'},
+          { name: 'changing_room', label: 'Changing Room'},
+          { name: 'free_internet', label: 'Free Internet'},
+          { name: 'free_wifi', label: 'Free Wifi'},
+          { name: 'lounge', label: 'Lounge'}
+      ] }
+  },
   render: function(){
     return (
       <div className="panel">
@@ -273,7 +333,11 @@ var AmmenitiesBox = React.createClass({
           <div className="card">
             <div className="card-header">Ammenities</div>
             <div className="card-block">
-              <p className="card-text">Stuff about Ammenities here</p>
+              <div className="container">
+                <div className="row card-text">{ this.props.ammenities.map( (e,i) =>
+                    <AmmenitiesCheckBox key={i} ammenity={e} />
+                )}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -287,11 +351,17 @@ var GolfClubForm = React.createClass({
     club: React.PropTypes.object,
     flightSchedules: React.PropTypes.array,
     flightDummy: React.PropTypes.object,
-    chargeSchedules: React.PropTypes.array,
     form: React.PropTypes.object
   },
   componentDidMount: function(){
     //console.log(this.props);
+  },
+  getInitialState: function(){
+    return { disabledSubmit: true, club:this.props.club }
+  },
+  contentChanged: function(e){
+      //if everything is fill up accordingly, enable the create/edit button
+      console.log(e.target.key);
   },
   render: function() {
     return (
@@ -310,13 +380,13 @@ var GolfClubForm = React.createClass({
           </ul>
         </div>
         <div className="col-xs-12 col-md-8">
-          <form method="post" action={this.props.form.action_path} >
+          <form method={this.props.form.method} action={this.props.form.action_path} >
             <div id="accordion" role="tablist">
               <input type="hidden" name="authenticity_token" value={this.props.form.crsfToken} />
-              <GeneralBox club={this.props.club} />
+              <GeneralBox club={this.state.club} contentChanged={this.contentChanged} />
               <FlightBox flightSchedules={this.props.flightSchedules} flightDummy={this.props.flightDummy} />
               <AmmenitiesBox />
-              <button className="btn btn-primary" type="submit">Create!</button>
+              <button className="btn btn-primary" type="submit" disabled={this.state.disabledSubmit}>Create!</button>
             </div>
           </form>
         </div>
