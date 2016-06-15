@@ -12,6 +12,11 @@ class ChargeSchedule < ActiveRecord::Base
     self.pax_per_slot ||= 4
     self.max_caddy_per_slot ||= 4
     self.max_buggy_per_slot ||= 2
+
+    self.session_price ||= 90
+    self.caddy ||= 0
+    self.cart ||= 100
+    self.insurance ||= 10
   end
 
 end

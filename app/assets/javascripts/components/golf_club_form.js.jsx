@@ -1,3 +1,8 @@
+/*
+  issues:
+    * need to update state when forms are being update. find a better way to manage this
+      think about flux
+*/
 var daysNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 var GeneralBox = React.createClass({
@@ -30,8 +35,8 @@ var GeneralBox = React.createClass({
     console.log(this.state);
 
 
-    $(this.refs.openHour).timepicker({disableTextInput:'true', minTime:"05:00", maxTime:"23:00"});
-    $(this.refs.closeHour).timepicker({disableTextInput:'true', minTime:"05:00", maxTime:"23:00"});
+    $("#openHour").timepicker({disableTextInput:true, minTime:"05:00", maxTime:"23:00"});
+    $(this.refs.closeHour).timepicker({disableTextInput:true, minTime:"05:00", maxTime:"23:00"});
 
   },
   getInitialState: function(){
@@ -55,6 +60,11 @@ var GeneralBox = React.createClass({
   },
   render: function(){
     //sanity check, ensure that all required items are filled up
+    var openHourObj = new Date(this.props.club.open_hour);
+    var openHourStr = openHourObj.getUTCHours() + ":" + openHourObj.getUTCMinutes();
+
+    var closeHourObj = new Date(this.props.club.close_hour);
+    var closeHourStr = closeHourObj.getUTCHours() + ":" + closeHourObj.getUTCMinutes();
 
     return (
       <div className="panel">
@@ -65,12 +75,12 @@ var GeneralBox = React.createClass({
               <div className="form-group">
                 <label>Name</label>
                 <input type="text" className="form-control" placeholder="Club Name" name="golf_club[name]"
-                  defaultValue={this.props.club.name} onChange={this.props.contentChanged} />
+                  defaultValue={this.props.club.name} />
               </div>
               <div className="form-group">
                 <label>Description</label>
                 <textarea className="form-control" name="description" rows="10" placeholder="A description about the club"
-                  name="golf_club[description]" defaultValue={this.state.club.description} ></textarea>
+                  name="golf_club[description]" defaultValue={this.props.club.description} ></textarea>
               </div>
               <div className="form-group">
                 <label>Address</label>
@@ -79,14 +89,15 @@ var GeneralBox = React.createClass({
               </div>
               <div className="form-group">
                 <label>Open Hour</label>
-                <input type="text" className="form-control" placeholder="9:00" ref="openHour" name="golf_club[open_hour]" defaultValue={this.state.club.open_hour}/>
+                <input type="text" className="form-control" placeholder="9:00" id="openHour" ref="openHour" name="golf_club[open_hour]" defaultValue={openHourStr}/>
               </div>
               <div className="form-group">
                 <label>Close Hour</label>
-                <input type="text" className="form-control" placeholder="22:00" ref="closeHour" name="golf_club[close_hour]" defaultValue={this.state.club.close_hour}/>
+                <input type="text" className="form-control" placeholder="22:00" id="closeHour" ref="closeHour" name="golf_club[close_hour]" defaultValue={closeHourStr}/>
               </div>
               <div className="form-group">
-                <div className="googlemaps" id="map" refs="map" style={ {height:'25vh'}} >Google Maps Here</div>
+                <label>Location</label>
+                <div className="googlemaps" id="map" refs="map" style={ {height:'25vh'}} ></div>
               </div>
               <div className="form-group">
                 <label>Lat</label>
@@ -174,7 +185,7 @@ var FlightSchedulePriceCard = React.createClass({
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight[" + this.state.random_id + "][session_price]"}
-                  defaultValue={this.props.flightSchedule.charge_schedule.session_price} />
+                  defaultValue={parseInt(this.props.flightSchedule.charge_schedule.session_price)} />
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -183,7 +194,7 @@ var FlightSchedulePriceCard = React.createClass({
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight["+ this.state.random_id + "][buggy]"}
-                  defaultValue={this.props.flightSchedule.charge_schedule.cart} />
+                  defaultValue={parseInt(this.props.flightSchedule.charge_schedule.cart)} />
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -192,7 +203,7 @@ var FlightSchedulePriceCard = React.createClass({
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight[" + this.state.random_id + "][caddy]"}
-                  defaultValue={this.props.flightSchedule.charge_schedule.caddy}/>
+                  defaultValue={parseInt(this.props.flightSchedule.charge_schedule.caddy)}/>
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -201,7 +212,7 @@ var FlightSchedulePriceCard = React.createClass({
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight["+ this.state.random_id + "][insurance]"}
-                  defaultValue={this.props.flightSchedule.charge_schedule.insurance}/>
+                  defaultValue={parseInt(this.props.flightSchedule.charge_schedule.insurance)}/>
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -225,9 +236,13 @@ var FlightSchedulePriceCard = React.createClass({
             <h4>Days Active</h4>
             <div className="btn-group" data-toggle="buttons">{
               daysNames.map( (e,i) =>
-              <label className="btn btn-secondary" key={i+1}>
-                <input type="checkbox" autocomplete="off" name={ "flight[" + this.state.random_id + "][days][]"} value={i+1} />{ e }
-              </label>
+              {
+                var isActive = (this.props.flightSchedule.flight_matrices[0]["day" + i] != null) ? "active" : ""
+                var isChecked = (this.props.flightSchedule.flight_matrices[0]["day" + i] != null) ? true : false
+                return (<label className={"btn btn-secondary " + isActive} key={i+1}>
+                  <input type="checkbox" autocomplete="off" name={ "flight[" + this.state.random_id + "][days][]"} value={i+1} checked={isChecked} />{ e }
+                </label>)
+              }
             )}</div>
           </li>
           <li className="list-group-item">
@@ -357,13 +372,24 @@ var GolfClubForm = React.createClass({
     //console.log(this.props);
   },
   getInitialState: function(){
-    return { disabledSubmit: true, club:this.props.club }
+    return { disabledSubmit: false, club:this.props.club }
   },
   contentChanged: function(e){
       //if everything is fill up accordingly, enable the create/edit button
       console.log(e.target.key);
   },
+  submitForm: function(){
+    $.ajax(this.props.form.action_path, {
+        data:$('#golf_form').serialize(),
+        method:this.props.form.method,
+        dataType:'json'
+    }).success(function(data,textStatus, jqXHR){
+
+    });
+  },
   render: function() {
+    var button_label = (this.props.form.method == 'post') ? 'Create!' : 'Update!';
+
     return (
       <div>
         <div className="col-xs-12 col-md-4">
@@ -380,13 +406,13 @@ var GolfClubForm = React.createClass({
           </ul>
         </div>
         <div className="col-xs-12 col-md-8">
-          <form method={this.props.form.method} action={this.props.form.action_path} >
+          <form method={this.props.form.method} action={this.props.form.action_path} refs="golf_form" id="golf_form" >
             <div id="accordion" role="tablist">
               <input type="hidden" name="authenticity_token" value={this.props.form.crsfToken} />
               <GeneralBox club={this.state.club} contentChanged={this.contentChanged} />
               <FlightBox flightSchedules={this.props.flightSchedules} flightDummy={this.props.flightDummy} />
               <AmmenitiesBox />
-              <button className="btn btn-primary" type="submit" disabled={this.state.disabledSubmit}>Create!</button>
+              <button className="btn btn-primary" type="button" disabled={this.state.disabledSubmit} onClick={this.submitForm}>{button_label}</button>
             </div>
           </form>
         </div>

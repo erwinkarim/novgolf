@@ -5,7 +5,7 @@ class GolfClub < ActiveRecord::Base
   has_many :flight_matrices, :through => :flight_schedules
 
   belongs_to :user
-  
+
   validates_presence_of :name, :description, :address, :open_hour, :close_hour
 
   after_initialize :init
@@ -81,13 +81,6 @@ class GolfClub < ActiveRecord::Base
     endHour = (options[:dateTimeQuery] + options[:spread]).strftime("%H:%M")
     timeRange = startHour..endHour
 
-=begin
-    puts "options = #{options}"
-    puts "queryDay = #{queryDay}"
-    puts "startHour = #{startHour}"
-    puts "endHour = #{endHour}"
-=end
-
     # todo: remove clubs that is fully booked in the time period
     #get current reservations, excluding failed/canceled attempts
     tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).where.not(:status => [4,5,6]).to_sql
@@ -127,26 +120,35 @@ class GolfClub < ActiveRecord::Base
   # club_details => { :name, :description, :address, :open_hour, :close_hour}
   #   price_sch => { :random_id/current_id => {:price, :caddy, :buddy, :insurance} ... }
   #   flight_sch => { :random_id/current_id => {:times, :min_pax, :max_pax } ... }
-  def self.generate club_details={}, price_sch={}, flight_sch ={}
+  def self.generate club_details={}, price_sch={}, flight_sch ={}, flight_matrices={}
     self.transaction do
         club = GolfClub.new( :name => club_details[:name], :description => club_details[:description],
           :address => club_details[:address], :open_hour => club_details[:open_hour], :close_hour => club_details[:close_hour])
-        if club.save! then
-          #start saving the price scheudle
-          price_sch.each do |pc|
-            club.charge_schedules.new(
-              :session_price => pc[:price], :buggy => pc[:buggy], :caddy => pc[:caddy], :insurance => pc[:insurance]
-            )
-          end
+        club.save!
 
-          #start saving the flight scheudle
-          flight_sch.each do |fc|
-            flightSch = club.flight_schedules.new(:min_pax => fc[:min_pax], :max_pax => fc[:max_pax])
-            if flightSch.save! then
-                #generate the flight schedule matrix
-            end
-          end
-        end
+        #generate the flight schedule schedule
+        #generate the charge schedule
+        #generate the flight matrix
+    end
+  end
+
+  #create a new flight scedule
+  def createFlightSchedule flight_sch={}, charge_sch={}, flight_days=[], flight_matrices=[]
+    self.transaction do
+      fs = self.flight_schedules.new(flight_sch)
+      fs.save!
+
+      cs = ChargeSchedule.new()
+      cs = ChargeSchedule.new(:golf_club_id => self.id, :flight_schedule_id => fs.id,
+        :session_price => charge_sch[:session_price], :caddy => charge_sch[:caddy], :insurance => charge_sch[:insurance],
+        :cart => charge_sch[:cart])
+      cs.save!
+
+      #need to fix this later
+      flight_matrices.each do |flight_time|
+        fm = fs.flight_matrices.new(flight_days.inject({:tee_time => flight_time}){|p,n| p.merge({ "day#{n}".to_sym => 1}) })
+        fm.save!
+      end
     end
   end
 end
