@@ -1,0 +1,9 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  golf_club_id: 
+  amenity_id: 
+
+two:
+  golf_club_id: 
+  amenity_id: 

@@ -79,3 +79,9 @@
               .btn-group
                 - flight_schedule.flight_matrices.each do |flight_matrix|
                   %button.btn.btn-secondary{ :type => 'button' } #{ flight_matrix.tee_time.strftime("%H:%M") }
+  .row
+    %h2 Amenities
+    .col-xs-12.col-md-8
+      %ul
+        - @golf_club.amenity_listings.each do |amenity|
+          %li{:class => amenity[:available] ? "" : "text-muted" } #{ amenity[:label]}

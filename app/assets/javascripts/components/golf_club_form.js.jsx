@@ -14,10 +14,9 @@ var GeneralBox = React.createClass({
     var handle = this;
 
     //disable this if there's no internet
-    /*
     var initMap = function(){
         map = new google.maps.Map(document.getElementById('map'), {
-          center: {lat: 3.15785, lng: 101.71165 },
+          center: {lat: parseFloat(handle.props.club.lat), lng: parseFloat(handle.props.club.lng) },
           zoom: 16
         });
 
@@ -26,11 +25,11 @@ var GeneralBox = React.createClass({
 
         map.addListener('dragend', function(){
           coor = map.getCenter()
-          handle.setState({lat:coor.lat(), lng:coor.lng()});
+          //handle.setState({lat:coor.lat(), lng:coor.lng()});
+          handle.props.updateLocation(coor.lat(), coor.lng());
         });
     };
     initMap();
-    */
 
     console.log(this.state);
 
@@ -60,11 +59,11 @@ var GeneralBox = React.createClass({
   },
   render: function(){
     //sanity check, ensure that all required items are filled up
-    var openHourObj = new Date(this.props.club.open_hour);
-    var openHourStr = openHourObj.getUTCHours() + ":" + openHourObj.getUTCMinutes();
+    //var openHourObj = new Date(this.props.club.open_hour);
+    //var openHourStr = openHourObj.getUTCHours() + ":" + openHourObj.getUTCMinutes();
 
-    var closeHourObj = new Date(this.props.club.close_hour);
-    var closeHourStr = closeHourObj.getUTCHours() + ":" + closeHourObj.getUTCMinutes();
+    //var closeHourObj = new Date(this.props.club.close_hour);
+    //var closeHourStr = closeHourObj.getUTCHours() + ":" + closeHourObj.getUTCMinutes();
 
     return (
       <div className="panel">
@@ -89,11 +88,11 @@ var GeneralBox = React.createClass({
               </div>
               <div className="form-group">
                 <label>Open Hour</label>
-                <input type="text" className="form-control" placeholder="9:00" id="openHour" ref="openHour" name="golf_club[open_hour]" defaultValue={openHourStr}/>
+                <input type="text" className="form-control" placeholder="9:00" id="openHour" ref="openHour" name="golf_club[open_hour]" defaultValue={this.props.club.open_hour}/>
               </div>
               <div className="form-group">
                 <label>Close Hour</label>
-                <input type="text" className="form-control" placeholder="22:00" id="closeHour" ref="closeHour" name="golf_club[close_hour]" defaultValue={closeHourStr}/>
+                <input type="text" className="form-control" placeholder="22:00" id="closeHour" ref="closeHour" name="golf_club[close_hour]" defaultValue={this.props.club.close_hour}/>
               </div>
               <div className="form-group">
                 <label>Location</label>
@@ -101,11 +100,11 @@ var GeneralBox = React.createClass({
               </div>
               <div className="form-group">
                 <label>Lat</label>
-                <input type="text" className="form-control" placeholder="Lat" name="golf_club[lat]" value={this.state.lat} disabled="disabled"/>
+                <input type="text" className="form-control" placeholder="Lat" name="golf_club[lat]" value={this.props.club.lat} readOnly="locked" />
               </div>
               <div className="form-group">
                 <label>Long</label>
-                <input type="text" className="form-control" placeholder="Long" name="golf_club[lng]" value={this.state.lng } disabled="disabled"/>
+                <input type="text" className="form-control" placeholder="Long" name="golf_club[lng]" value={this.props.club.lng} readOnly="locked" />
               </div>
             </div>
           </div>
@@ -124,6 +123,9 @@ var FlightScheduleControl = React.createClass({
         flightTimes: [ "07:00", "07:07", "07:14" ]
       }
   },
+  componentDidMount: function(){
+    $(this.refs.teeTimeInput).timepicker({minTime:"05:00", maxTime:"23:00"});
+  },
   render: function(){
     return (
       <div>
@@ -132,13 +134,13 @@ var FlightScheduleControl = React.createClass({
             <div className="btn-group" key={i}>
               <input type="hidden" name={"flight[" + this.props.random_id + "][times][]"} value={e} />
               <div className="btn btn-secondary">{e}</div>
-              <div className="btn btn-secondary"><i className="fa fa-close" value={i}></i></div>
+              <div className="btn btn-secondary" onClick={this.props.deleteTeeTime}><i className="fa fa-close" value={i}></i></div>
             </div>
           ) }</div>
         </div>
         <div className="input-group">
-          <input typeName="text" className="form-control" ref="textInput" />
-          <span className="input-group-addon">
+          <input typeName="text" className="form-control" ref="teeTimeInput" />
+          <span className="input-group-addon" onClick={this.props.newTeeTime}>
             <i className="fa fa-plus"></i>
           </span>
         </div>
@@ -151,18 +153,25 @@ var FlightScheduleControl = React.createClass({
 var FlightSchedulePriceCard = React.createClass({
   propTypes: {
     flightSchedule:React.PropTypes.object,
+    teeTimes:React.PropTypes.array,
     scheduleIndex:React.PropTypes.number
   },
   componentDidMount: function(){
     //console.log("scheduleIndex = " + this.props.scheduleIndex);
   },
   getInitialState: function(){
-    return { random_id:(Math.floor(Math.random()*16777215).toString(16)) }
+    return {
+      random_id:(Math.floor(Math.random()*16777215).toString(16)),
+      teeTimes: this.props.teeTimes
+    }
   },
   getDefaultProps: function(){
     return {
       random_id:(Math.floor(Math.random()*16777215).toString(16))
     }
+  },
+  newTeeTime: function(e){
+
   },
   render: function(){
     return (
@@ -185,7 +194,7 @@ var FlightSchedulePriceCard = React.createClass({
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight[" + this.state.random_id + "][session_price]"}
-                  defaultValue={parseInt(this.props.flightSchedule.charge_schedule.session_price)} />
+                  value={parseInt(this.props.flightSchedule.charge_schedule.session_price)} onChange={this.props.updateFlightInfo}/>
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -240,14 +249,15 @@ var FlightSchedulePriceCard = React.createClass({
                 var isActive = (this.props.flightSchedule.flight_matrices[0]["day" + i] != null) ? "active" : ""
                 var isChecked = (this.props.flightSchedule.flight_matrices[0]["day" + i] != null) ? true : false
                 return (<label className={"btn btn-secondary " + isActive} key={i+1}>
-                  <input type="checkbox" autocomplete="off" name={ "flight[" + this.state.random_id + "][days][]"} value={i+1} checked={isChecked} />{ e }
+                  <input type="checkbox" autocomplete="off" name={ "flight[" + this.state.random_id + "][days][]"} value={i+1} defaultChecked={isChecked} />{ e }
                 </label>)
               }
             )}</div>
           </li>
           <li className="list-group-item">
             <h4>Times Active</h4>
-            <FlightScheduleControl random_id={this.state.random_id} flightMatrices={this.props.flightSchedule.flight_matrices}/>
+            <FlightScheduleControl random_id={this.state.random_id} flightMatrices={this.props.flightSchedule.flight_matrices}
+              deleteTeeTime={this.props.deleteTeeTime} newTeeTime={this.newTeeTime}/>
           </li>
         </ul>
       </div>
@@ -265,14 +275,13 @@ var FlightBox = React.createClass({
         flightSchedules:this.props.flightSchedules
     };
   },
-  componentDidMount: function(){
-  },
   newSchedule: function(e){
     newFlightSchedules = this.state.flightSchedules;
     newFlightSchedules.push(this.props.flightDummy);
     this.setState({ flightSchedules:newFlightSchedules});
   },
   handleClose: function(e){
+
     //console.log("handle when flight times button close is pressed");
 
     //can't delete the first one
@@ -291,6 +300,11 @@ var FlightBox = React.createClass({
     console.log(newFlightSchedules);
 
   },
+  updateFlightInfo: function(e, i){
+    //should update state info
+    console.log("index = " + i);
+
+  },
   render: function(){
     return (
       <div className="panel">
@@ -299,7 +313,10 @@ var FlightBox = React.createClass({
             <div className="card-header">Flight Schedules and Pricing</div>
             <div className="card-block">
               { this.state.flightSchedules.map( (e,i) =>
-                  <FlightSchedulePriceCard key={i} flightSchedule={e} handleClose={this.handleClose} scheduleIndex={i} />
+                  <FlightSchedulePriceCard key={i} flightSchedule={e}
+                    handleClose={this.handleClose} scheduleIndex={i}
+                    updateFlightInfo={this.updateFlightInfo}
+                    deleteTeeTime={this.props.deleteTeeTime} newTeeTime={this.props.newTeeTime}/>
               )}
               <button type="button" onClick={this.newSchedule} className="btn btn-primary">
                 <i className="fa fa-plus"></i>
@@ -312,14 +329,14 @@ var FlightBox = React.createClass({
   }
 });
 
-var AmmenitiesCheckBox = React.createClass({
-  propTypes: { ammenity: React.PropTypes.object },
+var AmenitiesCheckBox = React.createClass({
+  propTypes: { amenity: React.PropTypes.object },
   render: function(){
     return (
         <div className="col-xs-12 col-md-4">
           <div className="checkbox">
             <label>
-              <input type="checkbox" name={ "amm[" + this.props.ammenity.name + "]"} /> { this.props.ammenity.label }
+              <input type="checkbox" name={ "amenities[" + this.props.amenity.amenity_id + "]"} defaultChecked={this.props.amenity.available} /> { this.props.amenity.label }
             </label>
           </div>
         </div>
@@ -327,30 +344,17 @@ var AmmenitiesCheckBox = React.createClass({
   }
 });
 
-var AmmenitiesBox = React.createClass({
-  propTypes: { ammenities: React.PropTypes.array },
-  getDefaultProps: function(){
-      return { ammenities:[
-          { name:'hut', label:'Hut'},
-          { name:'restaurant', label:'Restaurant'},
-          { name:'atm', label:'ATM'},
-          { name:'shops', label:'Shops'},
-          { name: 'changing_room', label: 'Changing Room'},
-          { name: 'free_internet', label: 'Free Internet'},
-          { name: 'free_wifi', label: 'Free Wifi'},
-          { name: 'lounge', label: 'Lounge'}
-      ] }
-  },
+var AmenitiesBox = React.createClass({
   render: function(){
     return (
       <div className="panel">
-        <div className="collapse panel-collapse" id="ammenities">
+        <div className="collapse panel-collapse" id="amenities">
           <div className="card">
-            <div className="card-header">Ammenities</div>
+            <div className="card-header">Amenities</div>
             <div className="card-block">
               <div className="container">
-                <div className="row card-text">{ this.props.ammenities.map( (e,i) =>
-                    <AmmenitiesCheckBox key={i} ammenity={e} />
+                <div className="row card-text">{ this.props.amenities.map( (e,i) =>
+                    <AmenitiesCheckBox key={i} amenity={e} />
                 )}</div>
               </div>
             </div>
@@ -375,8 +379,21 @@ var GolfClubForm = React.createClass({
     return { disabledSubmit: false, club:this.props.club }
   },
   contentChanged: function(e){
+
       //if everything is fill up accordingly, enable the create/edit button
       console.log(e.target.key);
+  },
+  updateLocation: function(newLat,newLng){
+    var newClub = this.state.club;
+    newClub.lat = newLat;
+    newClub.lng = newLng;
+    this.setState({club:newClub});
+  },
+  deleteTeeTime: function(e){
+      console.log('delete a tee time');
+  },
+  newTeeTime: function(e){
+      console.log('add new tee time');
   },
   submitForm: function(){
     $.ajax(this.props.form.action_path, {
@@ -401,7 +418,7 @@ var GolfClubForm = React.createClass({
               <a href="#flight" data-toggle="collapse" data-parent="#accordion">Flight Schedules and Pricing</a>
             </li>
             <li className="list-group-item">
-              <a href="#ammenities" data-toggle="collapse" data-parent="#accordion">Ammenities</a>
+              <a href="#amenities" data-toggle="collapse" data-parent="#accordion">Amenities</a>
             </li>
           </ul>
         </div>
@@ -409,9 +426,10 @@ var GolfClubForm = React.createClass({
           <form method={this.props.form.method} action={this.props.form.action_path} refs="golf_form" id="golf_form" >
             <div id="accordion" role="tablist">
               <input type="hidden" name="authenticity_token" value={this.props.form.crsfToken} />
-              <GeneralBox club={this.state.club} contentChanged={this.contentChanged} />
-              <FlightBox flightSchedules={this.props.flightSchedules} flightDummy={this.props.flightDummy} />
-              <AmmenitiesBox />
+              <GeneralBox club={this.state.club} contentChanged={this.contentChanged} updateLocation={this.updateLocation} />
+              <FlightBox flightSchedules={this.props.flightSchedules} flightDummy={this.props.flightDummy}
+               deleteTeeTime={this.deleteTeeTime} newTeeTime={this.newTeeTime}/>
+              <AmenitiesBox amenities={this.props.amenities}/>
               <button className="btn btn-primary" type="button" disabled={this.state.disabledSubmit} onClick={this.submitForm}>{button_label}</button>
             </div>
           </form>

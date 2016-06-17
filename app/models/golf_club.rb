@@ -1,8 +1,10 @@
 class GolfClub < ActiveRecord::Base
-  has_many :charge_schedules
+  has_many :charge_schedules, :dependent => :destroy
   has_many :user_reservations
-  has_many :flight_schedules
+  has_many :flight_schedules, :dependent => :destroy
   has_many :flight_matrices, :through => :flight_schedules
+  has_many :amenity_lists, :dependent => :destroy
+  has_many :amenities, :through => :amenity_lists
 
   belongs_to :user
 
@@ -14,6 +16,10 @@ class GolfClub < ActiveRecord::Base
     #auto create the default price schedule
     self.open_hour ||= 10
     self.close_hour ||= 20
+
+    #default location is klcc
+    self.lat ||= "3.15785"
+    self.lng ||= "101.71165"
   end
 
   #return the current and latest price schedule
@@ -150,5 +156,14 @@ class GolfClub < ActiveRecord::Base
         fm.save!
       end
     end
+  end
+
+  #get the complete amenity listing
+  def amenity_listings
+    am_sql = self.amenity_lists.to_sql
+
+    Amenity.joins("left outer join (#{am_sql}) as am_sql on amenities.id = am_sql.amenity_id").pluck(
+      :'amenities.id', :'amenities.name', :'amenities.label', :'amenities.icon', :'am_sql.amenity_id'
+    ).map{ |x| { :amenity_id => x[0], :name => x[1], :label => x[2], :icon => x[3], :available => x[4].nil? ? false : true }}
   end
 end

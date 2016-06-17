@@ -11,7 +11,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160607075837) do
+ActiveRecord::Schema.define(version: 20160616021232) do
+
+  create_table "amenities", force: :cascade do |t|
+    t.string   "name",       limit: 255
+    t.string   "label",      limit: 255
+    t.string   "icon",       limit: 255
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+  end
+
+  create_table "amenity_lists", force: :cascade do |t|
+    t.integer  "golf_club_id", limit: 4
+    t.integer  "amenity_id",   limit: 4
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+  end
+
+  add_index "amenity_lists", ["amenity_id"], name: "index_amenity_lists_on_amenity_id", using: :btree
+  add_index "amenity_lists", ["golf_club_id"], name: "index_amenity_lists_on_golf_club_id", using: :btree
 
   create_table "charge_schedules", force: :cascade do |t|
     t.integer  "golf_club_id",       limit: 4
@@ -72,6 +90,8 @@ ActiveRecord::Schema.define(version: 20160607075837) do
     t.time     "open_hour"
     t.time     "close_hour"
     t.integer  "user_id",     limit: 4
+    t.string   "lat",         limit: 255
+    t.string   "lng",         limit: 255
   end
 
   add_index "golf_clubs", ["user_id"], name: "index_golf_clubs_on_user_id", using: :btree
@@ -121,6 +141,8 @@ ActiveRecord::Schema.define(version: 20160607075837) do
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
 
+  add_foreign_key "amenity_lists", "amenities"
+  add_foreign_key "amenity_lists", "golf_clubs"
   add_foreign_key "charge_schedules", "flight_schedules"
   add_foreign_key "charge_schedules", "golf_clubs"
   add_foreign_key "flight_matrices", "flight_schedules"

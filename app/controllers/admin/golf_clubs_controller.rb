@@ -54,7 +54,6 @@ class Admin::GolfClubsController < ApplicationController
       (FlightSchedule.new.attributes.merge("charge_schedule" => ChargeSchedule.new.attributes)).
       merge("flight_matrices" => [FlightMatrix.new.attributes])
     ]
-
   end
 
   # POST     /admin/golf_clubs(.:format)
@@ -189,6 +188,17 @@ class Admin::GolfClubsController < ApplicationController
         end
 
       end
+
+      #update amenities listings
+      #get current listing
+      current_am = gc.amenity_lists.map{ |x| x.amenity_id }
+      new_am = params[:amenities].map{ |x,y| x.to_i }
+
+      #delete the ones that are not there anymore
+      gc.amenity_lists.where(:amenity_id => current_am - new_am).each{ |x| x.destroy }
+      #add the new ones that are there
+      (new_am - current_am).each{ |x| gc.amenity_lists.new(:amenity_id => x).save!}
+
     end
 
     #everything ok, redirect_to site
@@ -203,6 +213,6 @@ class Admin::GolfClubsController < ApplicationController
   end
 
   def golf_club_params
-    params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour);
+    params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour, :lat, :lng);
   end
 end
