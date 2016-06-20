@@ -3,6 +3,25 @@ class FlightMatrix < ActiveRecord::Base
   has_many :user_reservations
   has_one :user_reservation, -> (booking_date){ where("user_reservations.booking_date in ?", booking_date) }
   validates_presence_of :tee_time
+
   # each tee time is unique to flight schedule
-  validates :tee_time, :uniqueness => { :scope => :flight_schedule_id }
+  validates :tee_time, :uniqueness => { :scope => [:flight_schedule_id] }
+
+  #at least on of day0 to day1 must be populated
+  validate :one_day_presence?
+
+  # todo: ensure that tee times are not conflicted with other flight schedules of the same golf club
+  validate :non_conflict?
+
+  #validates that at least one of the dayX fields is populated
+  def one_day_presence?
+    if %w(day0 day1 day2 day3 day4 day5 day6 day7 ).all?{|attr| self[attr].blank?}
+      errors.add :base, "At least one day must be populated"
+    end
+  end
+
+  #ensure that this schedule does not conflict w/ other schedules in the same golf club
+  def non_conflict?
+    return true
+  end
 end

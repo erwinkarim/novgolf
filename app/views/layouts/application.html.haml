@@ -4,7 +4,7 @@
     %meta{:charset => 'utf-8'}
     %meta{:name => 'viewport', :content => 'width=device-width, initial-scale=1,shrink-to-fit=no'}
     %meta{:'http-equiv' => 'x-ua-compatible', :content => 'ie=edge'}
-    %title JomGolf
+    %title #{ yield :head } JomGolf
     = stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track' => true
     = csrf_meta_tags
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
@@ -42,4 +42,4 @@
           &copy; JomGolf 2016
           &#8226; Terms of service
           &#8226; Privacy Policy
-          &#8226; Build #{ NovGolf::REVISION } 
+          &#8226; Build #{ NovGolf::REVISION }

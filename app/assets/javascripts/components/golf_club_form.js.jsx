@@ -5,6 +5,20 @@
 */
 var daysNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+/*
+to use flux for flight schedule state keeping
+*/
+var constants = {
+    NEW_FLIGHT_SCHEDULE:'NEW_FLIGHT_SCHEDULE',
+    DELETE_FLIGHT_SCHEDULE:'DELETE_FLIGHT_SCHEDULE'
+};
+
+var flightScheduleStore = Fluxxor.createStore({
+    initialize:function(){
+        this.flight_schedules = [];
+    }
+});
+
 var GeneralBox = React.createClass({
   propTypes:{
     club:React.PropTypes.object
@@ -14,6 +28,7 @@ var GeneralBox = React.createClass({
     var handle = this;
 
     //disable this if there's no internet
+    /*
     var initMap = function(){
         map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: parseFloat(handle.props.club.lat), lng: parseFloat(handle.props.club.lng) },
@@ -30,11 +45,10 @@ var GeneralBox = React.createClass({
         });
     };
     initMap();
+    */
 
-    console.log(this.state);
 
-
-    $("#openHour").timepicker({disableTextInput:true, minTime:"05:00", maxTime:"23:00"});
+    $(this.refs.openHour).timepicker({disableTextInput:true, minTime:"05:00", maxTime:"23:00"});
     $(this.refs.closeHour).timepicker({disableTextInput:true, minTime:"05:00", maxTime:"23:00"});
 
   },
@@ -120,29 +134,47 @@ var FlightScheduleControl = React.createClass({
   },
   getDefaultProps: function(){
       return {
-        flightTimes: [ "07:00", "07:07", "07:14" ]
+        flightTimes: [ "07:00am", "07:07am", "07:14am" ]
       }
+  },
+  getInitialState: function(){
+      return { flightTimes:this.props.flightTimes}
   },
   componentDidMount: function(){
     $(this.refs.teeTimeInput).timepicker({minTime:"05:00", maxTime:"23:00"});
+  },
+  addTeeTime: function(e){
+    console.log('add tee time as ', this.refs.teeTimeInput.value);
+    var newFt = this.state.flightTimes;
+    if(this.refs.teeTimeInput.value != ""){
+      //push and reorder
+      newFt.push(this.refs.teeTimeInput.value);
+      newFt = newFt.sort();
+
+      this.setState({flightTimes:newFt});
+    };
+  },
+  deleteTeeTime: function(e){
+    console.log('delete tee time from', e.target.value);
+    var newFt = this.state.flightTimes;
+    newFt.splice(e.target.value,1);
+    this.setState({flightTimes:newFt})
   },
   render: function(){
     return (
       <div>
         <div className="card">
-          <div className="card-block btn-toolbar">{ this.props.flightTimes.map( (e,i) =>
+          <div className="card-block btn-toolbar">{ this.state.flightTimes.map( (e,i) =>
             <div className="btn-group" key={i}>
               <input type="hidden" name={"flight[" + this.props.random_id + "][times][]"} value={e} />
               <div className="btn btn-secondary">{e}</div>
-              <div className="btn btn-secondary" onClick={this.props.deleteTeeTime}><i className="fa fa-close" value={i}></i></div>
+              <div className="btn btn-secondary" onClick={this.deleteTeeTime} value={i}><i className="fa fa-close" value={i}></i></div>
             </div>
           ) }</div>
         </div>
-        <div className="input-group">
+        <div className="form-group">
           <input typeName="text" className="form-control" ref="teeTimeInput" />
-          <span className="input-group-addon" onClick={this.props.newTeeTime}>
-            <i className="fa fa-plus"></i>
-          </span>
+          <button className="btn btn-secondary" type="button" onClick={this.addTeeTime}><i className="fa fa-plus"></i></button>
         </div>
       </div>
 
@@ -158,11 +190,12 @@ var FlightSchedulePriceCard = React.createClass({
   },
   componentDidMount: function(){
     //console.log("scheduleIndex = " + this.props.scheduleIndex);
+    console.log("random_id ", this.state.random_id)
   },
   getInitialState: function(){
     return {
       random_id:(Math.floor(Math.random()*16777215).toString(16)),
-      teeTimes: this.props.teeTimes
+      teeTimes: this.props.teeTimes.map((e,i) => e.tee_time)
     }
   },
   getDefaultProps: function(){
@@ -170,7 +203,7 @@ var FlightSchedulePriceCard = React.createClass({
       random_id:(Math.floor(Math.random()*16777215).toString(16))
     }
   },
-  newTeeTime: function(e){
+  handleChange: function(e){
 
   },
   render: function(){
@@ -249,15 +282,15 @@ var FlightSchedulePriceCard = React.createClass({
                 var isActive = (this.props.flightSchedule.flight_matrices[0]["day" + i] != null) ? "active" : ""
                 var isChecked = (this.props.flightSchedule.flight_matrices[0]["day" + i] != null) ? true : false
                 return (<label className={"btn btn-secondary " + isActive} key={i+1}>
-                  <input type="checkbox" autocomplete="off" name={ "flight[" + this.state.random_id + "][days][]"} value={i+1} defaultChecked={isChecked} />{ e }
+                  <input type="checkbox" autocomplete="off"
+                    name={ "flight[" + this.state.random_id + "][days][]"} value={i+1} checked={isChecked} onChange={this.handleChange} />{ e }
                 </label>)
               }
             )}</div>
           </li>
           <li className="list-group-item">
-            <h4>Times Active</h4>
-            <FlightScheduleControl random_id={this.state.random_id} flightMatrices={this.props.flightSchedule.flight_matrices}
-              deleteTeeTime={this.props.deleteTeeTime} newTeeTime={this.newTeeTime}/>
+            <h4>Flight Times</h4>
+              <FlightScheduleControl flightTimes={this.state.teeTimes} random_id={this.state.random_id} />
           </li>
         </ul>
       </div>
@@ -274,6 +307,9 @@ var FlightBox = React.createClass({
     return {
         flightSchedules:this.props.flightSchedules
     };
+  },
+  componentDidMount: function(){
+      console.log(this.props);
   },
   newSchedule: function(e){
     newFlightSchedules = this.state.flightSchedules;
@@ -313,7 +349,9 @@ var FlightBox = React.createClass({
             <div className="card-header">Flight Schedules and Pricing</div>
             <div className="card-block">
               { this.state.flightSchedules.map( (e,i) =>
-                  <FlightSchedulePriceCard key={i} flightSchedule={e}
+                  <FlightSchedulePriceCard key={i}
+                    flightSchedule={e}
+                    teeTimes={e.flight_matrices}
                     handleClose={this.handleClose} scheduleIndex={i}
                     updateFlightInfo={this.updateFlightInfo}
                     deleteTeeTime={this.props.deleteTeeTime} newTeeTime={this.props.newTeeTime}/>
@@ -388,12 +426,6 @@ var GolfClubForm = React.createClass({
     newClub.lat = newLat;
     newClub.lng = newLng;
     this.setState({club:newClub});
-  },
-  deleteTeeTime: function(e){
-      console.log('delete a tee time');
-  },
-  newTeeTime: function(e){
-      console.log('add new tee time');
   },
   submitForm: function(){
     $.ajax(this.props.form.action_path, {

@@ -57,7 +57,9 @@ gem 'paloma'
 gem 'devise'
 gem 'omniauth-facebook'
 gem 'font-awesome-rails'
+
 gem 'react-rails'
+gem 'fluxxor-rails'
 
 gem 'squeel'
 gem 'mysql2'

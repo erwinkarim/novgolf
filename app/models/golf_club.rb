@@ -23,11 +23,13 @@ class GolfClub < ActiveRecord::Base
   end
 
   #return the current and latest price schedule
+  # DELETE - not really used
   def latest_charge_schedule
       return self.charge_schedules.last
   end
 
   #gives how full reservations is being made for the next 7 days
+  # DELETE - not reallyused
   def reservations_count
     #get max amount of reservations available
     hours = self.close_hour - self.open_hour
@@ -66,6 +68,7 @@ class GolfClub < ActiveRecord::Base
   # 1. remove clubs that is fully booked
   # 2. club ranking algothrim
   # 3. don't return results if looking for something in the past??
+  # TODO: better way to display since each flight times can bring diffrent prices
   def self.search options = {}
     default_options = { :query => "", :dateTimeQuery => Time.now, :spread => 30.minutes, :pax => 2, :club_id => 0..10000000 }
 
@@ -139,7 +142,9 @@ class GolfClub < ActiveRecord::Base
   end
 
   #create a new flight scedule
+  # DELETE - this should be replaced with setFlightSchedule function
   def createFlightSchedule flight_sch={}, charge_sch={}, flight_days=[], flight_matrices=[]
+
     self.transaction do
       fs = self.flight_schedules.new(flight_sch)
       fs.save!
@@ -156,6 +161,117 @@ class GolfClub < ActiveRecord::Base
         fm.save!
       end
     end
+  end
+
+  #set the flight schedules, do validation, create new schedules if necessary
+  # this should be the prefered method instead of using flight_schedule.new.save! and flight_matrix.new.save!
+  # expected format:-
+  # {
+  #   "random_id" => {<info for flight_schedule include id}, {info for charge_schedule include id}, :days => [], :times => [] },
+  #   "random_id" => {<info for flight_schedule include id}, {info for charge_schedule include id}, :days => [], :times => [] }
+  # }
+  #   "flight"=>{
+  #     "a0e879"=>{"flight_id"=>"7", "charge_id"=>"5", "session_price"=>"90", "buggy"=>"100", "caddy"=>"0", "insurance"=>"10", "min_pax"=>"2",
+  #     "max_pax"=>"4", "days" => ["1", "2", "3"], "times"=>["07:00", "07:07", "07:14"]}}, "id"=>"17"}
+  def setFlightSchedule flight_schedules = {}
+    #plan
+
+    #validation
+    fullSch = {}
+    #setup the full flightSchedule
+    flight_schedules.each_pair do |i,e|
+      e["times"].each do |teeTime|
+        #setup the time pair
+        std_time = Time.parse(teeTime).strftime("%H:%M")
+        time_pair = { std_time => (0..7).inject([]){|p,n| p << 0} }
+        e["days"].map{ |x| x.to_i }.each{ |x| time_pair.values.first[x] = 1 }
+
+        #find the time pair in the current schedule, sum it up or merge
+        selected_time = fullSch[std_time]
+        if selected_time.nil? then
+          fullSch = fullSch.merge(time_pair)
+        else
+          (0..selected_time.length-1).each{ |x| selected_time[x] += time_pair.values.first[x] }
+        end
+      end
+    end
+
+    #check the flight matrix for conflict
+    conflict = !fullSch.select{ |k,v| !v.select{ |x| x > 1 }.empty? }.empty?
+    if conflict  then
+      raise Exception.new("Scheduling Conflict Detected")
+    end
+
+    #actual updating
+    self.transaction do
+      #delete flight schedules that don't exists anymore
+      FlightSchedule.where(:id => (self.flight_schedules.map{|x| x.id } -
+        flight_schedules.map{ |k,v| v["flight_id"].to_i }.select{ |x| !x.zero? }) ).each{|y| y.destroy }
+
+      flight_schedules.each_pair do |idx, elm|
+        puts "updating the flight schedules"
+        if(elm["flight_id"].empty? ) then
+          #create new flight_schedule
+          fs = self.flight_schedules.new(:min_pax => elm["min_pax"], :max_pax => elm["max_pax"])
+          fs.save!
+
+          #create new charge_schedule
+          cs = ChargeSchedule.new()
+          cs = ChargeSchedule.new(:golf_club_id => self.id, :flight_schedule_id => fs.id,
+            :session_price => elm[:session_price], :caddy => elm[:caddy], :insurance => elm[:insurance],
+            :cart => elm[:cart])
+          cs.save!
+
+          #need to fix this later <- why?
+          #create new flight_matrices
+          elm["times"].each do |flight_time|
+            fm = fs.flight_matrices.new(
+              elm["days"].inject( {:tee_time => Time.parse(flight_time).strftime("%H:%M")} ){
+                |p,n| p.merge({ "day#{n}".to_sym => 1})
+              }
+            )
+            fm.save!
+          end
+
+        else
+          #exisintg flight schedule and charge schedule
+          #update the flight schedule
+          current_flight = FlightSchedule.find(elm["flight_id"])
+          current_flight.update_attributes({:min_pax => elm["min_pax"], :max_pax => elm["max_pax"]})
+
+          #update charge schedule
+          cs = ChargeSchedule.find(elm["charge_id"])
+          cs.update_attributes({:session_price => elm["session_price"], :cart => elm["buggy"],
+            :caddy => elm["caddy"], :insurance => elm["insurance"]})
+
+          #remove flight matrices that does not exists anymore
+          new_times = elm["times"].map{|x| Time.parse("2000-01-01 #{x} +0000")}
+          current_flight.flight_matrices.where.not(:tee_time => new_times).each{ |x| x.destroy }
+
+          #handle the flight matrices
+          elm["times"].each do |flight_time|
+            #check if this exists or not
+            fm = current_flight.flight_matrices.where(:tee_time => Time.parse("2000-01-01 #{flight_time} +0000")).first
+            if fm.nil? then
+              #create new
+              fm = current_flight.flight_matrices.new(
+                elm["days"].inject({:tee_time => flight_time}){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
+              )
+              fm.save!
+            else
+              #update the days / what not
+              fm.update_attributes(
+                (1..7).inject({}){|p,n| p.merge({"day#{n}".to_sym => 0})}.merge(
+                  elm["days"].inject({:tee_time => flight_time}){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
+                )
+              )
+            end
+          end
+        end
+
+      end
+    end
+
   end
 
   #get the complete amenity listing
