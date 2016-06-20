@@ -22,26 +22,6 @@ class GolfClub < ActiveRecord::Base
     self.lng ||= "101.71165"
   end
 
-  #return the current and latest price schedule
-  # DELETE - not really used
-  def latest_charge_schedule
-      return self.charge_schedules.last
-  end
-
-  #gives how full reservations is being made for the next 7 days
-  # DELETE - not reallyused
-  def reservations_count
-    #get max amount of reservations available
-    hours = self.close_hour - self.open_hour
-    price_schedule = self.latest_price_schedule
-    max_reservations = hours * price_schedule.sessions_per_hour * price_schedule.slots_per_session * 7
-
-    #get current count
-    current_reservations = self.user_reservations.where(:booking_datetime => DateTime.now..(DateTime.now+7.days)).count
-
-    return current_reservations.to_f / max_reservations
-  end
-
   #shows how many many slots are available in this club
   # params queryDate date in string fromat
   def get_flight_matrix options = {}
@@ -138,28 +118,6 @@ class GolfClub < ActiveRecord::Base
         #generate the flight schedule schedule
         #generate the charge schedule
         #generate the flight matrix
-    end
-  end
-
-  #create a new flight scedule
-  # DELETE - this should be replaced with setFlightSchedule function
-  def createFlightSchedule flight_sch={}, charge_sch={}, flight_days=[], flight_matrices=[]
-
-    self.transaction do
-      fs = self.flight_schedules.new(flight_sch)
-      fs.save!
-
-      cs = ChargeSchedule.new()
-      cs = ChargeSchedule.new(:golf_club_id => self.id, :flight_schedule_id => fs.id,
-        :session_price => charge_sch[:session_price], :caddy => charge_sch[:caddy], :insurance => charge_sch[:insurance],
-        :cart => charge_sch[:cart])
-      cs.save!
-
-      #need to fix this later
-      flight_matrices.each do |flight_time|
-        fm = fs.flight_matrices.new(flight_days.inject({:tee_time => flight_time}){|p,n| p.merge({ "day#{n}".to_sym => 1}) })
-        fm.save!
-      end
     end
   end
 
