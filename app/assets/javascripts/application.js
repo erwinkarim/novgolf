@@ -69,3 +69,7 @@ var setup_collapse = function(target, div_target){
     };
   });
 };
+
+var toCurrency = function(digits){
+  return "MYR " + parseFloat(digits).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+};

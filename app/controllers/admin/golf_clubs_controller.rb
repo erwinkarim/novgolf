@@ -66,7 +66,7 @@ class Admin::GolfClubsController < ApplicationController
       golf_club.setFlightSchedule(params[:flight])
 
       #amenities
-      new_am = params[:amenities].map{ |x,y| x.to_i }
+      new_am = params.has_key?(:amenities) ? params[:amenities].map{ |x,y| x.to_i } : []
       new_am.each{ |x| gc.amenity_lists.new(:amenity_id => x).save!}
     end
 
@@ -125,7 +125,7 @@ class Admin::GolfClubsController < ApplicationController
       #update amenities listings
       #get current listing
       current_am = gc.amenity_lists.map{ |x| x.amenity_id }
-      new_am = params[:amenities].map{ |x,y| x.to_i }
+      new_am = params.has_key?(:amenities) ? params[:amenities].map{ |x,y| x.to_i } : []
 
       #delete the ones that are not there anymore
       gc.amenity_lists.where(:amenity_id => current_am - new_am).each{ |x| x.destroy }

@@ -28,7 +28,6 @@ var GeneralBox = React.createClass({
     var handle = this;
 
     //disable this if there's no internet
-    /*
     var initMap = function(){
         map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: parseFloat(handle.props.club.lat), lng: parseFloat(handle.props.club.lng) },
@@ -45,7 +44,6 @@ var GeneralBox = React.createClass({
         });
     };
     initMap();
-    */
 
 
     $(this.refs.openHour).timepicker({disableTextInput:true, minTime:"05:00", maxTime:"23:00"});
@@ -348,6 +346,9 @@ var FlightBox = React.createClass({
           <div className="card">
             <div className="card-header">Flight Schedules and Pricing</div>
             <div className="card-block">
+              Warning: remove flight schedules with caution
+            </div>
+            <div className="card-block">
               { this.state.flightSchedules.map( (e,i) =>
                   <FlightSchedulePriceCard key={i}
                     flightSchedule={e}
@@ -428,12 +429,18 @@ var GolfClubForm = React.createClass({
     this.setState({club:newClub});
   },
   submitForm: function(){
+    /*
+      TODO: give out notifications on error, redirect on success
+    */
     $.ajax(this.props.form.action_path, {
         data:$('#golf_form').serialize(),
         method:this.props.form.method,
         dataType:'json'
-    }).success(function(data,textStatus, jqXHR){
+    }).done(function(data,textStatus, jqXHR){
+        console.log('updated without errors')
 
+    }).fail(function(jqXHR, textStatus, errorThrown){
+        console.log('error:', jqXHR );
     });
   },
   render: function() {

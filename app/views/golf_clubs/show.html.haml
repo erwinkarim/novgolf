@@ -18,7 +18,6 @@ end
           path: { reserveTarget: reserve_golf_club_user_reservations_path(params[:id]),
             golfClub:golf_club_path(params[:id]) },
           reserveTarget: reserve_golf_club_user_reservations_path(params[:id]),
-          prices:@result[:prices]  ,
           teeTimes: @result[:tee_times],
           flight: @result[:flight].merge( { selectedPax:"2"})}
 .container

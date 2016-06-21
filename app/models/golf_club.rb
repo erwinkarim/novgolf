@@ -76,12 +76,12 @@ class GolfClub < ActiveRecord::Base
     self.joins{
         flight_schedules.flight_matrices
       }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time)").joins{
-          charge_schedules
+        flight_schedules.charge_schedule
       }.where{
-        # this doesn't really work
-        ( (name.like "%#{query}%") | (description.like "%#{query}%")) &
+        ( (name.like "%#{query}%") ) &
         (flight_matrices.tee_time.in timeRange ) &
         (flight_schedules.min_pax.lte options[:pax]) &
+        (flight_matrices.send("day#{queryDay}").eq 1) &
         (id.in options[:club_id])
       }.limit(30
       ).pluck(:id, :name, :session_price, :tee_time, :min_pax, :max_pax, :cart, :caddy, :insurance,
@@ -92,12 +92,18 @@ class GolfClub < ActiveRecord::Base
         if club.nil? then
           p << {
             :club => { :id => n[0], :name => n[1]},
-            :tee_times => [ {:tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] }],
-            :flight => { :minPax => n[4], :maxPax => n[5], :matrix_id => n[9], :date => options[:dateTimeQuery].strftime('%d/%m/%Y')},
-            :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8]}
+            :tee_times => [ {
+                :minPax => n[4], :maxPax => n[5],
+                :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11],
+                :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8]}
+            }],
+            :flight => { :minPax => n[4], :maxPax => n[5], :matrix_id => n[9], :date => options[:dateTimeQuery].strftime('%d/%m/%Y')}
           }
         else
-          club[:tee_times] << { :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] }
+          club[:tee_times] << {
+            :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] ,
+            :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8]}
+          }
           p
         end
       }

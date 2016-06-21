@@ -19,6 +19,7 @@
         .card-header Address
         .card-block
           = simple_format( @golf_club.address, { :class => 'card-text'})
+        .card-block#map{:style => "height: 40vh;"}
       .card
         .card-header Hours
         %ul.list-group.list-group-flush
@@ -54,10 +55,10 @@
     .col-xs-12.col-md-8
       - @golf_club.flight_schedules.each do |flight_schedule|
         .card
-          .card-header #{ flight_schedule.id }
+          .card-header Flight ID: #{ flight_schedule.id }
           %ul.list-group.list-group-flush
             %li.list-group-item
-              %h4 Data Dump
+              %h4 Flight Settings
               %table.table
                 %thead
                   %tr
@@ -70,6 +71,27 @@
                   %tr
                     %td Max Balls per Flight
                     %td #{ flight_schedule.max_pax }
+            %li.list-group-item
+              %h4 Pricing
+              %table.table
+                %thead
+                  %tr
+                    %th Item
+                    %th Price
+                %tbody
+                  - prices = flight_schedule.charge_schedule
+                  %tr
+                    %td Flight
+                    %td #{ number_to_currency(prices.session_price, :unit => "MYR ") }
+                  %tr
+                    %td Buggy
+                    %td #{ number_to_currency(prices.cart, :unit => "MYR ") }
+                  %tr
+                    %td Caddy
+                    %td #{ number_to_currency(prices.caddy, :unit => "MYR ") }
+                  %tr
+                    %td Insurance
+                    %td #{ number_to_currency(prices.insurance, :unit => "MYR ") }
             %li.list-group-item
               %h4 Flight Days
               .btn-group{ :'data-toggle' => 'buttons'}
@@ -86,3 +108,24 @@
       %ul
         - @golf_club.amenity_listings.each do |amenity|
           %li{:class => amenity[:available] ? "" : "text-muted" } #{ amenity[:label]}
+:javascript
+  var map;
+  var initMap = function(){
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: #{@golf_club.lat} , lng: #{@golf_club.lng} },
+        scrollwheel:false,
+        zoom: 16
+      });
+
+      var golfCircle = new google.maps.Circle({
+        strokeColor: '#FF0000',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#FF0000',
+        fillOpacity: 0.35,
+        map: map,
+        center: {lat:#{@golf_club.lat}, lng:#{@golf_club.lng} },
+        radius: 300
+      });
+  };
+  initMap();

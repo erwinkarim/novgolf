@@ -10,6 +10,7 @@ var GolfCardTimes = React.createClass({
     return (
       <label className={"btn btn-"+reserve_status} onClick={this.props.handleClick} data-tee-time={this.props.teeTime.tee_time}>
         <input type="checkbox" name="teeTimes[]" value={[this.props.teeTime.tee_time, this.props.teeTime.matrix_id]} />
+        <h5>{toCurrency(this.props.teeTime.prices.flight)}</h5>
         {this.props.teeTime.tee_time}
       </label>
     );
@@ -46,6 +47,101 @@ var GolfCardTimesGroup = React.createClass({
   }
 });
 
+//tabs to show which flights are being selected
+var SelectedTimeNav = React.createClass({
+    propTypes: {
+        selectedTeeTimes: React.PropTypes.array,
+        selectedIndex: React.PropTypes.number
+    },
+    handleClick: function(e){
+        e.preventDefault();
+    },
+    render: function(){
+
+      return (
+          <ul className="nav nav-tabs">{ this.props.selectedTeeTimes.map( (e,i) =>
+            {
+              var isActive = (i != 0) ? "active" : "";
+              return (
+                <li key={i} className="nav-item">
+                  <a className={"nav-link active" + isActive} onClick={this.handleClick} href="#">{e}</a>
+                </li>
+              )
+            }
+          )}</ul>
+      )
+    }
+});
+
+//content of each tab to show how many balls, insurance, etc being choosen for each flight
+var ReserveFormPage = React.createClass({
+  propTypes: {
+    isVisible: React.PropTypes.bool,
+    prices: React.PropTypes.object
+  },
+  getInitialState: function(){
+    return {
+      random_id:(Math.floor(Math.random()*16777215).toString(16))
+    };
+  },
+  getDefaultProps: function(){
+    return {
+        isVisible:false
+    };
+  },
+  render: function(){
+    return (
+      <div>
+        <div className="form-group row">
+          <div className="col-xs-2">
+            <select name="flight[pax]" onChange={this.props.updatePrice} ref="paxCount" className="from-control">{ [2,3,4].map( (e,i) =>
+              <option key={i}>{e}</option>
+            )}</select>
+          </div>
+          <label className="col-xs-6"> x Balls </label>
+          <label className="col-xs-4">{0}</label>
+          <input type="hidden" value={0} name="price[pax]" />
+        </div>
+        <div className="form-group row">
+          <div className="col-xs-2">
+            <select className="from-control" onChange={this.props.updatePrice} ref="cartCount" name="flight[cart]">{ [0,1,2].map( (e,i) =>
+              <option key={i}>{e}</option>
+            )}</select>
+          </div>
+          <label className="col-xs-6"> x Buggy </label>
+          <label className="col-xs-4">{0}</label>
+          <input type="hidden" value={0} name="price[cart]" />
+        </div>
+        <div className="form-group row">
+          <div className="col-xs-2">
+            <select className="from-control" onChange={this.props.updatePrice} ref="caddyCount" name="flight[caddy]">{ [0,1,2].map( (e,i) =>
+              <option key={e}>{e}</option>
+            )}</select>
+          </div>
+          <label className="col-xs-6"> x Caddy</label>
+          <label className="col-xs-4">{0}</label>
+          <input type="hidden" value={0} name="price[caddy]" />
+        </div>
+        <div className="form-group row">
+          <div className="col-xs-2">
+            <select className="from-control" onChange={this.props.updatePrice} ref="insuranceCount" name="flight[insurance]">{ [0,1,2].map( (e,i) =>
+              <option key={e}>{e}</option>
+            )}</select>
+          </div>
+          <label className="col-xs-6"> x Insurance</label>
+          <label className="col-xs-4">{0}</label>
+          <input type="hidden" value={0} name="price[insurance]" />
+        </div>
+        <div className="row">
+          <label className="col-xs-6 col-xs-offset-2">Total: </label>
+          <label className="col-xs-4">{this.props.totalPrice}</label>
+          <input type="hidden" value={this.props.totalPrice} name="price[total]" />
+        </div>
+      </div>
+    )
+  }
+});
+
 //form to reserve flights
 // have to think about when teeTimes goes blank because it's being loaded
 var GolfReserveForm = React.createClass({
@@ -61,7 +157,9 @@ var GolfReserveForm = React.createClass({
       return {
         //teeTimes:this.props.teeTimes,
         selectedTeeTimes:[],
-        totalPrice: this.props.prices.flight*this.props.flight.selectedPax
+        selectedTeeTimesIndex: 0,
+        prices: [],
+        totalPrice: 0
       }
     },
     componentDidMount: function(){
@@ -69,10 +167,7 @@ var GolfReserveForm = React.createClass({
     },
     updatePrice: function(e){
       //update the total price
-      var newTotalPrice = (this.refs.paxCount.value * this.props.prices.flight) +
-      (this.refs.caddyCount.value * this.props.prices.caddy) +
-      (this.refs.cartCount.value * this.props.prices.cart) +
-      (this.refs.insuranceCount.value * this.props.prices.insurance);
+      var newTotalPrice = 0;
       this.setState( { totalPrice: newTotalPrice });
     },
     handleClick: function(e){
@@ -122,51 +217,11 @@ var GolfReserveForm = React.createClass({
             <GolfCardTimesGroup teeTimes={this.props.teeTimes} handleClick={this.handleClick} />
           </li>
           <li className="list-group-item" ref="reserveBtnLi" >
-            <div className="form-group row">
-              <div className="col-xs-2">
-                <select name="flight[pax]" onChange={this.updatePrice} ref="paxCount" className="from-control">{ [2,3,4].map( (e,i) =>
-                  <option key={i}>{e}</option>
-                )}</select>
-              </div>
-              <label className="col-xs-6"> x Balls </label>
-              <label className="col-xs-4">{this.props.prices.flight}</label>
-              <input type="hidden" value={this.props.prices.flight} name="price[pax]" />
-            </div>
-            <div className="form-group row">
-              <div className="col-xs-2">
-                <select className="from-control" onChange={this.updatePrice} ref="cartCount" name="flight[cart]">{ [0,1,2].map( (e,i) =>
-                  <option key={i}>{e}</option>
-                )}</select>
-              </div>
-              <label className="col-xs-6"> x Buggy </label>
-              <label className="col-xs-4">{this.props.prices.cart}</label>
-              <input type="hidden" value={this.props.prices.cart} name="price[cart]" />
-            </div>
-            <div className="form-group row">
-              <div className="col-xs-2">
-                <select className="from-control" onChange={this.updatePrice} ref="caddyCount" name="flight[caddy]">{ [0,1,2].map( (e,i) =>
-                  <option key={e}>{e}</option>
-                )}</select>
-              </div>
-              <label className="col-xs-6"> x Caddy</label>
-              <label className="col-xs-4">{ this.props.prices.caddy}</label>
-              <input type="hidden" value={this.props.prices.caddy} name="price[caddy]" />
-            </div>
-            <div className="form-group row">
-              <div className="col-xs-2">
-                <select className="from-control" onChange={this.updatePrice} ref="insuranceCount" name="flight[insurance]">{ [0,1,2].map( (e,i) =>
-                  <option key={e}>{e}</option>
-                )}</select>
-              </div>
-              <label className="col-xs-6"> x Insurance</label>
-              <label className="col-xs-4">{ this.props.prices.insurance}</label>
-              <input type="hidden" value={this.props.prices.insurance} name="price[insurance]" />
-            </div>
-            <div className="row">
-              <label className="col-xs-6 col-xs-offset-2">Total: </label>
-              <label className="col-xs-4">{this.state.totalPrice}</label>
-              <input type="hidden" value={this.state.totalPrice} name="price[total]" />
-            </div>
+            {/* time stamps */}
+            <SelectedTimeNav selectedTeeTimes={this.state.selectedTeeTimes} selectedIndex={this.state.selectedTeeTimesIndex} />
+            <br />
+            <ReserveFormPage prices={this.props.prices} totalPrice={this.state.totalPrice}
+              updatePrice={this.updatePrice} visibleIndex={this.state.selectedTeeTimesIndex} />
             <button type="submit" className="btn btn-primary">Book!</button>
           </li>
         </form>
@@ -255,17 +310,20 @@ var GolfSchedule = React.createClass({
 });
 
 
+/*
+
+  TODO: need to handle multiple flight schedule selection and others
+*/
 var GolfCards = React.createClass({
   propTypes: {
     crsfToken: React.PropTypes.string,
     club: React.PropTypes.object,
     paths: React.PropTypes.object,
-    prices: React.PropTypes.object,
     teeTimes: React.PropTypes.array,
     flight: React.PropTypes.object
   },
   getInitialState: function(){
-      return { teeTimes:[], totalPrice: this.props.prices.flight*this.props.flight.selectedPax }
+      return { teeTimes:[], totalPrice: 0}
   },
   handleClick: function(e){
     if(e.target.className.match(/disabled/) != null){
@@ -300,20 +358,23 @@ var GolfCards = React.createClass({
   componentDidMount: function(){
       //console.log(this.props);
       $(this.refs.reserveBtnLi).hide();
+      console.log("prices ", this.props.teeTimes.map( (e,i) => parseInt(e.prices.flight)) );
   },
   render: function() {
     return (
       <div className="col-xs-12 col-md-6 col-lg-6" key={this.props.club.id}>
         <div className="card card-inverse">
           <img className="img-responsive card-img-top" src={this.props.paths.img} />
-          <div className="card-img-overlay">
-            <a href={this.props.paths.club} target="_blank">
-              <h4 className="card-title">{this.props.prices.flight}</h4>
-              <h4 className="card-title">{this.props.club.name}</h4>
-            </a>
-          </div>
+          <a href={this.props.paths.club} target="_blank">
+            <div className="card-img-overlay">
+                <h4 className="card-title">{ toCurrency(Math.min.apply(null, this.props.teeTimes.map( (e,i) => parseFloat(e.prices.flight))) )}</h4>
+                <h4 className="card-title">{this.props.club.name}</h4>
+            </div>
+          </a>
           <ul className="list-group-flush list-group">
-            <GolfReserveForm crsfToken={this.props.crsfToken} teeTimes={this.props.teeTimes} reserveTarget={this.props.paths.reserve} club={this.props.club} flight={this.props.flight} prices={this.props.prices} />
+            <GolfReserveForm crsfToken={this.props.crsfToken}
+              teeTimes={this.props.teeTimes} reserveTarget={this.props.paths.reserve}
+              club={this.props.club} flight={this.props.flight} prices={this.props.prices} />
           </ul>
         </div>
       </div>
