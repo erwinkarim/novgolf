@@ -17,4 +17,11 @@ class UserReservation < ActiveRecord::Base
 
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,
     :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed]
+
+  def total_price
+    actual_pax * count_pax +
+    actual_buggy * count_buggy +
+    actual_caddy * count_caddy +
+    actual_insurance * count_insurance
+  end
 end

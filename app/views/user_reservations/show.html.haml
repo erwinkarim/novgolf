@@ -19,13 +19,14 @@
           %li.list-group-item
             %strong Location
             #{ @reservation.golf_club.address } #{ link_to "link", "http://google.com.my/maps?q=#{@reservation.golf_club.address.html_safe}", :target => "_blank"}
+          - if !@reservation.payment_confirmed? then
             %li.list-group-item
               %strong Note:
               We detect that you attempting to pay for this booking. If you lost the payment page, please wait around 10 minutes for the booking to be released again
       .card
         .card-header Details
         .card-block
-          %table.table.table-responsive
+          %table.table
             %thead
               %tr
                 %th Qty
@@ -33,18 +34,23 @@
                 %th Total Price
             %tbody
               %tr
-                %td #x
+                %td #{ @reservation.count_pax }
                 %td Balls
-                %td #{ @reservation.actual_pax }
+                %td #{ number_to_currency(@reservation.actual_pax, { :unit => "RM "} )}
               %tr
-                %td #x
+                %td #{ @reservation.count_caddy}
                 %td Caddy
-                %td #{ @reservation.actual_pax }
+                %td #{ number_to_currency(@reservation.actual_caddy, { :unit => "RM "} )}
               %tr
-                %td #x
+                %td #{ @reservation.count_buggy}
                 %td Buggy
-                %td #{ @reservation.actual_pax }
+                %td #{ number_to_currency(@reservation.actual_buggy, { :unit => "RM "} )}
               %tr
-                %td #x
+                %td #{ @reservation.count_insurance }
                 %td Insurance
-                %td #{ @reservation.actual_pax }
+                %td #{ number_to_currency(@reservation.actual_insurance, { :unit => "RM "} )}
+              %tr
+                %td{ :colspan => 2}
+                  %h4 Total Price:
+                %td
+                  %h4 #{ number_to_currency(@reservation.total_price, { :unit => "RM "} )}

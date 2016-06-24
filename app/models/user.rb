@@ -8,6 +8,13 @@ class User < ActiveRecord::Base
   has_many :user_reservations
   has_many :golf_clubs
 
+  enum role: [:user, :admin, :superadmin ]
+  after_initialize :init
+
+  def init
+    self.role ||= 0
+  end
+
   def self.from_omniauth(auth)
    where(provider: auth.provider, uid: auth.uid).first_or_create do |user|
      user.email = auth.info.email

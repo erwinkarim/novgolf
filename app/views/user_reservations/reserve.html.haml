@@ -12,42 +12,39 @@
           %li.list-group-item #{ simple_format(@club.address)}
           %li.list-group-item
             %strong Flight Date
-            #{ Date.parse(params[:flight][:date]).strftime("%d/%b/%Y")}
-          %li.list-group-item
-            %strong Flight Time(s)
-            #{ params[:teeTimes].map{|x| x.split(",")[0] }.to_sentence }
+            #{ Date.parse(params[:info][:date]).strftime("%d/%b/%Y")}
   .row
     .col-xs-12.col-md-8.col-md-offset-2
-      .card
-        .card-header Flight Details
-        .card-block
-          %table.table
-            %thead
-              %tr
-                %th Qty
-                %th Item
-                %th Total
-            %tbody
-              %tr
-                %td #{ params[:flight][:pax]}
-                %td Pax
-                %td #{ number_to_currency(params[:price][:pax], { :unit => "RM"}) }
-              %tr
-                %td #{ params[:flight][:caddy]}
-                %td Caddy
-                %td #{ number_to_currency(params[:price][:caddy], { :unit => "RM"}) }
-              %tr
-                %td #{ params[:flight][:cart]}
-                %td Buggy
-                %td #{ number_to_currency(params[:price][:cart], { :unit => "RM"}) }
-              %tr
-                %td #{ params[:flight][:insurance]}
-                %td Insurance
-                %td #{ number_to_currency(params[:price][:insurance], { :unit => "RM"}) }
-              %tr
-                %td
-                %td Grand Total
-                %td #{ number_to_currency(params[:price][:total], { :unit => "RM"}) }
+      - params[:flight].each_pair do |k,v|
+        .card
+          .card-header #{v[:tee_time]} Flight Details
+          .card-block
+            %table.table
+              %thead
+                %tr
+                  %th Qty
+                  %th Item
+                  %th Total
+              %tbody
+                %tr
+                  %td #{ v[:count][:pax]}
+                  %td Pax
+                  %td #{ number_to_currency(v[:price][:pax], { :unit => "RM"}) }
+                %tr
+                  %td #{ v[:count][:caddy]}
+                  %td Caddy
+                  %td #{ number_to_currency(v[:price][:caddy], { :unit => "RM"}) }
+                %tr
+                  %td #{ v[:count][:buggy]}
+                  %td Buggy
+                  %td #{ number_to_currency(v[:price][:cart], { :unit => "RM"}) }
+                %tr
+                  %td #{ v[:count][:insurance]}
+                  %td Insurance
+                  %td #{ number_to_currency(v[:price][:insurance], { :unit => "RM"}) }
+  .row
+    .col-xs-12.col-md-8.col-md-offset-2
+      %h3 Grand Total: #{number_to_currency(params[:info][:total_price], {:unit => "RM"})}
   .row
     .col-xs-12.col-md-8.col-md-offset-2
       = form_tag processing_golf_club_user_reservations_path(params[:golf_club_id]) do

@@ -3,7 +3,7 @@
     * need to update state when forms are being update. find a better way to manage this
       think about flux
 */
-var daysNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+var daysNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 /*
 to use flux for flight schedule state keeping
@@ -275,10 +275,10 @@ var FlightSchedulePriceCard = React.createClass({
           <li className="list-group-item">
             <h4>Days Active</h4>
             <div className="btn-group" data-toggle="buttons">{
-              daysNames.map( (e,i) =>
+              daysNames.slice(1).map( (e,i) =>
               {
-                var isActive = (this.props.flightSchedule.flight_matrices[0]["day" + i] != null) ? "active" : ""
-                var isChecked = (this.props.flightSchedule.flight_matrices[0]["day" + i] != null) ? true : false
+                var isActive = (this.props.flightSchedule.flight_matrices[0]["day" + (i + 1)] == 1) ? "active" : ""
+                var isChecked = (this.props.flightSchedule.flight_matrices[0]["day" + (i + 1)] == 1) ? true : false
                 return (<label className={"btn btn-secondary " + isActive} key={i+1}>
                   <input type="checkbox" autocomplete="off"
                     name={ "flight[" + this.state.random_id + "][days][]"} value={i+1} checked={isChecked} onChange={this.handleChange} />{ e }

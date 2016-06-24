@@ -92,15 +92,16 @@ class GolfClub < ActiveRecord::Base
         if club.nil? then
           p << {
             :club => { :id => n[0], :name => n[1]},
-            :tee_times => [ {
+            :flights => [ {
                 :minPax => n[4], :maxPax => n[5],
                 :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11],
                 :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8]}
             }],
-            :flight => { :minPax => n[4], :maxPax => n[5], :matrix_id => n[9], :date => options[:dateTimeQuery].strftime('%d/%m/%Y')}
+            :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
           }
         else
-          club[:tee_times] << {
+          club[:flights] << {
+            :minPax => n[4], :maxPax => n[5],
             :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] ,
             :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8]}
           }

@@ -15,11 +15,10 @@ end
           %h4 Availablity
         = react_component "GolfSchedule", {crsfToken:form_authenticity_token,
           club: @result[:club],
-          path: { reserveTarget: reserve_golf_club_user_reservations_path(params[:id]),
+          queryDate: @date,
+          paths: { reserve: reserve_golf_club_user_reservations_path(params[:id]),
             golfClub:golf_club_path(params[:id]) },
-          reserveTarget: reserve_golf_club_user_reservations_path(params[:id]),
-          teeTimes: @result[:tee_times],
-          flight: @result[:flight].merge( { selectedPax:"2"})}
+          flights: @result[:flights], queryData: @result[:queryData]}
 .container
   .row
     .col-xs-12

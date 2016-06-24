@@ -6,7 +6,7 @@ class UserReservationsController < ApplicationController
 
     #create the session
     session[:flight] = params[:flight]
-    session[:price] = params[:price]
+    session[:info] = params[:info]
     session[:teeTimes] = params[:teeTimes]
     session[:golf_club_id] = params[:golf_club_id]
 
@@ -18,22 +18,28 @@ class UserReservationsController < ApplicationController
     session[:reservation_ids] = []
     session[:timeout] = Time.now + 10.minutes
 
+    Rails.logger.info "session[:flight] is #{session[:flight]}"
     #create a reservation w/o token to show that this flight is being reserved
     #todo: think about splitting the pricing data into each reservation(s)
     #   eg: if you booked 5 balls in 2 flights, flight a will have 3 balls and flight b will have 2 balls and are priced accordingly
-    session[:teeTimes].each do |teetime|
+    UserReservation.transaction do
+      session[:flight].each_pair do |k,v|
+        reservation = current_user.user_reservations.new( :golf_club_id => params[:golf_club_id],
+          :booking_date => Date.parse(session[:info]["date"]), :booking_time => v["tee_time"],
+          :actual_buggy => v["price"]["cart"], :actual_caddy => v["price"]["caddy"],
+          :actual_pax => v["price"]["pax"], :actual_insurance => v["price"]["insurance"],
+          :count_buggy => v["count"]["buggy"], :count_caddy => v["count"]["caddy"],
+          :count_pax => v["count"]["pax"], :count_insurance => v["count"]["insurance"],
+          :flight_matrix_id => v["matrix_id"] )
 
-      tee_time = teetime.split(",")[0]
-      matrix_id = teetime.split(",")[1]
-      reservation = current_user.user_reservations.new( :golf_club_id => params[:golf_club_id], :booking_date => Date.parse(session[:flight]["date"]),
-        :booking_time => teetime, :actual_buggy => session[:price]["cart"], :actual_caddy => session[:price]["caddy"],
-        :actual_pax => session[:price]["pax"], :flight_matrix_id => matrix_id )
-      #generate the token will actually save the record
-      reservation.regenerate_token
-      #reservation.save!
-      session[:reservation_ids] << reservation.id
-      reservation.reservation_created!
-      reservation.payment_attempted!
+        #generate the token will actually save the record
+        reservation.regenerate_token
+        #reservation.save!
+
+        session[:reservation_ids] << reservation.id
+        reservation.reservation_created!
+        reservation.payment_attempted!
+      end
     end
   end
 

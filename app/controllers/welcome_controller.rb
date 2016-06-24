@@ -18,10 +18,14 @@ class WelcomeController < ApplicationController
           queryOptions = queryOptions.merge({ :dateTimeQuery => Time.parse("#{params[:date]} #{params[:time]} +0000") })
         end
       end
-
       @clubs = GolfClub.search(queryOptions)
     else
       @clubs = GolfClub.search
+    end
+
+    respond_to do |format|
+      format.json{ render json:@clubs}
+      format.html
     end
   end
 
@@ -33,5 +37,5 @@ class WelcomeController < ApplicationController
 
   def session_data
   end
-  
+
 end

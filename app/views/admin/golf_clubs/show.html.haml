@@ -97,7 +97,7 @@
               .btn-group{ :'data-toggle' => 'buttons'}
                 - flight_schedule.flight_matrices.first.attributes.select{ |k,v| k.to_s.match(/day[1-7]/)}.map do |x,y|
                   %label.btn.btn-secondary{ :class => (y==1) ? "active" : "", :disabled => true }
-                    #{ DateTime::DAYNAMES[ (x[3].to_i - 1)]}
+                    #{ (x[3].to_i == 7) ? "Sunday" : DateTime::DAYNAMES[ (x[3].to_i)]}
               %h4 Flight Times
               .btn-group
                 - flight_schedule.flight_matrices.each do |flight_matrix|

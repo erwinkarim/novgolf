@@ -10,15 +10,14 @@ class GolfClubsController < ApplicationController
   # GET      /golf_clubs/:id
   def show
     @club = GolfClub.find(params[:id])
-    @charge_schedule = @club.charge_schedules.last
 
     if params.has_key? :date then
-      date = Date.parse(params[:date])
+      @date = Date.parse(params[:date])
     else
-      date = Date.today
+      @date = Date.today
     end
 
-    @result = GolfClub.search({ :dateTimeQuery => Time.parse("#{date} 14:00 +0000"), :spread => 9.hours, :club_id => params[:id]}).first
+    @result = GolfClub.search({ :dateTimeQuery => Time.parse("#{@date} 14:00 +0000"), :spread => 9.hours, :club_id => params[:id]}).first
 
     respond_to do |format|
       format.html
