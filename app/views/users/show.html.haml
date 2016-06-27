@@ -1,16 +1,24 @@
-- content_for(:head){ "#{@user.name} - "}
+- content_for(:head){ "#{@user.name || @user.email} - "}
 .jumbotron.jumbotron-fluid{ :style => "height:180px;"}
   .container
     .col-md-1.col-xs-4
       .card
         %img.card-img-top.img-responsive{ :src => (@user.image.nil? || @user.image.empty?) ? 'http://placehold.it/256x256' : @user.image }
-
 .container
   .row
     .col-xs-12.col-md-4
       .card
         .card-block
           %p.card-text Joined JomGolf since #{ @user.created_at.strftime("%b %Y")}
+      - if user_signed_in? && current_user.id == @user.id then
+        .card
+          .card-header Action
+          %ul.list-group.list-group-flush
+            %li.list-group-item
+              = link_to "Edit Profile", edit_user_path(current_user)
+            - if current_user.provider.nil? then
+              %li.list-group-item
+                = link_to "Change Password", edit_user_registration_path
       .card
         .card-header Info
         .card-block

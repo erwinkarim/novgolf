@@ -18,7 +18,7 @@
           %li.nav-item
             - if user_signed_in? then
               .dropdown
-                %a.nav-link{ :href => '#', :'data-toggle' => 'dropdown' } #{current_user.name}
+                %a.nav-link{ :href => '#', :'data-toggle' => 'dropdown' } #{current_user.name || current_user.email}
                 .dropdown-menu.dropdown-menu-right
                   %a.dropdown-item{ :href => user_reservations_path(current_user)} My Bookings
                   %a.dropdown-item{ :href => user_path(current_user)} My Profile

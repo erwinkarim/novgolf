@@ -2,16 +2,16 @@ Rails.application.routes.draw do
   get 'users/show'
 
   devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
-  resources :users, :only => [:show] do
+  resources :users, :only => [:show, :edit, :update] do
     resources :reservations, :only => [:show], :controller => "user_reservations" do
       collection do
         get '/' => 'user_reservations#user_index'
       end
     end
   end
-  devise_scope :user do
-    delete 'sign_out', :to => 'devise/sessions#destroy', :as => :destroy_user_session
-  end
+  #devise_scope :user do
+  #  delete 'sign_out', :to => 'devise/sessions#destroy', :as => :destroy_user_session
+  #end
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

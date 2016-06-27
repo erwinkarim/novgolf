@@ -67,7 +67,7 @@ class Admin::GolfClubsController < ApplicationController
 
       #amenities
       new_am = params.has_key?(:amenities) ? params[:amenities].map{ |x,y| x.to_i } : []
-      new_am.each{ |x| gc.amenity_lists.new(:amenity_id => x).save!}
+      new_am.each{ |x| golf_club.amenity_lists.new(:amenity_id => x).save!}
     end
 
     respond_to do |format|

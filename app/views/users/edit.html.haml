@@ -1,0 +1,12 @@
+.container
+  .row
+    .col-md-6.col-xs-12
+      %h2 Edit #{ @user.name || @user.email}
+      = form_for @user do |f|
+        .form-group
+          %label Email
+          = f.text_field :email, :class => "form-control", :disabled => true
+        .form-group
+          %label Name
+          = f.text_field :name, :class => "form-control"
+        %button.btn.btn-primary{ :type => "submit"} Update Profile

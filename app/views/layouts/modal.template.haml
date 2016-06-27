@@ -9,6 +9,20 @@
         %a.btn.btn-secondary{ :href => user_omniauth_authorize_path(:facebook) }
           %i.fa.fa-facebook-square.fa-3x
         Login with Facebook
+        %hr
+        = form_tag session_path(:user), :class => "form-inline" do
+          .form-group
+            %input.form-control{ :type => "user[email]", :type => "text", :placeholder => "email"}
+            %input.form-control{ :type => "user[password]", :type => "password", :placeholder => "password"}
+            %label
+              %input{ :type => "checkbox", :name => "user[remember_me]"}
+              Remember Me
+            %br
+            %br
+          %button.btn.btn-secondary Sign in
+        = link_to "Forgot your password?", new_password_path(:user)
+        or
+        = link_to "Sign Up",  new_user_registration_path
       .modal-footer
         %button.btn.btn-secondary{ :type => "button", :'data-dismiss' => 'modal'} Close
         %button.btn.btn-primary#generate-club{ :type => "button"} Generate!
@@ -31,7 +45,6 @@
     }
 
     //if not return start generate
-    console.log('sanity check ok');
     $.post("#{golf_clubs_path}", $('#new-club-form').serialize(), function(data){
       //successfully generate, reload the golf clubs
       $('#gc-list').empty();

@@ -3,6 +3,7 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
 
+=begin
   def authenticate_user!
     if user_signed_in? then
       super
@@ -10,4 +11,5 @@ class ApplicationController < ActionController::Base
       redirect_to user_omniauth_authorize_path(:facebook), :notice => 'Please login before continue'
     end
   end
+=end
 end
