@@ -54,9 +54,14 @@
     %h2 Pricing And Scheduling
     .col-xs-12.col-md-8
       - @golf_club.flight_schedules.each do |flight_schedule|
+        - prices = flight_schedule.charge_schedule
+        - random_id = SecureRandom.hex(6)
         .card
-          .card-header Flight ID: #{ flight_schedule.id }
-          %ul.list-group.list-group-flush
+          .card-header
+            %a{ :href => "#flight-#{random_id}", :'data-toggle' => 'collapse'}
+              %i.fa.fa-chevron-up
+            #{ flight_schedule.name.nil? || flight_schedule.name.empty? ? "Flight ID: #{flight_schedule.id}" : flight_schedule.name }
+          %ul.list-group.list-group-flush.collapse.in{ :id => "flight-#{random_id}"}
             %li.list-group-item
               %h4 Flight Settings
               %table.table
@@ -72,14 +77,16 @@
                     %td Max Balls per Flight
                     %td #{ flight_schedule.max_pax }
             %li.list-group-item
+              %h4 Notes
+              = simple_format(prices.note)
+            %li.list-group-item
               %h4 Pricing
               %table.table
                 %thead
                   %tr
                     %th Item
-                    %th Price
+                    %th Fee
                 %tbody
-                  - prices = flight_schedule.charge_schedule
                   %tr
                     %td Flight
                     %td #{ number_to_currency(prices.session_price, :unit => "MYR ") }

@@ -7,6 +7,12 @@
           %label Email
           = f.text_field :email, :class => "form-control", :disabled => true
         .form-group
+          %label Home Club
+          = f.text_field :home_club, :class => "form-control"
+        .form-group
+          %label Handicap
+          = f.number_field :handicap, :class => "form-control"
+        .form-group
           %label Name
           = f.text_field :name, :class => "form-control"
         %button.btn.btn-primary{ :type => "submit"} Update Profile

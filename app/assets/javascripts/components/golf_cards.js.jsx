@@ -159,6 +159,8 @@ var ReserveFormPage = React.createClass({
             <input type="hidden" value={this.props.flightInfo.insurance * parseFloat(this.props.flight.prices.insurance) }
               name={"flight[" + this.props.flightInfo.id + "][price][insurance]"} />
           </div>
+          <h4>Notes</h4>
+          <p className="card-text" style={ {color:'black'}}>{ this.props.flight.prices.note}</p>
         </div>
       </div>
     )
@@ -216,7 +218,7 @@ var GolfReserveForm = React.createClass({
 
     },
     handleClick: function(e){
-      console.log('clicked ', e.target.value)
+      //console.log('clicked ', e.target.value)
 
       //update the selected TeeTimes and current teeTimes index
 
@@ -247,8 +249,8 @@ var GolfReserveForm = React.createClass({
             var fi = Object.assign({}, this.state.defaultFlightInfo);
             Object.assign( fi,
               {
-                id:randomID(), teeTime:this.props.flights[newIndex].tee_time, index:newIndex, flightIndex:value,
-                pax:this.props.flights[newIndex].minPax, insurance:this.props.flights[newIndex].minPax
+                id:randomID(), teeTime:this.props.flights[value].tee_time, index:newIndex, flightIndex:value,
+                pax:this.props.flights[value].minPax, insurance:this.props.flights[value].minPax
               }
             );
             newFlightInfo.splice($.inArray(value, newTeeTimes), 0, fi ) ;
@@ -311,7 +313,7 @@ var GolfReserveForm = React.createClass({
             <br />
 
             {/* form pages */}
-            <div data-spy="scroll" data-target={"#nav-" + this.state.random_id }>
+            <div data-spy="scroll" data-target={"#nav-" + this.state.random_id } >
               { this.state.flightInfo.map( (e,i) =>
                 <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} />
               )}

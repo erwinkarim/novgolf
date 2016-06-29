@@ -204,24 +204,36 @@ var FlightSchedulePriceCard = React.createClass({
   handleChange: function(e){
 
   },
+  handleCollapse: function(e){
+
+    console.log('hide invoked');
+  },
   render: function(){
     return (
       <div className="card">
         <input type="hidden" name={"flight[" + this.state.random_id + "][flight_id]"} value={this.props.flightSchedule.id} />
         <input type="hidden" name={"flight[" + this.state.random_id + "][charge_id]"} value={this.props.flightSchedule.charge_schedule.id} />
         <div className="card-header">
-          Flight Schedule / Pricing
+          <a href={`#collapse-${this.state.random_id}`} data-toggle="collapse">
+            <i className="fa fa-chevron-up"></i></a> {this.props.flightSchedule.name} Flight Schedule / Pricing
           <div className="pull-right">
             <button className="close" type="button" onClick={this.props.handleClose} value={this.props.scheduleIndex}>
               <span value={this.props.scheduleIndex}>&times;</span>
             </button>
           </div>
         </div>
-        <ul className="list-group list-group-flush">
+        <ul className="list-group list-group-flush collapse in" id={`collapse-${this.state.random_id}`}>
+          <li className="list-group-item">
+            <h4>Name: </h4>
+            <div className="form-group">
+              <label>Schedule Name</label>
+              <input className="form-control" name={`flight[${this.state.random_id}][name]`} defaultValue={this.props.flightSchedule.name} />
+            </div>
+          </li>
           <li className="list-group-item">
             <h4>Price:</h4>
             <div className="form-group">
-              <label>Flight Price</label>
+              <label>Green / Player Fee</label>
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight[" + this.state.random_id + "][session_price]"}
@@ -230,7 +242,7 @@ var FlightSchedulePriceCard = React.createClass({
               </div>
             </div>
             <div className="form-group">
-              <label>Buggy Price</label>
+              <label>Buggy Fee</label>
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight["+ this.state.random_id + "][buggy]"}
@@ -239,7 +251,7 @@ var FlightSchedulePriceCard = React.createClass({
               </div>
             </div>
             <div className="form-group">
-              <label>Caddy Price</label>
+              <label>Caddy Fee</label>
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight[" + this.state.random_id + "][caddy]"}
@@ -248,7 +260,7 @@ var FlightSchedulePriceCard = React.createClass({
               </div>
             </div>
             <div className="form-group">
-              <label>Insurance Price</label>
+              <label>Insurance Fee</label>
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight["+ this.state.random_id + "][insurance]"}
@@ -270,6 +282,15 @@ var FlightSchedulePriceCard = React.createClass({
               <select className="form-control" defaultValue={this.props.flightSchedule.max_pax} name={ "flight[" + this.state.random_id + "][max_pax]"}>{ [4,5,6].map ( (e,i) =>
                   <option key={i}>{e}</option>
               )}</select>
+            </div>
+          </li>
+          <li className="list-group-item">
+            <h4>Notes</h4>
+            <div className="form-group">
+              <label>Notes</label>
+              <textarea className="form-control" rows="10"
+                placeholder="Put your notes about the price schedule here (free F&B voucher during this period). Limit 2048 characters"
+                name={`flight[${this.state.random_id}][note]`}></textarea>
             </div>
           </li>
           <li className="list-group-item">

@@ -69,3 +69,6 @@ gem 'has_secure_token'
 
 #qr code
 gem 'rqrcode_png'
+
+#consistent seed
+gem 'seed-fu', '~> 2.3'

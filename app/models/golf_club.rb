@@ -85,7 +85,7 @@ class GolfClub < ActiveRecord::Base
         (id.in options[:club_id])
       }.limit(30
       ).pluck(:id, :name, :session_price, :tee_time, :min_pax, :max_pax, :cart, :caddy, :insurance,
-        :'flight_matrices.id', :'tr.booking_time', :'tr.status'
+        :'flight_matrices.id', :'tr.booking_time', :'tr.status', :'charge_schedules.note'
       ).inject([]){ |p,n|
         club = p.select{ |x| x[:club][:id] == n[0] }.first
         booked_time = n[10].nil? ? nil : n[10].strftime("%H:%M")
@@ -95,7 +95,7 @@ class GolfClub < ActiveRecord::Base
             :flights => [ {
                 :minPax => n[4], :maxPax => n[5],
                 :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11],
-                :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8]}
+                :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12]}
             }],
             :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
           }
@@ -103,7 +103,7 @@ class GolfClub < ActiveRecord::Base
           club[:flights] << {
             :minPax => n[4], :maxPax => n[5],
             :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] ,
-            :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8]}
+            :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12]}
           }
           p
         end
@@ -177,12 +177,13 @@ class GolfClub < ActiveRecord::Base
         puts "updating the flight schedules"
         if(elm["flight_id"].empty? ) then
           #create new flight_schedule
-          fs = self.flight_schedules.new(:min_pax => elm["min_pax"], :max_pax => elm["max_pax"])
+          fs = self.flight_schedules.new(:name => elm["name"], :min_pax => elm["min_pax"], :max_pax => elm["max_pax"])
           fs.save!
 
           #create new charge_schedule
           cs = ChargeSchedule.new()
           cs = ChargeSchedule.new(:golf_club_id => self.id, :flight_schedule_id => fs.id,
+            :note => elm[:note],
             :session_price => elm[:session_price], :caddy => elm[:caddy], :insurance => elm[:insurance],
             :cart => elm[:cart])
           cs.save!
@@ -202,11 +203,12 @@ class GolfClub < ActiveRecord::Base
           #exisintg flight schedule and charge schedule
           #update the flight schedule
           current_flight = FlightSchedule.find(elm["flight_id"])
-          current_flight.update_attributes({:min_pax => elm["min_pax"], :max_pax => elm["max_pax"]})
+          current_flight.update_attributes({:name => elm["name"], :min_pax => elm["min_pax"], :max_pax => elm["max_pax"]})
 
           #update charge schedule
           cs = ChargeSchedule.find(elm["charge_id"])
           cs.update_attributes({:session_price => elm["session_price"], :cart => elm["buggy"],
+            :note => elm["note"],
             :caddy => elm["caddy"], :insurance => elm["insurance"]})
 
           #remove flight matrices that does not exists anymore

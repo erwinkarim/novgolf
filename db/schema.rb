@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160624015711) do
+ActiveRecord::Schema.define(version: 20160628025005) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -33,20 +33,21 @@ ActiveRecord::Schema.define(version: 20160624015711) do
 
   create_table "charge_schedules", force: :cascade do |t|
     t.integer  "golf_club_id",       limit: 4
-    t.decimal  "caddy",                        precision: 8, scale: 2
-    t.decimal  "cart",                         precision: 8, scale: 2
+    t.decimal  "caddy",                            precision: 8, scale: 2
+    t.decimal  "cart",                             precision: 8, scale: 2
     t.integer  "sessions_per_hour",  limit: 4
     t.integer  "slots_per_session",  limit: 4
     t.integer  "pax_per_slot",       limit: 4
-    t.datetime "created_at",                                           null: false
-    t.datetime "updated_at",                                           null: false
+    t.datetime "created_at",                                               null: false
+    t.datetime "updated_at",                                               null: false
     t.datetime "start_date"
     t.datetime "end_date"
     t.integer  "max_caddy_per_slot", limit: 4
     t.integer  "max_buggy_per_slot", limit: 4
-    t.decimal  "session_price",                precision: 8, scale: 2
-    t.decimal  "insurance",                    precision: 8, scale: 2
+    t.decimal  "session_price",                    precision: 8, scale: 2
+    t.decimal  "insurance",                        precision: 8, scale: 2
     t.integer  "flight_schedule_id", limit: 4
+    t.text     "note",               limit: 65535
   end
 
   add_index "charge_schedules", ["flight_schedule_id"], name: "index_charge_schedules_on_flight_schedule_id", using: :btree
@@ -77,6 +78,7 @@ ActiveRecord::Schema.define(version: 20160624015711) do
     t.datetime "created_at",               null: false
     t.datetime "updated_at",               null: false
     t.integer  "golf_club_id", limit: 4
+    t.string   "name",         limit: 255
   end
 
   add_index "flight_schedules", ["golf_club_id"], name: "index_flight_schedules_on_golf_club_id", using: :btree
@@ -142,6 +144,8 @@ ActiveRecord::Schema.define(version: 20160624015711) do
     t.string   "name",                   limit: 255
     t.string   "image",                  limit: 255
     t.integer  "role",                   limit: 4
+    t.string   "home_club",              limit: 255
+    t.integer  "handicap",               limit: 4
   end
 
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree

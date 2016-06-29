@@ -6,6 +6,7 @@
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
+=begin
 amenities = Amenity.create([
     { name:'hut', label:'Hut'},
     { name:'restaurant', label:'Restaurant'},
@@ -16,3 +17,4 @@ amenities = Amenity.create([
     { name: 'free_wifi', label: 'Free Wifi'},
     { name: 'lounge', label: 'Lounge'}
   ])
+=end
