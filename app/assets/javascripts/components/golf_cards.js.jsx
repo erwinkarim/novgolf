@@ -88,7 +88,8 @@ var SelectedTimeNav = React.createClass({
 var ReserveFormPage = React.createClass({
   propTypes: {
     flightInfo:React.PropTypes.object,
-    flight:React.PropTypes.object
+    flight:React.PropTypes.object,
+    isActive: React.PropTypes.bool
   },
   getInitialState: function(){
     return {
@@ -96,8 +97,9 @@ var ReserveFormPage = React.createClass({
     };
   },
   render: function(){
+    var activeClass = (this.props.isActive) ? "active" : "";
     return (
-      <div className="card" id={this.props.flightInfo.id} >
+      <div className={`card tab-pane ${activeClass}`} id={`flight-tab-${this.props.flightInfo.id}`} >
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][matrix_id]"} value={this.props.flight.matrix_id} />
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][tee_time]"} value={this.props.flightInfo.teeTime} />
         <div className="card-header" style={ {color:'black'}}>{ this.props.flightInfo.teeTime }</div>
@@ -108,7 +110,7 @@ var ReserveFormPage = React.createClass({
                 onChange={this.props.updatePrice}
                 value={this.props.flightInfo.pax} ref="paxCount" className=""
                 data-index={this.props.flightInfo.index} data-target="pax">
-              { [2,3,4].map( (e,i) =>
+              { Array.from(Array(this.props.flight.maxPax-this.props.flight.minPax+1),(v,k) => k + this.props.flight.minPax ).map( (e,i) =>
                 <option key={i}>{e}</option>
               )}</select>
             </div>
@@ -184,6 +186,11 @@ var GolfReserveForm = React.createClass({
       club: React.PropTypes.object,
       flights: React.PropTypes.array
     },
+    getDefaultProps: function(){
+      return {
+        reserve_target:"/"
+      }
+    },
     getInitialState: function(){
       return {
         //teeTimes:this.props.teeTimes,
@@ -251,13 +258,13 @@ var GolfReserveForm = React.createClass({
         var arrayPos = $.inArray(value, newTeeTimes);
 
         if( arrayPos != -1){
-            console.log('value is in array');
+            //console.log('value is in array');
             newTeeTimes.splice(arrayPos, 1);
             newIndex = 0;
 
             newFlightInfo.splice(arrayPos, 1);
         }else {
-            console.log('value is not in array');
+            //console.log('value is not in array');
             newTeeTimes.push(value);
             newTeeTimes.sort();
             newIndex = $.inArray(value, newTeeTimes);
@@ -270,22 +277,12 @@ var GolfReserveForm = React.createClass({
               }
             );
             newFlightInfo.splice($.inArray(value, newTeeTimes), 0, fi ) ;
-            console.log("newFlightInfo = ", newFlightInfo);
         }
 
         this.setState({selectedTeeTimes:newTeeTimes, selectedTeeTimesIndex:newIndex, flightInfo:newFlightInfo});
         var newTotalPrice = this.updateTotalPrice();
         this.setState({totalPrice:newTotalPrice});
 
-      }
-    },
-    componentDidUpdate: function(prevProps, prevState){
-      //update scrollspy
-      $(this.refs.flightPages).scrollspy('refresh');
-    },
-    getDefaultProps: function(){
-      return {
-        reserve_target:"/"
       }
     },
     render: function(){
@@ -309,9 +306,10 @@ var GolfReserveForm = React.createClass({
             {/* time stamps */}
             <ul className="nav nav-pills" id={ "nav-" + this.state.random_id }>{ this.state.selectedTeeTimes.map( (e,i) =>
               {
+                var isActive = (this.state.selectedTeeTimesIndex == i) ? "active" : ""
                 return (
                   <li className="nav-item">
-                    <a href={ "#" + this.state.flightInfo[i].id } className="nav-link">{this.props.flights[e].tee_time}</a>
+                    <a href={ `#flight-tab-${this.state.flightInfo[i].id}` } className={`nav-link ${isActive}`} data-toggle="pill">{this.props.flights[e].tee_time}</a>
                   </li>
                 )
               }
@@ -319,12 +317,14 @@ var GolfReserveForm = React.createClass({
             <br />
 
             {/* form pages */}
-            <div ref="flightPages" data-spy="scroll" data-offset="0" data-target={"#nav-" + this.state.random_id }
-              style={ {height:"280px", overflow:"auto", position:"relative"}} >
-              { this.state.flightInfo.map( (e,i) =>
-                <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} />
-              )}
-            </div>
+            <div ref="flightPages" className="tab-content"> { this.state.flightInfo.map( (e,i) =>
+              {
+                var isActive = (this.state.selectedTeeTimesIndex == i) ? true : false;
+                return (
+                  <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} isActive={isActive} />
+                )
+              }
+            )}</div>
             <div>
               <h4>Grand Total: {toCurrency(this.state.totalPrice)} </h4>
               <input type="hidden" name="info[total_price]" value={this.state.totalPrice} />
@@ -406,10 +406,6 @@ var GolfSchedule = React.createClass({
     }
 });
 
-/*
-
-  TODO: need to handle multiple flight schedule selection and others
-*/
 var GolfCards = React.createClass({
   propTypes: {
     crsfToken: React.PropTypes.string,
