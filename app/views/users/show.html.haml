@@ -29,10 +29,10 @@
                 %td #{ @user.name }
               %tr
                 %th Home Club
-                %td #{ @user.home_club}
+                %td #{ @user.home_club || "None Yet"}
               %tr
                 %th Handicap
-                %td #{ @user.handicap }
+                %td #{ @user.handicap  || "None Yet"}
       .card
         .card-header Friends
         .card-block

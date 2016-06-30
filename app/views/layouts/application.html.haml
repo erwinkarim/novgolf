@@ -27,7 +27,7 @@
             - else
               %a.nav-link{ :href => '#login-modal', :data => { :toggle => 'modal'} }
                 Login
-    .container{ :style => ''}
+    .container#flash_msgs{ :style => ''}
       - flash.each do |name, msg|
         .div.alert{ :class => "alert-#{ flash_class(name)  }" }
           #{ msg.to_s.html_safe }

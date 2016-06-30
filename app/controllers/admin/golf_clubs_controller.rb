@@ -140,6 +140,7 @@ class Admin::GolfClubsController < ApplicationController
 
       }
       format.json {
+        flash[:notice] = "Club Info Updated"
         render json:{ :path => {:admin => admin_golf_club_path(gc)}, :user => golf_club_path(gc) }
       }
     end

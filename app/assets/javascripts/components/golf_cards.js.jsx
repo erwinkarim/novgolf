@@ -1,4 +1,10 @@
 var GolfCardTimes = React.createClass({
+  componentWillReceiveProps: function(nextProps){
+      if(this.props.queryDate != nextProps.queryDate){
+          //console.log("should disable active");
+          $(this.refs.teeTimeLabel).removeClass("active");
+      }
+  },
   render: function(){
     var reserve_status = "secondary";
     if ( this.props.flight.reserve_status == 1 ){
@@ -8,7 +14,7 @@ var GolfCardTimes = React.createClass({
     };
 
     return (
-      <label className={"btn btn-"+reserve_status} onClick={this.props.handleClick} data-tee-time={this.props.flight.tee_time}
+      <label ref="teeTimeLabel" className={"btn btn-"+reserve_status} onClick={this.props.handleClick} data-tee-time={this.props.flight.tee_time}
         value={this.props.index}>
         <input type="checkbox" name="teeTimes[]" value={this.props.flight.tee_time} />
         <h5 value={this.props.index} >{toCurrency(this.props.flight.prices.flight)}</h5>
@@ -31,12 +37,14 @@ var GolfCardTimesGroup = React.createClass({
     if (this.props.flights.length != 0){
      golfCards = (
       <div className="btn-group" data-toggle="buttons">{ this.props.flights.map( (flight, teeTimeIndex) =>
-        <GolfCardTimes key={teeTimeIndex} flight={flight} handleClick={this.props.handleClick} index={teeTimeIndex} />
+        <GolfCardTimes key={teeTimeIndex} flight={flight} handleClick={this.props.handleClick} index={teeTimeIndex} queryDate={this.props.queryDate} />
       )}</div>
      );
    } else {
      golfCards = (
-      <i className="fa fa-cog fa-spin"></i>
+      <div>
+        <i className="fa fa-cog fa-spin"></i> No schedules detected or getting a new one...
+      </div>
      );
    };
 
@@ -191,6 +199,14 @@ var GolfReserveForm = React.createClass({
     componentDidMount: function(){
       $(this.refs.reserveBtnLi).hide();
     },
+    componentWillReceiveProps: function(nextProps){
+      if(nextProps.queryDate != this.props.queryDate){
+        this.setState({
+          selectedTeeTimes:[], selectedTeeTimesIndex:0,
+          flightInfo:[], totalPrice:0
+        })
+      };
+    },
     updateTotalPrice: function(){
         //calculate the new total price
         var newTotalPrice = 0;
@@ -261,25 +277,16 @@ var GolfReserveForm = React.createClass({
         var newTotalPrice = this.updateTotalPrice();
         this.setState({totalPrice:newTotalPrice});
 
-        /*
-        var handle = $(e.target)
-        var newState = [];
-        handle.parent().children().each(function(i,e){
-          if($(e).hasClass('active')){
-            newState.push( $(e).data('tee-time'));
-          }
-        });
-        this.setState( { selectedTeeTimes: newState })
-        //console.log(this.state)
-        */
       }
+    },
+    componentDidUpdate: function(prevProps, prevState){
+      //update scrollspy
+      $(this.refs.flightPages).scrollspy('refresh');
     },
     getDefaultProps: function(){
       return {
         reserve_target:"/"
       }
-    },
-    componentWillReceiveProps: function(nextProps){
     },
     render: function(){
       //handle slide up and down function here
@@ -296,16 +303,15 @@ var GolfReserveForm = React.createClass({
           <input type="hidden" name="club[id]" value={this.props.club.id} />
           <input type="hidden" name="info[date]" value={this.props.queryData.date} />
           <li className="list-group-item">
-            <GolfCardTimesGroup flights={this.props.flights} handleClick={this.handleClick} />
+            <GolfCardTimesGroup flights={this.props.flights} handleClick={this.handleClick} queryDate={this.props.queryDate} />
           </li>
           <li className="list-group-item" ref="reserveBtnLi" >
             {/* time stamps */}
             <ul className="nav nav-pills" id={ "nav-" + this.state.random_id }>{ this.state.selectedTeeTimes.map( (e,i) =>
               {
-                var isActive = (i == this.state.selectedTeeTimesIndex) ? "active" : "";
                 return (
                   <li className="nav-item">
-                    <a href={ "#" + this.state.flightInfo[i].id } className={"nav-link " + isActive }>{this.props.flights[e].tee_time}</a>
+                    <a href={ "#" + this.state.flightInfo[i].id } className="nav-link">{this.props.flights[e].tee_time}</a>
                   </li>
                 )
               }
@@ -313,7 +319,8 @@ var GolfReserveForm = React.createClass({
             <br />
 
             {/* form pages */}
-            <div data-spy="scroll" data-target={"#nav-" + this.state.random_id } >
+            <div ref="flightPages" data-spy="scroll" data-offset="0" data-target={"#nav-" + this.state.random_id }
+              style={ {height:"280px", overflow:"auto", position:"relative"}} >
               { this.state.flightInfo.map( (e,i) =>
                 <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} />
               )}
@@ -363,15 +370,12 @@ var GolfSchedule = React.createClass({
     },
     dateChanged: function(e){
       //handle when the date changed
-
       //get updated teeTimes
       var handle = this;
       $.getJSON(this.props.paths.golfClub, { date:e },  function(data){
-        handle.setState({flights:data.flights, queryDate:e})
+        var newFlights = (data == null) ? [] : data.flights;
+        handle.setState({flights:newFlights , queryDate:e})
       });
-
-
-      //actually get the latest schedule based on the new dates
     },
     render: function(){
       /*
@@ -396,7 +400,7 @@ var GolfSchedule = React.createClass({
             </fieldset>
           </li>
           <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
-            club={this.props.club} flights={this.state.flights} queryData={this.props.queryData} />
+            club={this.props.club} flights={this.state.flights} queryData={this.props.queryData} queryDate={this.state.queryDate} />
         </ul>
       );
     }

@@ -45,7 +45,6 @@ var GeneralBox = React.createClass({
     };
     initMap();
 
-
     $(this.refs.openHour).timepicker({disableTextInput:true, minTime:"05:00", maxTime:"23:00"});
     $(this.refs.closeHour).timepicker({disableTextInput:true, minTime:"05:00", maxTime:"23:00"});
 
@@ -458,10 +457,12 @@ var GolfClubForm = React.createClass({
         method:this.props.form.method,
         dataType:'json'
     }).done(function(data,textStatus, jqXHR){
-        console.log('updated without errors')
+        console.log('updated without errors');
+        //location = data.path.admin;
 
     }).fail(function(jqXHR, textStatus, errorThrown){
-        console.log('error:', jqXHR );
+      console.log('error:', jqXHR );
+      $('#flash_msgs').append('Errors detected;')
     });
   },
   render: function() {
