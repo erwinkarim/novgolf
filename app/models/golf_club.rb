@@ -50,7 +50,7 @@ class GolfClub < ActiveRecord::Base
   # 3. don't return results if looking for something in the past??
   # TODO: better way to display since each flight times can bring diffrent prices
   def self.search options = {}
-    default_options = { :query => "", :dateTimeQuery => Time.now, :spread => 30.minutes, :pax => 2, :club_id => 0..10000000 }
+    default_options = { :query => "", :dateTimeQuery => Time.now, :spread => 30.minutes, :pax => 8, :club_id => 0..10000000 }
 
     options = default_options.merge(options)
 
@@ -85,7 +85,8 @@ class GolfClub < ActiveRecord::Base
         (id.in options[:club_id])
       }.limit(30
       ).pluck(:id, :name, :session_price, :tee_time, :min_pax, :max_pax, :cart, :caddy, :insurance,
-        :'flight_matrices.id', :'tr.booking_time', :'tr.status', :'charge_schedules.note'
+        :'flight_matrices.id', :'tr.booking_time', :'tr.status', :'charge_schedules.note',
+        :min_cart, :max_cart, :min_caddy, :max_caddy
       ).inject([]){ |p,n|
         club = p.select{ |x| x[:club][:id] == n[0] }.first
         booked_time = n[10].nil? ? nil : n[10].strftime("%H:%M")
@@ -94,6 +95,8 @@ class GolfClub < ActiveRecord::Base
             :club => { :id => n[0], :name => n[1]},
             :flights => [ {
                 :minPax => n[4], :maxPax => n[5],
+                :minCart => n[13], :maxCart => n[14],
+                :minCaddy => n[15], :maxCaddy => n[16],
                 :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11],
                 :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12]}
             }],
@@ -102,6 +105,8 @@ class GolfClub < ActiveRecord::Base
         else
           club[:flights] << {
             :minPax => n[4], :maxPax => n[5],
+            :minCart => n[13], :maxCart => n[14],
+            :minCaddy => n[15], :maxCaddy => n[16],
             :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] ,
             :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12]}
           }
@@ -177,7 +182,10 @@ class GolfClub < ActiveRecord::Base
         puts "updating the flight schedules"
         if(elm["flight_id"].empty? ) then
           #create new flight_schedule
-          fs = self.flight_schedules.new(:name => elm["name"], :min_pax => elm["min_pax"], :max_pax => elm["max_pax"])
+          fs = self.flight_schedules.new(:name => elm["name"],
+            :min_pax => elm["min_pax"], :max_pax => elm["max_pax"],
+            :min_cart => elm["min_cart"], :max_cart => elm["max_cart"],
+            :min_caddy => elm["min_caddy"], :max_cart => elm["max_caddy"] )
           fs.save!
 
           #create new charge_schedule
@@ -203,7 +211,10 @@ class GolfClub < ActiveRecord::Base
           #exisintg flight schedule and charge schedule
           #update the flight schedule
           current_flight = FlightSchedule.find(elm["flight_id"])
-          current_flight.update_attributes({:name => elm["name"], :min_pax => elm["min_pax"], :max_pax => elm["max_pax"]})
+          current_flight.update_attributes({:name => elm["name"],
+            :min_pax => elm["min_pax"], :max_pax => elm["max_pax"],
+            :min_cart => elm["min_cart"], :max_cart => elm["max_cart"],
+            :min_caddy => elm["min_caddy"], :max_caddy => elm["max_caddy"] })
 
           #update charge schedule
           cs = ChargeSchedule.find(elm["charge_id"])

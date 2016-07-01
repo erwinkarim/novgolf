@@ -124,9 +124,10 @@ var ReserveFormPage = React.createClass({
           <div className="form-group row">
             <div className="col-xs-2">
               <select name={ "flight[" + this.props.flightInfo.id  + "][count][buggy]"}
-              onChange={this.props.updatePrice}
-              value={this.props.flightInfo.buggy} ref="buggyCount" className=""
-              data-index={this.props.flightInfo.index} data-target="buggy">{ [0,1,2].map( (e,i) =>
+                onChange={this.props.updatePrice}
+                value={this.props.flightInfo.buggy} ref="buggyCount" className=""
+                data-index={this.props.flightInfo.index} data-target="buggy">
+              { Array.from(Array(this.props.flight.maxCart-this.props.flight.minCart+1), (v,k) => k + this.props.flight.minCart).map( (e,i) =>
                 <option key={i}>{e}</option>
               )}</select>
             </div>
@@ -140,9 +141,10 @@ var ReserveFormPage = React.createClass({
           <div className="form-group row">
             <div className="col-xs-2">
               <select name={"flight[" + this.props.flightInfo.id + "][count][caddy]"} className=""
-                onChange={this.props.updatePrice}
-                value={this.props.flightInfo.caddy} ref="caddyCount"
-                data-index={this.props.flightInfo.index} data-target="caddy">{ [0,1,2].map( (e,i) =>
+                  onChange={this.props.updatePrice}
+                  value={this.props.flightInfo.caddy} ref="caddyCount"
+                  data-index={this.props.flightInfo.index} data-target="caddy">
+                { Array.from(Array(this.props.flight.maxCaddy-this.props.flight.minCaddy+1), (v,k) => k + this.props.flight.minCaddy).map( (e,i) =>
                   <option key={e}>{e}</option>
               )}</select>
             </div>
@@ -273,7 +275,8 @@ var GolfReserveForm = React.createClass({
             Object.assign( fi,
               {
                 id:randomID(), teeTime:this.props.flights[value].tee_time, index:newIndex, flightIndex:value,
-                pax:this.props.flights[value].minPax, insurance:this.props.flights[value].minPax
+                pax:this.props.flights[value].minPax, insurance:this.props.flights[value].minPax,
+                buggy:this.props.flights[value].minCart, caddy:this.props.flights[value].minCaddy
               }
             );
             newFlightInfo.splice($.inArray(value, newTeeTimes), 0, fi ) ;

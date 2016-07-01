@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160628025005) do
+ActiveRecord::Schema.define(version: 20160630061843) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -75,10 +75,14 @@ ActiveRecord::Schema.define(version: 20160628025005) do
     t.string   "flight_times", limit: 255
     t.integer  "min_pax",      limit: 4
     t.integer  "max_pax",      limit: 4
-    t.datetime "created_at",               null: false
-    t.datetime "updated_at",               null: false
+    t.datetime "created_at",                           null: false
+    t.datetime "updated_at",                           null: false
     t.integer  "golf_club_id", limit: 4
     t.string   "name",         limit: 255
+    t.integer  "min_cart",     limit: 4,   default: 0
+    t.integer  "max_cart",     limit: 4,   default: 2
+    t.integer  "min_caddy",    limit: 4,   default: 0
+    t.integer  "max_caddy",    limit: 4,   default: 2
   end
 
   add_index "flight_schedules", ["golf_club_id"], name: "index_flight_schedules_on_golf_club_id", using: :btree

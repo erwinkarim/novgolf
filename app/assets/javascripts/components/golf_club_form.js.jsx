@@ -236,7 +236,7 @@ var FlightSchedulePriceCard = React.createClass({
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight[" + this.state.random_id + "][session_price]"}
-                  value={parseInt(this.props.flightSchedule.charge_schedule.session_price)} onChange={this.props.updateFlightInfo}/>
+                  defaultValue={parseInt(this.props.flightSchedule.charge_schedule.session_price)} onChange={this.props.updateFlightInfo}/>
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -272,14 +272,38 @@ var FlightSchedulePriceCard = React.createClass({
             <h4>Settings:</h4>
             <div className="form-group">
               <label>Minimum balls per flight:</label>
-              <select className="form-control" defaultValue={this.props.flightSchedule.min_pax} name={"flight[" + this.state.random_id + "][min_pax]"}>{ [2,3,4].map ( (e,i) =>
-                  <option key={i}>{e}</option>
+              <select className="form-control" name={"flight[" + this.state.random_id + "][min_pax]"}>{ [2,3,4].map ( (e,i) =>
+                  <option key={i} selected={ this.props.flightSchedule.min_pax == e ? true : false }>{e}</option>
               )}</select>
             </div>
             <div className="form-group">
               <label>Maximum balls per flight:</label>
-              <select className="form-control" defaultValue={this.props.flightSchedule.max_pax} name={ "flight[" + this.state.random_id + "][max_pax]"}>{ [4,5,6].map ( (e,i) =>
-                  <option key={i}>{e}</option>
+              <select className="form-control" name={ "flight[" + this.state.random_id + "][max_pax]"}>{ [4,5,6].map ( (e,i) =>
+                  <option key={i} selected={ this.props.flightSchedule.max_pax == e ? true : false }>{e}</option>
+              )}</select>
+            </div>
+            <div className="form-group">
+              <label>Minimum buggies per flight:</label>
+              <select className="form-control" name={ `flight[${this.state.random_id}][min_cart]`}>{ [0,1,2].map ( (e,i) =>
+                  <option key={i} selected={ this.props.flightSchedule.min_cart == e ? true : false }>{e}</option>
+              )}</select>
+            </div>
+            <div className="form-group">
+              <label>Maximum buggies per flight:</label>
+              <select className="form-control" name={ `flight[${this.state.random_id}][max_cart]`}>{ [2,3,4].map ( (e,i) =>
+                  <option key={i} selected={ this.props.flightSchedule.max_cart == e ? true : false }>{e}</option>
+              )}</select>
+            </div>
+            <div className="form-group">
+              <label>Minimum caddies per flight:</label>
+              <select className="form-control" name={ `flight[${this.state.random_id}][min_caddy]`}>{ [0,1,2].map ( (e,i) =>
+                  <option key={i} selected={ this.props.flightSchedule.min_caddy == e ? true : false }>{e}</option>
+              )}</select>
+            </div>
+            <div className="form-group">
+              <label>Maximum caddies per flight:</label>
+              <select className="form-control" name={ `flight[${this.state.random_id}][max_caddy]`}>{ [2,3,4].map ( (e,i) =>
+                  <option key={i} selected={ this.props.flightSchedule.max_caddy == e ? true : false }>{e}</option>
               )}</select>
             </div>
           </li>
@@ -288,6 +312,7 @@ var FlightSchedulePriceCard = React.createClass({
             <div className="form-group">
               <label>Notes</label>
               <textarea className="form-control" rows="10"
+                defaultValue={ this.props.flightSchedule.charge_schedule.note }
                 placeholder="Put your notes about the price schedule here (free F&B voucher during this period). Limit 2048 characters"
                 name={`flight[${this.state.random_id}][note]`}></textarea>
             </div>
