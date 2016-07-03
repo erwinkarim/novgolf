@@ -110,7 +110,7 @@ var ReserveFormPage = React.createClass({
                 onChange={this.props.updatePrice}
                 value={this.props.flightInfo.pax} ref="paxCount" className=""
                 data-index={this.props.flightInfo.index} data-target="pax">
-              { Array.from(Array(this.props.flight.maxPax-this.props.flight.minPax+1),(v,k) => k + this.props.flight.minPax ).map( (e,i) =>
+              { arrayFromRange(this.props.flight.minPax, this.props.flight.maxPax).map( (e,i) =>
                 <option key={i}>{e}</option>
               )}</select>
             </div>
@@ -127,7 +127,7 @@ var ReserveFormPage = React.createClass({
                 onChange={this.props.updatePrice}
                 value={this.props.flightInfo.buggy} ref="buggyCount" className=""
                 data-index={this.props.flightInfo.index} data-target="buggy">
-              { Array.from(Array(this.props.flight.maxCart-this.props.flight.minCart+1), (v,k) => k + this.props.flight.minCart).map( (e,i) =>
+              { arrayFromRange(this.props.flight.minCart, this.props.flight.maxCart).map( (e,i) =>
                 <option key={i}>{e}</option>
               )}</select>
             </div>
@@ -144,7 +144,7 @@ var ReserveFormPage = React.createClass({
                   onChange={this.props.updatePrice}
                   value={this.props.flightInfo.caddy} ref="caddyCount"
                   data-index={this.props.flightInfo.index} data-target="caddy">
-                { Array.from(Array(this.props.flight.maxCaddy-this.props.flight.minCaddy+1), (v,k) => k + this.props.flight.minCaddy).map( (e,i) =>
+                { arrayFromRange(this.props.flight.minCaddy, this.props.flight.maxCaddy).map( (e,i) =>
                   <option key={e}>{e}</option>
               )}</select>
             </div>
@@ -160,7 +160,9 @@ var ReserveFormPage = React.createClass({
               <select name={"flight[" + this.props.flightInfo.id + "][count][insurance]"} className=""
                 onChange={this.props.updatePrice}
                 value={this.props.flightInfo.insurance} ref="insuranceCount"
-                data-index={this.props.flightInfo.index} data-target="insurance">{ [2,3,4].map( (e,i) =>
+                disabled={ this.props.flight.prices.insurance_mode == 0 ? false : true }
+                data-index={this.props.flightInfo.index} data-target="insurance">
+              { arrayFromRange(this.props.flight.prices.insurance_mode == 1 ? this.props.flight.minPax : 0, this.props.flight.maxPax ).map( (e,i) =>
                   <option key={e}>{e}</option>
               )}</select>
             </div>
@@ -170,6 +172,9 @@ var ReserveFormPage = React.createClass({
             </label>
             <input type="hidden" value={this.props.flightInfo.insurance * parseFloat(this.props.flight.prices.insurance) }
               name={"flight[" + this.props.flightInfo.id + "][price][insurance]"} />
+          </div>
+          <div className="form-group">
+            <label>Insurace Type: {this.props.insurance_modes[this.props.flight.prices.insurance_mode]}</label>
           </div>
           <h4>Notes</h4>
           <p className="card-text" style={ {color:'black'}}>{ this.props.flight.prices.note}</p>
@@ -186,7 +191,8 @@ var GolfReserveForm = React.createClass({
       crsfToken: React.PropTypes.string,
       reserveTarget: React.PropTypes.string,
       club: React.PropTypes.object,
-      flights: React.PropTypes.array
+      flights: React.PropTypes.array,
+      insurance_modes: React.PropTypes.array
     },
     getDefaultProps: function(){
       return {
@@ -231,10 +237,16 @@ var GolfReserveForm = React.createClass({
     },
     updatePrice: function(e){
         var handle = $(e.target);
-        console.log('new value is ', e.target.value  );
+        //console.log('new value is ', e.target.value  );
 
         var newFlightInfo = this.state.flightInfo;
         newFlightInfo[handle.data('index')][handle.data('target')] = parseInt(e.target.value);
+        var flightIndex = newFlightInfo[handle.data('index')].flightIndex;
+
+        //update the insurance count automatically if insurance mode is madatory
+        if((this.props.flights[flightIndex].prices.insurance_mode == 1) && (handle.data('target') == 'pax') ){
+            newFlightInfo[handle.data('index')]['insurance'] = parseInt(e.target.value);
+        }
 
         var newTotalPrice = this.updateTotalPrice();
 
@@ -312,7 +324,9 @@ var GolfReserveForm = React.createClass({
                 var isActive = (this.state.selectedTeeTimesIndex == i) ? "active" : ""
                 return (
                   <li className="nav-item">
-                    <a href={ `#flight-tab-${this.state.flightInfo[i].id}` } className={`nav-link ${isActive}`} data-toggle="pill">{this.props.flights[e].tee_time}</a>
+                    <a href={ `#flight-tab-${this.state.flightInfo[i].id}` } className={`nav-link ${isActive}`} data-toggle="pill">
+                      {this.props.flights[e].tee_time}
+                    </a>
                   </li>
                 )
               }
@@ -324,7 +338,8 @@ var GolfReserveForm = React.createClass({
               {
                 var isActive = (this.state.selectedTeeTimesIndex == i) ? true : false;
                 return (
-                  <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} isActive={isActive} />
+                  <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} isActive={isActive}
+                    insurance_modes={this.props.insurance_modes} />
                 )
               }
             )}</div>
@@ -403,7 +418,8 @@ var GolfSchedule = React.createClass({
             </fieldset>
           </li>
           <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
-            club={this.props.club} flights={this.state.flights} queryData={this.props.queryData} queryDate={this.state.queryDate} />
+            club={this.props.club} flights={this.state.flights} queryData={this.props.queryData} queryDate={this.state.queryDate}
+            insurance_modes={this.props.insurance_modes} />
         </ul>
       );
     }
@@ -437,7 +453,8 @@ var GolfCards = React.createClass({
           </a>
           <ul className="list-group-flush list-group">
             <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
-              club={this.props.club} flights={this.props.flights} queryData={this.props.queryData} />
+              club={this.props.club} flights={this.props.flights} queryData={this.props.queryData}
+              insurance_modes={this.props.insurance_modes} />
           </ul>
         </div>
       </div>

@@ -18,4 +18,4 @@
           club: club[:club],
           paths: { img: "images/golf_course_#{rand(1..4)}.jpg", club:golf_club_path(club[:club][:id]), reserve:reserve_golf_club_user_reservations_path(club[:club][:id]) },
           queryData: club[:queryData],
-          flights: club[:flights]}
+          flights: club[:flights], insurance_modes:ChargeSchedule.insurance_modes.map{ |k,v| k} }

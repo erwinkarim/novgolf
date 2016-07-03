@@ -18,7 +18,7 @@ end
           queryDate: @date,
           paths: { reserve: reserve_golf_club_user_reservations_path(params[:id]),
             golfClub:golf_club_path(params[:id]) },
-          flights: @result[:flights], queryData: @result[:queryData]}
+          flights: @result[:flights], queryData: @result[:queryData], insurance_modes:ChargeSchedule.insurance_modes.map{ |k,v| k} }
 .container
   .row
     .col-xs-12

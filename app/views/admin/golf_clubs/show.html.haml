@@ -111,6 +111,9 @@
                   %tr
                     %td Insurance
                     %td #{ number_to_currency(prices.insurance, :unit => "MYR ") }
+                  %tr
+                    %td Insurance Mode
+                    %td #{ prices.insurance_mode }
             %li.list-group-item
               %h4 Flight Days
               .btn-group{ :'data-toggle' => 'buttons'}
