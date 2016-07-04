@@ -96,6 +96,10 @@ var ReserveFormPage = React.createClass({
       random_id:(Math.floor(Math.random()*16777215).toString(16))
     };
   },
+  rawNote: function(){
+    md = new Remarkable();
+    return { __html: md.render(this.props.flight.prices.note) };
+  },
   render: function(){
     var activeClass = (this.props.isActive) ? "active" : "";
     return (
@@ -162,7 +166,7 @@ var ReserveFormPage = React.createClass({
                 value={this.props.flightInfo.insurance} ref="insuranceCount"
                 disabled={ this.props.flight.prices.insurance_mode == 0 ? false : true }
                 data-index={this.props.flightInfo.index} data-target="insurance">
-              { arrayFromRange(this.props.flight.prices.insurance_mode == 1 ? this.props.flight.minPax : 0, this.props.flight.maxPax ).map( (e,i) =>
+              { arrayFromRange($.inArray(this.props.flight.prices.insurance_mode, [1,2]) != -1 ? this.props.flight.minPax : 0, this.props.flight.maxPax ).map( (e,i) =>
                   <option key={e}>{e}</option>
               )}</select>
             </div>
@@ -173,11 +177,8 @@ var ReserveFormPage = React.createClass({
             <input type="hidden" value={this.props.flightInfo.insurance * parseFloat(this.props.flight.prices.insurance) }
               name={"flight[" + this.props.flightInfo.id + "][price][insurance]"} />
           </div>
-          <div className="form-group">
-            <label>Insurace Type: {this.props.insurance_modes[this.props.flight.prices.insurance_mode]}</label>
-          </div>
           <h4>Notes</h4>
-          <p className="card-text" style={ {color:'black'}}>{ this.props.flight.prices.note}</p>
+          <div dangerouslySetInnerHTML={ this.rawNote()}></div>
         </div>
       </div>
     )
@@ -244,7 +245,8 @@ var GolfReserveForm = React.createClass({
         var flightIndex = newFlightInfo[handle.data('index')].flightIndex;
 
         //update the insurance count automatically if insurance mode is madatory
-        if((this.props.flights[flightIndex].prices.insurance_mode == 1) && (handle.data('target') == 'pax') ){
+        if(($.inArray(this.props.flights[flightIndex].prices.insurance_mode,[1,2]) != -1) &&
+          (handle.data('target') == 'pax') ){
             newFlightInfo[handle.data('index')]['insurance'] = parseInt(e.target.value);
         }
 

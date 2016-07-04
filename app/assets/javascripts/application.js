@@ -17,6 +17,7 @@
 //= require utilities
 //= require paloma
 //= require turbolinks
+//= require remarkable.min.js
 //= require react
 //= require react_ujs
 //= require fluxxor

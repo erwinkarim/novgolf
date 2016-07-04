@@ -188,6 +188,9 @@ var FlightSchedulePriceCard = React.createClass({
   componentDidMount: function(){
     //console.log("scheduleIndex = " + this.props.scheduleIndex);
     console.log("random_id ", this.state.random_id)
+    $(this.refs.cardContent).on('hide.bs.collapse', this.handleCollapse);
+    $(this.refs.cardContent).on('show.bs.collapse', this.handleUncollapse);
+    $(this.refs.cardSummary).hide();
   },
   getInitialState: function(){
     return {
@@ -204,8 +207,14 @@ var FlightSchedulePriceCard = React.createClass({
 
   },
   handleCollapse: function(e){
-
-    console.log('hide invoked');
+    $(this.refs.cardSummary).slideDown(100);
+    $(this.refs.chevronState).removeClass("fa-chevron-up");
+    $(this.refs.chevronState).addClass("fa-chevron-down");
+  },
+  handleUncollapse: function(e){
+    $(this.refs.cardSummary).slideUp(100);
+    $(this.refs.chevronState).removeClass("fa-chevron-down");
+    $(this.refs.chevronState).addClass("fa-chevron-up");
   },
   insuranceModeChanged: function(e){
 
@@ -225,14 +234,14 @@ var FlightSchedulePriceCard = React.createClass({
         <input type="hidden" name={"flight[" + this.state.random_id + "][charge_id]"} value={this.props.flightSchedule.charge_schedule.id} />
         <div className="card-header">
           <a href={`#collapse-${this.state.random_id}`} data-toggle="collapse">
-            <i className="fa fa-chevron-up"></i></a> {this.props.flightSchedule.name} Flight Schedule / Pricing
+            <i className="fa fa-chevron-up" ref="chevronState"></i></a> {this.props.flightSchedule.name} Flight Schedule / Pricing
           <div className="pull-right">
             <button className="close" type="button" onClick={this.props.handleClose} value={this.props.scheduleIndex}>
               <span value={this.props.scheduleIndex}>&times;</span>
             </button>
           </div>
         </div>
-        <ul className="list-group list-group-flush collapse in" id={`collapse-${this.state.random_id}`}>
+        <ul className="list-group list-group-flush collapse in" id={`collapse-${this.state.random_id}`} ref="cardContent">
           <li className="list-group-item">
             <h4>Name: </h4>
             <div className="form-group">
@@ -350,6 +359,7 @@ var FlightSchedulePriceCard = React.createClass({
                 defaultValue={ this.props.flightSchedule.charge_schedule.note }
                 placeholder="Put your notes about the price schedule here (free F&B voucher during this period). Limit 2048 characters"
                 name={`flight[${this.state.random_id}][note]`}></textarea>
+              <div><a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet" target="_blank">Markdown</a> supported.</div>
             </div>
           </li>
           <li className="list-group-item">
@@ -371,6 +381,16 @@ var FlightSchedulePriceCard = React.createClass({
               <FlightScheduleControl flightTimes={this.state.teeTimes} random_id={this.state.random_id} />
           </li>
         </ul>
+        <div className="card-block" ref="cardSummary">
+          <p className="card-text">Tee Days: { daysNames.slice(1).map( (e,i) => (<span>{ this.props.flightSchedule.flight_matrices[0][`day${i+1}`] == 1 ? `${e}; ` : ""}</span>) )}</p>
+          <p className="card-text">Tee Times: { this.state.teeTimes.map( (e,i) => (<span>{e}; </span>)) }</p>
+          <p className="card-text">Prices:
+            <span>{ toCurrency(this.props.flightSchedule.charge_schedule.session_price)} / </span>
+            <span>{ toCurrency(this.props.flightSchedule.charge_schedule.cart)} / </span>
+            <span>{ toCurrency(this.props.flightSchedule.charge_schedule.caddy)} / </span>
+            <span>{ toCurrency(this.props.flightSchedule.charge_schedule.insurance)} ({this.props.insurance_modes[this.props.flightSchedule.charge_schedule.insurance_mode]}) </span>
+          </p>
+        </div>
       </div>
     );
   }
@@ -519,7 +539,7 @@ var GolfClubForm = React.createClass({
         dataType:'json'
     }).done(function(data,textStatus, jqXHR){
         console.log('updated without errors');
-        //location = data.path.admin;
+        location = data.path.admin;
 
     }).fail(function(jqXHR, textStatus, errorThrown){
       console.log('error:', jqXHR );

@@ -217,6 +217,7 @@ class GolfClub < ActiveRecord::Base
             :min_caddy => elm["min_caddy"], :max_caddy => elm["max_caddy"] })
 
           #update charge schedule
+          elm["insurance"] = (elm["insurance"].nil?) ? 0 : elm["insurance"]
           cs = ChargeSchedule.find(elm["charge_id"])
           cs.update_attributes({:session_price => elm["session_price"], :cart => elm["buggy"],
             :note => elm["note"], :caddy => elm["caddy"], :insurance => elm["insurance"],
