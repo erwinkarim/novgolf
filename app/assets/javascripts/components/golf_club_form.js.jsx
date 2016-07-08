@@ -387,10 +387,14 @@ var FlightSchedulePriceCard = React.createClass({
               {
                 var isActive = (this.props.flightSchedule.flight_matrices[0]["day" + (i + 1)] == 1) ? "active" : ""
                 var isChecked = (this.props.flightSchedule.flight_matrices[0]["day" + (i + 1)] == 1) ? true : false
-                return (<label className={"btn btn-secondary " + isActive} key={i+1}>
-                  <input type="checkbox" autocomplete="off"
-                    name={ "flight[" + this.state.random_id + "][days][]"} value={i+1} checked={isChecked} onChange={this.handleChange} />{ e }
-                </label>)
+                return (
+                  <label className={"btn btn-secondary " + isActive} key={i+1}
+                    data-index={this.props.scheduleIndex} data-target="flight_matrices" data-flight={i+1}
+                    onClick={this.props.updateFlightInfo} value={i+1} >
+                    <input type="checkbox" autocomplete="off"
+                      name={ "flight[" + this.state.random_id + "][days][]"} defaultValue={i+1} defaultChecked={isChecked} />{ e }
+                  </label>
+                )
               }
             )}</div>
           </li>
@@ -458,6 +462,11 @@ var FlightBox = React.createClass({
     //better way to set this
     if( e.target.dataset.target == "charge_schedule"){
       newFlightSchedules[e.target.dataset.index]["charge_schedule"][`${e.target.dataset.charge}`] = e.target.value;
+    } else if (e.target.dataset.target == "flight_matrices") {
+      console.log("should change flight_matrices");
+      var newDayValue = newFlightSchedules[e.target.dataset.index]["flight_matrices"][0][`day${e.target.dataset.flight}`]
+      newDayValue = (newDayValue == 1) ? 0 : 1
+      newFlightSchedules[e.target.dataset.index]["flight_matrices"][0][`day${e.target.dataset.flight}`] = newDayValue;
     } else {
       newFlightSchedules[e.target.dataset.index][`${e.target.dataset.target}`] = e.target.value;
     }
