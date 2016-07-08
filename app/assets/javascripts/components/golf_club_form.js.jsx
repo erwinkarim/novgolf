@@ -192,6 +192,13 @@ var FlightSchedulePriceCard = React.createClass({
     $(this.refs.cardContent).on('show.bs.collapse', this.handleUncollapse);
     $(this.refs.cardSummary).hide();
   },
+  componentWillReceiveProps: function(nextProps){
+    if(nextProps.flightSchedule.charge_schedule.insurance_mode == 2){
+        $(this.refs.insurance_field).attr('disabled', true);
+    } else {
+        $(this.refs.insurance_field).attr('disabled', false);
+    }
+  },
   getInitialState: function(){
     return {
       random_id:(Math.floor(Math.random()*16777215).toString(16)),
@@ -203,9 +210,6 @@ var FlightSchedulePriceCard = React.createClass({
       random_id:(Math.floor(Math.random()*16777215).toString(16))
     }
   },
-  handleChange: function(e){
-
-  },
   handleCollapse: function(e){
     $(this.refs.cardSummary).slideDown(100);
     $(this.refs.chevronState).removeClass("fa-chevron-up");
@@ -215,17 +219,6 @@ var FlightSchedulePriceCard = React.createClass({
     $(this.refs.cardSummary).slideUp(100);
     $(this.refs.chevronState).removeClass("fa-chevron-down");
     $(this.refs.chevronState).addClass("fa-chevron-up");
-  },
-  insuranceModeChanged: function(e){
-
-    if(e.target.value == 2){
-      //insurance is inclusive: zero the rate and disable the field
-      console.log('insurance is inclusive');
-      $(this.refs.insurance_field).val(0);
-      $(this.refs.insurance_field).prop('disabled', true);
-    } else {
-      $(this.refs.insurance_field).prop('disabled', false);
-    }
   },
   render: function(){
     return (
@@ -246,7 +239,9 @@ var FlightSchedulePriceCard = React.createClass({
             <h4>Name: </h4>
             <div className="form-group">
               <label>Schedule Name</label>
-              <input className="form-control" name={`flight[${this.state.random_id}][name]`} defaultValue={this.props.flightSchedule.name} />
+              <input className="form-control" name={`flight[${this.state.random_id}][name]`}
+                data-index={this.props.scheduleIndex} data-target="name"
+                onChange={this.props.updateFlightInfo} value={this.props.flightSchedule.name} />
             </div>
           </li>
           <li className="list-group-item">
@@ -256,7 +251,9 @@ var FlightSchedulePriceCard = React.createClass({
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight[" + this.state.random_id + "][session_price]"}
-                  defaultValue={parseInt(this.props.flightSchedule.charge_schedule.session_price)} onChange={this.props.updateFlightInfo}/>
+                  data-index={this.props.scheduleIndex} data-target="charge_schedule" data-charge="session_price"
+                  onChange={this.props.updateFlightInfo}
+                  value={parseInt(this.props.flightSchedule.charge_schedule.session_price)} onChange={this.props.updateFlightInfo}/>
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -265,7 +262,9 @@ var FlightSchedulePriceCard = React.createClass({
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight["+ this.state.random_id + "][buggy]"}
-                  defaultValue={parseInt(this.props.flightSchedule.charge_schedule.cart)} />
+                  data-index={this.props.scheduleIndex} data-target="charge_schedule" data-charge="cart"
+                  onChange={this.props.updateFlightInfo}
+                  value={parseInt(this.props.flightSchedule.charge_schedule.cart)} />
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -274,7 +273,9 @@ var FlightSchedulePriceCard = React.createClass({
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight[" + this.state.random_id + "][caddy]"}
-                  defaultValue={parseInt(this.props.flightSchedule.charge_schedule.caddy)}/>
+                  data-index={this.props.scheduleIndex} data-target="charge_schedule" data-charge="caddy"
+                  onChange={this.props.updateFlightInfo}
+                  value={parseInt(this.props.flightSchedule.charge_schedule.caddy)}/>
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
@@ -283,15 +284,20 @@ var FlightSchedulePriceCard = React.createClass({
               <div className="input-group">
                 <span  className="input-group-addon">MYR</span>
                 <input className="form-control" type="number" name={"flight["+ this.state.random_id + "][insurance]"}
+                  data-index={this.props.scheduleIndex} data-target="charge_schedule" data-charge="insurance"
+                  onChange={this.props.updateFlightInfo}
                   ref="insurance_field"
-                  defaultValue={parseInt(this.props.flightSchedule.charge_schedule.insurance)}/>
+                  disabled={ this.props.flightSchedule.charge_schedule.insurance_mode == 2 ? true : false }
+                  value={parseInt(this.props.flightSchedule.charge_schedule.insurance)}/>
                 <span  className="input-group-addon">.00</span>
               </div>
             </div>
             <div className="form-group">
               <label>Insurance Mode</label>
-              <select className="form-control" defaultValue={this.props.flightSchedule.charge_schedule.insurance_mode }
-                onChange={this.insuranceModeChanged}
+              <select className="form-control"
+                value={this.props.flightSchedule.charge_schedule.insurance_mode }
+                onChange={this.props.updateFlightInfo}
+                data-index={this.props.scheduleIndex} data-target="charge_schedule" data-charge="insurance_mode"
                 name={`flight[${this.state.random_id}][insurance_mode]`}>{ this.props.insurance_modes.map( (e,i) =>
                 <option key={i} value={i} >{e}</option>
               )}</select>
@@ -310,21 +316,27 @@ var FlightSchedulePriceCard = React.createClass({
             <h4>Settings:</h4>
             <div className="form-group">
               <label>Minimum balls per flight:</label>
-              <select className="form-control" defaultValue={this.props.flightSchedule.min_pax}
+              <select className="form-control" value={this.props.flightSchedule.min_pax}
+                data-index={this.props.scheduleIndex} data-target="min_pax"
+                onChange={this.props.updateFlightInfo}
                 name={"flight[" + this.state.random_id + "][min_pax]"}>{ [2,3,4].map ( (e,i) =>
                   <option key={i} value={e}>{e}</option>
               )}</select>
             </div>
             <div className="form-group">
               <label>Maximum balls per flight:</label>
-              <select className="form-control" defaultValue={this.props.flightSchedule.max_pax}
+              <select className="form-control" value={this.props.flightSchedule.max_pax}
+                data-index={this.props.scheduleIndex} data-target="max_pax"
+                onChange={this.props.updateFlightInfo}
                 name={ "flight[" + this.state.random_id + "][max_pax]"}>{ [4,5,6].map ( (e,i) =>
                   <option key={i} value={e}>{e}</option>
               )}</select>
             </div>
             <div className="form-group">
               <label>Minimum buggies per flight:</label>
-              <select className="form-control" defaultValue={this.props.flightSchedule.min_cart}
+              <select className="form-control" value={this.props.flightSchedule.min_cart}
+                data-index={this.props.scheduleIndex} data-target="min_cart"
+                onChange={this.props.updateFlightInfo}
                 name={ `flight[${this.state.random_id}][min_cart]`}>{ [0,1,2].map ( (e,i) =>
                   <option key={i} value={e}>{e}</option>
               )}</select>
@@ -332,6 +344,8 @@ var FlightSchedulePriceCard = React.createClass({
             <div className="form-group">
               <label>Maximum buggies per flight:</label>
               <select className="form-control" defaultValue={this.props.flightSchedule.max_cart}
+                data-index={this.props.scheduleIndex} data-target="max_cart"
+                onChange={this.props.updateFlightInfo}
                 name={ `flight[${this.state.random_id}][max_cart]`}>{ [2,3,4].map ( (e,i) =>
                   <option key={i} value={e}>{e}</option>
               )}</select>
@@ -339,6 +353,8 @@ var FlightSchedulePriceCard = React.createClass({
             <div className="form-group">
               <label>Minimum caddies per flight:</label>
               <select className="form-control" defaultValue={this.props.flightSchedule.min_caddy}
+                data-index={this.props.scheduleIndex} data-target="min_caddy"
+                onChange={this.props.updateFlightInfo}
                 name={ `flight[${this.state.random_id}][min_caddy]`}>{ [0,1,2].map ( (e,i) =>
                   <option key={i} value={e}>{e}</option>
               )}</select>
@@ -346,6 +362,8 @@ var FlightSchedulePriceCard = React.createClass({
             <div className="form-group">
               <label>Maximum caddies per flight:</label>
               <select className="form-control" defaultValue={this.props.flightSchedule.max_caddy}
+                data-index={this.props.scheduleIndex} data-target="max_caddy"
+                onChange={this.props.updateFlightInfo}
                 name={ `flight[${this.state.random_id}][max_caddy]`}>{ [2,3,4].map ( (e,i) =>
                   <option key={i} value={e}>{e}</option>
               )}</select>
@@ -434,10 +452,23 @@ var FlightBox = React.createClass({
     console.log(newFlightSchedules);
 
   },
-  updateFlightInfo: function(e, i){
+  updateFlightInfo: function(e){
     //should update state info
-    console.log("index = " + i);
+    var newFlightSchedules = this.state.flightSchedules;
+    //better way to set this
+    if( e.target.dataset.target == "charge_schedule"){
+      newFlightSchedules[e.target.dataset.index]["charge_schedule"][`${e.target.dataset.charge}`] = e.target.value;
+    } else {
+      newFlightSchedules[e.target.dataset.index][`${e.target.dataset.target}`] = e.target.value;
+    }
 
+    //zeroized if insurance_mode is inclusive
+    if(newFlightSchedules[e.target.dataset.index]["charge_schedule"]["insurance_mode"] == 2){
+      newFlightSchedules[e.target.dataset.index]["charge_schedule"]["insurance"] = 0;
+    }
+
+
+    this.setState( {flightSchedules:newFlightSchedules});
   },
   render: function(){
     return (
@@ -450,12 +481,12 @@ var FlightBox = React.createClass({
             </div>
             <div className="card-block">
               { this.state.flightSchedules.map( (e,i) =>
-                  <FlightSchedulePriceCard key={i}
-                    flightSchedule={e}
-                    teeTimes={e.flight_matrices}
-                    handleClose={this.handleClose} scheduleIndex={i}
+                  <FlightSchedulePriceCard key={i} scheduleIndex={i}
+                    flightSchedule={e} teeTimes={e.flight_matrices}
+                    handleClose={this.handleClose}
                     updateFlightInfo={this.updateFlightInfo}
-                    deleteTeeTime={this.props.deleteTeeTime} newTeeTime={this.props.newTeeTime} insurance_modes={this.props.insurance_modes} />
+                    deleteTeeTime={this.props.deleteTeeTime} newTeeTime={this.props.newTeeTime}
+                    insurance_modes={this.props.insurance_modes} />
               )}
               <button type="button" onClick={this.newSchedule} className="btn btn-primary">
                 <i className="fa fa-plus"></i>
