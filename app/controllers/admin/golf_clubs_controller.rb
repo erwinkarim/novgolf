@@ -41,7 +41,7 @@ class Admin::GolfClubsController < ApplicationController
     #need to merge w/ default
     @flight_schedules = [
       (FlightSchedule.new.attributes.merge("charge_schedule" => ChargeSchedule.new.attributes)).
-      merge("flight_matrices" => [FlightMatrix.new.attributes])
+      merge("flight_matrices" => [FlightMatrix.new.attributes.merge("tee_time" => "07:00am")])
     ]
   end
 

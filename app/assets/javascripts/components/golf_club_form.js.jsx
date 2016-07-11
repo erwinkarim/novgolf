@@ -36,10 +36,14 @@ var GeneralBox = React.createClass({
 
         $('<div/>').addClass('centerMarker').appendTo(map.getDiv());
 
-
+        //why it can't reused function?
         map.addListener('dragend', function(){
-          coor = map.getCenter()
-          //handle.setState({lat:coor.lat(), lng:coor.lng()});
+          var coor = map.getCenter()
+          handle.props.updateLocation(coor.lat(), coor.lng());
+        });
+
+        map.addListener('zoom_changed', function(){
+          var coor = map.getCenter()
           handle.props.updateLocation(coor.lat(), coor.lng());
         });
     };
@@ -129,42 +133,21 @@ var FlightScheduleControl = React.createClass({
   propTypes: {
       flightTimes: React.PropTypes.array
   },
-  getDefaultProps: function(){
-      return {
-        flightTimes: [ "07:00am", "07:07am", "07:14am" ]
-      }
-  },
   getInitialState: function(){
-      return { flightTimes:this.props.flightTimes, flightTime:""}
+      return {flightTime:""}
   },
   componentDidMount: function(){
-    $(this.refs.teeTimeInput).timepicker({minTime:"05:00", maxTime:"23:00"});
-  },
-  addTeeTime: function(e){
-    console.log('add tee time as ', this.refs.teeTimeInput.value);
-    var newFt = this.state.flightTimes;
-    if(this.refs.teeTimeInput.value != ""){
-      //push and reorder
-      newFt.push(this.refs.teeTimeInput.value);
-      newFt = newFt.sort();
-
-      this.setState({flightTimes:newFt});
-    };
-  },
-  deleteTeeTime: function(e){
-    console.log('delete tee time from', e.target.value);
-    var newFt = this.state.flightTimes;
-    newFt.splice(e.target.value,1);
-    this.setState({flightTimes:newFt})
+    $(this.refs.teeTimeInput).timepicker({ minTime:"05:00", maxTime:"23:00", timeFormat:"h:ia"});
+    $(this.refs.teeTimeInput).on('changeTime', this.updateFlightTime);
   },
   updateFlightTime: function(e){
-      this.setState({flightTime:e.target.value});
+    this.setState({flightTime:e.target.value});
   },
   render: function(){
     return (
       <div>
         <div className="card">
-          <div className="card-block btn-toolbar">{ this.state.flightTimes.map( (e,i) =>
+          <div className="card-block btn-toolbar">{ this.props.flightTimes.map( (e,i) =>
             <div className="btn-group" key={i}>
               <input type="hidden" name={"flight[" + this.props.random_id + "][times][]"} value={e} />
               <div className="btn btn-secondary">{e}</div>
@@ -195,7 +178,6 @@ var FlightSchedulePriceCard = React.createClass({
   },
   componentDidMount: function(){
     //console.log("scheduleIndex = " + this.props.scheduleIndex);
-    console.log("random_id ", this.state.random_id)
     $(this.refs.cardContent).on('hide.bs.collapse', this.handleCollapse);
     $(this.refs.cardContent).on('show.bs.collapse', this.handleUncollapse);
     $(this.refs.cardSummary).hide();
@@ -222,7 +204,6 @@ var FlightSchedulePriceCard = React.createClass({
     $(this.refs.chevronState).removeClass("fa-chevron-up");
     $(this.refs.chevronState).addClass("fa-chevron-down");
   },
-
   handleUncollapse: function(e){
     $(this.refs.cardSummary).slideUp(100);
     $(this.refs.chevronState).removeClass("fa-chevron-down");
@@ -237,7 +218,7 @@ var FlightSchedulePriceCard = React.createClass({
           <a href={`#collapse-${this.state.random_id}`} data-toggle="collapse">
             <i className="fa fa-chevron-up" ref="chevronState"></i></a> {this.props.flightSchedule.name} Flight Schedule / Pricing
           <div className="pull-right">
-            <button className="close" type="button" onClick={this.props.handleClose} value={this.props.scheduleIndex}>
+            <button className="close" type="button" onClick={this.props.deleteSchedule} value={this.props.scheduleIndex}>
               <span value={this.props.scheduleIndex}>&times;</span>
             </button>
           </div>
@@ -248,8 +229,7 @@ var FlightSchedulePriceCard = React.createClass({
             <div className="form-group">
               <label>Schedule Name</label>
               <input className="form-control" name={`flight[${this.state.random_id}][name]`}
-                data-index={this.props.scheduleIndex} data-target="name"
-                onChange={this.props.updateFlightInfo} value={this.props.flightSchedule.name} />
+                data-index={this.props.scheduleIndex} data-target="name" onChange={this.props.updateFlightInfo} value={this.props.flightSchedule.name} />
             </div>
           </li>
           <li className="list-group-item">
@@ -303,11 +283,10 @@ var FlightSchedulePriceCard = React.createClass({
             <div className="form-group">
               <label>Insurance Mode</label>
               <select className="form-control"
-                value={this.props.flightSchedule.charge_schedule.insurance_mode }
-                onChange={this.props.updateFlightInfo}
+                value={this.props.flightSchedule.charge_schedule.insurance_mode } onChange={this.props.updateFlightInfo}
                 data-index={this.props.scheduleIndex} data-target="charge_schedule" data-charge="insurance_mode"
                 name={`flight[${this.state.random_id}][insurance_mode]`}>{ this.props.insurance_modes.map( (e,i) =>
-                <option key={i} value={i} >{e}</option>
+                  <option key={i} value={i} >{e}</option>
               )}</select>
               <br />
               <p>Explaination:-</p>
@@ -414,8 +393,8 @@ var FlightSchedulePriceCard = React.createClass({
           </li>
         </ul>
         <div className="card-block" ref="cardSummary">
-          <p className="card-text">Tee Days: { daysNames.slice(1).map( (e,i) => (<span>{ this.props.flightSchedule.flight_matrices[0][`day${i+1}`] == 1 ? `${e}; ` : ""}</span>) )}</p>
-          <p className="card-text">Tee Times: { this.props.teeTimes.map( (e,i) => (<span>{e}; </span>)) }</p>
+          <p className="card-text">Tee Days: { daysNames.slice(1).map( (e,i) => (<span key={i}>{ this.props.flightSchedule.flight_matrices[0][`day${i+1}`] == 1 ? `${e}; ` : ""}</span>) )}</p>
+          <p className="card-text">Tee Times: { this.props.teeTimes.map( (e,i) => (<span key={i}>{e}; </span>)) }</p>
           <p className="card-text">Prices:
             <span>{ toCurrency(this.props.flightSchedule.charge_schedule.session_price)} / </span>
             <span>{ toCurrency(this.props.flightSchedule.charge_schedule.cart)} / </span>
@@ -448,9 +427,8 @@ var FlightBox = React.createClass({
 
     this.setState({ flightSchedules:newFlightSchedules, teeTimes:newTeeTimes});
   },
-  handleClose: function(e){
-
-    //console.log("handle when flight times button close is pressed");
+  deleteSchedule: function(e){
+    //delete flight schedules
 
     //can't delete the first one
     if(e.target.value == 0){
@@ -467,9 +445,12 @@ var FlightBox = React.createClass({
 
     this.setState({flightSchedules:newFlightSchedules, teeTimes:newTeeTimes});
   },
-
   updateFlightInfo: function(e){
-    //should update state info
+    /*update target
+      * flight_schedule and
+      * associated charge_schedule and
+      * flight_matrices days selection
+    */
     var newFlightSchedules = this.state.flightSchedules;
     //better way to set this
     if( e.target.dataset.target == "charge_schedule"){
@@ -492,23 +473,18 @@ var FlightBox = React.createClass({
     this.setState( {flightSchedules:newFlightSchedules});
   },
   addTeeTime: function(e){
-    console.log("should add tee time");
     var newTeeTimes = this.state.teeTimes;
-    console.log(e.target.dataset);
-
     newTeeTimes[e.target.dataset.indexSchedule].push(e.target.dataset.value);
     newTeeTimes[e.target.dataset.indexSchedule].sort();
-
     this.setState({teeTimes:newTeeTimes});
   },
   deleteTeeTime: function(e){
-    console.log("should delete tee time");
-    console.log(e.target.dataset);
-
-    var newTeeTimes = this.state.teeTimes;
-    newTeeTimes[e.target.dataset.indexSchedule].splice(e.target.dataset.indexTime, 1);
-
-    this.setState({teeTimes:newTeeTimes});
+    //delete tee times
+    if(this.state.teeTimes.length > 1){
+      var newTeeTimes = this.state.teeTimes;
+      newTeeTimes[e.target.dataset.indexSchedule].splice(e.target.dataset.indexTime, 1);
+      this.setState({teeTimes:newTeeTimes});
+    }
   },
   render: function(){
     return (
@@ -524,9 +500,7 @@ var FlightBox = React.createClass({
                   <FlightSchedulePriceCard key={i} scheduleIndex={i}
                     flightSchedule={e}
                     teeTimes={this.state.teeTimes[i]} deleteTeeTime={this.deleteTeeTime} addTeeTime={this.addTeeTime}
-                    handleClose={this.handleClose}
-                    updateFlightInfo={this.updateFlightInfo}
-                    insurance_modes={this.props.insurance_modes} />
+                    handleClose={this.handleClose} updateFlightInfo={this.updateFlightInfo} insurance_modes={this.props.insurance_modes} />
               )}
               <button type="button" onClick={this.newSchedule} className="btn btn-primary">
                 <i className="fa fa-plus"></i>
@@ -582,9 +556,6 @@ var GolfClubForm = React.createClass({
     flightDummy: React.PropTypes.object,
     form: React.PropTypes.object,
     insurance_modes: React.PropTypes.array
-  },
-  componentDidMount: function(){
-    //console.log(this.props);
   },
   getInitialState: function(){
     return { disabledSubmit: false, club:this.props.club }

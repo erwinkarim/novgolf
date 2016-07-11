@@ -59,9 +59,10 @@
         .card
           .card-header
             %a{ :href => "#flight-#{random_id}", :'data-toggle' => 'collapse'}
-              %i.fa.fa-chevron-up
+              %i.fa.fa-chevron-up{ :id => "chevron-#{random_id}"}
             #{ flight_schedule.name.nil? || flight_schedule.name.empty? ? "Flight ID: #{flight_schedule.id}" : flight_schedule.name }
-          %ul.list-group.list-group-flush.collapse.in{ :id => "flight-#{random_id}"}
+          %ul.list-group.list-group-flush.collapse.in.flight-info-collapse{ :id => "flight-#{random_id}",
+            :data => {:summary => "#summary-#{random_id}", :chevron => "#chevron-#{random_id}" } }
             %li.list-group-item
               %h4 Flight Settings
               %table.table
@@ -122,8 +123,30 @@
                     #{ (x[3].to_i == 7) ? "Sunday" : DateTime::DAYNAMES[ (x[3].to_i)]}
               %h4 Flight Times
               .btn-group
-                - flight_schedule.flight_matrices.each do |flight_matrix|
-                  %button.btn.btn-secondary{ :type => 'button' } #{ flight_matrix.tee_time.strftime("%H:%M") }
+                - flight_schedule.flight_matrices.map{|x| x.tee_time}.sort.each do |flight_time|
+                  %button.btn.btn-secondary{ :type => 'button' } #{ flight_time.strftime("%H:%M") }
+          .card-block{ :id => "summary-#{random_id}", :style => "display:none;"}
+            %p.card-text
+              Tee Days:
+              .btn-group{ :'data-toggle' => 'buttons'}
+                - flight_schedule.flight_matrices.first.attributes.select{ |k,v| k.to_s.match(/day[1-7]/)}.map do |x,y|
+                  %label.btn.btn-secondary{ :class => (y==1) ? "active" : "", :disabled => true }
+                    #{ (x[3].to_i == 7) ? "Sunday" : DateTime::DAYNAMES[ (x[3].to_i)]}
+            %p.card-text
+              Tee Times:
+              .btn-group
+                - flight_schedule.flight_matrices.map{|x| x.tee_time}.sort.each do |flight_time|
+                  %button.btn.btn-secondary{ :type => 'button' } #{ flight_time.strftime("%H:%M") }
+            %p.card-text
+              Prices:
+              %span #{ number_to_currency(prices.session_price, :unit => "MYR ") } /
+              %span #{ number_to_currency(prices.cart, :unit => "MYR ") } /
+              %span #{ number_to_currency(prices.caddy, :unit => "MYR ") } /
+              %span #{ number_to_currency(prices.insurance, :unit => "MYR ") } /
+              %span #{ prices.insurance_mode}
+            %p.card-text
+              = simple_format(prices.note)
+
   .row
     %h2 Amenities
     .col-xs-12.col-md-8
@@ -151,3 +174,19 @@
       });
   };
   initMap();
+
+  $('.flight-info-collapse').each(function(index){
+      $(this).on('hide.bs.collapse', function(e){
+        console.log('show the summary', e.target.dataset.summary);
+        $(e.target.dataset.summary).slideDown(100);
+        $(e.target.dataset.chevron).removeClass("fa-chevron-up");
+        $(e.target.dataset.chevron).addClass("fa-chevron-down");
+
+      });
+      $(this).on('show.bs.collapse', function(e){
+        console.log('hide the summary', e.target.dataset.summary);
+        $(e.target.dataset.summary).slideUp(100);
+        $(e.target.dataset.chevron).addClass("fa-chevron-up");
+        $(e.target.dataset.chevron).removeClass("fa-chevron-down");
+      });
+  });

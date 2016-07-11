@@ -13,6 +13,13 @@ class FlightMatrix < ActiveRecord::Base
   # todo: ensure that tee times are not conflicted with other flight schedules of the same golf club
   validate :non_conflict?
 
+  after_initialize :init
+
+  def init
+    self.day1 ||= 1
+    self.tee_time ||= "07:00am"
+  end
+
   #validates that at least one of the dayX fields is populated
   def one_day_presence?
     if %w(day0 day1 day2 day3 day4 day5 day6 day7 ).all?{|attr| self[attr].blank?}
