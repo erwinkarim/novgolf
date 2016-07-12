@@ -14,12 +14,10 @@
 //= require jquery-ui/datepicker
 //= require jquery.timepicker.js
 //= require jquery_ujs
-//= require utilities
-//= require paloma
 //= require turbolinks
 //= require remarkable.min.js
+//= require utilities
 //= require react
 //= require react_ujs
-//= require fluxxor
 //= require components
 //= require_tree .

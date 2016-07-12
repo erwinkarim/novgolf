@@ -1,23 +1,9 @@
+var daysNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 /*
   issues:
     * need to update state when forms are being update. find a better way to manage this
       think about flux
 */
-var daysNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-/*
-to use flux for flight schedule state keeping
-*/
-var constants = {
-    NEW_FLIGHT_SCHEDULE:'NEW_FLIGHT_SCHEDULE',
-    DELETE_FLIGHT_SCHEDULE:'DELETE_FLIGHT_SCHEDULE'
-};
-
-var flightScheduleStore = Fluxxor.createStore({
-    initialize:function(){
-        this.flight_schedules = [];
-    }
-});
 
 var GeneralBox = React.createClass({
   propTypes:{
