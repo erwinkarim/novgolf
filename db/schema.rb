@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160701134825) do
+ActiveRecord::Schema.define(version: 20160712023127) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -103,6 +103,20 @@ ActiveRecord::Schema.define(version: 20160701134825) do
 
   add_index "golf_clubs", ["user_id"], name: "index_golf_clubs_on_user_id", using: :btree
 
+  create_table "photos", force: :cascade do |t|
+    t.integer  "order",          limit: 4
+    t.integer  "user_id",        limit: 4
+    t.integer  "imageable_id",   limit: 4
+    t.string   "imageable_type", limit: 255
+    t.string   "avatar",         limit: 255
+    t.text     "caption",        limit: 255
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
+  end
+
+  add_index "photos", ["imageable_type", "imageable_id"], name: "index_photos_on_imageable_type_and_imageable_id", using: :btree
+  add_index "photos", ["user_id"], name: "index_photos_on_user_id", using: :btree
+
   create_table "user_reservations", force: :cascade do |t|
     t.integer  "user_id",            limit: 4
     t.integer  "charge_schedule_id", limit: 4
@@ -163,6 +177,7 @@ ActiveRecord::Schema.define(version: 20160701134825) do
   add_foreign_key "flight_matrices", "flight_schedules"
   add_foreign_key "flight_schedules", "golf_clubs"
   add_foreign_key "golf_clubs", "users"
+  add_foreign_key "photos", "users"
   add_foreign_key "user_reservations", "charge_schedules"
   add_foreign_key "user_reservations", "flight_matrices"
   add_foreign_key "user_reservations", "golf_clubs"
