@@ -29,7 +29,7 @@ Rails.application.routes.draw do
   namespace :admin do
     resources :golf_clubs do
       get 'dashboard'
-      resources :photos, :only => [:index]
+      resources :photos, :only => [:index, :create, :update, :delete]
     end
   end
 

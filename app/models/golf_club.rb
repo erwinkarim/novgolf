@@ -186,7 +186,7 @@ class GolfClub < ActiveRecord::Base
           fs = self.flight_schedules.new(:name => elm["name"],
             :min_pax => elm["min_pax"], :max_pax => elm["max_pax"],
             :min_cart => elm["min_cart"], :max_cart => elm["max_cart"],
-            :min_caddy => elm["min_caddy"], :max_cart => elm["max_caddy"] )
+            :min_caddy => elm["min_caddy"], :max_caddy => elm["max_caddy"] )
           fs.save!
 
           #create new charge_schedule

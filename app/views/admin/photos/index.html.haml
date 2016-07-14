@@ -1,1 +1,17 @@
-%h2 Photo Admin Index Here
+- content_for(:head){ "Admin - #{@golf_club.name} photos - "}
+.container
+  .row
+    %ol.breadcrumb
+      %li
+        %a{ :href => admin_golf_clubs_path} Admin
+      %li
+        %a{ :href => admin_golf_club_path(@golf_club) } #{ @golf_club.name }
+      %li.active Photos
+    %h1 #{@golf_club.name} Photos
+    .col-xs-12.col-md-8
+      = react_component( "PhotoAdmin", { paths: {upload:admin_golf_club_photos_path(@golf_club) } } ); 
+    .col-xs-12.col-md-4
+      .card
+        .card-header Tools
+        .card-block
+          %a.card-text{ :href => "#" } Update Photos!

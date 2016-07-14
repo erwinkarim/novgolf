@@ -16,6 +16,7 @@
 //= require jquery_ujs
 //= require turbolinks
 //= require remarkable.min.js
+//= require jquery-fileupload/basic
 //= require utilities
 //= require react
 //= require react_ujs

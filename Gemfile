@@ -78,3 +78,7 @@ gem 'rqrcode_png'
 
 #consistent seed
 gem 'seed-fu', '~> 2.3'
+
+#file upload handle
+gem 'carrierwave-aws'
+gem 'jquery-fileupload-rails'
