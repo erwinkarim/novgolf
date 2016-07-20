@@ -82,3 +82,10 @@ gem 'seed-fu', '~> 2.3'
 #file upload handle
 gem 'carrierwave-aws'
 gem 'jquery-fileupload-rails'
+gem 'mini_magick'
+
+#photoviewer
+gem 'featherlight'
+
+#notification
+gem 'snackbarjs-rails'

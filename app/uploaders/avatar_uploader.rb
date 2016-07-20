@@ -4,10 +4,14 @@ class AvatarUploader < CarrierWave::Uploader::Base
 
   # Include RMagick or MiniMagick support:
   # include CarrierWave::RMagick
-  # include CarrierWave::MiniMagick
+  include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:
-  storage :file
+  if Rails.env.development? then
+    storage :file
+  elsif Rails.env.production? then
+    stroage :aws
+  end
   # storage :fog
 
   # Override the directory where uploaded files will be stored.
@@ -35,6 +39,17 @@ class AvatarUploader < CarrierWave::Uploader::Base
   # version :thumb do
   #   process :resize_to_fit => [50, 50]
   # end
+  version :thumb50 do
+   process :resize_to_fit => [50, 50]
+  end
+
+  version :thumb200 do
+   process :resize_to_fit => [200, 200]
+  end
+
+  version :thumb400 do
+   process :resize_to_fit => [400, 400]
+  end
 
   # Add a white list of extensions which are allowed to be uploaded.
   # For images you might use something like this:

@@ -9,7 +9,8 @@
       %li.active Photos
     %h1 #{@golf_club.name} Photos
     .col-xs-12.col-md-8
-      = react_component( "PhotoAdmin", { paths: {upload:admin_golf_club_photos_path(@golf_club) } } ); 
+      = react_component( "PhotoAdmin", { crsfToken: form_authenticity_token,
+        paths: { upload:admin_golf_club_photos_path(@golf_club) } } );
     .col-xs-12.col-md-4
       .card
         .card-header Tools

@@ -6,7 +6,8 @@ class Photo < ActiveRecord::Base
     return {
       :name => self.caption,
       :size => self.avatar.size * 1024,
-      :url => self.avatar.url
+      :url => self.avatar.url,
+      :thumb200 => self.avatar.thumb200.url
     }
   end
 end

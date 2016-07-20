@@ -21,6 +21,10 @@
 
 *.lock
 
+#uploads
+/public/uploads/*
+public/uploads/*
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml

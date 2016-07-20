@@ -104,7 +104,7 @@ ActiveRecord::Schema.define(version: 20160712023127) do
   add_index "golf_clubs", ["user_id"], name: "index_golf_clubs_on_user_id", using: :btree
 
   create_table "photos", force: :cascade do |t|
-    t.integer  "order",          limit: 4
+    t.integer  "sequence",       limit: 4
     t.integer  "user_id",        limit: 4
     t.integer  "imageable_id",   limit: 4
     t.string   "imageable_type", limit: 255

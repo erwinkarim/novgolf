@@ -14,6 +14,10 @@
  *= require jquery.timepicker.css
  *= require font-awesome
  *= require jquery.fileupload
+ *= require featherlight
+ *= require featherlight-gallery
+ *= require snackbar
+ *= require snackbar-material
  *= require_tree .
  *= require_self
  */
@@ -23,6 +27,19 @@
      width: 100%;
      max-width: 100%;
      height: auto;
+}
+
+.text-shadow {
+  text-shadow: 0 0 3px black;
+}
+
+.featherlight .legend {
+  background: black;
+  position: absolute;
+  bottom: 0;
+  font-size: larger;
+  color: white;
+  padding:4px;
 }
 
 /* google maps marker */
@@ -42,4 +59,15 @@
   width:20px;
 
   cursor:pointer;
+}
+
+.snackbar.error {
+  background-color: red;
+}
+.snackbar.alert {
+  background-color: yellow;
+  color: black;
+}
+.snackbar.notice {
+  background-color: green;
 }

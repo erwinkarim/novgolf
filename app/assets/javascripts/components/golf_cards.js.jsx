@@ -436,21 +436,48 @@ var GolfCards = React.createClass({
     flights: React.PropTypes.array
   },
   getInitialState: function(){
-      return { teeTimes:[], totalPrice: 0}
+      return { teeTimes:[], totalPrice: 0, random_id:randomID() }
   },
   componentDidMount: function(){
       //console.log(this.props);
       $(this.refs.reserveBtnLi).hide();
   },
   render: function() {
+    //either get generic or scheduled image
+    var photoPath, hasCarousel;
+    if(this.props.club.photos.length == 0) {
+      photoPath = this.props.paths.img;
+      hasCarousel = false;
+    }else {
+      photoPath = this.props.club.photos[0];
+      hasCarousel = true;
+    };
+
+    var carouselDiv = (
+      <div className="carousel" data-ride="carousel" id={`carousel-${this.state.random_id}`}>
+        <ol className="carousel-indicators">
+          <li data-target={`#carousel-${this.state.random_id}`} data-slide-to="0" className="active"></li>
+          <li data-target={`#carousel-${this.state.random_id}`} data-slide-to="1"></li>
+          <li data-target={`#carousel-${this.state.random_id}`} data-slide-to="2"></li>
+        </ol>
+        <div className="carousel-inner" role="listbox">{
+          this.props.club.photos.map( (e,i) => (
+              <div key={i} className={`carousel-item ${i==0 ? "active" : ""}`} >
+                <img className="img-responsive card-img-top" src={e} />
+              </div>
+          ))
+        }</div>
+      </div>
+    );
+
     return (
       <div className="col-xs-12 col-md-6 col-lg-6" key={this.props.club.id}>
         <div className="card card-inverse">
-          <img className="img-responsive card-img-top" src={this.props.paths.img} />
+          { hasCarousel ? (carouselDiv) : (<img className="img-responsive card-img-top" src={photoPath} />) }
           <a href={this.props.paths.club} target="_blank">
             <div className="card-img-overlay">
-                <h4 className="card-title">{ toCurrency(Math.min.apply(null, this.props.flights.map( (e,i) => parseFloat(e.prices.flight))) )}</h4>
-                <h4 className="card-title">{this.props.club.name}</h4>
+                <h4 className="card-title text-shadow">{ toCurrency(Math.min.apply(null, this.props.flights.map( (e,i) => parseFloat(e.prices.flight))) )}</h4>
+                <h4 className="card-title text-shadow">{this.props.club.name}</h4>
             </div>
           </a>
           <ul className="list-group-flush list-group">

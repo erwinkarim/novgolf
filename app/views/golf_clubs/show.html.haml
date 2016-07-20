@@ -1,8 +1,15 @@
 - content_for :head do
   = "#{@club.name} -"
 end
-.jumbotron.jumbotron-fluid{ :style => "background: url(/images/golf_course_#{rand(1..4)}.jpg); height:70vh; background-size:cover"}
-  .container
+
+%section{ :data => { :'featherlight-gallery' => true, :'featherlight-filter' => 'a'}}
+  %a{ :href => @jumboPhoto[:url], :'data-caption' => @jumboPhoto[:caption] }
+    .jumbotron.jumbotron-fluid{ :style => "background: url(#{@jumboPhoto[:url]}); height:70vh; background-size:cover"}
+      .container
+  .hidden-xs-up
+    - if !@photos.empty? then
+      - @photos[1..-1].each do |photo|
+        %a{ :href => photo.avatar.url, :'data-caption' => photo.caption}
 .container
   .row
     .col-xs-12.col-md-8

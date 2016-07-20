@@ -20,7 +20,15 @@ class GolfClubsController < ApplicationController
     @result = GolfClub.search({ :dateTimeQuery => Time.parse("#{@date} 14:00 +0000"), :spread => 9.hours, :club_id => params[:id]}).first
 
     respond_to do |format|
-      format.html
+      format.html {
+        #additional stuff for normal page
+        @photos = @club.photos.reverse
+        if @photos.length == 0 then
+          @jumboPhoto = { :url => "/images/golf_course_#{rand(1..4)}.jpg", :caption => "none" }
+        else
+          @jumboPhoto = { :url => @photos.first.avatar.url, :caption => @photos.first.caption }
+        end
+      }
       format.json {
         render json:@result
       }

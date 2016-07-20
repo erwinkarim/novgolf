@@ -1,7 +1,7 @@
 class CreatePhotos < ActiveRecord::Migration
   def change
     create_table :photos do |t|
-      t.integer :order
+      t.integer :sequence
       t.references :user, index: true, foreign_key:true
       t.references :imageable, index: true, polymorphic:true
       t.string :avatar
