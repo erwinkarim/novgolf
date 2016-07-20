@@ -89,3 +89,5 @@ gem 'featherlight'
 
 #notification
 gem 'snackbarjs-rails'
+
+gem 'fog'
