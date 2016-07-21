@@ -63,4 +63,9 @@ class AvatarUploader < CarrierWave::Uploader::Base
   #   "something.jpg" if original_filename
   # end
 
+  # You can find a full list of custom headers in AWS SDK documentation on
+  # AWS::S3::S3Object
+  def download_url(filename)
+    url(response_content_disposition: %Q{attachment; filename="#{filename}"})
+  end
 end

@@ -6,7 +6,7 @@ CarrierWave.configure do |config|
 
     # Optionally define an asset host for configurations that are fronted by a
     # content host, such as CloudFront.
-    config.asset_host = 'http://example.com'
+    # config.asset_host = 'http://example.com'
 
     # The maximum period for authenticated_urls is only 7 days.
     config.aws_authenticated_url_expiration = 60 * 60 * 24 * 7
@@ -28,5 +28,8 @@ CarrierWave.configure do |config|
     # config.aws_signer = -> (unsigned_url, options) do
     #   Aws::CF::Signer.sign_url(unsigned_url, options)
     # end
+
+    config.cache_dir = "#{Rails.root}/tmp/uploads"
+
   end
 end
