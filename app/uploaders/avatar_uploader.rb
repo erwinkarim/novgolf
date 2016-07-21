@@ -10,7 +10,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
   if Rails.env.development? then
     storage :file
   elsif Rails.env.production? then
-    stroage :aws
+    storage :aws
   end
   # storage :fog
 
