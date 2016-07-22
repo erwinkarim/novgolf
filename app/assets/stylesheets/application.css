@@ -61,6 +61,7 @@
   cursor:pointer;
 }
 
+/* for snackbar */
 .snackbar.error {
   background-color: red;
 }
@@ -70,4 +71,17 @@
 }
 .snackbar.notice {
   background-color: green;
+}
+
+/* for masonry */
+.grid {
+  max-width: 1200px;
+}
+
+.grid-sizer,
+.grid-item { width: 33.333%; }
+.grid-item { float: left; }
+.grid-item img {
+  display: block;
+  max-width: 100%;
 }

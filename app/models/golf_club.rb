@@ -87,7 +87,7 @@ class GolfClub < ActiveRecord::Base
       }.limit(30
       ).pluck(:id, :name, :session_price, :tee_time, :min_pax, :max_pax, :cart, :caddy, :insurance,
         :'flight_matrices.id', :'tr.booking_time', :'tr.status', :'charge_schedules.note',
-        :min_cart, :max_cart, :min_caddy, :max_caddy, :insurance_mode
+        :min_cart, :max_cart, :min_caddy, :max_caddy, :insurance_mode, :'tr.id'
       ).inject([]){ |p,n|
         club = p.select{ |x| x[:club][:id] == n[0] }.first
         booked_time = n[10].nil? ? nil : n[10].strftime("%H:%M")
@@ -99,6 +99,7 @@ class GolfClub < ActiveRecord::Base
                 :minCart => n[13], :maxCart => n[14],
                 :minCaddy => n[15], :maxCaddy => n[16],
                 :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11],
+                :user_reservation_id => n[18],
                 :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]}
             }],
             :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
@@ -109,6 +110,7 @@ class GolfClub < ActiveRecord::Base
             :minCart => n[13], :maxCart => n[14],
             :minCaddy => n[15], :maxCaddy => n[16],
             :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] ,
+            :user_reservation_id => n[18],
             :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]}
           }
           p

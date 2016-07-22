@@ -79,6 +79,13 @@ class UserReservationsController < ApplicationController
   def show
     @user = User.find(params[:user_id])
     @reservation = UserReservation.find(params[:id])
+
+    respond_to do |format|
+      format.html
+      format.json {
+        render json: @reservation.attributes.merge(:user => @user)
+      }
+    end
   end
 
   # GET      /golf_clubs/:golf_club_id/user_reservations/failure(.:format)
