@@ -169,6 +169,7 @@ var ReserveFormPage = React.createClass({
               { arrayFromRange($.inArray(this.props.flight.prices.insurance_mode, [1,2]) != -1 ? this.props.flight.minPax : 0, this.props.flight.maxPax ).map( (e,i) =>
                   <option key={e}>{e}</option>
               )}</select>
+              <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][count][insurance]"} value={this.props.flightInfo.insurance} />
             </div>
             <label className="col-xs-5"> x Insurance</label>
             <label className="col-xs-5">
