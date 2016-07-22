@@ -41,8 +41,9 @@ end
             .grid-item
               %a{ :href => photo.avatar.url, :'data-caption' => photo.caption }
                 %img{ :src => photo.avatar.thumb400.url }
-          - @photos.reverse[5..-1].each do |photo|
-            %a.hidden-xs-up{ :href => photo.avatar.url, :'data-caption' => photo.caption}
+          - if @photos.size > 5 then
+            - @photos.reverse[5..-1].each do |photo|
+              %a.hidden-xs-up{ :href => photo.avatar.url, :'data-caption' => photo.caption}
     .col-xs-12
       %h2 Ammenities
       .card
