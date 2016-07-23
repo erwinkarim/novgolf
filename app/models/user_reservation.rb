@@ -13,6 +13,7 @@ class UserReservation < ActiveRecord::Base
   validates :flight_matrix_id, presence: true
   #validates :token, uniqueness: true
   #need to check when this feature is available
+  validates_presence_of :count_pax, :count_buggy, :count_caddy, :count_insurance
   has_secure_token
 
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,

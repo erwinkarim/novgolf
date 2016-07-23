@@ -5,6 +5,7 @@ class GolfClub < ActiveRecord::Base
   has_many :flight_matrices, :through => :flight_schedules
   has_many :amenity_lists, :dependent => :destroy
   has_many :amenities, :through => :amenity_lists
+  has_many :photos, as: :imageable
 
   belongs_to :user
 
@@ -86,18 +87,19 @@ class GolfClub < ActiveRecord::Base
       }.limit(30
       ).pluck(:id, :name, :session_price, :tee_time, :min_pax, :max_pax, :cart, :caddy, :insurance,
         :'flight_matrices.id', :'tr.booking_time', :'tr.status', :'charge_schedules.note',
-        :min_cart, :max_cart, :min_caddy, :max_caddy, :insurance_mode
+        :min_cart, :max_cart, :min_caddy, :max_caddy, :insurance_mode, :'tr.id'
       ).inject([]){ |p,n|
         club = p.select{ |x| x[:club][:id] == n[0] }.first
         booked_time = n[10].nil? ? nil : n[10].strftime("%H:%M")
         if club.nil? then
           p << {
-            :club => { :id => n[0], :name => n[1]},
+            :club => { :id => n[0], :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:created_at => :desc).limit(3).map{ |x| x.avatar.thumb400.url} },
             :flights => [ {
                 :minPax => n[4], :maxPax => n[5],
                 :minCart => n[13], :maxCart => n[14],
                 :minCaddy => n[15], :maxCaddy => n[16],
                 :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11],
+                :user_reservation_id => n[18],
                 :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]}
             }],
             :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
@@ -108,11 +110,14 @@ class GolfClub < ActiveRecord::Base
             :minCart => n[13], :maxCart => n[14],
             :minCaddy => n[15], :maxCaddy => n[16],
             :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] ,
+            :user_reservation_id => n[18],
             :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]}
           }
           p
         end
       }
+
+      #inject the photo path after search
   end
 
   #creates a new club in one shot
@@ -185,7 +190,7 @@ class GolfClub < ActiveRecord::Base
           fs = self.flight_schedules.new(:name => elm["name"],
             :min_pax => elm["min_pax"], :max_pax => elm["max_pax"],
             :min_cart => elm["min_cart"], :max_cart => elm["max_cart"],
-            :min_caddy => elm["min_caddy"], :max_cart => elm["max_caddy"] )
+            :min_caddy => elm["min_caddy"], :max_caddy => elm["max_caddy"] )
           fs.save!
 
           #create new charge_schedule

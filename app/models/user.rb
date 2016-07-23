@@ -8,6 +8,8 @@ class User < ActiveRecord::Base
   has_many :user_reservations
   has_many :golf_clubs
 
+  has_many :photos, as: :imageable
+
   enum role: [:user, :admin, :superadmin ]
   after_initialize :init
 

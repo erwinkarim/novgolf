@@ -35,7 +35,7 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 # Use Unicorn as the app server
 # gem 'unicorn'
 
-gem 'puma'
+gem 'puma', '3.4.0'
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
@@ -78,3 +78,16 @@ gem 'rqrcode_png'
 
 #consistent seed
 gem 'seed-fu', '~> 2.3'
+
+#file upload handle
+gem 'carrierwave-aws'
+gem 'jquery-fileupload-rails'
+gem 'mini_magick'
+
+#photoviewer
+gem 'featherlight'
+
+#notification
+gem 'snackbarjs-rails'
+
+gem 'fog'

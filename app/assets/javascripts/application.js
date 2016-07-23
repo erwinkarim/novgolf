@@ -15,9 +15,16 @@
 //= require jquery.timepicker.js
 //= require jquery_ujs
 //= require turbolinks
+//= require snackbar
 //= require remarkable.min.js
+//= require imagesloaded.pkgd.min.js
+//= require masonry.pkgd.min.js
+//= require featherlight
+//= require featherlight-gallery
+//= require jquery-fileupload/basic-plus
 //= require utilities
 //= require react
 //= require react_ujs
 //= require components
+//= require ready
 //= require_tree .

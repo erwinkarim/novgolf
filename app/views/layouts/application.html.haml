@@ -27,12 +27,6 @@
             - else
               %a.nav-link{ :href => '#login-modal', :data => { :toggle => 'modal'} }
                 Login
-    .container#flash_msgs{ :style => ''}
-      - flash.each do |name, msg|
-        .div.alert{ :class => "alert-#{ flash_class(name)  }" }
-          #{ msg.to_s.html_safe }
-          %button.close{ :type => 'button', :'aria-label' => 'Close', :'data-dismiss' => 'alert' }
-            %span{ :'aria-hidden' => 'true' }  &times;
     = yield
     = insert_paloma_hook
     = render :file => "layouts/modal.template"
@@ -43,3 +37,5 @@
           &#8226; Terms of service
           &#8226; Privacy Policy
           &#8226; Build #{ NovGolf::REVISION }
+:javascript
+  window.flashMessages = $.parseJSON('#{j flash.to_hash.to_json.html_safe}')

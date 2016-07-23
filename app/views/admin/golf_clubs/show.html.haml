@@ -32,9 +32,13 @@
     .col-md-4.col-xs-12
       .card
         .card-header Tools
-        .card-block
-          %a.card-link.btn.btn-primary{ :href => admin_golf_club_dashboard_path(@golf_club) } Dashboard
-          %a.card-link.btn.btn-secondary{ :href => edit_admin_golf_club_path(@golf_club) } Edit
+        %ul.list-group.list-group-flush
+          %li.list-group-item
+            %a.card-link.btn.btn-primary{ :href => admin_golf_club_dashboard_path(@golf_club) } Dashboard
+          %li.list-group-item
+            %a.card-link.btn.btn-secondary{ :href => edit_admin_golf_club_path(@golf_club) } Edit
+          %li.list-group-item
+            %a.card-link.btn.btn-secondary{ :href => admin_golf_club_photos_path(@golf_club) } Photos
       .card
         .card-header Meta-Info
         %ul.list-group.list-group-flush

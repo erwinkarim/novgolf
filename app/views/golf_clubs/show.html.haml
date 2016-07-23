@@ -1,8 +1,15 @@
 - content_for :head do
   = "#{@club.name} -"
 end
-.jumbotron.jumbotron-fluid{ :style => "background: url(/images/golf_course_#{rand(1..4)}.jpg); height:70vh; background-size:cover"}
-  .container
+
+%section{ :data => { :'featherlight-gallery' => true, :'featherlight-filter' => 'a'}}
+  %a{ :href => @jumboPhoto[:url], :'data-caption' => @jumboPhoto[:caption] }
+    .jumbotron.jumbotron-fluid{ :style => "background: url(#{@jumboPhoto[:url]}); height:70vh; background-size:cover"}
+      .container
+  .hidden-xs-up
+    - if !@photos.empty? then
+      - @photos[1..-1].each do |photo|
+        %a{ :href => photo.avatar.url, :'data-caption' => photo.caption}
 .container
   .row
     .col-xs-12.col-md-8
@@ -23,9 +30,20 @@ end
   .row
     .col-xs-12
       %h2 Location
-#map{ :style => "height:70vh;"}
+#map{ :style => "height:70vh; margin-bottom:10px;"}
 .container
   .row
+    - if !@photos.empty? then
+      .col-xs-12
+        .grid{ :data => { :'featherlight-gallery' => true, :'featherlight-filter' => 'a'}}
+          .grid-sizer
+          - @photos.reverse[0..4].each do |photo|
+            .grid-item
+              %a{ :href => photo.avatar.url, :'data-caption' => photo.caption }
+                %img{ :src => photo.avatar.thumb400.url }
+          - if @photos.size > 5 then
+            - @photos.reverse[5..-1].each do |photo|
+              %a.hidden-xs-up{ :href => photo.avatar.url, :'data-caption' => photo.caption}
     .col-xs-12
       %h2 Ammenities
       .card
@@ -55,3 +73,13 @@ end
       });
   };
   initMap();
+
+  var $grid = $('.grid').masonry({
+    itemSelector: '.grid-item',
+    percentPosition: true,
+    columnWidth: '.grid-sizer'
+  });
+  // layout Isotope after each image loads
+  $grid.imagesLoaded().progress( function() {
+    $grid.masonry();
+  });
