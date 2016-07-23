@@ -4,8 +4,20 @@
 # model remove the '{}' from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
-one: {}
+one:
+  id: 1
+  name: Kelab Darul Ehsan
+  description: about kelab darul ehsan
+  address: 123, Jalan 9/6, Shah Alam
+  open_hour: <%= Time.parse("10:00am") %>
+  close_hour: <%= Time.parse("10:00am") %>
 # column: value
 #
-two: {}
+two:
+  id: 2
+  name: Kelab Bangi
+  description: about kelab bangi
+  address: 123, Jalan 9/6, Bangi
+  open_hour: <%= Time.parse("10:00am") %>
+  close_hour: <%= Time.parse("10:00am") %>
 #  column: value
