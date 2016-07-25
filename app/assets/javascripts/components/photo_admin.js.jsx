@@ -133,7 +133,7 @@ var PhotoAdmin = React.createClass({
   },
   updatePhotoList: function(){
     var handle = this;
-    $.getJSON(this.props.path, function(data){
+    $.getJSON(this.props.paths.upload, function(data){
         handle.setState({ photoList:data})
     })
   },

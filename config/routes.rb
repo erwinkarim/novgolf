@@ -3,6 +3,8 @@ Rails.application.routes.draw do
 
   devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
   resources :users, :only => [:show, :edit, :update] do
+    get 'profile_picture'
+    post 'profile_picture', :to => "users#update_profile_picture"
     resources :reservations, :only => [:show], :controller => "user_reservations" do
       collection do
         get '/' => 'user_reservations#user_index'

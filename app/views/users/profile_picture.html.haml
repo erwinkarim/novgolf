@@ -1,0 +1,15 @@
+- content_for(:head){ "#{@user.name} -" }
+
+.container
+  .row
+    .col-xs-12
+      %ol.breadcrumb
+        %li
+          %a{ :href => root_path } JomGolf
+        %li
+          %a{ :href => user_path(@user)} #{ @user.name }
+        %li.active Profile Picture
+  .row
+    .col-xs-12.col-md-6
+      = react_component("UserPhotoProfile", { crsfToken: form_authenticity_token,
+        user:@user.attributes, upload_path: user_profile_picture_path(@user)})

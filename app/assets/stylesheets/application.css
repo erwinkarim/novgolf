@@ -79,9 +79,18 @@
 }
 
 .grid-sizer,
-.grid-item { width: 33.333%; }
+.grid-item { width: 16.667%; }
 .grid-item { float: left; }
 .grid-item img {
   display: block;
   max-width: 100%;
+  width:100%;
 }
+
+.grid-item--width2 { width:  33.333%; }
+.grid-item--width3 { width:  50%; }
+.grid-item--width4 { width:  66.667%; }
+
+.grid-item--height2 { height: 200px; }
+.grid-item--height3 { height: 260px; }
+.grid-item--height4 { height: 360px; }
