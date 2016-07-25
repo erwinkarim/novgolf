@@ -51,8 +51,14 @@ class AvatarUploader < CarrierWave::Uploader::Base
    process :resize_to_fit => [400, 400]
   end
 
+  #good for profile picture
   version :square400 do
       process :resize_to_fill => [400,400]
+  end
+
+  #good for banner
+  version :banner400 do
+    process :resize_to_fill => [400,200]
   end
 
   # Add a white list of extensions which are allowed to be uploaded.

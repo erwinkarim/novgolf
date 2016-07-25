@@ -93,7 +93,7 @@ class GolfClub < ActiveRecord::Base
         booked_time = n[10].nil? ? nil : n[10].strftime("%H:%M")
         if club.nil? then
           p << {
-            :club => { :id => n[0], :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:created_at => :desc).limit(3).map{ |x| x.avatar.thumb400.url} },
+            :club => { :id => n[0], :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:created_at => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
             :flights => [ {
                 :minPax => n[4], :maxPax => n[5],
                 :minCart => n[13], :maxCart => n[14],
