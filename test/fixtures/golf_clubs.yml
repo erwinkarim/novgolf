@@ -21,3 +21,10 @@ two:
   open_hour: <%= Time.parse("10:00am") %>
   close_hour: <%= Time.parse("10:00am") %>
 #  column: value
+three:
+  id: 3
+  name: Kelab Kinrara
+  description: about kelab kinrara
+  address: 123, Jalan 9/6, Kinrara
+  open_hour: <%= Time.parse("10:00am") %>
+  close_hour: <%= Time.parse("10:00am") %>
