@@ -65,6 +65,10 @@ class GolfClub < ActiveRecord::Base
     else
       queryDay = options[:dateTimeQuery].cwday
     end
+    #if looking from the past, skip
+    if options[:dateTimeQuery] < DateTime.now then
+      return []
+    end
 
     #set time range
     startHour = (options[:dateTimeQuery] - options[:spread]).strftime("%H:%M")
