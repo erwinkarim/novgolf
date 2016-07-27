@@ -9,7 +9,7 @@ class GolfClub < ActiveRecord::Base
 
   belongs_to :user
 
-  validates_presence_of :name, :description, :address, :open_hour, :close_hour
+  validates_presence_of :name, :description, :address, :open_hour, :close_hour, :user_id
 
   after_initialize :init
 

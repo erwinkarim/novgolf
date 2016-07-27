@@ -33,4 +33,14 @@ class GolfClubTest < ActiveSupport::TestCase
     query = GolfClub.search(:dateTimeQuery => Time.parse("2001-01-01 07:00 +0000"))
     assert_empty query, "search should be empty if looking in the past"
   end
+
+  test "search must have results if looking into the future with correct time" do
+    query = GolfClub.search({:dateTimeQuery => Time.parse(DateTime.now.next_week.to_date.to_s + " 08:00 +0000")} )
+    assert_not_empty query
+  end
+
+  test "search must have zero results if looking into the future with wrong time" do
+    query = GolfClub.search({:dateTimeQuery => Time.parse(DateTime.now.next_week.to_date.to_s + " 00:00 +0000")} )
+    assert_empty query
+  end
 end
