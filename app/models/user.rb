@@ -10,6 +10,8 @@ class User < ActiveRecord::Base
 
   has_many :photos, as: :imageable
 
+  has_one :profile_picture, class_name:"Photo", foreign_key: :id, primary_key: :profile_picture
+
   enum role: [:user, :admin, :superadmin ]
   after_initialize :init
 

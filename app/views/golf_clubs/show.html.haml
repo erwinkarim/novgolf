@@ -1,6 +1,4 @@
-- content_for :head do
-  = "#{@club.name} -"
-end
+- content_for(:head){ "#{@club.name} -" }
 
 %section{ :data => { :'featherlight-gallery' => true, :'featherlight-filter' => 'a'}}
   %a{ :href => @jumboPhoto[:url], :'data-caption' => @jumboPhoto[:caption] }
@@ -37,12 +35,16 @@ end
       .col-xs-12
         .grid{ :data => { :'featherlight-gallery' => true, :'featherlight-filter' => 'a'}}
           .grid-sizer
-          - @photos.reverse[0..4].each do |photo|
-            .grid-item
-              %a{ :href => photo.avatar.url, :'data-caption' => photo.caption }
-                %img{ :src => photo.avatar.thumb400.url }
-          - if @photos.size > 5 then
-            - @photos.reverse[5..-1].each do |photo|
+          - @photos.each_with_index do |photo, index|
+            - if index == 0 then
+              .grid-item.grid-item--width3
+                %a{ :href => photo.avatar.url, :'data-caption' => photo.caption }
+                  %img{ :src => photo.avatar.thumb400.url }
+            - elsif index < 7 then
+              .grid-item{ :class => index == 0 ? "grid-item--width2" : ""}
+                %a{ :href => photo.avatar.url, :'data-caption' => photo.caption }
+                  %img{ :src => photo.avatar.thumb200.url }
+            - else
               %a.hidden-xs-up{ :href => photo.avatar.url, :'data-caption' => photo.caption}
     .col-xs-12
       %h2 Ammenities

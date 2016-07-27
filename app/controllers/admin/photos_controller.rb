@@ -6,7 +6,6 @@ class Admin::PhotosController < ApplicationController
     @golf_club = GolfClub.find(params[:golf_club_id])
     photos = @golf_club.photos.reverse
 
-
     if current_user.id == @golf_club.user_id then
       respond_to do |format|
         format.html
