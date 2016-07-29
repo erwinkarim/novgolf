@@ -29,6 +29,11 @@ Rails.application.routes.draw do
 
   #to manage golf clubs
   namespace :admin do
+    resources :dashboard, :only => [:index] do
+      collection do
+        get 'recreate_versions'
+      end
+    end
     resources :golf_clubs do
       get 'dashboard'
       resources :photos, :only => [:index, :create, :update, :destroy]
