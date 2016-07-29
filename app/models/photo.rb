@@ -21,8 +21,6 @@ class Photo < ActiveRecord::Base
       photo.your_uploader.retrieve_from_cache!(ym.your_uploader.cache_name)
       photo.your_uploader.recreate_versions!
       photo.save!
-    rescue => e
-      puts "ERROR: #{photo.id} => #{e.to_s}"
     end
   end
 end
