@@ -1,19 +1,13 @@
 require 'test_helper'
 
 class GolfClubTest < ActiveSupport::TestCase
+  should validate_presence_of(:name)
+  should validate_presence_of(:description)
+  should validate_presence_of(:address)
+  should validate_presence_of(:user_id)
   # test "the truth" do
   #   assert true
   # end
-
-  #validation tests
-  test "golf_club must have name, address and description" do
-    assert_raise(ActiveRecord::RecordInvalid){ GolfClub.new.save! }
-  end
-
-  test "golf_club must be owned by someone" do
-    gc = GolfClub.new(:name => "test_name", :description => "about test", :address => "123, example road")
-    assert_not gc.valid?
-  end
 
   test "search exists" do
     assert_respond_to GolfClub, :search

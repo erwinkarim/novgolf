@@ -10,14 +10,23 @@ class UserReservation < ActiveRecord::Base
     #failed/canceled payment will be recorded, but uniqueness constraint would not be uphold
     unless: Proc.new{ |reserve| reserve.payment_failed? || reserve.canceled_by_club? || reserve.canceled_by_user? }
   }
-  validates :flight_matrix_id, presence: true
   #validates :token, uniqueness: true
   #need to check when this feature is available
+  validates_presence_of :user_id, :flight_matrix_id
+  validates_presence_of :actual_pax, :actual_buggy, :actual_caddy, :actual_insurance
   validates_presence_of :count_pax, :count_buggy, :count_caddy, :count_insurance
+  validates_presence_of :booking_date, :booking_time
+  validates_presence_of :status
   has_secure_token
 
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,
     :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed]
+
+  after_initialize :init
+
+  def init
+    status ||= 0
+  end
 
   def total_price
     actual_pax * count_pax +

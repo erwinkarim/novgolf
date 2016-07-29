@@ -1,19 +1,12 @@
 require 'test_helper'
 
 class FlightMatrixTest < ActiveSupport::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
-  test "must associated with flight_schedule" do
-      fm = FlightMatrix.new
-      assert_not fm.valid?
-
-      fm = FlightSchedule.last.flight_matrices.new
-      assert fm.valid?
-  end
+  should validate_presence_of(:flight_schedule_id)
+  should validate_presence_of(:tee_time)
 
   test "must at least 1 of days populated raise an error if do" do
       fm = FlightSchedule.last.flight_matrices.new
+      fm.assign_attributes({:day1 => nil})
       assert_raise(ActiveRecord::RecordInvalid){ fm.save! }
 
       fm = FlightSchedule.last.flight_matrices.new( {:day0 => 1})

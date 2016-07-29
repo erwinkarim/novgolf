@@ -11,6 +11,7 @@ class User < ActiveRecord::Base
   has_many :photos, as: :imageable
 
   has_one :profile_picture, class_name:"Photo", foreign_key: :id, primary_key: :profile_picture
+  validates_presence_of :role
 
   enum role: [:user, :admin, :superadmin ]
   after_initialize :init

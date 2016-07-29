@@ -2,7 +2,7 @@ class FlightMatrix < ActiveRecord::Base
   belongs_to :flight_matrix
   has_many :user_reservations
   has_one :user_reservation, -> (booking_date){ where("user_reservations.booking_date in ?", booking_date) }
-  validates_presence_of :tee_time
+  validates_presence_of :flight_schedule_id, :tee_time
 
   # each tee time is unique to flight schedule
   validates :tee_time, :uniqueness => { :scope => [:flight_schedule_id] }
@@ -22,8 +22,10 @@ class FlightMatrix < ActiveRecord::Base
 
   #validates that at least one of the dayX fields is populated
   def one_day_presence?
-    if %w(day0 day1 day2 day3 day4 day5 day6 day7 ).all?{|attr| self[attr].blank?}
+    if %w(day0 day1 day2 day3 day4 day5 day6 day7 ).all?{|attr| self[attr].blank? || self[attr].nil? }
+      puts "cannot all be blank"
       errors.add :base, "At least one day must be populated"
+      #raise ActiveRecord::RecordInvalid
     end
   end
 
