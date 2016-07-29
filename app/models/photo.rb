@@ -17,9 +17,9 @@ class Photo < ActiveRecord::Base
 
   def self.update_version_s3
     self.find_each do |photo|
-      photo.your_uploader.cache_stored_file!
-      photo.your_uploader.retrieve_from_cache!(ym.your_uploader.cache_name)
-      photo.your_uploader.recreate_versions!
+      photo.avatar.cache_stored_file!
+      photo.avatar.retrieve_from_cache!(photo.avatar.cache_name)
+      photo.avatar.recreate_versions!
       photo.save!
     end
   end
