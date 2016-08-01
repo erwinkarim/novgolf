@@ -4,8 +4,9 @@ class Admin::DashboardController < ApplicationController
   end
 
   def recreate_versions
-    Photo.update_version_s3
-
-    redirect_to recreate_versions_admin_dashboard_index_path
+    if Rail.env.production? then
+      Photo.update_version_s3
+      render :text => "ok!!!"
+    end
   end
 end
