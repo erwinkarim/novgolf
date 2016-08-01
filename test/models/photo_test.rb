@@ -8,4 +8,6 @@ class PhotoTest < ActiveSupport::TestCase
   should validate_presence_of :imageable_type
   should validate_presence_of :imageable_id
 
+  should belong_to(:imageable)
+
 end

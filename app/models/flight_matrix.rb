@@ -1,5 +1,5 @@
 class FlightMatrix < ActiveRecord::Base
-  belongs_to :flight_matrix
+  belongs_to :flight_schedule
   has_many :user_reservations
   has_one :user_reservation, -> (booking_date){ where("user_reservations.booking_date in ?", booking_date) }
   validates_presence_of :flight_schedule_id, :tee_time
@@ -30,6 +30,7 @@ class FlightMatrix < ActiveRecord::Base
   end
 
   #ensure that this schedule does not conflict w/ other schedules in the same golf club
+  # this function is done in GolfClub.setFlightSchedule
   def non_conflict?
     return true
   end

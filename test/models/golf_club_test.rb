@@ -9,6 +9,15 @@ class GolfClubTest < ActiveSupport::TestCase
   #   assert true
   # end
 
+  should have_many(:charge_schedules)
+  should have_many(:user_reservations)
+  should have_many(:flight_schedules)
+  should have_many(:photos)
+  should have_many(:amenities)
+  should have_many(:amenity_lists)
+
+  should belong_to(:user)
+
   test "search exists" do
     assert_respond_to GolfClub, :search
   end

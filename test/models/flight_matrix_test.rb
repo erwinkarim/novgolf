@@ -4,6 +4,9 @@ class FlightMatrixTest < ActiveSupport::TestCase
   should validate_presence_of(:flight_schedule_id)
   should validate_presence_of(:tee_time)
 
+  should have_many(:user_reservations)
+  should belong_to(:flight_schedule)
+
   test "must at least 1 of days populated raise an error if do" do
       fm = FlightSchedule.last.flight_matrices.new
       fm.assign_attributes({:day1 => nil})

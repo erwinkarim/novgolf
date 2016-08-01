@@ -1,4 +1,6 @@
 class Admin::DashboardController < ApplicationController
+  before_action :superadmins_only
+
   # GET      /admin/dashboards(.:format)
   def index
   end

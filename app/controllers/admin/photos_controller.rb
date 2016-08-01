@@ -1,5 +1,5 @@
 class Admin::PhotosController < ApplicationController
-  before_action :authenticate_user!
+  before_action :admins_only
 
   # GET      /admin/golf_clubs/:golf_club_id/photos(.:format)
   def index
