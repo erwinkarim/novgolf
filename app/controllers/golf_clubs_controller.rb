@@ -1,11 +1,4 @@
 class GolfClubsController < ApplicationController
-  def index
-    @golf_clubs = GolfClub.all
-
-    respond_to do |format|
-      format.tpl
-    end
-  end
 
   # GET      /golf_clubs/:id
   def show
