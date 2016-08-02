@@ -268,8 +268,6 @@ var GolfReserveForm = React.createClass({
         return;
       } else {
         //check if this is inside current state
-        console.log("e.currentTarget", e.currentTarget)
-        console.log("e.currentTarget.dataset.value", e.currentTarget.dataset.value)
         var newTeeTimes = this.state.selectedTeeTimes;
         var newIndex = this.state.selectedTeeTimesIndex;
         var newFlightInfo = this.state.flightInfo;
