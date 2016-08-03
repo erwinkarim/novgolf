@@ -2,7 +2,7 @@
   .container
     %h1.display-3 Jom Golf
     %p.lead Easily get your golf reservations
-    .row
+    .row#query-form
       = react_component "QueryForm", { crsfToken: form_authenticity_token, queryString:"",
         queryTarget: search_path,
         queryDate:params.has_key?(:date) ? params[:date] : "#{1.day.from_now.strftime('%e/%m/%Y')}",

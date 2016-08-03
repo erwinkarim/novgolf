@@ -3,6 +3,8 @@ Rails.application.routes.draw do
 
   devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
   resources :users, :only => [:show, :edit, :update] do
+    get 'profile_picture'
+    post 'profile_picture', :to => "users#update_profile_picture"
     resources :reservations, :only => [:show], :controller => "user_reservations" do
       collection do
         get '/' => 'user_reservations#user_index'
@@ -27,14 +29,19 @@ Rails.application.routes.draw do
 
   #to manage golf clubs
   namespace :admin do
+    resources :dashboard, :only => [:index] do
+      collection do
+        get 'recreate_versions'
+      end
+    end
     resources :golf_clubs do
       get 'dashboard'
       resources :photos, :only => [:index, :create, :update, :destroy]
     end
   end
 
-  resources :golf_clubs, :only => [:index, :show] do
-    get 'schedule'
+  resources :golf_clubs, :only => [:show] do
+    #get 'schedule'
     resources :flight_matrices, :only => [:index] do
     end
     resources :user_reservations, :only => [:index] do

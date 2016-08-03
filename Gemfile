@@ -43,7 +43,10 @@ gem 'puma', '3.4.0'
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug'
+  gem 'shoulda', '~> 3.5'
+  gem 'shoulda-matchers', '~> 2.0'
 end
+  gem 'dotenv-rails'
 
 group :development do
   gem 'sqlite3'

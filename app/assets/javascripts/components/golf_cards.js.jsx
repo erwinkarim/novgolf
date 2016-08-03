@@ -14,10 +14,10 @@ var GolfCardTimes = React.createClass({
     };
 
     return (
-      <label ref="teeTimeLabel" className={"btn btn-"+reserve_status} onClick={this.props.handleClick} data-tee-time={this.props.flight.tee_time}
-        value={this.props.index}>
+      <label ref="teeTimeLabel" className={"btn btn-"+reserve_status} onClick={reserve_status != "secondary" ? null : this.props.handleClick} data-tee-time={this.props.flight.tee_time}
+        value={this.props.index} data-value={this.props.index}>
         <input type="checkbox" name="teeTimes[]" value={this.props.flight.tee_time} />
-        <h5 value={this.props.index} >{toCurrency(this.props.flight.prices.flight)}</h5>
+        <h5 value={this.props.index} data-value={this.props.index} >{toCurrency(this.props.flight.prices.flight)}</h5>
         {this.props.flight.tee_time}
       </label>
     );
@@ -271,7 +271,7 @@ var GolfReserveForm = React.createClass({
         var newTeeTimes = this.state.selectedTeeTimes;
         var newIndex = this.state.selectedTeeTimesIndex;
         var newFlightInfo = this.state.flightInfo;
-        var value = e.target.value;
+        var value = e.currentTarget.dataset.value;
         var arrayPos = $.inArray(value, newTeeTimes);
 
         if( arrayPos != -1){

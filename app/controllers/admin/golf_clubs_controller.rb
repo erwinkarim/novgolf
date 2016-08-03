@@ -1,6 +1,7 @@
 class Admin::GolfClubsController < ApplicationController
   #require login
-  before_action :authenticate_user!
+  #before_action :authenticate_user!
+  before_action :admins_only
 
   def index
     @golf_clubs = current_user.golf_clubs
