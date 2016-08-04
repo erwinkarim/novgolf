@@ -4,6 +4,8 @@ class UserReservation < ActiveRecord::Base
   belongs_to :golf_club
   belongs_to :flight_matrix
 
+  has_one :review, as: :topic
+
   #each club id should have a unique booking date and time
   validates :golf_club_id, uniqueness: {
     scope: [:booking_date, :booking_time],

@@ -8,6 +8,9 @@ class GolfClub < ActiveRecord::Base
   has_many :photos, as: :imageable
 
   belongs_to :user
+  #should have has_many :reviews where topic_type = UserReservation
+  # and topic_id = UserReservations.id and user_reservations.golf_club_id = id
+
 
   validates_presence_of :name, :description, :address, :open_hour, :close_hour, :user_id
 
@@ -269,5 +272,10 @@ class GolfClub < ActiveRecord::Base
     Amenity.joins("left outer join (#{am_sql}) as am_sql on amenities.id = am_sql.amenity_id").pluck(
       :'amenities.id', :'amenities.name', :'amenities.label', :'amenities.icon', :'am_sql.amenity_id'
     ).map{ |x| { :amenity_id => x[0], :name => x[1], :label => x[2], :icon => x[3], :available => x[4].nil? ? false : true }}
+  end
+
+  #return reviews
+  def reviews
+    Review.joins{ user_reservation.golf_club }.where(:'user_reservations.golf_club_id' => self.id).order(:created_at => :desc)
   end
 end

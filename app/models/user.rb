@@ -9,6 +9,7 @@ class User < ActiveRecord::Base
   has_many :golf_clubs
 
   has_many :photos, as: :imageable
+  has_many :reviews
 
   has_one :profile_picture, class_name:"Photo", foreign_key: :id, primary_key: :profile_picture
   validates_presence_of :role

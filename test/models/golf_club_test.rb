@@ -30,6 +30,10 @@ class GolfClubTest < ActiveSupport::TestCase
     assert_respond_to GolfClub.first, :amenity_listings
   end
 
+  test "reviews exists in instance" do
+    assert_respond_to GolfClub.first, :reviews
+  end
+
 
   #search result must be empty if looking for dates in the past
   test "search must the empty if looking in the past" do

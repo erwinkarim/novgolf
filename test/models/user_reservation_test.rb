@@ -17,4 +17,6 @@ class UserReservationTest < ActiveSupport::TestCase
   should belong_to(:user)
   should belong_to(:golf_club)
   should belong_to(:charge_schedule)
+
+  should have_one(:review)
 end
