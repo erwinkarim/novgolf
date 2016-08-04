@@ -4,4 +4,7 @@ class UserMailerPreview < ActionMailer::Preview
     UserMailer.test
   end
 
+  def reservation_confirmed
+    UserMailer.reservation_confirmed
+  end
 end
