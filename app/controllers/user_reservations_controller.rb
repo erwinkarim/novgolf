@@ -78,12 +78,13 @@ class UserReservationsController < ApplicationController
   #  GET      /users/:user_id/reservations/:id(.:format)
   def show
     @user = User.find(params[:user_id])
-    @reservation = UserReservation.find(params[:id])
+    @reservation = UserReservation.includes(:review).find(params[:id])
+    @review = @reservation.review
 
     respond_to do |format|
       format.html
       format.json {
-        render json: @reservation.attributes.merge(:user => @user)
+        render json: @reservation.attributes.merge({user:@user, review:@review})
       }
     end
   end

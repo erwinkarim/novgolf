@@ -54,3 +54,12 @@
                   %h4 Total Price:
                 %td
                   %h4 #{ number_to_currency(@reservation.total_price, { :unit => "RM "} )}
+      .card
+        .card-header Review
+        - if @review.nil? then
+          .card-block
+            %p.card-text You haven't review this flight yet.
+            %a.btn.btn-primary{ :href => new_user_review_path(current_user, {topic_id:@reservation.id, topic_type:"UserReservation"}) } Review
+        - else
+          .card-block
+            %p.card-text Show the review
