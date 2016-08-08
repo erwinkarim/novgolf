@@ -10,7 +10,10 @@ class ReviewTest < ActiveSupport::TestCase
   should belong_to(:user)
   should belong_to(:topic)
 
-  # test "the truth" do
-  #   assert true
-  # end
+  test "rating can't be blank if topic is UserReservation" do
+    review = User.first.reviews.new({:topic_type => "UserReservation", :topic_id => 1, :comment => "test"})
+    assert_raise ActiveRecord::RecordInvalid do
+      review.save!
+    end
+  end
 end

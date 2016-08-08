@@ -61,5 +61,9 @@
             %p.card-text You haven't review this flight yet.
             %a.btn.btn-primary{ :href => new_user_review_path(current_user, {topic_id:@reservation.id, topic_type:"UserReservation"}) } Review
         - else
-          .card-block
-            %p.card-text Show the review
+          %ul.list-group.list-group-flush
+            = react_component("ReviewCard", { review:@review})
+            - if current_user.id == @review["user_id"] then
+              %li.list-group-item
+                %a.btn.btn-primary{ :href => edit_user_review_path(current_user, @review["id"],
+                  {topic_id:@review["topic_id"],   topic_type:@review["topic_type"]})} Edit Review

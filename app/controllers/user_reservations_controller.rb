@@ -80,6 +80,10 @@ class UserReservationsController < ApplicationController
     @user = User.find(params[:user_id])
     @reservation = UserReservation.includes(:review).find(params[:id])
     @review = @reservation.review
+    if !@review.nil? then
+      @review = @review.attributes.merge({user:@user})
+      @review = @review.merge({created_at:@review["created_at"].localtime.strftime("%d/%m/%Y %H:%M %P")})
+    end
 
     respond_to do |format|
       format.html
