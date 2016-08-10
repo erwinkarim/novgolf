@@ -50,46 +50,10 @@
               %li Lorem ipsum dolor sit amet, consectetur adipisicing elit.
               %li Lorem ipsum dolor sit amet, consectetur adipisicing elit.
               %li Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-      .card
-        .card-header Flight Reviews
-        %ul.list-group.list-group-flush
-          %li.list-group-item
-            .row
-              .col-xs-3.col-md-2
-                %img.img-circle{ :src => 'http://placehold.it/64x64'}
-              .col-xs-9.col-md-10
-                %h4.card-title Club Name@Date
-                %div
-                  %i.fa.fa-star
-                  %i.fa.fa-star
-                  %i.fa.fa-star
-                  %i.fa.fa-star
-                  %i.fa.fa-star
-            .row.card-text
-              .col-xs-12
-                %p.card-text
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-                  ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                  nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
-                  qui officia deserunt mollit anim id est laborum
-          %li.list-group-item
-            .row
-              .col-xs-3.col-md-2
-                %img.img-circle{ :src => 'http://placehold.it/64x64'}
-              .col-xs-9.col-md-10
-                %h4.card-title Extermly Long Club Name in the desert@Date
-                %div
-                  %i.fa.fa-star
-                  %i.fa.fa-star
-                  %i.fa.fa-star
-                  %i.fa.fa-star
-                  %i.fa.fa-star-o
-            .row.card-text
-              .col-xs-12
-                %p.card-text
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-                  ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                  nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
-                  qui officia deserunt mollit anim id est laborum
+      - if @reviews.empty? then
+        .card
+          .card-header Flight Reviews
+          %ul.list-group.list-group-flush
+            %li.list-group-item No reviews yet...
+      - else
+        = react_component "ReviewList", { reviews:@reviews ,showHeader:true, displayMode:'reviewer'}

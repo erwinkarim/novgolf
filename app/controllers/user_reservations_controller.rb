@@ -85,6 +85,10 @@ class UserReservationsController < ApplicationController
       @review = @review.merge({created_at:@review["created_at"].localtime.strftime("%d/%m/%Y %H:%M %P")})
     end
 
+    #only show review form if it's 12 hours after tee time and date
+    @show_review_form = DateTime.parse("#{@reservation.booking_date} #{@reservation.booking_time.to_datetime.strftime('%H:%M')} +0000") <
+      DateTime.now + 12.hours
+
     respond_to do |format|
       format.html
       format.json {

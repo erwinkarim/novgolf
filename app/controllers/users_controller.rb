@@ -3,6 +3,9 @@ class UsersController < ApplicationController
   # GET      /users/:id
   def show
       @user = User.find(params[:id])
+      @reviews = @user.reviews.order(:created_at => :desc).limit(20).map{
+        |x| x.to_json
+      }
   end
 
   def edit

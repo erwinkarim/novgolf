@@ -21,6 +21,10 @@ class GolfClubsController < ApplicationController
         else
           @jumboPhoto = { :url => @photos.first.avatar.url, :caption => @photos.first.caption }
         end
+
+        @reviews = @club.reviews.order(:created_at => :desc).limit(10).map{ |x|
+          x.to_json
+        }
       }
       format.json {
         render json:@result

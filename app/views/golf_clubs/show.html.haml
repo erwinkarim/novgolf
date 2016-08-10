@@ -12,8 +12,17 @@
   .row
     .col-xs-12.col-md-8
       %h1 #{ @club.name }
-      %div
-        = simple_format(@club.description)
+      #desc-parent
+        #desc-excerpt.collapse.in
+          = truncate(@club.description, length:320, seperator:'\n'){ link_to "continue...",
+            "#desc-full", {data:{parent:'#desc-parent',toggle:'collapse'}, id:'desc-excerpt-btn'} }
+        #desc-full.collapse
+          = simple_format(@club.description)
+          %a#desc-full-btn{ :href => "#desc-excerpt", data:{parent:'#desc-parent',toggle:'collapse'}} Collapse Description
+      - if !@reviews.empty? then
+        = react_component "ReviewList", {reviews:@reviews, showHeader:true}
+
+
     .col-xs-12.col-md-4
       .card
         .card-block
@@ -84,4 +93,13 @@
   // layout Isotope after each image loads
   $grid.imagesLoaded().progress( function() {
     $grid.masonry();
+  });
+
+  //handle collapse
+  $('#desc-excerpt-btn').click(function(){
+    $('#desc-excerpt').removeClass('in');
+  });
+
+  $('#desc-full-btn').click(function(){
+    $('#desc-full').removeClass('in');
   });
