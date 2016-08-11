@@ -32,13 +32,12 @@ class UserReservationsController < ApplicationController
           :count_pax => v["count"]["pax"], :count_insurance => v["count"]["insurance"],
           :flight_matrix_id => v["matrix_id"] )
 
-        #generate the token will actually save the record
         reservation.regenerate_token
         #reservation.save!
 
-        session[:reservation_ids] << reservation.id
         reservation.reservation_created!
         reservation.payment_attempted!
+        session[:reservation_ids] << reservation.id
       end
     end
   end
