@@ -94,3 +94,6 @@ gem 'featherlight'
 gem 'snackbarjs-rails'
 
 gem 'fog'
+
+#amazon aws
+gem 'aws-sdk-rails'
