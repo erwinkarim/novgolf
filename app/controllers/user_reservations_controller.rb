@@ -78,11 +78,7 @@ class UserReservationsController < ApplicationController
   def show
     @user = User.find(params[:user_id])
     @reservation = UserReservation.includes(:review).find(params[:id])
-    @review = @reservation.review
-    if !@review.nil? then
-      @review = @review.attributes.merge({user:@user})
-      @review = @review.merge({created_at:@review["created_at"].localtime.strftime("%d/%m/%Y %H:%M %P")})
-    end
+    @review = @reservation.review.nil? ? nil : @reservation.review.to_json
 
     #only show review form if it's 12 hours after tee time and date
     @show_review_form = DateTime.parse("#{@reservation.booking_date} #{@reservation.booking_time.to_datetime.strftime('%H:%M')} +0000") <
