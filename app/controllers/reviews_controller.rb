@@ -14,7 +14,28 @@ class ReviewsController < ApplicationController
       return
     end
 
-    @review = current_user.reviews.new({topic_id:params[:topic_id], topic_type:params[:topic_type]} )
+    #check if the review has already been done
+    case params[:topic_type]
+    when "UserReservation"
+      reservation = UserReservation.find(params[:topic_id])
+      #check if you actually own the reservation
+      if reservation.user_id != current_user.id then
+        render :file => "public/404.html", :status => :not_authorized
+      end
+
+      #check if the reservation is alreday done
+      if reservation.review.nil? then
+        @review = current_user.reviews.new({topic_id:params[:topic_id], topic_type:params[:topic_type]} )
+      else
+        @review = reservation.review
+        redirect_to edit_user_review_path(current_user, @review)
+      end
+    else
+      #generic new review
+      @review = current_user.reviews.new({topic_id:params[:topic_id], topic_type:params[:topic_type]} )
+    end
+
+
   end
 
   def create
