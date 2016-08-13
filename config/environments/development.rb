@@ -1,3 +1,5 @@
+require "async_adapter"
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -43,4 +45,5 @@ Rails.application.configure do
 
   config.action_mailer.default_url_options = { host: 'localhost.localdomain', port: 5000}
 
+  config.active_job.queue_adapter = :async
 end

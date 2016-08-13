@@ -4,7 +4,11 @@ class UserMailerPreview < ActionMailer::Preview
     UserMailer.test
   end
 
-  def reservation_confirmed
-    UserMailer.reservation_confirmed
+  def reservation_confirmed_single
+    UserMailer.reservation_confirmed [UserReservation.first]
+  end
+
+  def reservation_confirmed_multiple
+    UserMailer.reservation_confirmed [UserReservation.first, UserReservation.last]
   end
 end

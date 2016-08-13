@@ -18,7 +18,7 @@ class UserReservationsController < ApplicationController
     session[:reservation_ids] = []
     session[:timeout] = Time.now + 10.minutes
 
-    Rails.logger.info "session[:flight] is #{session[:flight]}"
+    #Rails.logger.info "session[:flight] is #{session[:flight]}"
     #create a reservation w/o token to show that this flight is being reserved
     #todo: think about splitting the pricing data into each reservation(s)
     #   eg: if you booked 5 balls in 2 flights, flight a will have 3 balls and flight b will have 2 balls and are priced accordingly
@@ -40,6 +40,9 @@ class UserReservationsController < ApplicationController
         session[:reservation_ids] << reservation.id
       end
     end
+
+    #check payment status in 11 minutes
+    CheckPaymentStatusJob.set(wait: 11.minutes).perform_later(UserReservation.find(session[:reservation_ids]))
   end
 
   def confirmation

@@ -2,7 +2,11 @@
 %head
   %title Reservation
 %body
-  %p Reservation Confirmed
-  .card
-    .card-block
-      %p.card-test Test
+  %p The following reservation(s) has been confirmed:
+  %ul
+    - @reservations.each do |reservation|
+      %li
+        (#{link_to reservation.token, user_reservation_url(reservation.user_id, reservation)})
+        #{reservation.booking_date} #{reservation.booking_time.localtime.strftime('%H:%M')} @ #{reservation.golf_club.name}
+  %p Thank you,
+  %p Jom Golf
