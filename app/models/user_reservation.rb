@@ -36,4 +36,8 @@ class UserReservation < ActiveRecord::Base
     actual_caddy * count_caddy +
     actual_insurance * count_insurance
   end
+
+  def booking_datetime
+    "#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
+  end
 end

@@ -84,8 +84,10 @@ class UserReservationsController < ApplicationController
     @review = @reservation.review.nil? ? nil : @reservation.review.to_json
 
     #only show review form if it's 12 hours after tee time and date
-    @show_review_form = DateTime.parse("#{@reservation.booking_date} #{@reservation.booking_time.to_datetime.strftime('%H:%M')} +0000") <
+    flight_is_12hours_old= DateTime.parse("#{@reservation.booking_date} #{@reservation.booking_time.to_datetime.strftime('%H:%M')} +0000") <
       DateTime.now + 12.hours
+    @allow_to_review = @reservation.payment_confirmed?
+    @show_review_form = flight_is_12hours_old && @reservation.payment_confirmed? && @reservation.review.nil?
 
     respond_to do |format|
       format.html
