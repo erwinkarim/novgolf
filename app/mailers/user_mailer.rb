@@ -1,4 +1,5 @@
 class UserMailer < ApplicationMailer
+  layout 'mailer'
   def test
     mail(to: "erwinkarim@gmail.com", subject: "Test!!!")
   end

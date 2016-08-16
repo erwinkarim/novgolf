@@ -1,12 +1,13 @@
-!!!!
-%head
-  %title Reservation
-%body
-  %p The following reservation(s) has been confirmed:
-  %ul
+.card
+  .card-header
+    %h2 Reservations confirmed!
+  %ul.list-group.list-group-flush
+    %li.list-group-item
+      Your reservations has been confirmed. Below are your reservation(s):-
     - @reservations.each do |reservation|
-      %li
+      %li.list-group-item
         (#{link_to reservation.token, user_reservation_url(reservation.user_id, reservation)})
         #{reservation.booking_date} #{reservation.booking_time.localtime.strftime('%H:%M')} @ #{reservation.golf_club.name}
-  %p Thank you,
-  %p Jom Golf
+%p Thank you,
+%p Jom Golf
+%small Something about contact information here

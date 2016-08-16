@@ -95,5 +95,9 @@ gem 'snackbarjs-rails'
 
 gem 'fog'
 
+#premailer, auto-include css for emails
+gem 'premailer-rails'
+gem 'nokogiri'
+
 #amazon aws
 gem 'aws-sdk-rails'
