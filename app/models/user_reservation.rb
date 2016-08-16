@@ -9,8 +9,8 @@ class UserReservation < ActiveRecord::Base
   #each club id should have a unique booking date and time
   validates :golf_club_id, uniqueness: {
     scope: [:booking_date, :booking_time],
-    #failed/canceled payment will be recorded, but uniqueness constraint would not be uphold
-    unless: Proc.new{ |reserve| reserve.payment_failed? || reserve.canceled_by_club? || reserve.canceled_by_user? }
+    #validation will be enforced during creation, payment and confirmation stage, but not when it was canceled or failed
+    conditions: -> { where( status: [0,1,2,3])}
   }
   #validates :token, uniqueness: true
   #need to check when this feature is available

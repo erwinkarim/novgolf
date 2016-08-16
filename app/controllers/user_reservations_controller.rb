@@ -55,6 +55,11 @@ class UserReservationsController < ApplicationController
       @reservations.each do |reservation|
         reservation.payment_confirmed!
       end
+
+      #send out email to confirm
+      UserMailer.reservation_confirmed(@reservations).deliver_later
+
+      #send out review in the future
     else
       @reservations.each do |reservation|
         reservation.payment_failed!
