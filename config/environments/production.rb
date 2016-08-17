@@ -79,4 +79,6 @@ Rails.application.configure do
 
   #user amazon ses
   #config.action_mailer.delivery_method = :aws_sdk
+
+  config.active_job.queue_adapter = :shoryuken
 end

@@ -59,6 +59,7 @@ end
 
 group :production do
 #  gem 'mysql2'
+  gem 'shoryuken'
 end
 
 gem 'haml'
