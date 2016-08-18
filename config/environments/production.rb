@@ -82,4 +82,7 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: 'novgolf-dev.ap-southeast-1.elasticbeanstalk.com', port: 80}
 
   config.active_job.queue_adapter = :shoryuken
+
+  #ensure mails are delivered
+  config.action_mailer.perform_deliveries = true
 end
