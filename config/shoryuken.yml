@@ -11,7 +11,7 @@ queues:
   #- [low_priority, 1]
 
 later:
-  delay: 5 * 60   # How frequently to poll the schedule table, in seconds.
+  delay: 300   # How frequently to poll the schedule table, in seconds.
   pidfile: /var/app/support/pids/shoryuken.pid
   tables:
     - shoryuken_later_schedule
