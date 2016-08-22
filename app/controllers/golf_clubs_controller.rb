@@ -16,15 +16,14 @@ class GolfClubsController < ApplicationController
       format.html {
         #additional stuff for normal page
         @photos = @club.photos.reverse
-        if @photos.length == 0 then
-          @jumboPhoto = { :url => "/images/golf_course_#{rand(1..4)}.jpg", :caption => "none" }
-        else
+        @jumboPhoto = @photos.length == 0 ?
+          { :url => "/images/golf_course_#{rand(1..4)}.jpg", :caption => "none" } :
           @jumboPhoto = { :url => @photos.first.avatar.url, :caption => @photos.first.caption }
-        end
 
-        @reviews = @club.reviews.order(:created_at => :desc).limit(10).map{ |x|
-          x.to_json
-        }
+        @reviews = @club.reviews.order(:created_at => :desc).limit(10).map{ |x| x.to_json }
+
+        @desc_array = @club.description.split(/\n/)
+
       }
       format.json {
         render json:@result
