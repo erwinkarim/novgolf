@@ -54,12 +54,15 @@ class UserReservationsController < ApplicationController
       @reservations = UserReservation.find(session[:reservation_ids])
       @reservations.each do |reservation|
         reservation.payment_confirmed!
+
+        #send out review in the future
+        UserReservationMailer.request_review(reservation).deliver_later(wait_until: reservation.booking_datetime + 12.hours)
       end
 
       #send out email to confirm
       UserMailer.reservation_confirmed(@reservations).deliver_later
 
-      #send out review in the future
+
     else
       @reservations.each do |reservation|
         reservation.payment_failed!

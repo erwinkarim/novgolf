@@ -38,6 +38,7 @@ class UserReservation < ActiveRecord::Base
   end
 
   def booking_datetime
-    "#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
+    #"#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
+    DateTime.parse "#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
   end
 end
