@@ -1,4 +1,6 @@
 class UserReservation < ActiveRecord::Base
+  require "assets/name_generator"
+
   belongs_to :user
   belongs_to :charge_schedule
   belongs_to :golf_club
@@ -41,4 +43,18 @@ class UserReservation < ActiveRecord::Base
     #"#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
     DateTime.parse "#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
   end
+
+  #generate the random user reservation complete with review
+  def self.generate_random_reservation user = User.first
+    #get the club
+    ids = GolfClub.all.limit(100).pluck(:id)
+    club = GolfClub.find( ids[rand(0..ids.length-1)])
+
+    #get a random flight_matrix
+
+    #create the proper user reservation based on the flight matrix at a date 6 month in the past
+
+    #randomly create the review based on the reservation
+  end
+
 end

@@ -20,8 +20,8 @@ class GolfClub < ActiveRecord::Base
 
   def init
     #auto create the default price schedule
-    self.open_hour ||= 10
-    self.close_hour ||= 20
+    self.open_hour ||= Time.parse("2001-01-01 10:00 UTC")
+    self.close_hour ||= Time.parse("2001-01-01 20:00 UTC")
 
     #default location is klcc
     self.lat ||= "3.15785"
@@ -157,38 +157,39 @@ class GolfClub < ActiveRecord::Base
     #create the club
     club_name = NameGenerator.random_name
     GolfClub.transaction do
-      club = owner.golf_clubs.new(name:"Kelab #{club_name}", description:NameGenerator::LOREM * rand(2..10), address:club_name )
+      club = owner.golf_clubs.new(name:"Kelab #{club_name}", description:NameGenerator::LOREM * rand(2..10), address:club_name,
+          lat:rand(2.87707..3.1979).to_s, lng:rand(101.4632..101.86152).to_s
+      )
       club.save!
 
       #will always create 4 schedules, 1 morning weekday/weekend, and 1 afternoon weekday/weekend
-
       (1..4).each do |flight|
         #create the flight_schedules
         fs = club.flight_schedules.new(name:"FlightSchedule ##{flight}",
-          min_pax:rand(2..4), max_pax:rand(4..6), min_cart:rand(0..1), max_cart:rand(2..4), min_caddy:rand(0..1), max_caddy:rand(2..4))
+          min_pax:rand(2..4), max_pax:rand(4..6), min_cart:rand(0..1), max_cart:rand(2..4), min_caddy:rand(0..1), max_caddy:rand(2..4)
+        )
         fs.save!
 
         #attach flight matrix
-        tee_time = Time.parse("2001-01-01 #{flight.odd? ? "07:00" : "15:00"} UTC")
+        tee_time = Time.parse("2001-01-01 #{flight.odd? ? "0#{rand(6..9)}:00" : "#{rand(14..16)}:00"} UTC")
 
-        #around 5 to 15 flights per session
-        (5..rand(10..15)).each do |tee_off|
-          if [1,2].include? flight then
-            fm = fs.flight_matrices.new(day1:1, day2:1, day3:1, day4:1, day5:1, day6:0, day7:0, tee_time:tee_time)
-          else
-            fm = fs.flight_matrices.new(day1:0, day2:0, day3:0, day4:0, day5:0, day6:1, day7:1, tee_time:tee_time)
-          end
+        #around 5 to 20 flights per session
+        (5..rand(10..20)).each do |tee_off|
+          fm = [1,2].include?(flight) ?
+            fs.flight_matrices.new(day1:1, day2:1, day3:1, day4:1, day5:1, day6:0, day7:0, tee_time:tee_time) :
+            fs.flight_matrices.new(day1:0, day2:0, day3:0, day4:0, day5:0, day6:1, day7:1, tee_time:tee_time)
           fm.save!
           tee_time += rand(7..14).minutes
         end
 
         #attach price schedule
         cs = ChargeSchedule.new(golf_club_id:club.id, flight_schedule_id:fs.id,
-          caddy:rand(20..40), cart:rand(40..60), session_price:rand(100.1000), insurance:rand(20..50), insurance_mode:rand(0..2)
+          caddy:rand(20..40), cart:rand(40..60), session_price:rand(100..1000), insurance:rand(20..50), insurance_mode:rand(0..2)
         )
         cs.save!
-
       end
+
+      #create the ammenities
     end
   end
 
