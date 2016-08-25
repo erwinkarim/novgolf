@@ -11,6 +11,8 @@ class GolfClubsController < ApplicationController
     end
 
     @result = GolfClub.search({ :dateTimeQuery => Time.parse("#{@date} 14:00 +0000"), :spread => 9.hours, :club_id => params[:id]}).first
+    #handle empty result
+    @result = @result.nil? ? {:club => [], :flights => [], :queryData => []} : @result
 
     respond_to do |format|
       format.html {

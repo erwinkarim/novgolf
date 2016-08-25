@@ -51,10 +51,39 @@ class UserReservation < ActiveRecord::Base
     club = GolfClub.find( ids[rand(0..ids.length-1)])
 
     #get a random flight_matrix
+    fm_ids = club.flight_matrices.pluck(:id)
+    fm = FlightMatrix.find(fm_ids[rand(0..fm_ids.length-1)])
+    fs = FlightSchedule.find(fm.flight_schedule_id)
+    cs = fs.charge_schedule
 
     #create the proper user reservation based on the flight matrix at a date 6 month in the past
+    # see which days are allowed, then pick a random day, and take a day 1..28 weeks ago and create a user reservation
+    days = fm.attributes.select{ |k,v| k =~ /day[1-7]/ && v == 1}.map{|x, y| day_index = x.match(/[1-7]/)[0].to_i }
+    proposed_date = Date.today.sunday - rand(6..36).weeks + (days[rand(0..days.length-1)]).days
 
     #randomly create the review based on the reservation
+    flight_count = rand(fs.min_pax..fs.max_pax)
+    caddy_count = rand(fs.min_caddy..fs.max_caddy)
+    buggy_count = rand(fs.min_cart..fs.max_cart)
+
+    reservation = user.user_reservations.new(
+      flight_matrix_id:fm.id, golf_club_id:fs.golf_club_id,
+      status: 0,
+      booking_date:proposed_date, booking_time: fm.tee_time,
+      actual_caddy:caddy_count*cs.caddy , actual_buggy:buggy_count*cs.cart ,
+      actual_pax:flight_count*cs.session_price, actual_insurance:flight_count*cs.insurance ,
+      count_caddy:caddy_count, count_buggy:buggy_count, count_pax:flight_count , count_insurance:flight_count
+    )
+
+    #if successfully saved, create the review
+    if reservation.save! then
+      reservation.save!
+      review = user.reviews.new(topic_id: reservation.id, topic_type:"UserReservation", rating:rand(1..5), comment:NameGenerator::LOREM)
+      review.save!
+      reservation
+    else
+      return nil
+    end
   end
 
 end

@@ -15,7 +15,7 @@ var ReviewCard = React.createClass({
         obj_name = this.props.review.topic.golf_club.name;
         obj_date = this.props.review.topic.booking_datetime;
         obj_link = this.props.review.topic.link;
-        obj_image = this.props.review.topic.image;
+        obj_image = this.props.review.topic.image == null ? 'http://placehold.it/64x64' : this.props.review.topic.image;
       } else {
         obj_name = this.props.review.topic_type + "#" + this.props.review.topic_id;
         obj_date = this.props.review.topic.created_at;

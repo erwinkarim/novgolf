@@ -22,7 +22,7 @@ class Review < ActiveRecord::Base
         golf_club:topic.golf_club,
         booking_datetime:"#{topic.booking_date.to_datetime.strftime('%d-%b-%Y')}@#{topic.booking_time.strftime('%l:%M%p')}",
         link:golf_club_path(topic.golf_club),
-        image:topic.golf_club.photos.last.avatar.square400.url
+        image:topic.golf_club.photos.empty? ? nil : topic.golf_club.photos.last.avatar.square400.url
       })
     else
       topic
