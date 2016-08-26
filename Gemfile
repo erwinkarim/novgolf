@@ -47,7 +47,6 @@ group :development, :test do
   gem 'byebug'
   gem 'shoulda', '~> 3.5'
   gem 'shoulda-matchers', '~> 2.0'
-  gem 'dotenv-rails'
 end
 
 group :development do
@@ -63,6 +62,8 @@ group :production do
 #  gem 'mysql2'
   gem 'shoryuken-later'
 end
+
+gem 'dotenv-rails'
 
 gem 'haml'
 gem 'paloma'
