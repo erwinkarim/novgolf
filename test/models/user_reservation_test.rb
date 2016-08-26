@@ -20,4 +20,25 @@ class UserReservationTest < ActiveSupport::TestCase
 
   should have_one(:review)
 
+  #ensure the validates_booking_datetime returns true if put correct input
+  test "validates_booking_datetime true" do
+    fm = FlightMatrix.last
+    selected_day = fm.attributes.select{|k,v| k.match(/day[1-7]/) && v == 1 }.first[0].match(/[1-7]/)[0].to_i
+    selected_date = 3.weeks.ago.sunday + selected_day.days
+    selected_time = fm.tee_time
+
+    assert UserReservation.new(booking_date:selected_date, booking_time:selected_time, flight_matrix_id:fm.id).validates_booking_datetime
+  end
+
+  #ensure the validates_booking_datetime returns false if put wrong input
+  test "validates_booking_datetime false" do
+    fm = FlightMatrix.last
+    selected_day = fm.attributes.select{|k,v| k.match(/day[1-7]/) && (v == 0 || v.nil?) }.first[0].match(/[1-7]/)[0].to_i
+    selected_date = 3.weeks.ago.sunday + selected_day.days
+    selected_time = fm.tee_time
+
+    assert_not UserReservation.new(booking_date:selected_date, booking_time:selected_time, flight_matrix_id:fm.id).validates_booking_datetime
+  end
+
+
 end

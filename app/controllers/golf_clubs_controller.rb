@@ -22,7 +22,7 @@ class GolfClubsController < ApplicationController
           { :url => "/images/golf_course_#{rand(1..4)}.jpg", :caption => "none" } :
           @jumboPhoto = { :url => @photos.first.avatar.url, :caption => @photos.first.caption }
 
-        @reviews = @club.reviews.order(:created_at => :desc).limit(10).map{ |x| x.to_json }
+        @got_reviews = !@club.reviews.empty?
 
         @desc_array = @club.description.split(/\n/)
 

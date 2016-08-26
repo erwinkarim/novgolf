@@ -10,7 +10,7 @@ Rails.application.routes.draw do
         get '/' => 'user_reservations#user_index'
       end
     end
-    resources :reviews, :except => [:index]
+    resources :reviews
   end
   #devise_scope :user do
   #  delete 'sign_out', :to => 'devise/sessions#destroy', :as => :destroy_user_session

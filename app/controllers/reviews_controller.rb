@@ -7,6 +7,37 @@ class ReviewsController < ApplicationController
     end
   end
 
+  # GET      /users/:user_id/reviews
+  # optional params
+  # => offset, get results after offset value
+  def index
+    @user = User.find(params[:user_id])
+
+    respond_to do |format|
+      format.html
+      format.json {
+        offset = params.has_key?(:offset) ? params[:offset].to_i : 0
+        @reviews = @user.reviews.order(:created_at => :desc).limit(10).offset(offset).map{ |x| x.to_json }
+        render json:@reviews
+      }
+    end
+  end
+
+  # GET      /golf_clubs/:golf_club_id/reviews(.:format)
+  # something like user_reviews, but for clubs
+  def club_reviews
+    @club = GolfClub.find(params[:golf_club_id])
+    offset = params.has_key?(:offset) ? params[:offset].to_i : 0
+
+    respond_to do |format|
+      format.html
+      format.json {
+        @reviews = @club.reviews.order(:created_at => :desc).limit(10).offset(offset).map{ |x| x.to_json }
+        render json:@reviews
+      }
+    end
+  end
+
   # require in params: :topic_id, :topic_type
   def new
     if !params.has_key?(:topic_id) || !params.has_key?(:topic_type) then

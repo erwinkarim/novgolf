@@ -50,10 +50,4 @@
               %li Lorem ipsum dolor sit amet, consectetur adipisicing elit.
               %li Lorem ipsum dolor sit amet, consectetur adipisicing elit.
               %li Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-      - if @reviews.empty? then
-        .card
-          .card-header Flight Reviews
-          %ul.list-group.list-group-flush
-            %li.list-group-item No reviews yet...
-      - else
-        = react_component "ReviewList", { reviews:@reviews ,showHeader:true, displayMode:'reviewer'}
+      = react_component "ReviewList", { showHeader:true, displayMode:'reviewer', reviews_path:@reviews_path}

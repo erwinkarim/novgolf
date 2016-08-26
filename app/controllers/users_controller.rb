@@ -3,9 +3,9 @@ class UsersController < ApplicationController
   # GET      /users/:id
   def show
       @user = User.find(params[:id])
-      @reviews = @user.reviews.order(:created_at => :desc).limit(20).map{
-        |x| x.to_json
-      }
+      # @reviews = @user.reviews.order(:created_at => :desc).limit(10).map{ |x| x.to_json }
+      # @extra_reviews = @user.reviews.count > 10
+      @reviews_path = user_reviews_path(params[:id])
   end
 
   def edit

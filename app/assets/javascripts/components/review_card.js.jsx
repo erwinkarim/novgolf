@@ -59,22 +59,58 @@ var ReviewCard = React.createClass({
 //to be used in conjuction with a card class
 var ReviewList = React.createClass({
   propTypes:{
-    reviews:React.PropTypes.array,
+    reviews_path: React.PropTypes.string,
     showHeader: React.PropTypes.bool,
+    linkHeader: React.PropTypes.bool,
     displayMode: React.PropTypes.oneOf(['reviewer', 'reviewee'])
   },
   getDefaultProps: function(){
-    return { showHeader:false , displayMode:'reviewee'};
+    return { showHeader:false , linkHeader:true, displayMode:'reviewee'};
+  },
+  getInitialState: function(){
+    return { reviews:[], offset:0, showLoadMoreReviews:true }
+  },
+  componentDidMount: function(){
+    var handle = this;
+    $.getJSON( this.props.reviews_path, null, function(data){
+          handle.setState({ reviews:data, offset:data.length, showLoadMoreReviews:(data.length != 0)});
+    })
+  },
+  loadMoreReviews: function(e){
+    console.log("load more reviews after offset", this.state.offset)
+    var handle = this;
+    $.getJSON(this.props.reviews_path, {offset:this.state.offset}, function(data){
+      var newReviews = handle.state.reviews.concat(data);
+      handle.setState({reviews:newReviews, offset:newReviews.length, showLoadMoreReviews:(data.length != 0)});
+    });
   },
   render: function(){
-    var header = this.props.showHeader ? (<li className="list-group-item"><h3>Recent Reviews</h3></li>) : "";
+    var header = this.props.showHeader ?
+      <li className="list-group-item"><h3>
+        {this.props.linkHeader ?
+          <a href={this.props.reviews_path}>Recent Reviews</a> :
+          "Recent Reviews"
+        }
+      </h3></li> :
+      "";
+    var review_list = this.state.reviews.length == 0 ?
+      <li className="list-group-item">No Reviews Yet</li>
+    :
+      this.state.reviews.map( (review,i) => <ReviewCard key={i} review={review} displayMode={this.props.displayMode} />)
+    var loadMoreReviews = this.state.showLoadMoreReviews ?
+      <li className="list-group-item">
+        <button className="btn btn-link" type="button" onClick={this.loadMoreReviews}
+          data-offset={this.state.offset}>Load More Reviews</button>
+      </li>
+    :
+      ""
+
     return (
       <div className="card">
         <ul className="list-group list-group-flush">
           { header }
-          {this.props.reviews.map( (review,i) =>
-            <ReviewCard key={i} review={review} displayMode={this.props.displayMode} />
-          )}
+          { review_list }
+          { loadMoreReviews }
         </ul>
       </div>
     );

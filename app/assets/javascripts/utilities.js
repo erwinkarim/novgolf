@@ -12,7 +12,6 @@ var arrayFromRange = function(startNumber,endNumber){
   return Array.from(Array(endNumber-startNumber+1),(v,k) => k + startNumber);
 };
 */
-
 var arrayFromRange = function(startNumber, endNumber){
   var test = [];
 

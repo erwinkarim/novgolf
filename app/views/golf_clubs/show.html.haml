@@ -21,8 +21,8 @@
             = @club.description.split(/\n/)[1..-1].join('<br />').html_safe
           %button.btn.btn-secondary.btn-small.btn-block{ :type => 'button',data:{toggle:'collapse', target:'#desc-therest'}} Show More/Less
           %br
-      - if !@reviews.empty? then
-        = react_component "ReviewList", {reviews:@reviews, showHeader:true}
+      - if @got_reviews then
+        = react_component "ReviewList", {reviews_path:golf_club_reviews_path(@club), showHeader:true}
 
     .col-xs-12.col-md-4
       .card

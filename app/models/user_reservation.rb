@@ -21,6 +21,8 @@ class UserReservation < ActiveRecord::Base
   validates_presence_of :count_pax, :count_buggy, :count_caddy, :count_insurance
   validates_presence_of :booking_date, :booking_time
   validates_presence_of :status
+  validate :validates_booking_datetime, on: :create
+
   has_secure_token
 
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,
@@ -30,6 +32,24 @@ class UserReservation < ActiveRecord::Base
 
   def init
     status ||= 0
+  end
+
+  def validates_booking_datetime
+    #ensure that the booking date and time falls on the correct
+    if self.booking_date.nil? || self.booking_time.nil? || self.flight_matrix_id.nil? then
+      return false
+    else
+      fm = FlightMatrix.find(self.flight_matrix_id)
+
+      #check booking_time
+      if self.booking_time != fm.tee_time then
+        return false
+      end
+
+      #check booking_date
+      day_of_week = self.booking_date.strftime("%u")
+      return fm.attributes["day#{day_of_week}"] == 1
+    end
   end
 
   def total_price

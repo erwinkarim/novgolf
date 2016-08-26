@@ -1,0 +1,11 @@
+- content_for(:head){ "#{@user.name || @user.email} Reviews -" }
+.container
+  .row
+    .col-xs-12
+      %ol.breadcrumb
+        %li
+          %a{ :href => user_path(@user)} #{@user.name || @user.email}
+        %li.active Reviews
+  .row
+    .col-xs-12.col-md-8
+      = react_component "ReviewList", {reviews_path:user_reviews_path(params[:user_id]), displayMode:'reviewer', showHeader:true, linkHeader:false}
