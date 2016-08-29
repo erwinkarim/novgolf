@@ -79,9 +79,21 @@ var ReviewList = React.createClass({
   loadMoreReviews: function(e){
     console.log("load more reviews after offset", this.state.offset)
     var handle = this;
-    $.getJSON(this.props.reviews_path, {offset:this.state.offset}, function(data){
-      var newReviews = handle.state.reviews.concat(data);
-      handle.setState({reviews:newReviews, offset:newReviews.length, showLoadMoreReviews:(data.length != 0)});
+    $.ajax({
+      dataType:"json",
+      data: {offset:this.state.offset},
+      url: this.props.reviews_path,
+      success: function(data){
+        var newReviews = handle.state.reviews.concat(data);
+        handle.setState({reviews:newReviews, offset:newReviews.length, showLoadMoreReviews:(data.length != 0)});
+        $(handle.refs.loadMoreBtn).html( 'Load More Reviews' );
+        $(handle.refs.loadMoreBtn).prop('disabled', false);
+      },
+      beforeSend: function(){
+        $(handle.refs.loadMoreBtn).html( '<i class="fa fa-cog fa-spin"></i> Load More Reviews' );
+        $(handle.refs.loadMoreBtn).prop('disabled', true);
+      }
+
     });
   },
   render: function(){
@@ -99,8 +111,9 @@ var ReviewList = React.createClass({
       this.state.reviews.map( (review,i) => <ReviewCard key={i} review={review} displayMode={this.props.displayMode} />)
     var loadMoreReviews = this.state.showLoadMoreReviews ?
       <li className="list-group-item">
-        <button className="btn btn-link" type="button" onClick={this.loadMoreReviews}
-          data-offset={this.state.offset}>Load More Reviews</button>
+        <button className="btn btn-link" ref="loadMoreBtn" type="button" onClick={this.loadMoreReviews} data-offset={this.state.offset}>
+          Load More Reviews
+        </button>
       </li>
     :
       ""
