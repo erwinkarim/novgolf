@@ -1,3 +1,5 @@
+var FormattedText = window.formattedText;
+
 var ReviewCard = React.createClass({
   propTypes:{
       review:React.PropTypes.object
@@ -47,7 +49,7 @@ var ReviewCard = React.createClass({
           </div>
           <div className="row card-text">
             <div className="col-xs-12">
-              <p className="card-text">{this.props.review.comment}</p>
+              <FormattedText>{this.props.review.comment}</FormattedText>
               <small>Posted at {this.props.review.created_at}</small>
             </div>
           </div>
@@ -77,7 +79,6 @@ var ReviewList = React.createClass({
     })
   },
   loadMoreReviews: function(e){
-    console.log("load more reviews after offset", this.state.offset)
     var handle = this;
     $.ajax({
       dataType:"json",

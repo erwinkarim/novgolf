@@ -3,8 +3,9 @@ class UsersController < ApplicationController
   # GET      /users/:id
   def show
       @user = User.find(params[:id])
-      # @reviews = @user.reviews.order(:created_at => :desc).limit(10).map{ |x| x.to_json }
-      # @extra_reviews = @user.reviews.count > 10
+      hangouts_id = @user.user_reservations.where{created_at.gt 6.months.ago}.select("golf_club_id, count(*) as golf_club_count").
+        group(:golf_club_id).order("golf_club_count desc").limit(3).map{ |x| x[:golf_club_id] }
+      @hangouts = GolfClub.find(hangouts_id)
       @reviews_path = user_reviews_path(params[:id])
   end
 

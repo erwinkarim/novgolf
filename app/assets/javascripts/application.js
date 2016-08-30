@@ -25,6 +25,7 @@
 //= require jquery-fileupload/basic-plus
 //= require utilities
 //= require react
+//= require formatted-text
 //= require react_ujs
 //= require components
 //= require ready

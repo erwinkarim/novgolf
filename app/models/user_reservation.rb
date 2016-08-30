@@ -98,6 +98,7 @@ class UserReservation < ActiveRecord::Base
     #if successfully saved, create the review
     if reservation.save! then
       reservation.save!
+      reservation.payment_confirmed!
       review = user.reviews.new(topic_id: reservation.id, topic_type:"UserReservation", rating:rand(1..5), comment:NameGenerator::LOREM)
       review.save!
       reservation

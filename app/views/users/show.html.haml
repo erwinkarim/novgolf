@@ -46,8 +46,10 @@
         .card-header Usual Spots
         .card-block
           %p.card-text
-            %ul
-              %li Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-              %li Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-              %li Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+            - if @hangouts.empty? then
+              None yet...
+            - else
+              %ul
+                - @hangouts.each do |golf_club|
+                  %li #{link_to golf_club.name, golf_club_path(golf_club)}
       = react_component "ReviewList", { showHeader:true, displayMode:'reviewer', reviews_path:@reviews_path}

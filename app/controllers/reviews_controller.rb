@@ -78,7 +78,8 @@ class ReviewsController < ApplicationController
       redirect_to user_reservation_path(current_user, params[:review][:topic_id])
     rescue
       flash[:error] = @review.errors.full_messages.join(', ')
-      redirect_to :back
+      #redirect_to :back
+      render "new"
     end
   end
 
