@@ -9,7 +9,7 @@ var ReviewStarSelection = React.createClass({
     return {hoverRating:this.props.rating, rating:this.props.rating}
   },
   toggleHover: function(e){
-    this.setState({hoverRating:e.target.value});
+    this.setState({hoverRating:e.target.dataset.value});
   },
   resetRating: function(){
     this.setState({hoverRating:this.state.rating});
