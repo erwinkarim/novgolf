@@ -9,15 +9,13 @@ var ReviewStarSelection = React.createClass({
     return {hoverRating:this.props.rating, rating:this.props.rating}
   },
   toggleHover: function(e){
-    console.log("hover on", e.target);
-    console.log("hover on target.value", e.target.value);
     this.setState({hoverRating:e.target.value});
   },
   resetRating: function(){
     this.setState({hoverRating:this.state.rating});
   },
   updateRating: function(e){
-    this.setState({rating:e.target.value, hoverRating:e.target.value});
+    this.setState({rating:e.target.dataset.value, hoverRating:e.target.dataset.value});
   },
   render: function(){
     return (
@@ -30,11 +28,11 @@ var ReviewStarSelection = React.createClass({
               var buttonIsActive = e == this.state.rating;
               var starState = e <= this.state.hoverRating ? "fa fa-star" : "fa fa-star-o";
               return (
-                <label className={`btn btn-secondary ${buttonIsActive ? "active" : ""}`}
-                  key={i} onMouseEnter={this.toggleHover} onMouseLeave={this.resetRating} value={e} onClick={this.updateRating}>
+                <label className={`btn btn-secondary ${buttonIsActive ? "active" : ""}`} data-value={e} onClick={this.updateRating}
+                  key={i} onMouseEnter={this.toggleHover} onMouseLeave={this.resetRating}>
                   <input type="radio" name="review[rating]" id={`${e}star`} value={e}
                     checked={ e == this.state.rating } onChange={this.updateRating}/>
-                  <i className={starState} onClick={this.updateRating} value={e}></i>
+                  <i className={starState} onClick={this.updateRating} data-value={e}></i>
                 </label>
               );
             }
