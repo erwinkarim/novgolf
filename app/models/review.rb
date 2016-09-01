@@ -9,7 +9,6 @@ class Review < ActiveRecord::Base
   validates_presence_of :rating, if: :topic_is_user_reservation
 
   #should have rating if topic_type is UserReservation
-
   def topic_is_user_reservation
     topic_type == "UserReservation"
   end

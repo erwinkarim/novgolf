@@ -326,4 +326,8 @@ class GolfClub < ActiveRecord::Base
   def reviews
     Review.joins{ user_reservation.golf_club }.where(:'user_reservations.golf_club_id' => self.id).order(:created_at => :desc)
   end
+
+  # get rating stats for over 6 months ago
+  def review_stats options = { :since => 6.months.ago }
+  end
 end

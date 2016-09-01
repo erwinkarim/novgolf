@@ -99,12 +99,12 @@ var ReviewList = React.createClass({
   },
   render: function(){
     var header = this.props.showHeader ?
-      <li className="list-group-item"><h3>
+      <div className="card-header">
         {this.props.linkHeader ?
           <a href={this.props.reviews_path}>Recent Reviews</a> :
           "Recent Reviews"
         }
-      </h3></li> :
+      </div> :
       "";
     var review_list = this.state.reviews.length == 0 ?
       <li className="list-group-item">No Reviews Yet</li>
@@ -121,8 +121,8 @@ var ReviewList = React.createClass({
 
     return (
       <div className="card">
+        { header }
         <ul className="list-group list-group-flush">
-          { header }
           { review_list }
           { loadMoreReviews }
         </ul>
