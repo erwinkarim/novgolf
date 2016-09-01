@@ -2,7 +2,12 @@ class GolfClubsController < ApplicationController
 
   # GET      /golf_clubs/:id
   def show
-    @club = GolfClub.find(params[:id])
+    begin
+      @club = GolfClub.find(params[:id])
+    rescue
+      render :file => "public/404.html", :status => 404
+      return
+    end
 
     if params.has_key? :date then
       @date = Date.parse(params[:date])
