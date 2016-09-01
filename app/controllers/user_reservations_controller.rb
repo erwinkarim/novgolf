@@ -18,7 +18,7 @@ class UserReservationsController < ApplicationController
     session[:reservation_ids] = []
     session[:timeout] = Time.now + 10.minutes
 
-    Rails.logger.info "session[:flight] is #{session[:flight]}"
+    #Rails.logger.info "session[:flight] is #{session[:flight]}"
     #create a reservation w/o token to show that this flight is being reserved
     #todo: think about splitting the pricing data into each reservation(s)
     #   eg: if you booked 5 balls in 2 flights, flight a will have 3 balls and flight b will have 2 balls and are priced accordingly
@@ -32,15 +32,17 @@ class UserReservationsController < ApplicationController
           :count_pax => v["count"]["pax"], :count_insurance => v["count"]["insurance"],
           :flight_matrix_id => v["matrix_id"] )
 
-        #generate the token will actually save the record
         reservation.regenerate_token
         #reservation.save!
 
-        session[:reservation_ids] << reservation.id
         reservation.reservation_created!
         reservation.payment_attempted!
+        session[:reservation_ids] << reservation.id
       end
     end
+
+    #check payment status in 11 minutes
+    CheckPaymentStatusJob.set(wait: 11.minutes).perform_later(UserReservation.find(session[:reservation_ids]))
   end
 
   def confirmation
@@ -52,7 +54,15 @@ class UserReservationsController < ApplicationController
       @reservations = UserReservation.find(session[:reservation_ids])
       @reservations.each do |reservation|
         reservation.payment_confirmed!
+
+        #send out review in the future
+        UserReservationMailer.request_review(reservation).deliver_later(wait_until: reservation.booking_datetime + 12.hours)
       end
+
+      #send out email to confirm
+      UserMailer.reservation_confirmed(@reservations).deliver_later
+
+
     else
       @reservations.each do |reservation|
         reservation.payment_failed!
@@ -78,12 +88,19 @@ class UserReservationsController < ApplicationController
   #  GET      /users/:user_id/reservations/:id(.:format)
   def show
     @user = User.find(params[:user_id])
-    @reservation = UserReservation.find(params[:id])
+    @reservation = UserReservation.includes(:review).find(params[:id])
+    @review = @reservation.review.nil? ? nil : @reservation.review.to_json
+
+    #only show review form if it's 12 hours after tee time and date
+    flight_is_12hours_old= DateTime.parse("#{@reservation.booking_date} #{@reservation.booking_time.to_datetime.strftime('%H:%M')} +0000") <
+      DateTime.now + 12.hours
+    @allow_to_review = @reservation.payment_confirmed?
+    @show_review_form = flight_is_12hours_old && @reservation.payment_confirmed? && @reservation.review.nil?
 
     respond_to do |format|
       format.html
       format.json {
-        render json: @reservation.attributes.merge(:user => @user)
+        render json: @reservation.attributes.merge({user:@user, review:@review})
       }
     end
   end

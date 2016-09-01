@@ -18,8 +18,8 @@
             #{ @reservation.booking_date} @ #{@reservation.booking_time.strftime("%H:%M")}
           %li.list-group-item
             %strong Location
-            #{ @reservation.golf_club.address } #{ link_to "link", "http://google.com.my/maps?q=#{@reservation.golf_club.address.html_safe}", :target => "_blank"}
-          - if !@reservation.payment_confirmed? then
+            #{ @reservation.golf_club.address } #{ link_to "link", "http://google.com.my/maps?q=#{@reservation.golf_club.lat.html_safe},#{@reservation.golf_club.lng.html_safe}", :target => "_blank"}
+          - if @reservation.payment_attempted? then
             %li.list-group-item
               %strong Note:
               We detect that you attempting to pay for this booking. If you lost the payment page, please wait around 10 minutes for the booking to be released again
@@ -54,3 +54,23 @@
                   %h4 Total Price:
                 %td
                   %h4 #{ number_to_currency(@reservation.total_price, { :unit => "RM "} )}
+      .card
+        .card-header Review
+        - if @review.nil? then
+          - if @show_review_form then
+            .card-block
+              %p.card-text You haven't review this flight yet.
+              %a.btn.btn-primary{ :href => new_user_review_path(current_user, {topic_id:@reservation.id, topic_type:"UserReservation"}) } Review
+          - if @allow_to_review then
+            .card-block
+              %p.card-text You can give your review on this flight around 12 hours after the flight.
+          - else
+            .card-block
+              %p.card-text You may not review this flight
+        - else
+          %ul.list-group.list-group-flush
+            = react_component("ReviewCard", { review:@review})
+            - if current_user.id == @review["user_id"] then
+              %li.list-group-item
+                %a.btn.btn-primary{ :href => edit_user_review_path(current_user, @review["id"],
+                  {topic_id:@review["topic_id"],   topic_type:@review["topic_type"]})} Edit Review

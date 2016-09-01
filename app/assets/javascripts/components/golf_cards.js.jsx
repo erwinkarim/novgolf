@@ -376,6 +376,7 @@ var GolfSchedule = React.createClass({
     getInitialState: function(){
         return {
           queryDate: this.props.queryDate,
+          queryData: this.props.queryData,
           flights: this.props.flights
         }
     },
@@ -395,7 +396,9 @@ var GolfSchedule = React.createClass({
       var handle = this;
       $.getJSON(this.props.paths.golfClub, { date:e },  function(data){
         var newFlights = (data == null) ? [] : data.flights;
-        handle.setState({flights:newFlights , queryDate:e})
+        var newQueryData = handle.state.queryData;
+        newQueryData.date = e;
+        handle.setState({flights:newFlights , queryDate:e, queryData:newQueryData})
       });
     },
     render: function(){
@@ -421,7 +424,7 @@ var GolfSchedule = React.createClass({
             </fieldset>
           </li>
           <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
-            club={this.props.club} flights={this.state.flights} queryData={this.props.queryData} queryDate={this.state.queryDate}
+            club={this.props.club} flights={this.state.flights} queryData={this.state.queryData}
             insurance_modes={this.props.insurance_modes} />
         </ul>
       );

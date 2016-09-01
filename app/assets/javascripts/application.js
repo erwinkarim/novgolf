@@ -19,11 +19,13 @@
 //= require remarkable.min.js
 //= require imagesloaded.pkgd.min.js
 //= require masonry.pkgd.min.js
+//= require hammer
 //= require featherlight
 //= require featherlight-gallery
 //= require jquery-fileupload/basic-plus
 //= require utilities
 //= require react
+//= require formatted-text
 //= require react_ujs
 //= require components
 //= require ready

@@ -2,25 +2,35 @@ class GolfClubsController < ApplicationController
 
   # GET      /golf_clubs/:id
   def show
-    @club = GolfClub.find(params[:id])
+    begin
+      @club = GolfClub.find(params[:id])
+    rescue
+      render :file => "public/404.html", :status => 404
+      return
+    end
 
     if params.has_key? :date then
       @date = Date.parse(params[:date])
     else
-      @date = Date.today
+      @date = Date.today + 1.day
     end
 
     @result = GolfClub.search({ :dateTimeQuery => Time.parse("#{@date} 14:00 +0000"), :spread => 9.hours, :club_id => params[:id]}).first
+    #handle empty result
+    @result = @result.nil? ? {:club => [], :flights => [], :queryData => []} : @result
 
     respond_to do |format|
       format.html {
         #additional stuff for normal page
         @photos = @club.photos.reverse
-        if @photos.length == 0 then
-          @jumboPhoto = { :url => "/images/golf_course_#{rand(1..4)}.jpg", :caption => "none" }
-        else
+        @jumboPhoto = @photos.length == 0 ?
+          { :url => "/images/golf_course_#{rand(1..4)}.jpg", :caption => "none" } :
           @jumboPhoto = { :url => @photos.first.avatar.url, :caption => @photos.first.caption }
-        end
+
+        @got_reviews = !@club.reviews.empty?
+
+        @desc_array = @club.description.split(/\n/)
+
       }
       format.json {
         render json:@result

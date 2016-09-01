@@ -12,8 +12,18 @@
   .row
     .col-xs-12.col-md-8
       %h1 #{ @club.name }
-      %div
-        = simple_format(@club.description)
+      #desc-parent
+        #desc-summary
+          = @desc_array.first.html_safe
+          %br
+        - if @desc_array.length > 1 then
+          #desc-therest.collapse
+            = @club.description.split(/\n/)[1..-1].join('<br />').html_safe
+          %button.btn.btn-secondary.btn-small.btn-block{ :type => 'button',data:{toggle:'collapse', target:'#desc-therest'}} Show More/Less
+          %br
+      - if @got_reviews then
+        = react_component "ReviewList", {reviews_path:golf_club_reviews_path(@club), showHeader:true}
+
     .col-xs-12.col-md-4
       .card
         .card-block
@@ -21,6 +31,7 @@
         = react_component "GolfSchedule", {crsfToken:form_authenticity_token,
           club: @result[:club],
           queryDate: @date,
+          queryData: {date:@date, query:""},
           paths: { reserve: reserve_golf_club_user_reservations_path(params[:id]),
             golfClub:golf_club_path(params[:id]) },
           flights: @result[:flights], queryData: @result[:queryData], insurance_modes:ChargeSchedule.insurance_modes.map{ |k,v| k} }
@@ -81,6 +92,7 @@
     percentPosition: true,
     columnWidth: '.grid-sizer'
   });
+
   // layout Isotope after each image loads
   $grid.imagesLoaded().progress( function() {
     $grid.masonry();

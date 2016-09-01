@@ -2,13 +2,14 @@ class User < ActiveRecord::Base
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :trackable, :validatable ,
+    :confirmable, :recoverable, :rememberable, :trackable, :validatable ,
     :omniauthable, :omniauth_providers => [:facebook]
 
   has_many :user_reservations
   has_many :golf_clubs
 
   has_many :photos, as: :imageable
+  has_many :reviews
 
   has_one :profile_picture, class_name:"Photo", foreign_key: :id, primary_key: :profile_picture
   validates_presence_of :role

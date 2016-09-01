@@ -10,6 +10,7 @@ Rails.application.routes.draw do
         get '/' => 'user_reservations#user_index'
       end
     end
+    resources :reviews
   end
   #devise_scope :user do
   #  delete 'sign_out', :to => 'devise/sessions#destroy', :as => :destroy_user_session
@@ -50,6 +51,11 @@ Rails.application.routes.draw do
         post 'processing'
         post 'confirmation'
         get 'failure'
+      end
+    end
+    resources :reviews, :only => [] do
+      collection do
+        get '/' => "reviews#club_reviews"
       end
     end
     collection do

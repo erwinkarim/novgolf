@@ -6,10 +6,16 @@ var ready = function(){
 
   //featherlight gallery caption
   $.featherlightGallery.prototype.afterContent = function() {
-    console.log("$currentTarget", this.$currentTarget[0].dataset.caption);
     var caption = this.$currentTarget[0].dataset.caption;
+    var handle = this;
     this.$legend = this.$legend || $('<div class="legend"/>').insertAfter(this.$content);
     this.$legend.text(caption);
+
+    /*
+      add click event on the picture to hide the caption
+    */
+    this.$content.click(function(){ handle.$legend.toggle(); });
+
     /*
     this.$instance.find('.caption').remove();
     $('<div class="caption">').text(caption).appendTo(this.$instance.find('.featherlight-content'));
