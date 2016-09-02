@@ -15,6 +15,7 @@
 //= require jquery.timepicker.js
 //= require jquery_ujs
 //= require turbolinks
+//= require bootstrap
 //= require snackbar
 //= require remarkable.min.js
 //= require imagesloaded.pkgd.min.js

@@ -45,11 +45,7 @@ var QueryForm = React.createClass({
       ;
     };
 
-    if (this.props.collapseSearchForm){
-      var collapseClass = ""
-    } else {
-      var collapseClass = "in"
-    }
+    var collapseClass = this.props.collapseSearchForm ? "" : "in";
 
     return (
       <div>
@@ -81,12 +77,13 @@ var QueryForm = React.createClass({
             </div>
             <div style={ {color:'black'}}>
               <br />
-              <div className="card col-md-4 col-xs-12">
-                <ul className="list-group-flush list-group">
-                  <li className="list-group-item">I have <select name="pax" className="form-control">{ [2,3,4,5,6,7,8].map( (e,i) =>
-                    <option key={i}>{e}</option>)}</select> balls in my flight(s)
-                  </li>
-                </ul>
+              <div className="col-md-4 col-xs-12">
+                <div className="card">
+                  <div className="card-block">
+                    I have <select name="pax" className="form-control">{ [2,3,4,5,6,7,8].map( (e,i) =>
+                      <option key={i}>{e}</option>)}</select> balls in my flight(s)
+                  </div>
+                </div>
               </div>
             </div>
           </form>

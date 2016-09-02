@@ -67,13 +67,18 @@ gem 'dotenv-rails'
 
 gem 'haml'
 gem 'paloma'
+
+#authentication
 gem 'devise'
 gem 'omniauth-facebook'
+
+#styling
 gem 'font-awesome-rails'
+gem 'bootstrap', '~> 4.0.0.alpha3.1'
 
 gem 'react-rails'
-#gem 'fluxxor-rails'
 
+#database
 gem 'squeel'
 gem 'mysql2'
 
@@ -86,10 +91,14 @@ gem 'rqrcode_png'
 #consistent seed
 gem 'seed-fu', '~> 2.3'
 
+#amazon aws
+gem 'aws-sdk-rails'
 #file upload handle
 gem 'carrierwave-aws'
 gem 'jquery-fileupload-rails'
 gem 'mini_magick'
+# AWS S3 integration
+gem 'fog'
 
 #photoviewer
 gem 'featherlight'
@@ -97,11 +106,6 @@ gem 'featherlight'
 #notification
 gem 'snackbarjs-rails'
 
-gem 'fog'
-
 #premailer, auto-include css for emails
 gem 'premailer-rails'
 gem 'nokogiri'
-
-#amazon aws
-gem 'aws-sdk-rails'
