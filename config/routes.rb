@@ -66,7 +66,6 @@ Rails.application.routes.draw do
   resources :amenities, :only => [:index] do
   end
 
-
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
 
