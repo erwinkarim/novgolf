@@ -22,6 +22,8 @@
  *= require_self
  */
 
+ @import "bootstrap";
+
 .img-responsive, .thumbnail>img, .thumbnail a>img, .carousel-inner>.item>img, .carousel-inner>.item>a>img, .wp-caption>img, .wp-caption a>img {
      display: block;
      width: 100%;
