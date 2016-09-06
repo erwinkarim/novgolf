@@ -7,6 +7,21 @@
     %title JomGolf!!!
     %link{rel:"stylesheet", href:"https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.3/css/bootstrap.min.css",
      integrity:"sha384-MIwDKRSSImVFAZCVLtU0LMDdON6KVCrZHyVQQj6e8wIEJkW4tvwqXrbMIya1vriY", crossorigin:"anonymous"}
+    %script{src:"https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js",
+      integrity:"sha384-THPy051/pYDQGanwU6poAc/hOdQxjnOEXzbT+OuUAFqNqFjL+4IGLBgCJC3ZOShY", crossorigin:"anonymous"}
+    %script{src:"https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/js/bootstrap.min.js",
+      integrity:"sha384-VjEeINv9OSwtWFLAtmc4JCtEJXXBub00gtSnszmspDLCtC0I4z4nqz7rEFbIZLLU", crossorigin:"anonymous"}
+    %script{src:"https://use.fontawesome.com/152b79abab.js"}
+    %link{href:"//cdn-images.mailchimp.com/embedcode/slim-10_7.css", rel:"stylesheet", type:"text/css"}
+    :css
+      #mc_embed_signup{background:#fff; clear:left; font:14px Helvetica,Arial,sans-serif; }
+    :javascript
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-83718685-1', 'auto');
+      ga('send', 'pageview');
   %body
     .jumbotron.jumbotron-fluid{ :style => "height:90vh; background:url(/pre-release/bg1.png); background-size:cover; margin-bottom:0px; color:lightyellow; text-shadow:2px 2px 8px gainsbro;"}
       .container
@@ -18,5 +33,24 @@
         %h1.display-3.text-xs-center Follow Us
         %p.lead.text-xs-center Be informed of future updates!!
         %p.text-xs-center
-          %a.twitter-follow-button{href:"https://twitter.com/jomgolf", 'data-show-count':"false"} Follow @jomgolf
-          %script{async:true, src:"//platform.twitter.com/widgets.js", charset:"utf-8"}
+          %a{ :href => "https://www.facebook.com/JomGolfWorld", :style => "color:papayawhip;"}
+            %i.fa.fa-facebook-official.fa-3x
+          %a{ :href => "https://twitter.com/intent/follow?user_id=740197050097115137", :style => "color:papayawhip;"}
+            %i.fa.fa-twitter-square.fa-3x
+          %a{ :href => "#sign-up", :data => { :toggle => "collapse"}, :style => "color:papayawhip;"}
+            %i.fa.fa-envelope-square.fa-3x
+        .col-xs-12.col-md-6.offset-md-3.text-xs-center
+          #sign-up.collapse
+            .card
+              .card-block
+                #mc_embed_signup
+                %form{action:"//jomgolf.us14.list-manage.com/subscribe/post?u=eb2e5c87264ee5c1538ab67ed&amp;id=b1b9a3d9f4",
+                  method:"post", id:"mc-embedded-subscribe-form", name:"mc-embedded-subscribe-form", class:"validate", target:"_blank", novalidate:true}
+                  #mc_embed_signup_scroll
+                    %label{for:"mce-EMAIL",:style => "color:black; text-shadow:none;"} Sign Up for Updates!!!
+                    %input.form-control{type:"email", value:"", name:"EMAIL", class:"email", id:"mce-EMAIL", placeholder:"email address", required:true}
+                    %div{style:"position: absolute; left: -5000px;", 'aria-hidden':"true"}
+                      %input{type:"text", name:"b_eb2e5c87264ee5c1538ab67ed_b1b9a3d9f4", tabindex:"-1", value:""}
+                    %br
+                    .clear
+                      %input.btn.btn-primary{ type:"submit", value:"Subscribe", name:"subscribe", id:"mc-embedded-subscribe", class:"button"}
