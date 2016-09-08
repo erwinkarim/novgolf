@@ -4,7 +4,7 @@ class FlightSchedule < ActiveRecord::Base
   has_many :flight_matrices, :dependent => :destroy
   has_one :charge_schedule, :dependent => :destroy
 
-  validates_presence_of :min_pax, :max_pax, :min_cart, :max_cart, :min_caddy, :max_caddy
+  validates_presence_of :golf_club_id, :min_pax, :max_pax, :min_cart, :max_cart, :min_caddy, :max_caddy
 
   after_initialize :init
 

@@ -1,25 +1,191 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  flight_schedule_id: 
-  timeslot: 1
-  day0: 1
+  id: 1
+  flight_schedule_id: 1
   day1: 1
   day2: 1
   day3: 1
   day4: 1
-  day5: 
-  day6: 1
-  day7: 1
-
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 07:00:00 +0000") %>
 two:
-  flight_schedule_id: 
-  timeslot: 1
-  day0: 1
+  id: 2
+  flight_schedule_id: 1
   day1: 1
   day2: 1
   day3: 1
   day4: 1
-  day5: 
-  day6: 1
-  day7: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 07:15:00 +0000") %>
+three:
+  id: 3
+  flight_schedule_id: 1
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 07:30:00 +0000") %>
+four:
+  id: 4
+  flight_schedule_id: 1
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 07:45:00 +0000") %>
+five:
+  id: 5
+  flight_schedule_id: 1
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 08:00:00 +0000") %>
+six:
+  id: 6
+  flight_schedule_id: 1
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 08:15:00 +0000") %>
+seven:
+  id: 7
+  flight_schedule_id: 1
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 08:30:00 +0000") %>
+eight:
+  id: 8
+  flight_schedule_id: 2
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 16:00:00 +0000") %>
+nine:
+  id: 9
+  flight_schedule_id: 2
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 16:15:00 +0000") %>
+ten:
+  id: 10
+  flight_schedule_id: 2
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 16:30:00 +0000") %>
+eleven:
+  id: 11
+  flight_schedule_id: 2
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 16:45:00 +0000") %>
+twelve:
+  id: 12
+  flight_schedule_id: 3
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 07:00:00 +0000") %>
+thirteen:
+  id: 13
+  flight_schedule_id: 3
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 07:15:00 +0000") %>
+fourteen:
+  id: 14
+  flight_schedule_id: 3
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 07:30:00 +0000") %>
+fifteen:
+  id: 15
+  flight_schedule_id: 3
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 07:45:00 +0000") %>
+sixteen:
+  id: 16
+  flight_schedule_id: 3
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 08:00:00 +0000") %>
+seventeen:
+  id: 17
+  flight_schedule_id: 3
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 08:15:00 +0000") %>
+eighteen:
+  id: 18
+  flight_schedule_id: 3
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 08:30:00 +0000") %>
+nineteen:
+  id: 19
+  flight_schedule_id: 4
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 16:30:00 +0000") %>
+tweenty:
+  id: 20
+  flight_schedule_id: 4
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 16:45:00 +0000") %>
+tweentyone:
+  id: 21
+  flight_schedule_id: 4
+  day1: 1
+  day2: 1
+  day3: 1
+  day4: 1
+  day5: 1
+  tee_time: <%= Time.parse("2000-01-01 17:00:00 +0000") %>

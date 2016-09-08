@@ -1,9 +1,38 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  golf_club_id: 
-  amenity_id: 
-
+  golf_club_id: 1
+  amenity_id: 1
 two:
-  golf_club_id: 
-  amenity_id: 
+  golf_club_id: 1
+  amenity_id: 2
+three:
+  golf_club_id: 1
+  amenity_id: 3
+four:
+  golf_club_id: 1
+  amenity_id: 4
+five:
+  golf_club_id: 2
+  amenity_id: 1
+six:
+  golf_club_id: 2
+  amenity_id: 2
+seven:
+  golf_club_id: 2
+  amenity_id: 3
+eight:
+  golf_club_id: 2
+  amenity_id: 4
+nine:
+  golf_club_id: 3
+  amenity_id: 1
+ten:
+  golf_club_id: 3
+  amenity_id: 2
+eleven:
+  golf_club_id: 3
+  amenity_id: 3
+twelve:
+  golf_club_id: 3
+  amenity_id: 4

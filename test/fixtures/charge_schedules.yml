@@ -1,17 +1,62 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  golf_club_id: 
-  caddy: 
-  cart: 
-  sessions_per_hour: 1
-  slots_per_session: 1
-  pax_per_slot: 1
-
+  id: 1
+  golf_club_id: 1
+  session_price: 90.00
+  cart: 10.00
+  caddy: 15.00
+  insurance: 20.00
+  flight_schedule_id: 1
+  insurance_mode: 0
+  note: "free stuff"
 two:
-  golf_club_id: 
-  caddy: 
-  cart: 
-  sessions_per_hour: 1
-  slots_per_session: 1
-  pax_per_slot: 1
+  id: 2
+  golf_club_id: 1
+  session_price: 180.00
+  cart: 20.00
+  caddy: 30.00
+  insurance: 40.00
+  flight_schedule_id: 2
+  insurance_mode: 0
+  note: "free stuff"
+three:
+  id: 3
+  golf_club_id: 2
+  session_price: 90.00
+  cart: 10.00
+  caddy: 15.00
+  insurance: 20.00
+  flight_schedule_id: 3
+  insurance_mode: 0
+  note: "free stuff"
+four:
+  id: 4
+  golf_club_id: 2
+  session_price: 100.00
+  cart: 15.00
+  caddy: 25.00
+  insurance: 30.00
+  flight_schedule_id: 4
+  insurance_mode: 0
+  note: "free stuff"
+five:
+  id: 5
+  golf_club_id: 3
+  session_price: 150.00
+  cart: 40.00
+  caddy: 60.00
+  insurance: 45.00
+  flight_schedule_id: 5
+  insurance_mode: 1
+  note: "free stuff"
+six:
+  id: 6
+  golf_club_id: 3
+  session_price: 300.00
+  cart: 60.00
+  caddy: 180.00
+  insurance: 60.00
+  flight_schedule_id: 6
+  insurance_mode: 1
+  note: "free stuff"

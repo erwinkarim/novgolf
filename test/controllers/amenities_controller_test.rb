@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class AmenitiesControllerTest < ActionController::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
+  # should only the index and in json format
+  should route(:get, "amenities").to(action:"index")
 end

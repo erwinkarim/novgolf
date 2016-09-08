@@ -19,6 +19,8 @@ gem 'coffee-rails', '~> 4.1.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'jquery-timepicker-rails'
+#for touch events
+gem 'hammerjs-rails'
 
 # Turbolinks makes following links in your web application faster. Read more: https://github.com/rails/turbolinks
 gem 'turbolinks'
@@ -43,6 +45,8 @@ gem 'puma', '3.4.0'
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug'
+  gem 'shoulda', '~> 3.5'
+  gem 'shoulda-matchers', '~> 2.0'
 end
 
 group :development do
@@ -56,17 +60,25 @@ end
 
 group :production do
 #  gem 'mysql2'
+  gem 'shoryuken-later'
 end
+
+gem 'dotenv-rails'
 
 gem 'haml'
 gem 'paloma'
+
+#authentication
 gem 'devise'
 gem 'omniauth-facebook'
+
+#styling
 gem 'font-awesome-rails'
+gem 'bootstrap', '~> 4.0.0.alpha3.1'
 
 gem 'react-rails'
-#gem 'fluxxor-rails'
 
+#database
 gem 'squeel'
 gem 'mysql2'
 
@@ -79,10 +91,14 @@ gem 'rqrcode_png'
 #consistent seed
 gem 'seed-fu', '~> 2.3'
 
+#amazon aws
+gem 'aws-sdk-rails'
 #file upload handle
 gem 'carrierwave-aws'
 gem 'jquery-fileupload-rails'
 gem 'mini_magick'
+# AWS S3 integration
+gem 'fog'
 
 #photoviewer
 gem 'featherlight'
@@ -90,4 +106,6 @@ gem 'featherlight'
 #notification
 gem 'snackbarjs-rails'
 
-gem 'fog'
+#premailer, auto-include css for emails
+gem 'premailer-rails'
+gem 'nokogiri'

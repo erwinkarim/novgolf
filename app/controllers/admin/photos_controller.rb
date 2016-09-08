@@ -1,11 +1,10 @@
 class Admin::PhotosController < ApplicationController
-  before_action :authenticate_user!
+  before_action :admins_only
 
   # GET      /admin/golf_clubs/:golf_club_id/photos(.:format)
   def index
     @golf_club = GolfClub.find(params[:golf_club_id])
     photos = @golf_club.photos.reverse
-
 
     if current_user.id == @golf_club.user_id then
       respond_to do |format|

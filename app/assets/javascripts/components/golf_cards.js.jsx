@@ -14,10 +14,10 @@ var GolfCardTimes = React.createClass({
     };
 
     return (
-      <label ref="teeTimeLabel" className={"btn btn-"+reserve_status} onClick={this.props.handleClick} data-tee-time={this.props.flight.tee_time}
-        value={this.props.index}>
+      <label ref="teeTimeLabel" className={"btn btn-"+reserve_status} onClick={reserve_status != "secondary" ? null : this.props.handleClick} data-tee-time={this.props.flight.tee_time}
+        value={this.props.index} data-value={this.props.index}>
         <input type="checkbox" name="teeTimes[]" value={this.props.flight.tee_time} />
-        <h5 value={this.props.index} >{toCurrency(this.props.flight.prices.flight)}</h5>
+        <h5 value={this.props.index} data-value={this.props.index} >{toCurrency(this.props.flight.prices.flight)}</h5>
         {this.props.flight.tee_time}
       </label>
     );
@@ -271,7 +271,7 @@ var GolfReserveForm = React.createClass({
         var newTeeTimes = this.state.selectedTeeTimes;
         var newIndex = this.state.selectedTeeTimesIndex;
         var newFlightInfo = this.state.flightInfo;
-        var value = e.target.value;
+        var value = e.currentTarget.dataset.value;
         var arrayPos = $.inArray(value, newTeeTimes);
 
         if( arrayPos != -1){
@@ -376,6 +376,7 @@ var GolfSchedule = React.createClass({
     getInitialState: function(){
         return {
           queryDate: this.props.queryDate,
+          queryData: this.props.queryData,
           flights: this.props.flights
         }
     },
@@ -395,7 +396,9 @@ var GolfSchedule = React.createClass({
       var handle = this;
       $.getJSON(this.props.paths.golfClub, { date:e },  function(data){
         var newFlights = (data == null) ? [] : data.flights;
-        handle.setState({flights:newFlights , queryDate:e})
+        var newQueryData = handle.state.queryData;
+        newQueryData.date = e;
+        handle.setState({flights:newFlights , queryDate:e, queryData:newQueryData})
       });
     },
     render: function(){
@@ -421,7 +424,7 @@ var GolfSchedule = React.createClass({
             </fieldset>
           </li>
           <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
-            club={this.props.club} flights={this.state.flights} queryData={this.props.queryData} queryDate={this.state.queryDate}
+            club={this.props.club} flights={this.state.flights} queryData={this.state.queryData}
             insurance_modes={this.props.insurance_modes} />
         </ul>
       );
