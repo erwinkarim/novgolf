@@ -475,21 +475,19 @@ var GolfCards = React.createClass({
     );
 
     return (
-      <div className="col-xs-12 col-md-6 col-lg-6" key={this.props.club.id}>
-        <div className="card card-inverse">
-          { hasCarousel ? (carouselDiv) : (<img className="img-responsive card-img-top" src={photoPath} />) }
-          <a href={this.props.paths.club} target="_blank">
-            <div className="card-img-overlay">
-                <h4 className="card-title text-shadow">{ toCurrency(Math.min.apply(null, this.props.flights.map( (e,i) => parseFloat(e.prices.flight))) )}</h4>
-                <h4 className="card-title text-shadow">{this.props.club.name}</h4>
-            </div>
-          </a>
-          <ul className="list-group-flush list-group">
-            <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
-              club={this.props.club} flights={this.props.flights} queryData={this.props.queryData}
-              insurance_modes={this.props.insurance_modes} />
-          </ul>
-        </div>
+      <div className="card card-inverse">
+        { hasCarousel ? (carouselDiv) : (<img className="img-responsive card-img-top" src={photoPath} />) }
+        <a href={this.props.paths.club} target="_blank">
+          <div className="card-img-overlay">
+              <h4 className="card-title text-shadow">{ toCurrency(Math.min.apply(null, this.props.flights.map( (e,i) => parseFloat(e.prices.flight))) )}</h4>
+              <h4 className="card-title text-shadow">{this.props.club.name}</h4>
+          </div>
+        </a>
+        <ul className="list-group-flush list-group">
+          <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
+            club={this.props.club} flights={this.props.flights} queryData={this.props.queryData}
+            insurance_modes={this.props.insurance_modes} />
+        </ul>
       </div>
     );
   }
