@@ -1,0 +1,31 @@
+.container
+  .row
+    %h1 Tab Test
+    .card-columns
+      .card
+        %ul.list-group.list-group-flush
+          %li.list-group-item Some Stuff
+          %li.list-group-item
+            %ul.nav.nav-tabs{ role:'tablist'}
+              %li.nav-item
+                %a.nav-link.active{ href:'#home', role:'tab'} Home
+              %li.nav-item
+                %a.nav-link{ href:'#profile', role:'tab'} Profile
+              %li.nav-item
+                %a.nav-link{ href:'#messages', role:'tab'} Messages
+              %li.nav-item
+                %a.nav-link{ href:'#settings', role:'tab'} Settings
+            %br
+            .tab-content
+              .tab-pane.card.active#home{role:'tabpanel'}
+                .card-block
+                  %p.card-text One!!!
+              .tab-pane.card#profile{role:'tabpanel'}
+                .card-block
+                  %p.card-text Two!!!
+              .tab-pane.card#messages{role:'tabpanel'}
+                .card-block
+                  %p.card-text Three!!!
+              .tab-pane.card#settings{role:'tabpanel'}
+                .card-block
+                  %p.card-text Four!!!

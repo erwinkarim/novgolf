@@ -38,4 +38,8 @@ class WelcomeController < ApplicationController
   def session_data
   end
 
+  def tab_test
+    @clubs = GolfClub.search({:dateTimeQuery => Time.parse("07:00 +0800") + 1.day })
+  end
+
 end
