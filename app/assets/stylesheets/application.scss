@@ -22,7 +22,16 @@
  *= require_self
  */
 
- @import "bootstrap";
+@import 'bootstrap';
+
+.card-columns {
+  @include media-breakpoint-only(sm){
+      column-count: 1;
+  }
+  @include media-breakpoint-up(md) {
+    column-count: 2;
+  }
+}
 
 .img-responsive, .thumbnail>img, .thumbnail a>img, .carousel-inner>.item>img, .carousel-inner>.item>a>img, .wp-caption>img, .wp-caption a>img {
      display: block;

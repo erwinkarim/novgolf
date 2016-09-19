@@ -14,6 +14,7 @@ var QueryForm = React.createClass({
       }
   },
   componentDidMount: function(){
+    console.log(this.props)
     $(this.refs.queryDate).datepicker({ minDate:0, dateFormat:'dd/mm/yy' });
     $(this.refs.queryTime).timepicker({ disableTextInput:'true', minTime:'6:00am', maxTime:'11:00pm', timeFormat:'H:i'});
   },

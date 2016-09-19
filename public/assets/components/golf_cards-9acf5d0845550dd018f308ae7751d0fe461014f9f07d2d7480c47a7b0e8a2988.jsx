@@ -297,7 +297,7 @@ var GolfReserveForm = React.createClass({
             newFlightInfo.splice($.inArray(value, newTeeTimes), 0, fi ) ;
 
         }
-
+        
         //need to re-adjust each child of flightInfo.index into order as this can be issue when flights are not clicked in-order
         newFlightInfo.map( (e,i) => Object.assign(e, {index:i}));
 
@@ -479,7 +479,7 @@ var GolfCards = React.createClass({
     );
 
     return (
-      <div className="card card-inverse d-inline-block">
+      <div className="card card-inverse">
         { hasCarousel ? (carouselDiv) : (<img className="img-responsive card-img-top" src={photoPath} />) }
         <a href={this.props.paths.club} target="_blank">
           <div className="card-img-overlay">

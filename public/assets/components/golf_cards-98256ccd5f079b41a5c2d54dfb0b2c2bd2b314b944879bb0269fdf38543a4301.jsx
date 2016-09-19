@@ -295,11 +295,7 @@ var GolfReserveForm = React.createClass({
               }
             );
             newFlightInfo.splice($.inArray(value, newTeeTimes), 0, fi ) ;
-
         }
-
-        //need to re-adjust each child of flightInfo.index into order as this can be issue when flights are not clicked in-order
-        newFlightInfo.map( (e,i) => Object.assign(e, {index:i}));
 
         this.setState({selectedTeeTimes:newTeeTimes, selectedTeeTimesIndex:newIndex, flightInfo:newFlightInfo});
         var newTotalPrice = this.updateTotalPrice();
@@ -330,7 +326,7 @@ var GolfReserveForm = React.createClass({
               {
                 var isActive = (this.state.selectedTeeTimesIndex == i) ? "active" : ""
                 return (
-                  <li key={i} className="nav-item">
+                  <li className="nav-item">
                     <a href={ `#flight-tab-${this.state.flightInfo[i].id}` } className={`nav-link ${isActive}`} data-toggle="pill">
                       {this.props.flights[e].tee_time}
                     </a>
@@ -479,7 +475,7 @@ var GolfCards = React.createClass({
     );
 
     return (
-      <div className="card card-inverse d-inline-block">
+      <div className="card card-inverse">
         { hasCarousel ? (carouselDiv) : (<img className="img-responsive card-img-top" src={photoPath} />) }
         <a href={this.props.paths.club} target="_blank">
           <div className="card-img-overlay">
