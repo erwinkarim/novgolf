@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160816064611) do
+ActiveRecord::Schema.define(version: 20160919032510) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -49,10 +49,12 @@ ActiveRecord::Schema.define(version: 20160816064611) do
     t.integer  "flight_schedule_id", limit: 4
     t.text     "note",               limit: 65535
     t.integer  "insurance_mode",     limit: 4,                             default: 0
+    t.integer  "tax_schedule_id",    limit: 4
   end
 
   add_index "charge_schedules", ["flight_schedule_id"], name: "index_charge_schedules_on_flight_schedule_id", using: :btree
   add_index "charge_schedules", ["golf_club_id"], name: "index_charge_schedules_on_golf_club_id", using: :btree
+  add_index "charge_schedules", ["tax_schedule_id"], name: "index_charge_schedules_on_tax_schedule_id", using: :btree
 
   create_table "flight_matrices", force: :cascade do |t|
     t.integer  "flight_schedule_id", limit: 4
@@ -130,6 +132,13 @@ ActiveRecord::Schema.define(version: 20160816064611) do
   add_index "reviews", ["topic_type", "topic_id"], name: "index_reviews_on_topic_type_and_topic_id", using: :btree
   add_index "reviews", ["user_id"], name: "index_reviews_on_user_id", using: :btree
 
+  create_table "tax_schedules", force: :cascade do |t|
+    t.text     "country",    limit: 255
+    t.decimal  "rate",                   precision: 6, scale: 5
+    t.datetime "created_at",                                     null: false
+    t.datetime "updated_at",                                     null: false
+  end
+
   create_table "user_reservations", force: :cascade do |t|
     t.integer  "user_id",            limit: 4
     t.integer  "charge_schedule_id", limit: 4
@@ -192,6 +201,7 @@ ActiveRecord::Schema.define(version: 20160816064611) do
   add_foreign_key "amenity_lists", "golf_clubs"
   add_foreign_key "charge_schedules", "flight_schedules"
   add_foreign_key "charge_schedules", "golf_clubs"
+  add_foreign_key "charge_schedules", "tax_schedules"
   add_foreign_key "flight_matrices", "flight_schedules"
   add_foreign_key "flight_schedules", "golf_clubs"
   add_foreign_key "golf_clubs", "users"

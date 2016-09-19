@@ -8,7 +8,10 @@ class ChargeScheduleTest < ActiveSupport::TestCase
   should validate_presence_of(:cart)
   should validate_presence_of(:insurance)
   should validate_presence_of(:insurance_mode)
+  should validate_presence_of(:tax_schedule_id)
 
   should belong_to(:golf_club)
   should belong_to(:flight_schedule)
+
+  should belong_to(:tax_schedule)
 end
