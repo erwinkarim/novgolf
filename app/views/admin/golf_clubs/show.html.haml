@@ -2,9 +2,9 @@
 .container
   .row
     %ol.breadcrumb
-      %li
+      %li.breadcrumb-item
         %a{ :href => admin_golf_clubs_path} Admin
-      %li.active #{ @golf_club.name }
+      %li.active.breadcrumb-item #{ @golf_club.name }
     %h1 Club Info
     .col-xs-12.col-md-8
       .card
@@ -37,6 +37,8 @@
             %a.card-link.btn.btn-primary{ :href => admin_golf_club_dashboard_path(@golf_club) } Dashboard
           %li.list-group-item
             %a.card-link.btn.btn-secondary{ :href => edit_admin_golf_club_path(@golf_club) } Edit
+          %li.list-group-item
+            %a.card-link.btn.btn-secondary{ :href => admin_golf_club_charge_schedules_path(@golf_club) } Global Pricing
           %li.list-group-item
             %a.card-link.btn.btn-secondary{ :href => admin_golf_club_photos_path(@golf_club) } Photos
       .card
