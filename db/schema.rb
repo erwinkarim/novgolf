@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160919032510) do
+ActiveRecord::Schema.define(version: 20160921023036) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -49,12 +49,10 @@ ActiveRecord::Schema.define(version: 20160919032510) do
     t.integer  "flight_schedule_id", limit: 4
     t.text     "note",               limit: 65535
     t.integer  "insurance_mode",     limit: 4,                             default: 0
-    t.integer  "tax_schedule_id",    limit: 4
   end
 
   add_index "charge_schedules", ["flight_schedule_id"], name: "index_charge_schedules_on_flight_schedule_id", using: :btree
   add_index "charge_schedules", ["golf_club_id"], name: "index_charge_schedules_on_golf_club_id", using: :btree
-  add_index "charge_schedules", ["tax_schedule_id"], name: "index_charge_schedules_on_tax_schedule_id", using: :btree
 
   create_table "flight_matrices", force: :cascade do |t|
     t.integer  "flight_schedule_id", limit: 4
@@ -91,18 +89,20 @@ ActiveRecord::Schema.define(version: 20160919032510) do
   add_index "flight_schedules", ["golf_club_id"], name: "index_flight_schedules_on_golf_club_id", using: :btree
 
   create_table "golf_clubs", force: :cascade do |t|
-    t.datetime "created_at",                null: false
-    t.datetime "updated_at",                null: false
-    t.string   "name",        limit: 255
-    t.text     "description", limit: 65535
-    t.string   "address",     limit: 255
+    t.datetime "created_at",                    null: false
+    t.datetime "updated_at",                    null: false
+    t.string   "name",            limit: 255
+    t.text     "description",     limit: 65535
+    t.string   "address",         limit: 255
     t.time     "open_hour"
     t.time     "close_hour"
-    t.integer  "user_id",     limit: 4
-    t.string   "lat",         limit: 255
-    t.string   "lng",         limit: 255
+    t.integer  "user_id",         limit: 4
+    t.string   "lat",             limit: 255
+    t.string   "lng",             limit: 255
+    t.integer  "tax_schedule_id", limit: 4
   end
 
+  add_index "golf_clubs", ["tax_schedule_id"], name: "index_golf_clubs_on_tax_schedule_id", using: :btree
   add_index "golf_clubs", ["user_id"], name: "index_golf_clubs_on_user_id", using: :btree
 
   create_table "photos", force: :cascade do |t|
@@ -201,9 +201,9 @@ ActiveRecord::Schema.define(version: 20160919032510) do
   add_foreign_key "amenity_lists", "golf_clubs"
   add_foreign_key "charge_schedules", "flight_schedules"
   add_foreign_key "charge_schedules", "golf_clubs"
-  add_foreign_key "charge_schedules", "tax_schedules"
   add_foreign_key "flight_matrices", "flight_schedules"
   add_foreign_key "flight_schedules", "golf_clubs"
+  add_foreign_key "golf_clubs", "tax_schedules"
   add_foreign_key "golf_clubs", "users"
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"

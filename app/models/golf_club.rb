@@ -12,9 +12,10 @@ class GolfClub < ActiveRecord::Base
   belongs_to :user
   #should have has_many :reviews where topic_type = UserReservation
   # and topic_id = UserReservations.id and user_reservations.golf_club_id = id
+  belongs_to :tax_schedule
 
 
-  validates_presence_of :name, :description, :address, :open_hour, :close_hour, :user_id
+  validates_presence_of :name, :description, :address, :open_hour, :close_hour, :user_id, :tax_schedule_id
 
   after_initialize :init
 
@@ -26,6 +27,8 @@ class GolfClub < ActiveRecord::Base
     #default location is klcc
     self.lat ||= "3.15785"
     self.lng ||= "101.71165"
+
+    self.tax_schedule_id ||= 1
   end
 
   #shows how many many slots are available in this club

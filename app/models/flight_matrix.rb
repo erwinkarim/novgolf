@@ -23,7 +23,6 @@ class FlightMatrix < ActiveRecord::Base
   #validates that at least one of the dayX fields is populated
   def one_day_presence?
     if %w(day0 day1 day2 day3 day4 day5 day6 day7 ).all?{|attr| self[attr].blank? || self[attr].nil? }
-      puts "cannot all be blank"
       errors.add :base, "At least one day must be populated"
       #raise ActiveRecord::RecordInvalid
     end

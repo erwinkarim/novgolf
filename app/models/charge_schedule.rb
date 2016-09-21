@@ -7,7 +7,6 @@ class ChargeSchedule < ActiveRecord::Base
 
   validates_presence_of :golf_club_id, :flight_schedule_id
   validates_presence_of :session_price, :cart, :caddy, :insurance, :insurance_mode
-  validates_presence_of :tax_schedule_id
 
   enum insurance_mode: [ :insurance_optional, :insurance_madatory, :insurance_inclusive ]
 
@@ -26,8 +25,6 @@ class ChargeSchedule < ActiveRecord::Base
     self.insurance ||= 10
 
     self.insurance_mode ||= 0
-
-    self.tax_schedule_id ||= 1
   end
 
 end

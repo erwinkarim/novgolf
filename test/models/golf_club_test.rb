@@ -5,6 +5,7 @@ class GolfClubTest < ActiveSupport::TestCase
   should validate_presence_of(:description)
   should validate_presence_of(:address)
   should validate_presence_of(:user_id)
+  should validate_presence_of(:tax_schedule_id)
   # test "the truth" do
   #   assert true
   # end
@@ -17,6 +18,8 @@ class GolfClubTest < ActiveSupport::TestCase
   should have_many(:amenity_lists)
 
   should belong_to(:user)
+  should belong_to(:tax_schedule)
+
 
   test "search exists" do
     assert_respond_to GolfClub, :search
