@@ -38,6 +38,7 @@ Rails.application.routes.draw do
     end
     resources :golf_clubs do
       get 'dashboard'
+      get 'tax_schedule'
       resources :photos, :only => [:index, :create, :update, :destroy]
       resources :charge_schedules, only:[:index]
     end

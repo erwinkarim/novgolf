@@ -147,6 +147,16 @@ class Admin::GolfClubsController < ApplicationController
     end
   end
 
+  # GET      /admin/golf_clubs/:golf_club_id/tax_schedule(.:format)
+  def tax_schedule
+    respond_to do |format|
+      format.json {
+        render json: {tax_schedules:TaxSchedule.all, selected:GolfClub.find(params[:golf_club_id]).tax_schedule.id}
+      }
+    end
+
+  end
+
   def golf_club_params
     params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour, :lat, :lng);
   end
