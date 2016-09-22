@@ -3,7 +3,19 @@ var LineItemSetting = React.createClass({
     return (
       <div className="form-group">
         <h3>Line Item Settings</h3>
-        <label>Radio setting here</label>
+        <legend>Line Item Global Settings</legend>
+        <div className="form-check">
+          <label className="form-check-label">
+            <input type="radio" name="globalLineItemMode" defaultChecked={true} />
+            Use the same line item for all charge schedule
+          </label>
+        </div>
+        <div className="form-check">
+          <label className="form-check-label">
+            <input type="radio" name="globalLineItemMode" />
+            Each Charge Schedule has it's onw line items
+          </label>
+        </div>
       </div>
     );
   }
@@ -45,6 +57,9 @@ var ChargeScheduleSettings = React.createClass({
         </li>
         <li className="list-group-item">
           <LineItemSetting />
+        </li>
+        <li className="list-group-item">
+          List of list items here and it's appropiate charges
         </li>
       </ul>
     );
