@@ -1,3 +1,32 @@
+var LineItemListings = React.createClass({
+  propTypes:{
+    charge_schedules_path: React.PropTypes.string
+  },
+  getInitialState: function(){
+      return {charge_schedules:[]}
+  },
+  componentWillMount: function(){
+    var handle = this;
+    $.getJSON(this.props.charge_schedules_path, null, function(data){
+        handle.setState({charge_schedules:data.charge_Schedules});
+    })
+  },
+  render: function(){
+    return (
+      <div>
+        <ul className="nav nav-tabs">{ this.state.charge_schedules.map( (e,i) =>
+          <li className="nav-item" key={i}>
+            <a href={`#charge-schedule-${e.id}`} data-toggle="tab" role="tab" className={`nav-link ${i==0 ? "active" : ""}`}>{e.id}</a>
+          </li>
+        )}</ul>
+        <div className="tab-content">{ this.state.charge_schedules.map( (e,i) =>
+          <div className={`tab-pane ${i==0 ? "active" : ""}`} key={i} id={`charge-schedule-${e.id}`}>Content for {e.id}</div>
+        )}</div>
+      </div>
+    );
+  }
+});
+
 var LineItemSetting = React.createClass({
   render: function(){
     return (
@@ -22,6 +51,9 @@ var LineItemSetting = React.createClass({
 });
 
 var GlobalTaxSetting = React.createClass({
+  propTypes: {
+      admin_golf_club_path: React.PropTypes.string
+  },
   getInitialState: function(){
     return {tax_schedules:[], selected:0};
   },
@@ -47,19 +79,20 @@ var GlobalTaxSetting = React.createClass({
 
 var ChargeScheduleSettings = React.createClass({
   propTypes: {
-      admin_golf_club_path: React.PropTypes.string
+    paths:React.PropTypes.object,
+    charge_schedules: React.PropTypes.array
   },
   render: function() {
     return (
       <ul className="list-group">
         <li className="list-group-item">
-          <GlobalTaxSetting admin_golf_club_path={this.props.admin_golf_club_path} />
+          <GlobalTaxSetting admin_golf_club_path={this.props.paths.admin_golf_club_path} />
         </li>
         <li className="list-group-item">
           <LineItemSetting />
         </li>
         <li className="list-group-item">
-          List of list items here and it's appropiate charges
+          <LineItemListings charge_schedules_path={this.props.paths.charge_schedules_path} />
         </li>
       </ul>
     );

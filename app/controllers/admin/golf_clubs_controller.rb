@@ -156,7 +156,7 @@ class Admin::GolfClubsController < ApplicationController
   def line_items
     # should return the line items + appropiate charges
     # maybe charge_schedule outer join the line_item_listings + line_item
-    render json: {line_items:LineItem.all}
+    render json: {line_items:LineItem.all, charge_Schedules:GolfClub.find(params[:golf_club_id]).charge_schedules}
   end
 
   def golf_club_params
