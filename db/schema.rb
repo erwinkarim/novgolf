@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160921023036) do
+ActiveRecord::Schema.define(version: 20160922030033) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -104,6 +104,29 @@ ActiveRecord::Schema.define(version: 20160921023036) do
 
   add_index "golf_clubs", ["tax_schedule_id"], name: "index_golf_clubs_on_tax_schedule_id", using: :btree
   add_index "golf_clubs", ["user_id"], name: "index_golf_clubs_on_user_id", using: :btree
+
+  create_table "line_item_listings", force: :cascade do |t|
+    t.decimal  "rate",                         precision: 10, scale: 2
+    t.boolean  "taxed"
+    t.integer  "charge_schedule_id", limit: 4
+    t.integer  "line_item_id",       limit: 4
+    t.datetime "created_at",                                            null: false
+    t.datetime "updated_at",                                            null: false
+  end
+
+  add_index "line_item_listings", ["charge_schedule_id"], name: "index_line_item_listings_on_charge_schedule_id", using: :btree
+  add_index "line_item_listings", ["line_item_id"], name: "index_line_item_listings_on_line_item_id", using: :btree
+
+  create_table "line_items", force: :cascade do |t|
+    t.text     "name",        limit: 255
+    t.string   "description", limit: 255
+    t.boolean  "mandatory"
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.integer  "user_id",     limit: 4
+  end
+
+  add_index "line_items", ["user_id"], name: "index_line_items_on_user_id", using: :btree
 
   create_table "photos", force: :cascade do |t|
     t.integer  "sequence",       limit: 4
@@ -205,6 +228,9 @@ ActiveRecord::Schema.define(version: 20160921023036) do
   add_foreign_key "flight_schedules", "golf_clubs"
   add_foreign_key "golf_clubs", "tax_schedules"
   add_foreign_key "golf_clubs", "users"
+  add_foreign_key "line_item_listings", "charge_schedules"
+  add_foreign_key "line_item_listings", "line_items"
+  add_foreign_key "line_items", "users"
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"
   add_foreign_key "user_reservations", "charge_schedules"

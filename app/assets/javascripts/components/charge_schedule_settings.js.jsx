@@ -13,7 +13,7 @@ var LineItemSetting = React.createClass({
         <div className="form-check">
           <label className="form-check-label">
             <input type="radio" name="globalLineItemMode" />
-            Each Charge Schedule has it's onw line items
+            Each Charge Schedule has it's own line items
           </label>
         </div>
       </div>

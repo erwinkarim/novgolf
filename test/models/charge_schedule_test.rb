@@ -12,4 +12,5 @@ class ChargeScheduleTest < ActiveSupport::TestCase
   should belong_to(:golf_club)
   should belong_to(:flight_schedule)
 
+  should have_many(:line_item_listings)
 end

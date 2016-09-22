@@ -39,6 +39,7 @@ Rails.application.routes.draw do
     resources :golf_clubs do
       get 'dashboard'
       get 'tax_schedule'
+      get 'line_items'
       resources :photos, :only => [:index, :create, :update, :destroy]
       resources :charge_schedules, only:[:index]
     end

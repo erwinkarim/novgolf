@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  rate: 9.99
+  taxed: false
+  charge_schedule_id: 
+  line_item_id: 
+
+two:
+  rate: 9.99
+  taxed: false
+  charge_schedule_id: 
+  line_item_id: 

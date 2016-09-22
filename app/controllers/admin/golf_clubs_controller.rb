@@ -149,12 +149,14 @@ class Admin::GolfClubsController < ApplicationController
 
   # GET      /admin/golf_clubs/:golf_club_id/tax_schedule(.:format)
   def tax_schedule
-    respond_to do |format|
-      format.json {
-        render json: {tax_schedules:TaxSchedule.all, selected:GolfClub.find(params[:golf_club_id]).tax_schedule.id}
-      }
-    end
+    render json: {tax_schedules:TaxSchedule.all, selected:GolfClub.find(params[:golf_club_id]).tax_schedule.id}
+  end
 
+  # GET      /admin/golf_clubs/:golf_club_id/line_items
+  def line_items
+    # should return the line items + appropiate charges
+    # maybe charge_schedule outer join the line_item_listings + line_item
+    render json: {line_items:LineItem.all}
   end
 
   def golf_club_params

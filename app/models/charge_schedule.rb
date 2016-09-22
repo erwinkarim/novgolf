@@ -8,6 +8,8 @@ class ChargeSchedule < ActiveRecord::Base
   validates_presence_of :golf_club_id, :flight_schedule_id
   validates_presence_of :session_price, :cart, :caddy, :insurance, :insurance_mode
 
+  has_many :line_item_listings
+
   enum insurance_mode: [ :insurance_optional, :insurance_madatory, :insurance_inclusive ]
 
   def init
