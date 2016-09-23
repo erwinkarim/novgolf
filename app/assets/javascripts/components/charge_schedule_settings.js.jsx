@@ -8,7 +8,7 @@ var LineItemListings = React.createClass({
   componentWillMount: function(){
     var handle = this;
     $.getJSON(this.props.charge_schedules_path, null, function(data){
-        handle.setState({charge_schedules:data.charge_Schedules});
+        handle.setState({charge_schedules:data.charge_schedules});
     })
   },
   render: function(){
@@ -20,7 +20,11 @@ var LineItemListings = React.createClass({
           </li>
         )}</ul>
         <div className="tab-content">{ this.state.charge_schedules.map( (e,i) =>
-          <div className={`tab-pane ${i==0 ? "active" : ""}`} key={i} id={`charge-schedule-${e.id}`}>Content for {e.id}</div>
+          <div className={`tab-pane ${i==0 ? "active" : ""}`} key={i} id={`charge-schedule-${e.id}`}>
+            { e.line_item_listings.map( (e1, i1) =>
+              <li>{e1.name}, { e1.rate }</li>
+            )}
+          </div>
         )}</div>
       </div>
     );
