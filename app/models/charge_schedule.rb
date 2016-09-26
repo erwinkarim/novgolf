@@ -30,7 +30,11 @@ class ChargeSchedule < ActiveRecord::Base
   end
 
   def line_item_listings
-    LineItem.joins{ line_item_listings.outer }.where{ line_item_listings.charge_schedule_id.in [nil, self.id]}.select{
+    cs_owner = self.golf_club.user_id
+
+    LineItem.joins{ line_item_listings.outer }.where{
+      (line_item_listings.charge_schedule_id.in [nil, self.id]) & (line_items.user_id.in [nil, cs_owner])
+    }.select{
       [line_item_listings.id, line_item_listings.created_at, line_item_listings.updated_at,
         line_item_listings.rate, line_item_listings.taxed, line_items.name, line_items.description, line_items.mandatory]
     }.map{ |x| x.attributes }

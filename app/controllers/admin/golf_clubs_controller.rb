@@ -153,7 +153,7 @@ class Admin::GolfClubsController < ApplicationController
   end
 
   # GET      /admin/golf_clubs/:golf_club_id/line_items
-  def line_items
+  def charge_schedules
     # should return the line items + appropiate charges
     # maybe charge_schedule outer join the line_item_listings + line_item
 
@@ -163,12 +163,12 @@ class Admin::GolfClubsController < ApplicationController
     #     line_item_listings:[{line_item_listing_id:x, rate:x, taxed:x, name:'x', description:x}, {..}, {..}]]
     # }
     render json: {
-      line_items:ChargeSchedule.first.line_item_listings,
       charge_schedules:GolfClub.find(params[:golf_club_id]).
         charge_schedules.
         map{ |x| x.attributes.merge( {line_item_listings:x.line_item_listings})}
     }
   end
+
 
   def golf_club_params
     params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour, :lat, :lng);

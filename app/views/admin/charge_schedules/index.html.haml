@@ -17,6 +17,6 @@
         %li Customized Rates for line items
     .col-xs-12
       = react_component "ChargeScheduleSettings",
-        { paths: {admin_golf_club_path:admin_golf_club_path(params[:golf_club_id]), 
-          charge_schedules_path:admin_golf_club_line_items_path(params[:golf_club_id])},
+        { paths: {admin_golf_club_path:admin_golf_club_path(params[:golf_club_id]),
+          charge_schedules_path:admin_golf_club_charge_schedules_path(params[:golf_club_id])},
         charge_schedules:@golf_club.charge_schedules }

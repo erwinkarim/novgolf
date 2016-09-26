@@ -14,6 +14,7 @@ var LineItemListings = React.createClass({
   render: function(){
     return (
       <div>
+        <h3>Line Items</h3>
         <ul className="nav nav-tabs">{ this.state.charge_schedules.map( (e,i) =>
           <li className="nav-item" key={i}>
             <a href={`#charge-schedule-${e.id}`} data-toggle="tab" role="tab" className={`nav-link ${i==0 ? "active" : ""}`}>{e.id}</a>
@@ -21,9 +22,34 @@ var LineItemListings = React.createClass({
         )}</ul>
         <div className="tab-content">{ this.state.charge_schedules.map( (e,i) =>
           <div className={`tab-pane ${i==0 ? "active" : ""}`} key={i} id={`charge-schedule-${e.id}`}>
-            { e.line_item_listings.map( (e1, i1) =>
-              <li>{e1.name}, { e1.rate }</li>
-            )}
+            <br />
+            <p>From charge schedule:-</p>
+            <table className="table">
+              <thead> <tr> <th>Name</th><th>Rate</th> </tr> </thead>
+              <tbody>
+                <tr> <td>Flight</td><td>{e.session_price}</td> </tr>
+                <tr> <td>Caddy</td><td>{e.caddy}</td> </tr>
+                <tr> <td>Buggy</td><td>{e.cart}</td> </tr>
+                <tr> <td>Insurance</td><td>{e.insurance}</td> </tr>
+              </tbody>
+            </table>
+            <br />
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Rate</th>
+                  <th>Taxed?</th>
+                </tr>
+              </thead>
+              { e.line_item_listings.map( (e1, i1) =>
+                <tr>
+                  <td>{e1.name}</td><td>{e1.description}</td><td>{e1.rate}</td>
+                  <td>{e1.taxed}</td>
+                </tr>
+              )}
+            </table>
           </div>
         )}</div>
       </div>
