@@ -40,12 +40,12 @@ Rails.application.routes.draw do
       get 'dashboard'
       get 'tax_schedule'
       resources :photos, :only => [:index, :create, :update, :destroy]
-      resources :charge_schedules, :only => [:index]
+      #this is for MVP + 1
+      #resources :charge_schedules, :only => [:index]
     end
   end
 
   resources :golf_clubs, :only => [:show] do
-    #get 'schedule'
     resources :flight_matrices, :only => [:index] do
     end
     resources :user_reservations, :only => [:index] do
