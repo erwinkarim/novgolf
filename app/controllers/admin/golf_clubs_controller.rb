@@ -171,6 +171,6 @@ class Admin::GolfClubsController < ApplicationController
 
 
   def golf_club_params
-    params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour, :lat, :lng);
+    params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour, :lat, :lng, :tax_schedule_id);
   end
 end

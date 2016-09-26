@@ -97,7 +97,7 @@ var GeneralBox = React.createClass({
               </div>
               <div className="form-group">
                 <label>Location</label>
-                <div className="googlemaps" id="map" refs="map" style={ {height:'25vh'}} ></div>
+                <div className="googlemaps" id="map" ref="map" style={ {height:'25vh'}} ></div>
               </div>
               <div className="form-group">
                 <label>Lat</label>
@@ -144,7 +144,7 @@ var FlightScheduleControl = React.createClass({
           ) }</div>
         </div>
         <div className="form-group">
-          <input typeName="text" className="form-control" ref="teeTimeInput" value={this.state.flightTime} onChange={this.updateFlightTime} />
+          <input type="text" className="form-control" ref="teeTimeInput" value={this.state.flightTime} onChange={this.updateFlightTime} />
           <button className="btn btn-secondary" type="button" onClick={this.props.addTeeTime}
             data-index-schedule={this.props.scheduleIndex} data-value={this.state.flightTime}>
             <i className="fa fa-plus"></i>
@@ -364,7 +364,7 @@ var FlightSchedulePriceCard = React.createClass({
                   <label className={"btn btn-secondary " + isActive} key={i+1}
                     data-index={this.props.scheduleIndex} data-target="flight_matrices" data-flight={i+1}
                     onClick={this.props.updateFlightInfo} value={i+1} >
-                    <input key={i+1} type="checkbox" autocomplete="off"
+                    <input key={i+1} type="checkbox" autoComplete="off"
                       name={ "flight[" + this.state.random_id + "][days][]"} defaultValue={i+1} defaultChecked={isChecked} />{ e }
                   </label>
                 )
@@ -482,6 +482,9 @@ var FlightBox = React.createClass({
               Warning: remove flight schedules with caution
             </div>
             <div className="card-block">
+              <TaxationBox tax_schedule_path={this.props.tax_schedule_path} />
+            </div>
+            <div className="card-block">
               { this.state.flightSchedules.map( (e,i) =>
                   <FlightSchedulePriceCard key={i} scheduleIndex={i}
                     flightSchedule={e}
@@ -495,6 +498,39 @@ var FlightBox = React.createClass({
           </div>
         </div>
       </div>
+    );
+  }
+});
+
+var TaxationBox = React.createClass({
+  propTypes: {
+    tax_schedule_path:React.PropTypes.string
+  },
+  getInitialState: function(){
+    return {tax_schedules:[], selected:0};
+  },
+  componentDidMount: function(){
+    var handle=this;
+    $.getJSON(this.props.tax_schedule_path, null, function(data){
+      handle.setState({ tax_schedules:data.tax_schedules, selected:data.selected})
+    });
+  },
+  handleChange: function(e){
+      this.setState({selected:e.target.value});
+  },
+  render: function(){
+    return (
+        <div className="card">
+          <div className="card-header">Taxation</div>
+          <div className="card-block">
+            <div className="form-group">
+              <label>Country:</label>
+              <select name="golf_club[tax_schedule_id]" className="form-control" value={this.state.selected} onChange={this.handleChange}>{ this.state.tax_schedules.map( (e,i) =>
+                <option key={i} value={e.id}>{e.country} ({e.rate})</option>
+              )} </select>
+            </div>
+          </div>
+        </div>
     );
   }
 });
@@ -541,7 +577,8 @@ var GolfClubForm = React.createClass({
     flightSchedules: React.PropTypes.array,
     flightDummy: React.PropTypes.object,
     form: React.PropTypes.object,
-    insurance_modes: React.PropTypes.array
+    insurance_modes: React.PropTypes.array,
+    paths: React.PropTypes.object
   },
   getInitialState: function(){
     return { disabledSubmit: false, club:this.props.club }
@@ -593,12 +630,13 @@ var GolfClubForm = React.createClass({
           </ul>
         </div>
         <div className="col-xs-12 col-md-8">
-          <form method={this.props.form.method} action={this.props.form.action_path} refs="golf_form" id="golf_form" >
+          <form method={this.props.form.method} action={this.props.form.action_path} ref="golf_form" id="golf_form" >
             <div id="accordion" role="tablist">
               <input type="hidden" name="authenticity_token" value={this.props.form.crsfToken} />
               <GeneralBox club={this.state.club} contentChanged={this.contentChanged} updateLocation={this.updateLocation} />
               <FlightBox flightSchedules={this.props.flightSchedules} flightDummy={this.props.flightDummy}
-               deleteTeeTime={this.deleteTeeTime} newTeeTime={this.newTeeTime} insurance_modes={this.props.insurance_modes} />
+               deleteTeeTime={this.deleteTeeTime} newTeeTime={this.newTeeTime} insurance_modes={this.props.insurance_modes}
+               tax_schedule_path={this.props.paths.tax_schedule_path} />
               <AmenitiesBox amenities={this.props.amenities}/>
               <button className="btn btn-primary" type="button" disabled={this.state.disabledSubmit} onClick={this.submitForm}>{button_label}</button>
             </div>
