@@ -17,7 +17,7 @@ class UserReservation < ActiveRecord::Base
   #validates :token, uniqueness: true
   #need to check when this feature is available
   validates_presence_of :user_id, :flight_matrix_id
-  validates_presence_of :actual_pax, :actual_buggy, :actual_caddy, :actual_insurance
+  validates_presence_of :actual_pax, :actual_buggy, :actual_caddy, :actual_insurance, :actual_tax
   validates_presence_of :count_pax, :count_buggy, :count_caddy, :count_insurance
   validates_presence_of :booking_date, :booking_time
   validates_presence_of :status
@@ -53,10 +53,11 @@ class UserReservation < ActiveRecord::Base
   end
 
   def total_price
-    actual_pax * count_pax +
-    actual_buggy * count_buggy +
-    actual_caddy * count_caddy +
-    actual_insurance * count_insurance
+    actual_pax +
+    actual_buggy +
+    actual_caddy +
+    actual_insurance +
+    actual_tax
   end
 
   def booking_datetime

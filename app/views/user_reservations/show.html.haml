@@ -50,6 +50,10 @@
                 %td Insurance
                 %td #{ number_to_currency(@reservation.actual_insurance, { :unit => "RM "} )}
               %tr
+                %td 
+                %td Tax
+                %td #{ number_to_currency(@reservation.actual_tax, { :unit => "RM "} )}
+              %tr
                 %td{ :colspan => 2}
                   %h4 Total Price:
                 %td

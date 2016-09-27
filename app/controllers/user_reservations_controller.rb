@@ -4,17 +4,23 @@ class UserReservationsController < ApplicationController
   def reserve
     @club = GolfClub.find(params[:golf_club_id])
 
+    #add tax rate into the params
+    params[:info][:tax] = params[:info][:total_price].to_f * @club.tax_schedule.rate
+    params[:info][:grand_total] = (params[:info][:total_price].to_f * @club.tax_schedule.rate) + params[:info][:total_price].to_f
+
     #create the session
     session[:flight] = params[:flight]
     session[:info] = params[:info]
     session[:teeTimes] = params[:teeTimes]
     session[:golf_club_id] = params[:golf_club_id]
 
-    Rails.logger.info "the session flight is is #{session[:flight]  }"
+
+    #Rails.logger.info "the session flight is is #{session[:flight]  }"
   end
 
   def processing
     #set that you need to complete this transaction (get reservation confirmation token) within 10 minutes
+    @club = GolfClub.find(params[:golf_club_id])
     session[:reservation_ids] = []
     session[:timeout] = Time.now + 10.minutes
 
@@ -24,12 +30,14 @@ class UserReservationsController < ApplicationController
     #   eg: if you booked 5 balls in 2 flights, flight a will have 3 balls and flight b will have 2 balls and are priced accordingly
     UserReservation.transaction do
       session[:flight].each_pair do |k,v|
+        tax = (v["price"]["pax"].to_f + v["price"]["cart"].to_f + v["price"]["caddy"].to_f + v["price"]["insurance"].to_f) * @club.tax_schedule.rate
         reservation = current_user.user_reservations.new( :golf_club_id => params[:golf_club_id],
           :booking_date => Date.parse(session[:info]["date"]), :booking_time => v["tee_time"],
           :actual_buggy => v["price"]["cart"], :actual_caddy => v["price"]["caddy"],
           :actual_pax => v["price"]["pax"], :actual_insurance => v["price"]["insurance"],
           :count_buggy => v["count"]["buggy"], :count_caddy => v["count"]["caddy"],
           :count_pax => v["count"]["pax"], :count_insurance => v["count"]["insurance"],
+          :actual_tax => tax,
           :flight_matrix_id => v["matrix_id"] )
 
         reservation.regenerate_token
