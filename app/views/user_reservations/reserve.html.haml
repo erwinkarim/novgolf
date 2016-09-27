@@ -54,7 +54,7 @@
             %td Total
             %td  #{number_to_currency(params[:info][:total_price], {:unit => "RM"})}
           %tr
-            %td Tax
+            %td Tax (#{number_to_percentage(@club.tax_schedule.rate*100)})
             %td  #{number_to_currency(params[:info][:tax], {:unit => "RM"})}
           %tr
             %td
