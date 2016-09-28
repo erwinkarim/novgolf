@@ -210,6 +210,7 @@ var GolfReserveForm = React.createClass({
         defaultFlightInfo: {pax:0, buggy:0, caddy:0, insurance:0},
         prices: [],
         random_id: randomID(),
+        tax:0,
         totalPrice: 0
       }
     },
@@ -252,8 +253,9 @@ var GolfReserveForm = React.createClass({
         }
 
         var newTotalPrice = this.updateTotalPrice();
+        var newTax = (newTotalPrice * this.props.club.tax_schedule.rate);
 
-        this.setState({flightInfo:newFlightInfo, totalPrice:newTotalPrice});
+        this.setState({flightInfo:newFlightInfo, totalPrice:newTotalPrice, tax:newTax});
 
 
     },
@@ -295,11 +297,16 @@ var GolfReserveForm = React.createClass({
               }
             );
             newFlightInfo.splice($.inArray(value, newTeeTimes), 0, fi ) ;
+
         }
+
+        //need to re-adjust each child of flightInfo.index into order as this can be issue when flights are not clicked in-order
+        newFlightInfo.map( (e,i) => Object.assign(e, {index:i}));
 
         this.setState({selectedTeeTimes:newTeeTimes, selectedTeeTimesIndex:newIndex, flightInfo:newFlightInfo});
         var newTotalPrice = this.updateTotalPrice();
-        this.setState({totalPrice:newTotalPrice});
+        var newTax = (newTotalPrice * this.props.club.tax_schedule.rate);
+        this.setState({totalPrice:newTotalPrice, tax:newTax});
 
       }
     },
@@ -326,7 +333,7 @@ var GolfReserveForm = React.createClass({
               {
                 var isActive = (this.state.selectedTeeTimesIndex == i) ? "active" : ""
                 return (
-                  <li className="nav-item">
+                  <li key={i} className="nav-item">
                     <a href={ `#flight-tab-${this.state.flightInfo[i].id}` } className={`nav-link ${isActive}`} data-toggle="pill">
                       {this.props.flights[e].tee_time}
                     </a>
@@ -347,7 +354,8 @@ var GolfReserveForm = React.createClass({
               }
             )}</div>
             <div>
-              <h4>Grand Total: {toCurrency(this.state.totalPrice)} </h4>
+              <h5>Tax: {toCurrency(this.state.tax)}</h5>
+              <h4>Grand Total: {toCurrency(this.state.totalPrice + this.state.tax)} </h4>
               <input type="hidden" name="info[total_price]" value={this.state.totalPrice} />
             </div>
             <button type="submit" className="btn btn-primary">Book!</button>
@@ -475,7 +483,7 @@ var GolfCards = React.createClass({
     );
 
     return (
-      <div className="card card-inverse">
+      <div className="card card-inverse d-inline-block">
         { hasCarousel ? (carouselDiv) : (<img className="img-responsive card-img-top" src={photoPath} />) }
         <a href={this.props.paths.club} target="_blank">
           <div className="card-img-overlay">
