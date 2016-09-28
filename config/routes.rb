@@ -23,7 +23,6 @@ Rails.application.routes.draw do
   root 'welcome#index'
   controller :welcome do
     get 'search'
-    get 'terms'
     get 'reset'
     get 'session_data'
     get 'tab_test'

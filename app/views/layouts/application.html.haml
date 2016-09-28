@@ -34,8 +34,9 @@
       .container
         %p
           &copy; JomGolf 2016
-          &#8226; Terms of service
-          &#8226; Privacy Policy
+          &#8226; #{link_to 'Terms of Service', page_path('terms')}
+          &#8226; #{link_to 'Privacy Policy', page_path('privacy')}
+          &#8226; #{link_to 'About', page_path('about')}
           &#8226; Build #{ NovGolf::REVISION }
 :javascript
   window.flashMessages = $.parseJSON('#{j flash.to_hash.to_json.html_safe}')
