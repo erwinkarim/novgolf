@@ -151,10 +151,17 @@ var GolfClubDashboard = React.createClass({
     $.getJSON(this.props.paths.club_path, null, function(data){
       handle.setState({data:data})
     });
+
+    $(this.refs.queryDate).datepicker({dateFormat:'dd/mm/yy'});
+  },
+  handleChangeDate: function(){
+
+    console.log("date changed!!");
   },
   render: function() {
     return (
       <div>
+        <input type="text" name="date" ref="queryDate" onChange={this.handleChangeDate}/>
         <table className="table table-striped table-bordered table-responsive">
           <thead>
             <tr>
