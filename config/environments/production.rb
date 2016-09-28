@@ -79,7 +79,7 @@ Rails.application.configure do
 
   #user amazon ses
   #config.action_mailer.delivery_method = :aws_sdk
-  config.action_mailer.default_url_options = { host: 'novgolf-dev.ap-southeast-1.elasticbeanstalk.com', port: 80}
+  config.action_mailer.default_url_options = { host: 'beta.jomgolf.com.my', port: 80}
 
   config.active_job.queue_adapter = :shoryuken_later
 
