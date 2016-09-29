@@ -1,0 +1,16 @@
+.jumbotron.jumbotron-fluid{style:"background-image:url(http://placehold.it/1024x768); min-height:70vh; background-size:auto 70vh; background-repeat:no-repeat;background-position:center;"}
+  .container
+.container
+  .row
+    .col-xs-12
+      %h1.display-1 About!!
+  .row
+    .card-columns{ style:'column-count:3;'}
+      - (1..5).each do |num|
+        .card.d-inline-block
+          .m-x-auto
+            %img.img-responsive{ src:'http://placehold.it/256x256'}
+          .card-block
+            %h4.card-title.text-xs-center Person Name
+            - (1..rand(2)+1).each do |num|
+              %p.card-text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
