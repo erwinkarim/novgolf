@@ -6,11 +6,12 @@ var QueryForm = React.createClass({
     queryDate: React.PropTypes.string,
     queryTime: React.PropTypes.string,
     showSearchNav: React.PropTypes.bool,
-    collapseSearchForm: React.PropTypes.bool
+    collapseSearchForm: React.PropTypes.bool,
+    dropShadow: React.PropTypes.bool
   },
   getDefaultProps: function(){
       return {
-        showSearchNav:false, collapseSearchForm:false
+        showSearchNav:false, collapseSearchForm:false, dropShadow:false
       }
   },
   componentDidMount: function(){
@@ -45,6 +46,7 @@ var QueryForm = React.createClass({
     };
 
     var collapseClass = this.props.collapseSearchForm ? "" : "in";
+    var dropShadowClass = this.props.dropShadow ? "text-shadow" : "";
 
     return (
       <div>
@@ -54,21 +56,21 @@ var QueryForm = React.createClass({
             <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
             <div className="form-inline">
               <div className="form-group">
-                <label>I would like to play in </label>
+                <label className={dropShadowClass}>I would like to play in </label>
                 <span> </span>
                 <input id="query" ref="query" ref="q" name="q" className="form-control" type="text"
                   placeholder="Golf Club" value={this.state.queryString} onChange={this.handleChange} />
               </div>
               <span> </span>
               <div className="form-group">
-                <label> on </label>
+                <label className={dropShadowClass}> on </label>
                 <span> </span>
                 <input id="flight-date" name="date" className="datepicker" ref="queryDate" type="text"
                     className="form-control" placeholder="Date" value={this.state.queryDate} onChange={function(){}} />
               </div>
               <span> </span>
               <div className="form-group">
-                <label> @ </label> <input id="flight-time" name="time" ref="queryTime" className="form-control" type="text"
+                <label className={dropShadowClass}> @ </label> <input id="flight-time" name="time" ref="queryTime" className="form-control" type="text"
                   placeholder="Golf Club" value={this.state.queryTime} onChange={function(){}} />
               </div>
               <span> </span>
