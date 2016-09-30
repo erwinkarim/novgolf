@@ -8,7 +8,7 @@
           - if @futureFlights.empty? then
             %p You haven't reserved anything yet
           - else
-            %table.table
+            %table.table.table-responsive-conditional.table-striped
               %thead
                 %tr
                   %th Place
@@ -28,7 +28,7 @@
           - if @pastFlights.nil? || @pastFlights.empty? then
             %p You haven't reserved anything yet
           - else
-            %table.table
+            %table.table.table-responsive-conditional.table-striped
               %thead
                 %tr
                   %th Place
