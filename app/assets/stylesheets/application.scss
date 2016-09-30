@@ -33,6 +33,18 @@
   }
 }
 
+.card-columns-original{
+  @include media-breakpoint-only(sm){
+      column-count: 1;
+  }
+  @include media-breakpoint-only(md){
+      column-count: 2;
+  }
+  @include media-breakpoint-up(lg) {
+    column-count: 3;
+  }
+}
+
 .img-responsive, .thumbnail>img, .thumbnail a>img, .carousel-inner>.item>img, .carousel-inner>.item>a>img, .wp-caption>img, .wp-caption a>img {
      display: block;
      width: 100%;
@@ -42,6 +54,10 @@
 
 .text-shadow {
   text-shadow: 0 0 3px black;
+}
+
+.text-shadow-white{
+  text-shadow: 0 0 3px white;
 }
 
 .featherlight .legend {

@@ -1,16 +1,17 @@
-.jumbotron.jumbotron-fluid{ :style => "height:90vh; background:url(golfcourse1.jpg); background-size:cover; color:white; "}
+.jumbotron.jumbotron-fluid{ :style => "height:100vh; background:url(images/front.jpg); background-size:cover; color:white; text-shadow: 2px 2px 2px #0000"}
   .container
-    %h1.display-3 Jom Golf
-    %p.lead Easily get your golf reservations
+    %h1.display-3.text-shadow Jom Golf
+    %p.lead.text-shadow Easily get your golf reservations
     .row#query-form
       = react_component "QueryForm", { crsfToken: form_authenticity_token, queryString:"",
         queryTarget: search_path,
         queryDate:params.has_key?(:date) ? params[:date] : "#{1.day.from_now.strftime('%e/%m/%Y')}",
-        queryTime:params.has_key?(:time) ?  params[:time] : "07:00" }
+        queryTime:params.has_key?(:time) ?  params[:time] : "07:00",
+        dropShadow:true }
 .container
   .row
     .col-xs-12.col-md-4
-      %img.img-responsive.img-rounded{ :src => "http://placehold.it/256x256"}
+      %img.img-responsive.img-rounded{ src:'images/golf_club_join/front-page-icon.jpeg'}
     .col-xs-12.col-md-8{ :sytle => "min-height:256px; height:256px;"}
       .card.card-block
         %h4.card-title Golf Club Owner?
