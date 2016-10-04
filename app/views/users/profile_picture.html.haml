@@ -4,11 +4,11 @@
   .row
     .col-xs-12
       %ol.breadcrumb
-        %li
+        %li.breadcrumb-item
           %a{ :href => root_path } JomGolf
-        %li
+        %li.breadcrumb-item
           %a{ :href => user_path(@user)} #{ @user.name }
-        %li.active Profile Picture
+        %li.active.breadcrumb-item Profile Picture
   .row
     .col-xs-12.col-md-6
       = react_component("UserPhotoProfile", { crsfToken: form_authenticity_token,

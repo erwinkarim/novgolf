@@ -31,7 +31,7 @@ var ReviewCard = React.createClass({
       }
       obj_name = this.props.review.user.name;
       obj_link = this.props.review.user.link;
-      obj_image = this.props.review.user.image;
+      obj_image = this.props.review.user.image == null ? '/images/users/default.jpg' : this.props.review.user.image;
     };
 
     return (

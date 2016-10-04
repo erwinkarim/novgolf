@@ -6,7 +6,10 @@
         .card-header Upcomming Flights
         .card-block
           - if @futureFlights.empty? then
-            %p You haven't reserved anything yet
+            %p
+              You haven't reserved anything yet.
+              %a{href:search_path({date:(DateTime.now+1.day).strftime('%d-%m-%Y'), time:'07:00', q:''}) } Find some flights.
+
           - else
             %table.table.table-responsive-conditional.table-striped
               %thead
