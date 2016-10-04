@@ -5,9 +5,9 @@
     .col-xs-12
       %h1.display-1 About!!
   .row
-    .card-columns{ style:'column-count:3;'}
-      - (1..5).each do |num|
-        .card.d-inline-block
+    - (1..2).each do |num|
+      .col-xs-12.col-md-6.col-lg-4
+        .card
           .m-x-auto
             %img.img-responsive{ src:'http://placehold.it/256x256'}
           .card-block
