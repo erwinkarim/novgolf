@@ -12,14 +12,15 @@
   %body
     %nav.navbar
       %button.navbar-toggler.hidden-sm-up{ :type => "button", :data => { :toggle => 'collapse', :target => '#navbar-collapse'}} &#9776;
+      %a.navbar-brand.hidden-sm-up{ href:root_path, style:'float:none' } JomGolf
       .collapse.navbar-toggleable-xs#navbar-collapse
-        %a.navbar-brand{ :href => root_path } JomGolf
-        %ul.nav.navbar-nav.pull-md-right
+        %a.navbar-brand.hidden-xs-down{ :href => root_path } JomGolf
+        %ul.nav.navbar-nav
           %li.nav-item
             - if user_signed_in? then
               .dropdown
                 %a.nav-link{ :href => '#', :'data-toggle' => 'dropdown' } #{current_user.name || current_user.email}
-                .dropdown-menu.dropdown-menu-right
+                .dropdown-menu
                   %a.dropdown-item{ :href => user_reservations_path(current_user)} My Bookings
                   %a.dropdown-item{ :href => user_path(current_user)} My Profile
                   .dropdown-divider

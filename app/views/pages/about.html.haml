@@ -1,4 +1,4 @@
-.jumbotron.jumbotron-fluid{style:"background-image:url(http://placehold.it/1024x768); min-height:70vh; background-size:auto 70vh; background-repeat:no-repeat;background-position:center;"}
+.jumbotron.jumbotron-fluid{style:"background-image:url(images/about/background.jpeg); min-height:70vh; background-size:cover; background-repeat:no-repeat;background-position:center;"}
   .container
 .container
   .row
@@ -9,7 +9,7 @@
       .col-xs-12.col-md-6.col-lg-4
         .card
           .m-x-auto
-            %img.img-responsive{ src:'http://placehold.it/256x256'}
+            %img.img-responsive{ src:"images/about/person#{num}.jpeg"}
           .card-block
             %h4.card-title.text-xs-center Person Name
             - (1..rand(2)+1).each do |num|
