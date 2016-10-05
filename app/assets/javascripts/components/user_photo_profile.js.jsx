@@ -34,7 +34,7 @@ var UserPhotoProfile = React.createClass({
       <div className="card">
         <ul className="list-group list-group-flush">
           <li className="list-group-item">
-            <img src={this.state.user.image} className="img-circle center-block" />
+            <img src={this.state.user.image} className="img-circle center-block img-responsive" />
           </li>
           <li className="list-group-item">
             <span>
