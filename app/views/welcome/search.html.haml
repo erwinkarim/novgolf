@@ -7,6 +7,7 @@
         queryTarget: search_path,
         queryDate:params.has_key?(:date) ? params[:date] : "#{DateTime.now.strftime('%e/%m/%Y')}",
         queryTime:params.has_key?(:time) ?  params[:time] : (Time.now+1.hour).strftime("%H:%I"),
+        queryPax:params.has_key?(:pax) ? params[:pax] : 2,
         showSearchNav:true, collapseSearchForm:true }
   .row{ :style => 'padding-top:15px;'}
     - if @clubs.empty? then

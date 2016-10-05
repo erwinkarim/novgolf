@@ -7,11 +7,12 @@ var QueryForm = React.createClass({
     queryTime: React.PropTypes.string,
     showSearchNav: React.PropTypes.bool,
     collapseSearchForm: React.PropTypes.bool,
-    dropShadow: React.PropTypes.bool
+    dropShadow: React.PropTypes.bool,
+    queryPax: React.PropTypes.number
   },
   getDefaultProps: function(){
       return {
-        showSearchNav:false, collapseSearchForm:false, dropShadow:false
+        showSearchNav:false, collapseSearchForm:false, dropShadow:false, queryPax:2
       }
   },
   componentDidMount: function(){
@@ -81,7 +82,7 @@ var QueryForm = React.createClass({
               <div className="col-md-4 col-xs-12">
                 <div className="card">
                   <div className="card-block">
-                    I have <select name="pax" className="form-control">{ [2,3,4,5,6,7,8].map( (e,i) =>
+                    I have <select name="pax" className="form-control" defaultValue={this.props.queryPax}>{ [2,3,4,5,6,7,8].map( (e,i) =>
                       <option key={i}>{e}</option>)}</select> balls in my flight(s)
                   </div>
                 </div>
