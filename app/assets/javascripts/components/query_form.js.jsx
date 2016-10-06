@@ -57,25 +57,23 @@ var QueryForm = React.createClass({
             <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
             <div className="form-inline">
               <div className="form-group">
-                <label className={dropShadowClass}>I would like to play in </label>
                 <span> </span>
                 <input id="query" ref="query" ref="q" name="q" className="form-control" type="text"
-                  placeholder="Golf Club" value={this.state.queryString} onChange={this.handleChange} />
+                  placeholder="Golf Course" value={this.state.queryString} onChange={this.handleChange} />
               </div>
               <span> </span>
               <div className="form-group">
-                <label className={dropShadowClass}> on </label>
                 <span> </span>
                 <input id="flight-date" name="date" className="datepicker" ref="queryDate" type="text"
                     className="form-control" placeholder="Date" value={this.state.queryDate} onChange={function(){}} />
               </div>
               <span> </span>
               <div className="form-group">
-                <label className={dropShadowClass}> @ </label> <input id="flight-time" name="time" ref="queryTime" className="form-control" type="text"
+                <input id="flight-time" name="time" ref="queryTime" className="form-control" type="text"
                   placeholder="Golf Club" value={this.state.queryTime} onChange={function(){}} />
               </div>
               <span> </span>
-              <button className="btn btn-primary" type="submit">Search</button>
+              <div className="text-xs-center"><button className="btn btn-primary" type="submit">Search</button></div>
             </div>
             <div style={ {color:'black'}}>
               <br />

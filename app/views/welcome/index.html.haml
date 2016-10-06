@@ -1,13 +1,14 @@
-.jumbotron.jumbotron-fluid{ :style => "height:100vh; background:url(images/front.jpg); background-size:cover; color:white; text-shadow: 2px 2px 2px #0000"}
+.jumbotron.jumbotron-fluid{ :style => "height:100vh; background:url(/dev/images/front.jpg); background-color:white;  background-size:cover; color:black;"}
   .container
-    %h1.display-3.text-shadow Jom Golf
-    %p.lead.text-shadow Easily get your golf reservations
+    .text-xs-center
+      %img.img-center{src:'images/logo.png'}
+    %h1.text-xs-center.display-6 Let's Tee Off
     .row#query-form
       = react_component "QueryForm", { crsfToken: form_authenticity_token, queryString:"",
         queryTarget: search_path,
         queryDate:params.has_key?(:date) ? params[:date] : "#{1.day.from_now.strftime('%e/%m/%Y')}",
         queryTime:params.has_key?(:time) ?  params[:time] : "07:00",
-        dropShadow:true }
+        dropShadow:false }
 .container
   .row
     .col-xs-12.col-md-4
