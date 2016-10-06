@@ -6,16 +6,20 @@
     %meta{:'http-equiv' => 'x-ua-compatible', :content => 'ie=edge'}
     %title #{ yield :head } JomGolf
     = stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track' => true
-    %link{ href:"https://fonts.googleapis.com/css?family=Kaushan+Script", rel:"stylesheet"}
+    %link{ href:"https://fonts.googleapis.com/css?family=Quicksand", rel:"stylesheet"}
     = csrf_meta_tags
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
     = javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}"
   %body
     %nav.navbar
       %button.navbar-toggler.hidden-sm-up{ :type => "button", :data => { :toggle => 'collapse', :target => '#navbar-collapse'}} &#9776;
-      %a.navbar-brand.hidden-sm-up{ href:root_path, style:'float:none; font-family:"Kaushan Script", cursive; color:black; padding:0rem; font-size:1.5rem;' } JomGolf
+      %a.navbar-brand.hidden-sm-up{ href:root_path, style:'float:none; font-family:"Quicksand", sans-serif; color:black; padding:0rem; font-size:1.5rem;' }
+        %span{style:'color:#97dd63;' } JOM
+        %span{style:'color:black; margin-left:-0.35rem;' } GOLF
       .collapse.navbar-toggleable-xs#navbar-collapse
-        %a.navbar-brand.hidden-xs-down{href:root_path, style:'font-family:"Kaushan Script", cursive; color:black; padding:0rem; font-size:1.6rem;' } JomGolf
+        %a.navbar-brand.hidden-xs-down{href:root_path, style:'font-family:"Quicksand", sans-serif; color:black; padding:0rem; font-size:1.6rem;' }
+          %span{style:'color:#97dd63;' } JOM
+          %span{style:'color:black; margin-left:-0.35rem;' } GOLF
         %ul.nav.navbar-nav
           %li.nav-item
             - if user_signed_in? then
@@ -24,6 +28,10 @@
                 .dropdown-menu
                   %a.dropdown-item{ :href => user_reservations_path(current_user)} My Bookings
                   %a.dropdown-item{ :href => user_path(current_user)} My Profile
+                  - if current_user.admin? then
+                    -# admin namespace is optimized for large screen. no easy way to go to admin in phone
+                    .dropdown-divider.hidden-md-down
+                    %a.dropdown-item.hidden-md-down{href:admin_golf_clubs_path } Admin Dashboard
                   .dropdown-divider
                   = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
             - else
