@@ -6,18 +6,17 @@
     %meta{:'http-equiv' => 'x-ua-compatible', :content => 'ie=edge'}
     %title #{ yield :head } JomGolf
     = stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track' => true
-    %link{ href:"https://fonts.googleapis.com/css?family=Quicksand", rel:"stylesheet"}
     = csrf_meta_tags
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
     = javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}"
   %body
     %nav.navbar
       %button.navbar-toggler.hidden-sm-up{ :type => "button", :data => { :toggle => 'collapse', :target => '#navbar-collapse'}} &#9776;
-      %a.navbar-brand.hidden-sm-up{ href:root_path, style:'float:none; font-family:"Quicksand", sans-serif; color:black; padding:0rem; font-size:1.5rem;' }
+      %a.navbar-brand.hidden-sm-up.font-special{ href:root_path, style:'float:none; color:black; padding:0rem; font-size:1.5rem;' }
         %span{style:'color:#97dd63;' } JOM
         %span{style:'color:black; margin-left:-0.35rem;' } GOLF
       .collapse.navbar-toggleable-xs#navbar-collapse
-        %a.navbar-brand.hidden-xs-down{href:root_path, style:'font-family:"Quicksand", sans-serif; color:black; padding:0rem; font-size:1.6rem;' }
+        %a.navbar-brand.hidden-xs-down.font-special{href:root_path, style:'color:black; padding:0rem; font-size:1.6rem;' }
           %span{style:'color:#97dd63;' } JOM
           %span{style:'color:black; margin-left:-0.35rem;' } GOLF
         %ul.nav.navbar-nav

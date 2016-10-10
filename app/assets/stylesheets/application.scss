@@ -24,6 +24,11 @@
 
 @import 'bootstrap';
 
+@font-face {
+  font-family: quicksand;
+  src: url('/fonts/quicksand.otf') format('opentype');
+}
+
 body{
   font-family: "San Francisco", "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
 }
@@ -64,8 +69,9 @@ body{
 }
 
 .font-special{
-    font-family: "Quicksand", sans-serif;
+    font-family: quicksand, sans-serif;
 }
+
 .text-reader{
     @include media-breakpoint-down(md){
         //font-family: "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
