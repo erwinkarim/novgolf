@@ -35,7 +35,7 @@ var QueryForm = React.createClass({
   render: function() {
     if (this.props.showSearchNav){
       var searchNav =
-        <div>
+        <div className="font-special">
           <nav className="navbar navbar-light bg-faded">
             <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#search-query-form">
               <i className="fa fa-search"></i>{ ` Searching ${this.props.queryString} on ${this.props.queryDate}@${this.props.queryTime}` }
@@ -52,7 +52,7 @@ var QueryForm = React.createClass({
     return (
       <div>
         {searchNav}
-        <div className="col-xs-12">
+        <div className="col-xs-12 font-special">
           <form id="search-query-form" className={"form-inline collapse" + collapseClass }  method="get" action={this.props.queryTarget} key="query1">
             <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
             <div className="form-inline">
@@ -73,7 +73,8 @@ var QueryForm = React.createClass({
                   placeholder="Golf Club" value={this.state.queryTime} onChange={function(){}} />
               </div>
               <span> </span>
-              <div className="text-xs-center"><button className="btn btn-primary" type="submit">Search</button></div>
+              <div className="text-xs-center hidden-md-up"><button className="btn btn-primary" type="submit">Search</button></div>
+              <div className="hidden-sm-down"><br /><button className="btn btn-primary" type="submit">Search</button></div>
             </div>
             <div style={ {color:'black'}}>
               <br />
