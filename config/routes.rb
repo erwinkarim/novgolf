@@ -61,7 +61,6 @@ Rails.application.routes.draw do
       end
     end
     collection do
-      get 'join'
     end
   end
 

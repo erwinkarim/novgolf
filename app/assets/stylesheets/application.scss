@@ -97,6 +97,12 @@ body{
   text-shadow: 0 0 3px white;
 }
 
+.flex-center{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .featherlight .legend {
   background: black;
   position: absolute;
