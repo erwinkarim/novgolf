@@ -86,6 +86,7 @@ class UserReservation < ActiveRecord::Base
     flight_count = rand(fs.min_pax..fs.max_pax)
     caddy_count = rand(fs.min_caddy..fs.max_caddy)
     buggy_count = rand(fs.min_cart..fs.max_cart)
+    taxation = (caddy_count*cs.caddy + buggy_count*cs.cart + flight_count*cs.session_price + flight_count*cs.insurance).to_f * club.tax_schedule.rate
 
     reservation = user.user_reservations.new(
       flight_matrix_id:fm.id, golf_club_id:fs.golf_club_id,
@@ -93,6 +94,7 @@ class UserReservation < ActiveRecord::Base
       booking_date:proposed_date, booking_time: fm.tee_time,
       actual_caddy:caddy_count*cs.caddy , actual_buggy:buggy_count*cs.cart ,
       actual_pax:flight_count*cs.session_price, actual_insurance:flight_count*cs.insurance ,
+      actual_tax:taxation,
       count_caddy:caddy_count, count_buggy:buggy_count, count_pax:flight_count , count_insurance:flight_count
     )
 
