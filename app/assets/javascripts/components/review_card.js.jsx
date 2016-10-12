@@ -38,7 +38,7 @@ var ReviewCard = React.createClass({
         <li className="list-group-item">
           <div className="row">
             <div className="col-xs-3 col-md-2">
-              <a href={obj_link}> <img className="img-circle" src={obj_image} height="64" /> </a>
+              <a href={obj_link}> <img className="img-circle" src={obj_image} width="64" height="64" /> </a>
             </div>
             <div className="col-xs-9 col-md-10">
               <h4><a href={obj_link}>{obj_name}</a> ({obj_date})</h4>

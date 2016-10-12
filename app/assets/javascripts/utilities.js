@@ -1,5 +1,5 @@
 var toCurrency = function(digits){
-  return "MYR " + parseFloat(digits).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+  return "RM " + parseFloat(digits).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
 };
 
 var randomID = function(){

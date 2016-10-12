@@ -38,7 +38,7 @@ var QueryForm = React.createClass({
         <div className="font-special">
           <nav className="navbar navbar-light bg-faded">
             <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#search-query-form">
-              <i className="fa fa-search"></i>{ ` Searching ${this.props.queryString} on ${this.props.queryDate}@${this.props.queryTime}` }
+              <i className="fa fa-search"></i>{ ` Refine Search ` }
             </button>
           </nav>
           <br />
