@@ -29,6 +29,7 @@
 //= require react
 //= require formatted-text
 //= require react_ujs
+//= require react_bootstrap
 //= require components
 //= require ready
 //= require_tree .
