@@ -80,6 +80,7 @@ end
 gem 'bootstrap', '~> 4.0.0.alpha4'
 
 gem 'react-rails'
+gem 'react-bootstrap-rails'
 
 #database
 gem 'squeel'
