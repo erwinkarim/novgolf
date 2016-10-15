@@ -32,6 +32,8 @@ var GolfClubDashboard = React.createClass({
 
   },
   render: function(){
+    var statusFloatStyle = { 'z-index':100, bottom:'10px', position:'fixed' };
+
     return (
       <div>
         <input ref="datepicker" type="text" />
@@ -43,6 +45,11 @@ var GolfClubDashboard = React.createClass({
             </div>
           );
         })}
+        <div className="col-xs-9" style={statusFloatStyle} >
+          <div className="card" style={ {background:'papayawhip'} }>
+            <div className="card-block"> <p className="card-text">Floating action here</p> </div>
+          </div>
+        </div>
       </div>
     )
   }
