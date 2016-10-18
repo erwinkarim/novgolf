@@ -99,6 +99,12 @@ var GolfClubDashboard = React.createClass({
     var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
 
     newFlightInfo[e.target.dataset.target] = e.target.value;
+
+    //update the insurance count automatically if insurance mode is madatory
+    if(($.inArray(flight.prices.insurance_mode,[1,2]) != -1) &&
+      (e.target.dataset.target == 'pax') ){
+        newFlightInfo.insurance = parseInt(e.target.value);
+    }
     newFlightInfo = this.updatePrice(newFlightInfo, flight);
 
     this.setState({flightInfo:newFlightInfo});
