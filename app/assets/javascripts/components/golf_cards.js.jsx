@@ -1,4 +1,5 @@
 var GolfCardTimes = React.createClass({
+  propTypes: {btnGroupMode:React.PropTypes.string, arrayIndex:React.PropTypes.number, adminMode:React.PropTypes.bool },
   componentWillReceiveProps: function(nextProps){
       if(this.props.queryDate != nextProps.queryDate){
           //console.log("should disable active");
@@ -7,17 +8,34 @@ var GolfCardTimes = React.createClass({
   },
   render: function(){
     var reserve_status = "secondary";
-    if ( this.props.flight.reserve_status == 1 ){
-      reserve_status = "warning disabled";
-    } else if ( this.props.flight.reserve_status == 2 ){
-      reserve_status = "danger disabled";
-    };
+    var clickFn = null;
+    if(this.props.adminMode){
+      //admin mode - disable disabled
+      if ( this.props.flight.reserve_status == 1 ){
+        reserve_status = "warning";
+      } else if ( this.props.flight.reserve_status == 2 ){
+        reserve_status = "danger";
+      };
+      clickFn = this.props.handleClick;
+    } else {
+      //normal mode
+      if ( this.props.flight.reserve_status == 1 ){
+        reserve_status = "warning disabled";
+      } else if ( this.props.flight.reserve_status == 2 ){
+        reserve_status = "danger disabled";
+      } else {
+          clickFn = this.props.handleClick
+      };
+
+    }
 
     return (
-      <label ref="teeTimeLabel" className={"btn btn-"+reserve_status} onClick={reserve_status != "secondary" ? null : this.props.handleClick} data-tee-time={this.props.flight.tee_time}
-        value={this.props.index} data-value={this.props.index}>
-        <input type="checkbox" name="teeTimes[]" value={this.props.flight.tee_time} />
-        <h5 value={this.props.index} data-value={this.props.index} >{toCurrency(this.props.flight.prices.flight)}</h5>
+      <label ref="teeTimeLabel" className={"btn btn-"+reserve_status} onClick={clickFn} data-tee-time={this.props.flight.tee_time}
+        value={this.props.index} data-value={this.props.index} data-arrayIndex={this.props.arrayIndex}>
+        <input type={this.props.btnGroupMode} name="teeTimes[]" value={this.props.flight.tee_time} />
+        <h5 value={this.props.index} data-value={this.props.index} data-arrayIndex={this.props.arrayIndex} >
+          {toCurrency(this.props.flight.prices.flight)}
+        </h5>
         {this.props.flight.tee_time}
       </label>
     );
@@ -26,7 +44,10 @@ var GolfCardTimes = React.createClass({
 
 var GolfCardTimesGroup = React.createClass({
   propTypes: {
-    flights: React.PropTypes.array
+    flights: React.PropTypes.array, btnGroupMode:React.PropTypes.string, arrayIndex:React.PropTypes.number, adminMode:React.PropTypes.bool
+  },
+  getDefaultProps: function(){
+      return { btnGroupMode:'checkbox', arrayIndex:0, adminMode:false};
   },
   componentDidMount: function(){
       //console.log(this.props)
@@ -37,7 +58,9 @@ var GolfCardTimesGroup = React.createClass({
     if (this.props.flights.length != 0){
      golfCards = (
       <div className="btn-group" data-toggle="buttons">{ this.props.flights.map( (flight, teeTimeIndex) =>
-        <GolfCardTimes key={teeTimeIndex} flight={flight} handleClick={this.props.handleClick} index={teeTimeIndex} queryDate={this.props.queryDate} />
+        <GolfCardTimes key={teeTimeIndex} flight={flight} handleClick={this.props.handleClick}
+          index={teeTimeIndex} queryDate={this.props.queryDate}
+          btnGroupMode={this.props.btnGroupMode} arrayIndex={this.props.arrayIndex} adminMode={this.props.adminMode}/>
       )}</div>
      );
    } else {

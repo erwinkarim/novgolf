@@ -14,6 +14,7 @@
 //= require jquery-ui/datepicker
 //= require jquery.timepicker.js
 //= require jquery_ujs
+//= require jquery.sticky.js
 //= require turbolinks
 //= require tether
 //= require bootstrap
@@ -29,7 +30,6 @@
 //= require react
 //= require formatted-text
 //= require react_ujs
-//= require react_bootstrap
 //= require components
 //= require ready
 //= require_tree .
