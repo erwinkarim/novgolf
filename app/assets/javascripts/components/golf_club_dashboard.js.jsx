@@ -61,7 +61,7 @@ var GolfClubDashboard = React.createClass({
   },
   updateDays: function(newDate){
     //new Date must be type Date
-    console.log("updating days array from", newDate);
+    //console.log("updating days array from", newDate);
     days = arrayFromRange(0,6).map( (e,i) => {
         newDay = new Date();
         newDay.setDate(newDate.getDate() + e);
@@ -83,7 +83,7 @@ var GolfClubDashboard = React.createClass({
 
   },
   dateChanged: function(dateText){
-    console.log('date changed to', dateText);
+    //console.log('date changed to', dateText);
     if(dateText != this.state.days[0]){
       this.setState({days: this.updateDays(new Date(dateText)),
         loadFlight:false,selectedArray:null, selectedFlight:null
@@ -94,7 +94,7 @@ var GolfClubDashboard = React.createClass({
 
   },
   updatePax: function(e){
-    console.log("handle price updates, etc for", e.target);
+    //console.log("handle price updates, etc for", e.target);
     var newFlightInfo = this.state.flightInfo;
     var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
 
@@ -123,7 +123,8 @@ var GolfClubDashboard = React.createClass({
 
   },
   handleClick: function(e){
-    console.log('button clicked', e.target.dataset);
+    var handle = this;
+    //console.log('button clicked', e.target.dataset);
 
     //if array changed, reset active class on the previous array
     if(parseInt(e.target.dataset.arrayindex) != this.state.selectedArray){
@@ -138,6 +139,18 @@ var GolfClubDashboard = React.createClass({
     //todo: need to handle cases where the flight has already been reserved
     var newFlightInfo = {pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, tax:0.00, totalPrice:0.00};
     newFlightInfo = this.updatePrice(newFlightInfo, flight);
+
+    //load user_reservations info if necessary
+    if(flight.user_reservation_id != null){
+        $.getJSON(`${handle.props.paths.user_reservations}/${flight.user_reservation_id}`, null, function(data){
+          //update flight info from data in user_reservations
+          var reserve = data.user_reservation;
+          newFlightInfo = Object.assign(newFlightInfo,
+            {pax:reserve.count_pax, buggy:reserve.count_buggy, caddy:reserve.count_caddy,
+              insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price});
+          handle.setState({flightInfo:newFlightInfo});
+        });
+    }
 
     //setup the state
     this.setState({

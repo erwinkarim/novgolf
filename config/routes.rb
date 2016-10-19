@@ -42,6 +42,9 @@ Rails.application.routes.draw do
       #this is for MVP + 1
       #resources :charge_schedules, :only => [:index]
     end
+    resources :user_reservations, :only => [:create, :show, :index] do
+
+    end
   end
 
   resources :golf_clubs, :only => [:show] do
