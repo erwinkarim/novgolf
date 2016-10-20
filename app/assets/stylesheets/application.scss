@@ -82,11 +82,10 @@ body{
 
 .text-reader{
     @include media-breakpoint-down(md){
-        //font-family: "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
-        font-family: "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
+        font-family: "Source Sans Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
     }
     @include media-breakpoint-up(lg){
-        font-family: "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
+        font-family: "Source Sans Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
     }
 }
 
