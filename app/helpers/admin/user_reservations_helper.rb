@@ -1,0 +1,2 @@
+module Admin::UserReservationsHelper
+end

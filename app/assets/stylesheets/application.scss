@@ -24,13 +24,21 @@
 
 @import 'bootstrap';
 
+
 @font-face {
   font-family: quicksand;
   src: url('/fonts/quicksand.otf') format('opentype');
 }
 
+@font-face {
+  font-family: "source sans pro";
+  src: url('/fonts/source-sans-pro.otf') format('opentype');
+}
+
 body{
-  font-family: "San Francisco", "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
+  #font-family: "San Francisco", "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
+  #font-family: "Source Sans Pro", sans-serif;
+  font-family: "source sans pro", sans-serif;
 }
 
 .card-columns {
@@ -74,12 +82,16 @@ body{
 
 .text-reader{
     @include media-breakpoint-down(md){
-        //font-family: "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
-        font-family: "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
+        font-family: "Source Sans Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
     }
     @include media-breakpoint-up(lg){
-        font-family: "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
+        font-family: "Source Sans Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
     }
+}
+
+.fixed-top {
+    position: fixed;
+    top:10px;
 }
 
 .img-responsive, .thumbnail>img, .thumbnail a>img, .carousel-inner>.item>img, .carousel-inner>.item>a>img, .wp-caption>img, .wp-caption a>img {

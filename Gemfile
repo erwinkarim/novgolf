@@ -78,9 +78,7 @@ source 'https://rails-assets.org' do
   gem 'rails-assets-tether', '>= 1.1.0'
 end
 gem 'bootstrap', '~> 4.0.0.alpha4'
-
 gem 'react-rails'
-gem 'react-bootstrap-rails'
 
 #database
 gem 'squeel'
