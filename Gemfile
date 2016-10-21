@@ -78,7 +78,6 @@ source 'https://rails-assets.org' do
   gem 'rails-assets-tether', '>= 1.1.0'
 end
 gem 'bootstrap', '~> 4.0.0.alpha4'
-
 gem 'react-rails'
 
 #database
@@ -112,3 +111,6 @@ gem 'snackbarjs-rails'
 #premailer, auto-include css for emails
 gem 'premailer-rails'
 gem 'nokogiri'
+
+#static pages
+gem 'high_voltage', '~> 3.0.0'

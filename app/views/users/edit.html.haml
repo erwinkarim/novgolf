@@ -1,17 +1,23 @@
 -# only owner can visit this page
 .container
   .row
-    .col-md-6.col-xs-12
-      %h2 Edit #{ @user.name || @user.email}
+    .col-xs-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{ :href => root_path } JomGolf
+        %li.breadcrumb-item
+          %a{ :href => user_path(@user)} #{ @user.name }
+        %li.breadcrumb-item.active
+          %a Edit Profile
   .row
     .col-md-6.col-xs-12
       .card
         %ul.list-group.list-group-flush
           %li.list-group-item
             %a{ :href => user_profile_picture_path(@user)}
-              %img.center-block.img-circle{ :src => @user.image }
+              %img.center-block.img-circle.img-responsive{ :src => @user.image }
           %li.list-group-item
-            Click to Edit Your Profile Picture
+            Click Picture to Update Profile Picture
   .row
     .col-md-6.col-xs-12
       = form_for @user do |f|

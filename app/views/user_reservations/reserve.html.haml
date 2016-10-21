@@ -44,7 +44,23 @@
                   %td #{ number_to_currency(v[:price][:insurance], { :unit => "RM"}) }
   .row
     .col-xs-12.col-md-8.col-md-offset-2
-      %h3 Grand Total: #{number_to_currency(params[:info][:total_price], {:unit => "RM"})}
+      %table.table
+        %thead
+          %tr
+            %th Item
+            %th Amount
+        %tbody
+          %tr
+            %td Total
+            %td  #{number_to_currency(params[:info][:total_price], {:unit => "RM"})}
+          %tr
+            %td Tax (#{number_to_percentage(@club.tax_schedule.rate*100)})
+            %td  #{number_to_currency(params[:info][:tax], {:unit => "RM"})}
+          %tr
+            %td
+              %h3 Grand Total
+            %td
+              %h3 #{number_to_currency(params[:info][:grand_total], {:unit => "RM"})}
   .row
     .col-xs-12.col-md-8.col-md-offset-2
       = form_tag processing_golf_club_user_reservations_path(params[:golf_club_id]) do

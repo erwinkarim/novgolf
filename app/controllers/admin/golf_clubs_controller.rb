@@ -147,7 +147,30 @@ class Admin::GolfClubsController < ApplicationController
     end
   end
 
+  # GET      /admin/golf_clubs/:golf_club_id/tax_schedule(.:format)
+  def tax_schedule
+    render json: {tax_schedules:TaxSchedule.all, selected:GolfClub.find(params[:golf_club_id]).tax_schedule.id}
+  end
+
+  # GET      /admin/golf_clubs/:golf_club_id/line_items
+  def charge_schedules
+    # should return the line items + appropiate charges
+    # maybe charge_schedule outer join the line_item_listings + line_item
+
+    #expected return is
+    # {
+    #   charge_schedules: [{id:x, ..charge_schedule_info..,
+    #     line_item_listings:[{line_item_listing_id:x, rate:x, taxed:x, name:'x', description:x}, {..}, {..}]]
+    # }
+    render json: {
+      charge_schedules:GolfClub.find(params[:golf_club_id]).
+        charge_schedules.
+        map{ |x| x.attributes.merge( {line_item_listings:x.line_item_listings})}
+    }
+  end
+
+
   def golf_club_params
-    params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour, :lat, :lng);
+    params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour, :lat, :lng, :tax_schedule_id);
   end
 end

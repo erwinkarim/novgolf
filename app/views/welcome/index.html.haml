@@ -1,18 +1,31 @@
-.jumbotron.jumbotron-fluid{ :style => "height:90vh; background:url(golfcourse1.jpg); background-size:cover; color:white; "}
+.jumbotron.jumbotron-fluid.font-special{ :style => "height:100vh; background:url(/images/front.jpg); background-color:white;  background-size:cover; color:black;"}
   .container
-    %h1.display-3 Jom Golf
-    %p.lead Easily get your golf reservations
+    .text-xs-center
+      %img.img-center{height:128, src:'images/logo.png'}
+    %h1.text-xs-center.display-6{ style:'color:white;'} Let's Tee Off
     .row#query-form
       = react_component "QueryForm", { crsfToken: form_authenticity_token, queryString:"",
         queryTarget: search_path,
         queryDate:params.has_key?(:date) ? params[:date] : "#{1.day.from_now.strftime('%e/%m/%Y')}",
-        queryTime:params.has_key?(:time) ?  params[:time] : "07:00" }
+        queryTime:params.has_key?(:time) ?  params[:time] : "07:00",
+        dropShadow:false }
 .container
   .row
+    .col-xs-12.col-md-4.offset-md-2
+      .card.text-xs-center
+        %img.img-responsive.card-img{ src:'images/golf_club_join/front-page-icon1.jpeg'}
+        .card-img-overlay.flex-center
+          %div.text-shadow{ style:'color:white;'}
+            %h4 Course Manager
+            %p.card-text Bring your course online
+            %p.card-text
+              %a.btn.btn-primary{ href:'/clubers'} Join Us
     .col-xs-12.col-md-4
-      %img.img-responsive.img-rounded{ :src => "http://placehold.it/256x256"}
-    .col-xs-12.col-md-8{ :sytle => "min-height:256px; height:256px;"}
-      .card.card-block
-        %h4.card-title Golf Club Owner?
-        %p Contact us to have your club listed
-        %a.card-link.btn.btn-primary{ :href => join_golf_clubs_path } More Info
+      .card.text-xs-center
+        %img.img-responsive.card-img{ src:'images/golf_club_join/front-page-icon2.jpeg'}
+        .card-img-overlay.flex-center
+          %div.text-shadow{ style:'color:white;'}
+            %h4 Golfers
+            %p.card-text Explore New World of Golfing
+            %p.card-text
+              %a.btn.btn-primary{ href:'/golfers'} Join Us

@@ -24,6 +24,23 @@
 
 @import 'bootstrap';
 
+
+@font-face {
+  font-family: quicksand;
+  src: url('/fonts/quicksand.otf') format('opentype');
+}
+
+@font-face {
+  font-family: "source sans pro";
+  src: url('/fonts/source-sans-pro.otf') format('opentype');
+}
+
+body{
+  #font-family: "San Francisco", "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
+  #font-family: "Source Sans Pro", sans-serif;
+  font-family: "source sans pro", sans-serif;
+}
+
 .card-columns {
   @include media-breakpoint-only(sm){
       column-count: 1;
@@ -31,6 +48,50 @@
   @include media-breakpoint-up(md) {
     column-count: 2;
   }
+}
+
+.card-columns-original{
+  @include media-breakpoint-only(sm){
+      column-count: 1;
+  }
+  @include media-breakpoint-only(md){
+      column-count: 2;
+  }
+  @include media-breakpoint-up(lg) {
+    column-count: 3;
+  }
+}
+
+.table-responsive-conditional{
+  @include media-breakpoint-down(md) {
+    display: block;
+    width: 100%;
+    min-height: .01%;
+    overflow-x: auto;
+  }
+  @include media-breakpoint-up(lg) {
+    width: 100%;
+    min-height: .01%;
+    overflow-x: auto;
+  }
+}
+
+.font-special{
+    font-family: quicksand, sans-serif;
+}
+
+.text-reader{
+    @include media-breakpoint-down(md){
+        font-family: "Source Sans Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
+    }
+    @include media-breakpoint-up(lg){
+        font-family: "Source Sans Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
+    }
+}
+
+.fixed-top {
+    position: fixed;
+    top:10px;
 }
 
 .img-responsive, .thumbnail>img, .thumbnail a>img, .carousel-inner>.item>img, .carousel-inner>.item>a>img, .wp-caption>img, .wp-caption a>img {
@@ -42,6 +103,16 @@
 
 .text-shadow {
   text-shadow: 0 0 3px black;
+}
+
+.text-shadow-white{
+  text-shadow: 0 0 3px white;
+}
+
+.flex-center{
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .featherlight .legend {

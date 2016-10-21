@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160816064611) do
+ActiveRecord::Schema.define(version: 20160926073934) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -89,19 +89,44 @@ ActiveRecord::Schema.define(version: 20160816064611) do
   add_index "flight_schedules", ["golf_club_id"], name: "index_flight_schedules_on_golf_club_id", using: :btree
 
   create_table "golf_clubs", force: :cascade do |t|
-    t.datetime "created_at",                null: false
-    t.datetime "updated_at",                null: false
-    t.string   "name",        limit: 255
-    t.text     "description", limit: 65535
-    t.string   "address",     limit: 255
+    t.datetime "created_at",                    null: false
+    t.datetime "updated_at",                    null: false
+    t.string   "name",            limit: 255
+    t.text     "description",     limit: 65535
+    t.string   "address",         limit: 255
     t.time     "open_hour"
     t.time     "close_hour"
-    t.integer  "user_id",     limit: 4
-    t.string   "lat",         limit: 255
-    t.string   "lng",         limit: 255
+    t.integer  "user_id",         limit: 4
+    t.string   "lat",             limit: 255
+    t.string   "lng",             limit: 255
+    t.integer  "tax_schedule_id", limit: 4
   end
 
+  add_index "golf_clubs", ["tax_schedule_id"], name: "index_golf_clubs_on_tax_schedule_id", using: :btree
   add_index "golf_clubs", ["user_id"], name: "index_golf_clubs_on_user_id", using: :btree
+
+  create_table "line_item_listings", force: :cascade do |t|
+    t.decimal  "rate",                         precision: 10, scale: 2
+    t.boolean  "taxed"
+    t.integer  "charge_schedule_id", limit: 4
+    t.integer  "line_item_id",       limit: 4
+    t.datetime "created_at",                                            null: false
+    t.datetime "updated_at",                                            null: false
+  end
+
+  add_index "line_item_listings", ["charge_schedule_id"], name: "index_line_item_listings_on_charge_schedule_id", using: :btree
+  add_index "line_item_listings", ["line_item_id"], name: "index_line_item_listings_on_line_item_id", using: :btree
+
+  create_table "line_items", force: :cascade do |t|
+    t.text     "name",        limit: 255
+    t.string   "description", limit: 255
+    t.boolean  "mandatory"
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.integer  "user_id",     limit: 4
+  end
+
+  add_index "line_items", ["user_id"], name: "index_line_items_on_user_id", using: :btree
 
   create_table "photos", force: :cascade do |t|
     t.integer  "sequence",       limit: 4
@@ -130,14 +155,21 @@ ActiveRecord::Schema.define(version: 20160816064611) do
   add_index "reviews", ["topic_type", "topic_id"], name: "index_reviews_on_topic_type_and_topic_id", using: :btree
   add_index "reviews", ["user_id"], name: "index_reviews_on_user_id", using: :btree
 
+  create_table "tax_schedules", force: :cascade do |t|
+    t.text     "country",    limit: 255
+    t.decimal  "rate",                   precision: 6, scale: 5
+    t.datetime "created_at",                                     null: false
+    t.datetime "updated_at",                                     null: false
+  end
+
   create_table "user_reservations", force: :cascade do |t|
     t.integer  "user_id",            limit: 4
     t.integer  "charge_schedule_id", limit: 4
     t.integer  "actual_caddy",       limit: 4
     t.integer  "actual_buggy",       limit: 4
     t.integer  "actual_pax",         limit: 4
-    t.datetime "created_at",                                             null: false
-    t.datetime "updated_at",                                             null: false
+    t.datetime "created_at",                                              null: false
+    t.datetime "updated_at",                                              null: false
     t.integer  "golf_club_id",       limit: 4
     t.datetime "booking_datetime"
     t.date     "booking_date"
@@ -145,11 +177,12 @@ ActiveRecord::Schema.define(version: 20160816064611) do
     t.integer  "status",             limit: 4
     t.string   "token",              limit: 255
     t.integer  "flight_matrix_id",   limit: 4
-    t.decimal  "actual_insurance",               precision: 8, scale: 2
+    t.decimal  "actual_insurance",               precision: 8,  scale: 2
     t.integer  "count_caddy",        limit: 4
     t.integer  "count_buggy",        limit: 4
     t.integer  "count_pax",          limit: 4
     t.integer  "count_insurance",    limit: 4
+    t.decimal  "actual_tax",                     precision: 10, scale: 2
   end
 
   add_index "user_reservations", ["charge_schedule_id"], name: "index_user_reservations_on_charge_schedule_id", using: :btree
@@ -194,7 +227,11 @@ ActiveRecord::Schema.define(version: 20160816064611) do
   add_foreign_key "charge_schedules", "golf_clubs"
   add_foreign_key "flight_matrices", "flight_schedules"
   add_foreign_key "flight_schedules", "golf_clubs"
+  add_foreign_key "golf_clubs", "tax_schedules"
   add_foreign_key "golf_clubs", "users"
+  add_foreign_key "line_item_listings", "charge_schedules"
+  add_foreign_key "line_item_listings", "line_items"
+  add_foreign_key "line_items", "users"
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"
   add_foreign_key "user_reservations", "charge_schedules"

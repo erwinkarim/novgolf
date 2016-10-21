@@ -1,12 +1,13 @@
 - content_for(:head){ "#{@user.name || @user.email} - "}
-.jumbotron.jumbotron-fluid{ :style => "height:180px;"}
-  .container
-    .col-md-1.col-xs-4
-      .card
-        %img.card-img-top.img-responsive{ :src => (@user.image.nil? || @user.image.empty?) ? 'http://placehold.it/256x256' : @user.image }
+.container
+  .row
+    .col-xs-12
+      %h3.display-4 #{@user.name || @user.email}
 .container
   .row
     .col-xs-12.col-md-4
+      .card
+        %img.card-img-top.img-responsive{ :src => (@user.image.nil? || @user.image.empty?) ? '/images/users/default.jpg' : @user.image }
       .card
         .card-block
           %p.card-text Joined JomGolf since #{ @user.created_at.strftime("%b %Y")}
@@ -33,14 +34,6 @@
               %tr
                 %th Handicap
                 %td #{ @user.handicap  || "None Yet"}
-      .card
-        .card-header Friends
-        .card-block
-          %p Show friends here
-      .card
-        .card-header Groups
-        .card-block
-          %p Show groups here
     .col-xs-12.col-md-6
       .card
         .card-header Usual Spots

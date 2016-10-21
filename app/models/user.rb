@@ -19,6 +19,7 @@ class User < ActiveRecord::Base
 
   def init
     self.role ||= 0
+    self.image || "/images/users/default.jpg"
   end
 
   def self.from_omniauth(auth)

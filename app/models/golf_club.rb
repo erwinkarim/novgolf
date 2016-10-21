@@ -12,9 +12,10 @@ class GolfClub < ActiveRecord::Base
   belongs_to :user
   #should have has_many :reviews where topic_type = UserReservation
   # and topic_id = UserReservations.id and user_reservations.golf_club_id = id
+  belongs_to :tax_schedule
 
 
-  validates_presence_of :name, :description, :address, :open_hour, :close_hour, :user_id
+  validates_presence_of :name, :description, :address, :open_hour, :close_hour, :user_id, :tax_schedule_id
 
   after_initialize :init
 
@@ -26,6 +27,8 @@ class GolfClub < ActiveRecord::Base
     #default location is klcc
     self.lat ||= "3.15785"
     self.lng ||= "101.71165"
+
+    self.tax_schedule_id ||= 1
   end
 
   #shows how many many slots are available in this club
@@ -102,7 +105,7 @@ class GolfClub < ActiveRecord::Base
         booked_time = n[10].nil? ? nil : n[10].strftime("%H:%M")
         if club.nil? then
           p << {
-            :club => { :id => n[0], :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:created_at => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
+            :club => { :tax_schedule => GolfClub.find(n[0]).tax_schedule, :id => n[0], :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:created_at => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
             :flights => [ {
                 :minPax => n[4], :maxPax => n[5],
                 :minCart => n[13], :maxCart => n[14],

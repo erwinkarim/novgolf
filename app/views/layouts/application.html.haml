@@ -12,16 +12,25 @@
   %body
     %nav.navbar
       %button.navbar-toggler.hidden-sm-up{ :type => "button", :data => { :toggle => 'collapse', :target => '#navbar-collapse'}} &#9776;
+      %a.navbar-brand.hidden-sm-up.font-special{ href:root_path, style:'float:none; color:black; padding:0rem; font-size:1.5rem;' }
+        %span{style:'color:#97dd63;' } JOM
+        %span{style:'color:black; margin-left:-0.35rem;' } GOLF
       .collapse.navbar-toggleable-xs#navbar-collapse
-        %a.navbar-brand{ :href => root_path } JomGolf
-        %ul.nav.navbar-nav.pull-md-right
+        %a.navbar-brand.hidden-xs-down.font-special{href:root_path, style:'color:black; padding:0rem; font-size:1.6rem;' }
+          %span{style:'color:#97dd63;' } JOM
+          %span{style:'color:black; margin-left:-0.35rem;' } GOLF
+        %ul.nav.navbar-nav
           %li.nav-item
             - if user_signed_in? then
               .dropdown
                 %a.nav-link{ :href => '#', :'data-toggle' => 'dropdown' } #{current_user.name || current_user.email}
-                .dropdown-menu.dropdown-menu-right
+                .dropdown-menu
                   %a.dropdown-item{ :href => user_reservations_path(current_user)} My Bookings
                   %a.dropdown-item{ :href => user_path(current_user)} My Profile
+                  - if current_user.admin? then
+                    -# admin namespace is optimized for large screen. no easy way to go to admin in phone
+                    .dropdown-divider.hidden-md-down
+                    %a.dropdown-item.hidden-md-down{href:admin_golf_clubs_path } Admin Dashboard
                   .dropdown-divider
                   = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
             - else
@@ -34,8 +43,9 @@
       .container
         %p
           &copy; JomGolf 2016
-          &#8226; Terms of service
-          &#8226; Privacy Policy
+          &#8226; #{link_to 'Terms of Service', page_path('terms')}
+          &#8226; #{link_to 'Privacy Policy', page_path('privacy')}
+          &#8226; #{link_to 'About', page_path('about')}
           &#8226; Build #{ NovGolf::REVISION }
 :javascript
   window.flashMessages = $.parseJSON('#{j flash.to_hash.to_json.html_safe}')

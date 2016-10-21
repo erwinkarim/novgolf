@@ -2,9 +2,9 @@
 .container
   .row
     %ol.breadcrumb
-      %li
+      %li.breadcrumb-item
         %a{ :href => admin_golf_clubs_path} Admin
-      %li.active #{ @golf_club.name }
+      %li.active.breadcrumb-item #{ @golf_club.name }
     %h1 Club Info
     .col-xs-12.col-md-8
       .card
@@ -19,7 +19,7 @@
         .card-header Address
         .card-block
           = simple_format( @golf_club.address, { :class => 'card-text'})
-        .card-block#map{:style => "height: 40vh;"}
+        .card-block#map{:style => "height: 40vh; padding:0px;"}
       .card
         .card-header Hours
         %ul.list-group.list-group-flush
@@ -56,6 +56,11 @@
             #{ link_to golf_club_path(@golf_club), golf_club_path(@golf_club), { :target => "_blank"} }
   .row
     %h2 Pricing And Scheduling
+    .col-xs-12.col-md-8
+      .card
+        .card-header Taxation
+        .card-block
+          %p.card-text Taxation Country: #{ @golf_club.tax_schedule.country} (#{number_to_percentage(@golf_club.tax_schedule.rate*100)})
     .col-xs-12.col-md-8
       - @golf_club.flight_schedules.each do |flight_schedule|
         - prices = flight_schedule.charge_schedule

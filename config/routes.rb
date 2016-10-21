@@ -23,7 +23,6 @@ Rails.application.routes.draw do
   root 'welcome#index'
   controller :welcome do
     get 'search'
-    get 'terms'
     get 'reset'
     get 'session_data'
     get 'tab_test'
@@ -38,12 +37,17 @@ Rails.application.routes.draw do
     end
     resources :golf_clubs do
       get 'dashboard'
+      get 'tax_schedule'
       resources :photos, :only => [:index, :create, :update, :destroy]
+      #this is for MVP + 1
+      #resources :charge_schedules, :only => [:index]
+    end
+    resources :user_reservations, :only => [:create, :show, :index] do
+
     end
   end
 
   resources :golf_clubs, :only => [:show] do
-    #get 'schedule'
     resources :flight_matrices, :only => [:index] do
     end
     resources :user_reservations, :only => [:index] do
@@ -60,7 +64,6 @@ Rails.application.routes.draw do
       end
     end
     collection do
-      get 'join'
     end
   end
 
