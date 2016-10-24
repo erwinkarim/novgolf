@@ -9,6 +9,7 @@ class UserReservation < ActiveRecord::Base
   has_one :review, as: :topic
 
   #each club id should have a unique booking date and time
+  # TODO: and unique course # and the course# should be less than than # of courses in the club
   validates :golf_club_id, uniqueness: {
     scope: [:booking_date, :booking_time],
     #validation will be enforced during creation, payment and confirmation stage, but not when it was canceled or failed
