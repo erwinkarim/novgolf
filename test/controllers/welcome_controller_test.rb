@@ -4,7 +4,9 @@ class WelcomeControllerTest < ActionController::TestCase
   include Devise::Test::ControllerHelpers
   should route(:get, "/").to(action:"index")
   should route(:get, "/search").to(action:"search")
-  should route(:get, "/terms").to(action:"terms")
+
+  #this has been moved to pages gem
+  #should route(:get, "/terms").to(action:"terms")
 
   test "should get index" do
     get :index

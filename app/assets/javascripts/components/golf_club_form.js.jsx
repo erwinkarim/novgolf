@@ -109,6 +109,49 @@ var GeneralBox = React.createClass({
               </div>
             </div>
           </div>
+          <CourseListingForm
+            newCourse={this.props.newCourse} deleteCourse={this.props.deleteCourse} updateCourse={this.props.updateCourse}
+            courses={this.props.club.course_listings} dummyData={this.props.dummyData} />
+        </div>
+      </div>
+    );
+  }
+});
+
+var CourseListingForm = React.createClass({
+  render: function(){
+    var disableDeleteButton = this.props.courses.length < 2 ? true : false;
+    return (
+      <div className="card">
+        <h3 className="card-header">Course Listings</h3>
+        <div className="card-block">
+          <table className="table">
+            <thead><tr>
+              <th>ID</th><th>Name</th><th>Status</th><th>Action</th>
+            </tr></thead>
+            <tbody>{ this.props.courses.map( (e,i) => {
+              var random_id = randomID();
+              return (
+                <tr key={i}>
+                  <td>{e.id}</td>
+                  <td><input type="text" name={ `course[${random_id}][name]`} value={e.name} className="form-control"
+                    onChange={this.props.updateCourse} data-attribute="name" data-index={i} /></td>
+                  <td><select value={e.course_status_id} name={`course[${random_id}][course_status_id]`} className="form-control"
+                    onChange={this.props.updateCourse} data-attribute="course_status_id" data-index={i}>{
+                    this.props.dummyData.course_status.map( (e,i) => {
+                        return ( <option value={e.id} key={i}>{e.desc}</option> )
+                    })
+                  }</select></td>
+                  <th><button type="button" className="btn btn-danger" onClick={this.props.deleteCourse} disabled={disableDeleteButton} data-index={i}>
+                    <i className="fa fa-minus"></i></button>
+                  </th>
+                </tr>
+              )}
+            )}</tbody>
+          </table>
+          <button type="button" className="btn btn-primary" onClick={this.props.newCourse}>
+            <i className="fa fa-plus"></i>
+          </button>
         </div>
       </div>
     );
@@ -611,6 +654,32 @@ var GolfClubForm = React.createClass({
       $('#flash_msgs').append('Errors detected;')
     });
   },
+  newCourse: function(e){
+    var newClub = this.state.club;
+    newClub.course_listings.push(jQuery.extend({}, this.props.dummy_data.course_listing) );
+    this.setState({club:newClub});
+  },
+  deleteCourse: function(e){
+    var newClub = this.state.club;
+    newClub.course_listings.splice(e.target.dataset.index,1);
+    this.setState({club:newClub});
+  },
+  updateCourse: function(e){
+    var newClub = this.state.club;
+    //var newCourse = newClub.course_listings[parseInt(e.target.dataset.index)];
+    switch(e.target.dataset.attribute){
+      case "name":
+        newClub.course_listings[parseInt(e.target.dataset.index)].name = e.target.value;
+        //newCourse.name = e.target.value;
+        break;
+      case "course_status_id":
+        newClub.course_listings[parseInt(e.target.dataset.index)].course_status_id = e.target.value;
+        //newCourse.course_status_id = e.target.value;
+        break;
+      default: console.log("attribute not found");
+    };
+    this.setState({club:newClub});
+  },
   render: function() {
     var button_label = (this.props.form.method == 'post') ? 'Create!' : 'Update!';
 
@@ -633,7 +702,9 @@ var GolfClubForm = React.createClass({
           <form method={this.props.form.method} action={this.props.form.action_path} ref="golf_form" id="golf_form" >
             <div id="accordion" role="tablist">
               <input type="hidden" name="authenticity_token" value={this.props.form.crsfToken} />
-              <GeneralBox club={this.state.club} contentChanged={this.contentChanged} updateLocation={this.updateLocation} />
+              <GeneralBox club={this.state.club} contentChanged={this.contentChanged} updateLocation={this.updateLocation}
+                newCourse={this.newCourse} deleteCourse={this.deleteCourse} updateCourse={this.updateCourse}
+                dummyData={this.props.dummy_data} />
               <FlightBox flightSchedules={this.props.flightSchedules} flightDummy={this.props.flightDummy}
                deleteTeeTime={this.deleteTeeTime} newTeeTime={this.newTeeTime} insurance_modes={this.props.insurance_modes}
                tax_schedule_path={this.props.paths.tax_schedule_path} />

@@ -94,6 +94,15 @@ class Admin::GolfClubsController < ApplicationController
         }
       )
     end
+    @dummy_data = {course_listing:CourseListing.new.attributes.merge({golf_club_id:@golf_club.id}), course_status:CourseStatus.all}
+
+    @golf_club_attributes = @golf_club.attributes.merge(
+      { open_hour:@golf_club.open_hour.strftime("%H:%M"), close_hour:@golf_club.close_hour.strftime("%H:%M"), tax_schedule:@golf_club.tax_schedule}
+    )
+    @golf_club_attributes = @golf_club.course_listings.empty? ?
+      @golf_club_attributes.merge({course_listings:[@dummy_data[:course_listing]]}) : 
+      @golf_club_attributes.merge( { course_listings: @golf_club.course_listings} )
+
     @dummy = (FlightSchedule.new.attributes.merge("charge_schedule" => ChargeSchedule.new.attributes)).
       merge("flight_matrices" => [FlightMatrix.new.attributes.merge("tee_time" => "7:00am")])
   end

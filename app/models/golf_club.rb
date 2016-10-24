@@ -8,6 +8,7 @@ class GolfClub < ActiveRecord::Base
   has_many :amenity_lists, :dependent => :destroy
   has_many :amenities, :through => :amenity_lists
   has_many :photos, as: :imageable
+  has_many :course_listings
 
   belongs_to :user
   #should have has_many :reviews where topic_type = UserReservation
@@ -16,6 +17,8 @@ class GolfClub < ActiveRecord::Base
 
 
   validates_presence_of :name, :description, :address, :open_hour, :close_hour, :user_id, :tax_schedule_id
+
+  #should test that golf_club must have at least 1 course entry on update
 
   after_initialize :init
 
