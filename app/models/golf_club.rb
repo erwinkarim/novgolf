@@ -199,6 +199,29 @@ class GolfClub < ActiveRecord::Base
     end
   end
 
+  #set the course listings
+  def setCourseListing new_course_listings = []
+    current_courses = self.course_listings
+
+    self.transaction do
+      #delete courses not in the new list
+      CourseListing.where(:id => self.course_listings.map{|x| x.id} -
+        new_course_listings.map{ |k,v| v["id"].to_i}.select{ |x| !x.zero?}).each{ |x| x.destroy}
+
+      #add new courses if applicable (the course id should be empty/null)
+      # or update the current ones
+      new_course_listings.each_pair do |i,e|
+        if e[:id].nil? || e[:id].empty? then
+          course = CourseListing.new(:golf_club_id => self.id, :name => e[:name], :course_status_id => e[:course_status_id])
+          course.save!
+        else
+          course = CourseListing.find(e[:id])
+          course.update_attributes({name:e[:name], course_status_id:e[:course_status_id]})
+        end
+      end
+    end
+  end
+
   #set the flight schedules, do validation, create new schedules if necessary
   # this should be the prefered method instead of using flight_schedule.new.save! and flight_matrix.new.save!
   # expected format:-

@@ -133,10 +133,10 @@ var CourseListingForm = React.createClass({
               var random_id = randomID();
               return (
                 <tr key={i}>
-                  <td>{e.id}</td>
-                  <td><input type="text" name={ `course[${random_id}][name]`} value={e.name} className="form-control"
+                  <td>{e.id}<input type="hidden" name={`courses[${random_id}][id]`} value={e.id || undefined} /></td>
+                  <td><input type="text" name={ `courses[${random_id}][name]`} value={e.name} className="form-control"
                     onChange={this.props.updateCourse} data-attribute="name" data-index={i} /></td>
-                  <td><select value={e.course_status_id} name={`course[${random_id}][course_status_id]`} className="form-control"
+                  <td><select value={e.course_status_id} name={`courses[${random_id}][course_status_id]`} className="form-control"
                     onChange={this.props.updateCourse} data-attribute="course_status_id" data-index={i}>{
                     this.props.dummyData.course_status.map( (e,i) => {
                         return ( <option value={e.id} key={i}>{e.desc}</option> )

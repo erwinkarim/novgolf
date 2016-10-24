@@ -60,7 +60,18 @@
       .card
         .card-header Courses
         .card-block
-          %p.card-text Course listings here
+          %table.table
+            %thead
+              %tr
+                %th ID
+                %th Name
+                %th Status
+            %tbody
+              - @course_listings.each do |course|
+                %tr
+                  %td #{course.id}
+                  %td #{course.name}
+                  %td #{course.course_status.desc}
   .row
     %h2 Pricing And Scheduling
     .col-xs-12.col-md-8

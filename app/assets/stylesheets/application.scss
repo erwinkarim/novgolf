@@ -34,6 +34,21 @@
   font-family: "source sans pro";
   src: url('/fonts/source-sans-pro.otf') format('opentype');
 }
+@font-face {
+  font-family: "source sans pro";
+  src: url('/fonts/source-sans-pro-bold.otf') format('opentype');
+  font-weight: bold;
+}
+@font-face {
+  font-family: "source sans pro";
+  src: url('/fonts/source-sans-pro-it.otf') format('opentype');
+  font-style: italic;
+}
+@font-face {
+  font-family: "source sans pro";
+  src: url('/fonts/source-sans-pro-boldit.otf') format('opentype');
+  font-weight: bold; font-style: italic;
+}
 
 body{
   #font-family: "San Francisco", "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
