@@ -117,6 +117,26 @@ var SelectedTimeNav = React.createClass({
 });
 */
 
+//should which courses are occupied
+//should show statuses
+var GolfCoursesGroup = React.createClass({
+  propTypes:{
+      flight: React.PropTypes.object
+  },
+  render: function(){
+    return (
+      <div>
+        <p>Courses:</p>
+        <div className="btn-group">{ this.props.flight.courses.map( (e,i) => {
+          return (
+            <button type="button" className="btn btn-secondary" key={i}>{e.id}</button>
+          );
+        })}</div>
+      </div>
+    );
+  }
+});
+
 //content of each tab to show how many balls, insurance, etc being choosen for each flight
 var ReserveFormPage = React.createClass({
   propTypes: {
@@ -140,6 +160,9 @@ var ReserveFormPage = React.createClass({
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][matrix_id]"} value={this.props.flight.matrix_id} />
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][tee_time]"} value={this.props.flightInfo.teeTime} />
         <div className="card-header" style={ {color:'black'}}>{ this.props.flightInfo.teeTime }</div>
+        <div className="card-block">
+          <GolfCoursesGroup flight={this.props.flight}/>
+        </div>
         <div className="card-block">
           <div className="form-group row">
             <div className="col-xs-2">

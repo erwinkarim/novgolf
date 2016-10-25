@@ -120,7 +120,7 @@ class GolfClub < ActiveRecord::Base
                 :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11],
                 :user_reservation_id => n[18],
                 :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]},
-                :courses => [ n[19] ], :reserved_courses => [ n[20] ]
+                :courses => [{ id:n[19], user_reservation_id:n[18], reserve_status:n[11],  }]
             }],
             :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
           }
@@ -135,11 +135,10 @@ class GolfClub < ActiveRecord::Base
               :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] ,
               :user_reservation_id => n[18],
               :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]},
-              :courses => [ n[19] ], :reserved_courses => [ n[20] ]
+              :courses => [{ id:n[19], user_reservation_id:n[18], reserve_status:n[11],  }]
             }
           else
-            selected_flight.first[:courses] << n[19]
-            selected_flight.first[:reserved_courses] << n[20]
+            selected_flight.first[:courses] << {id:n[19], user_reservation_id:n[18], reserve_status:n[11] }
           end
           p
         end
