@@ -21,24 +21,41 @@ class UserReservationsController < ApplicationController
   def processing
     #set that you need to complete this transaction (get reservation confirmation token) within 10 minutes
     @club = GolfClub.find(params[:golf_club_id])
+    club_id = @club.id
     session[:reservation_ids] = []
     session[:timeout] = Time.now + 10.minutes
 
     #Rails.logger.info "session[:flight] is #{session[:flight]}"
     #create a reservation w/o token to show that this flight is being reserved
-    #todo: think about splitting the pricing data into each reservation(s)
-    #   eg: if you booked 5 balls in 2 flights, flight a will have 3 balls and flight b will have 2 balls and are priced accordingly
     UserReservation.transaction do
       session[:flight].each_pair do |k,v|
         tax = (v["price"]["pax"].to_f + v["price"]["cart"].to_f + v["price"]["caddy"].to_f + v["price"]["insurance"].to_f) * @club.tax_schedule.rate
+
+        #get the first available course
+        booking_date_clause = Date.parse(session[:info]["date"])
+        booking_time_clause = v["tee_time"]
+
+        first_course_id = (@club.course_listings.map{ |x| x.id } -
+          UserReservation.where{ (golf_club_id.eq club_id) & (booking_date.eq booking_date_clause) &
+            (booking_time.eq booking_time_clause) & (status.not_in [4,5,6])
+          }.map{|x| x.course_listing_id }).first
+
+        #if no course available, break return error, break this
+        if first_course_id.nil? then
+          render :status => :unprocessable_entity, :text => "Unable to find a free course"
+          return
+        end
+
         reservation = current_user.user_reservations.new( :golf_club_id => params[:golf_club_id],
           :booking_date => Date.parse(session[:info]["date"]), :booking_time => v["tee_time"],
           :actual_buggy => v["price"]["cart"], :actual_caddy => v["price"]["caddy"],
           :actual_pax => v["price"]["pax"], :actual_insurance => v["price"]["insurance"],
           :count_buggy => v["count"]["buggy"], :count_caddy => v["count"]["caddy"],
           :count_pax => v["count"]["pax"], :count_insurance => v["count"]["insurance"],
+          :course_listing_id => first_course_id,
           :actual_tax => tax,
           :flight_matrix_id => v["matrix_id"] )
+
 
         reservation.regenerate_token
         #reservation.save!

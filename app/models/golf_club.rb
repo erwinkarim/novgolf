@@ -91,7 +91,8 @@ class GolfClub < ActiveRecord::Base
     tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).where.not(:status => [4,5,6]).to_sql
     self.joins{
         flight_schedules.flight_matrices
-      }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time)").joins{
+      }.joins{ course_listings
+      }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joins{
         flight_schedules.charge_schedule
       }.where{
         ( (name.like "%#{query}%") ) &
@@ -100,9 +101,12 @@ class GolfClub < ActiveRecord::Base
         (flight_matrices.send("day#{queryDay}").eq 1) &
         (id.in options[:club_id])
       }.limit(30
-      ).pluck(:id, :name, :session_price, :tee_time, :min_pax, :max_pax, :cart, :caddy, :insurance,
+      ).pluck(:id,
+        :name, :session_price, :tee_time, :min_pax,
+        :max_pax, :cart, :caddy, :insurance,
         :'flight_matrices.id', :'tr.booking_time', :'tr.status', :'charge_schedules.note',
-        :min_cart, :max_cart, :min_caddy, :max_caddy, :insurance_mode, :'tr.id'
+        :min_cart, :max_cart, :min_caddy, :max_caddy,
+        :insurance_mode, :'tr.id', :'course_listings.id', :'tr.course_listing_id'
       ).inject([]){ |p,n|
         club = p.select{ |x| x[:club][:id] == n[0] }.first
         booked_time = n[10].nil? ? nil : n[10].strftime("%H:%M")
@@ -115,19 +119,28 @@ class GolfClub < ActiveRecord::Base
                 :minCaddy => n[15], :maxCaddy => n[16],
                 :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11],
                 :user_reservation_id => n[18],
-                :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]}
+                :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]},
+                :courses => [ n[19] ], :reserved_courses => [ n[20] ]
             }],
             :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
           }
         else
-          club[:flights] << {
-            :minPax => n[4], :maxPax => n[5],
-            :minCart => n[13], :maxCart => n[14],
-            :minCaddy => n[15], :maxCaddy => n[16],
-            :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] ,
-            :user_reservation_id => n[18],
-            :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]}
-          }
+          # TODO: find the appropiate flights, add courses, or new flight if necessary
+          selected_flight = club[:flights].select{ |x| x[:matrix_id] == n[9]}
+          if selected_flight.empty? then
+            club[:flights] << {
+              :minPax => n[4], :maxPax => n[5],
+              :minCart => n[13], :maxCart => n[14],
+              :minCaddy => n[15], :maxCaddy => n[16],
+              :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] ,
+              :user_reservation_id => n[18],
+              :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]},
+              :courses => [ n[19] ], :reserved_courses => [ n[20] ]
+            }
+          else
+            selected_flight.first[:courses] << n[19]
+            selected_flight.first[:reserved_courses] << n[20]
+          end
           p
         end
       }
@@ -358,5 +371,16 @@ class GolfClub < ActiveRecord::Base
 
   # get rating stats for over 6 months ago
   def review_stats options = { :since => 6.months.ago }
+  end
+
+  #admin only: to auto generate 1-3 courses linked to the club if there's no courses
+  def generate_courses
+    if self.course_listings.empty? then
+      (1..(rand(1..3))).each do |x|
+        course = self.course_listings.new({ name:"Course ##{x}"})
+        course.save!
+      end
+    end
+    self.course_listings
   end
 end

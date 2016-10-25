@@ -5,13 +5,15 @@ class UserReservation < ActiveRecord::Base
   belongs_to :charge_schedule
   belongs_to :golf_club
   belongs_to :flight_matrix
+  belongs_to :course_listing
 
   has_one :review, as: :topic
 
   #each club id should have a unique booking date and time
-  # TODO: and unique course # and the course# should be less than than # of courses in the club
+  #  and unique course #
+  # TODO:and the course# should be less than than # of courses in the club
   validates :golf_club_id, uniqueness: {
-    scope: [:booking_date, :booking_time],
+    scope: [:booking_date, :booking_time, :course_listing_id],
     #validation will be enforced during creation, payment and confirmation stage, but not when it was canceled or failed
     conditions: -> { where( status: [0,1,2,3])}
   }
@@ -20,7 +22,7 @@ class UserReservation < ActiveRecord::Base
   validates_presence_of :user_id, :flight_matrix_id
   validates_presence_of :actual_pax, :actual_buggy, :actual_caddy, :actual_insurance, :actual_tax
   validates_presence_of :count_pax, :count_buggy, :count_caddy, :count_insurance
-  validates_presence_of :booking_date, :booking_time
+  validates_presence_of :booking_date, :booking_time, :course_listing_id
   validates_presence_of :status
   validate :validates_booking_datetime, on: :create
 

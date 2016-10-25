@@ -12,13 +12,15 @@ class UserReservationTest < ActiveSupport::TestCase
   should validate_presence_of(:count_insurance)
   should validate_presence_of(:booking_date)
   should validate_presence_of(:booking_time)
+  should validate_presence_of(:course_listing_id)
   should validate_presence_of(:status)
   should validate_presence_of(:actual_tax)
-  
+
 
   should belong_to(:user)
   should belong_to(:golf_club)
   should belong_to(:charge_schedule)
+  should belong_to(:course_listing)
 
   should have_one(:review)
 
