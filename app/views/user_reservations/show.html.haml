@@ -17,6 +17,9 @@
             %strong Flight Date and Time
             #{ @reservation.booking_date} @ #{@reservation.booking_time.strftime("%H:%M")}
           %li.list-group-item
+            %strong Course
+            #{ @reservation.course_listing.name }
+          %li.list-group-item
             %strong Location
             #{ @reservation.golf_club.address } #{ link_to "link", "http://google.com.my/maps?q=#{@reservation.golf_club.lat.html_safe},#{@reservation.golf_club.lng.html_safe}", :target => "_blank"}
           - if @reservation.payment_attempted? then
@@ -50,7 +53,7 @@
                 %td Insurance
                 %td #{ number_to_currency(@reservation.actual_insurance, { :unit => "RM "} )}
               %tr
-                %td 
+                %td
                 %td Tax
                 %td #{ number_to_currency(@reservation.actual_tax, { :unit => "RM "} )}
               %tr

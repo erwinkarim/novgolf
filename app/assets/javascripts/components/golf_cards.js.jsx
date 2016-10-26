@@ -15,22 +15,19 @@ var GolfCardTimes = React.createClass({
     var clickFn = null;
     if(this.props.adminMode){
       //admin mode - disable disabled
-      if ( this.props.flight.reserve_status == 1 ){
-        reserve_status = "warning";
-      } else if ( this.props.flight.reserve_status == 2 ){
-        reserve_status = "danger";
-      };
+      switch ( Math.min(...this.props.flight.courses.map((e,i) => { return e.reserve_status}) ) ) {
+        case 1: reserve_status = "warning"; break;
+        case 2: reserve_status = "danger"; break;
+        default: true;
+      }
       clickFn = this.props.handleClick;
     } else {
       //normal mode
-      if ( this.props.flight.reserve_status == 1 ){
-        reserve_status = "warning disabled";
-      } else if ( this.props.flight.reserve_status == 2 ){
-        reserve_status = "danger disabled";
-      } else {
-          clickFn = this.props.handleClick
+      switch ( Math.min(...this.props.flight.courses.map((e,i) => { return e.reserve_status}) ) ) {
+        case 1: reserve_status = "warning disabled"; break;
+        case 2: reserve_status = "danger disabled"; break;
+        default: clickFn = this.props.handleClick;
       };
-
     }
 
     var prices = this.props.options.GolfClubTimesShowPrices ? (
@@ -128,8 +125,14 @@ var GolfCoursesGroup = React.createClass({
       <div>
         <p>Courses:</p>
         <div className="btn-group">{ this.props.flight.courses.map( (e,i) => {
+          var reserve_status = "secondary"
+          switch (e.reserve_status) {
+            case 1: reserve_status = "warning"; break;
+            case 2: reserve_status = "danger"; break;
+            default: reserve_status = "secondary";
+          };
           return (
-            <button type="button" className="btn btn-secondary" key={i}>{e.id}</button>
+            <button type="button" className={`btn btn-${reserve_status}`} key={i}>{e.id}</button>
           );
         })}</div>
       </div>
