@@ -1,5 +1,6 @@
 var golfCardDefaultOptions = {
-    GolfClubTimesShowPrices:true
+    GolfClubTimesShowPrices:true,
+    displayCourseGroup:false
 };
 
 var GolfCardTimes = React.createClass({
@@ -86,34 +87,6 @@ var GolfCardTimesGroup = React.createClass({
   }
 });
 
-//tabs to show which flights are being selected
-/*
-var SelectedTimeNav = React.createClass({
-    propTypes: {
-        selectedTeeTimes: React.PropTypes.array,
-        selectedIndex: React.PropTypes.number
-    },
-    handleClick: function(e){
-        e.preventDefault();
-    },
-    render: function(){
-
-      return (
-          <ul className="nav nav-tabs">{ this.props.selectedTeeTimes.map( (e,i) =>
-            {
-              var isActive = (i != 0) ? "active" : "";
-              return (
-                <li key={i} className="nav-item">
-                  <a className={"nav-link active" + isActive} onClick={this.handleClick} href="#">{e}</a>
-                </li>
-              )
-            }
-          )}</ul>
-      )
-    }
-});
-*/
-
 //should which courses are occupied
 //should show statuses
 var GolfCoursesGroup = React.createClass({
@@ -124,7 +97,7 @@ var GolfCoursesGroup = React.createClass({
     return (
       <div>
         <p>Courses:</p>
-        <div className="btn-group">{ this.props.flight.courses.map( (e,i) => {
+        <div className="btn-group" data-toggle="buttons">{ this.props.flight.courses.map( (e,i) => {
           var reserve_status = "secondary"
           switch (e.reserve_status) {
             case 1: reserve_status = "warning"; break;
@@ -132,7 +105,11 @@ var GolfCoursesGroup = React.createClass({
             default: reserve_status = "secondary";
           };
           return (
-            <button type="button" className={`btn btn-${reserve_status}`} key={i}>{e.id}</button>
+            <label className={`btn btn-${reserve_status}`} key={i} onClick={this.props.selectCourse}
+              data-index={i} data-course-id={e.id} data-reservation-id={e.user_reservation_id}>
+              <input type="radio" name="courses" option={`course-${e.id}`}  />
+              {e.id}
+            </label>
           );
         })}</div>
       </div>
@@ -145,12 +122,16 @@ var ReserveFormPage = React.createClass({
   propTypes: {
     flightInfo:React.PropTypes.object,
     flight:React.PropTypes.object,
-    isActive: React.PropTypes.bool
+    isActive: React.PropTypes.bool,
+    options: React.PropTypes.object
   },
   getInitialState: function(){
     return {
       random_id:(Math.floor(Math.random()*16777215).toString(16))
     };
+  },
+  getDefaultProps: function(){
+    return { options: golfCardDefaultOptions};
   },
   rawNote: function(){
     md = new Remarkable();
@@ -158,14 +139,17 @@ var ReserveFormPage = React.createClass({
   },
   render: function(){
     var activeClass = (this.props.isActive) ? "active" : "";
+    var golfCourses = (this.props.options.displayCourseGroup) ? (
+      <div className="card-block">
+        <GolfCoursesGroup flight={this.props.flight} selectCourse={this.props.selectCourse}/>
+      </div>
+    ) : null;
     return (
       <div className={`tab-pane card ${activeClass}`} id={`flight-tab-${this.props.flightInfo.id}`} >
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][matrix_id]"} value={this.props.flight.matrix_id} />
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][tee_time]"} value={this.props.flightInfo.teeTime} />
         <div className="card-header" style={ {color:'black'}}>{ this.props.flightInfo.teeTime }</div>
-        <div className="card-block">
-          <GolfCoursesGroup flight={this.props.flight}/>
-        </div>
+        { golfCourses }
         <div className="card-block">
           <div className="form-group row">
             <div className="col-xs-2">
@@ -253,11 +237,12 @@ var GolfReserveForm = React.createClass({
       reserveTarget: React.PropTypes.string,
       club: React.PropTypes.object,
       flights: React.PropTypes.array,
-      insurance_modes: React.PropTypes.array
+      insurance_modes: React.PropTypes.array,
+      options: React.PropTypes.object
     },
     getDefaultProps: function(){
       return {
-        reserve_target:"/"
+        reserve_target:"/", options: golfCardDefaultOptions
       }
     },
     getInitialState: function(){
@@ -408,7 +393,7 @@ var GolfReserveForm = React.createClass({
                 var isActive = (this.state.selectedTeeTimesIndex == i) ? true : false;
                 return (
                   <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} isActive={isActive}
-                    insurance_modes={this.props.insurance_modes} />
+                    insurance_modes={this.props.insurance_modes} options={this.props.options} />
                 )
               }
             )}</div>

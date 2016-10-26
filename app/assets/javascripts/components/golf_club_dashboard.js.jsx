@@ -18,7 +18,8 @@ var GolfClubDashStatus = React.createClass({
       var flight = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight];
       flightInfo = (
         <div>
-          <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }/>
+          <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
+            selectCourse={this.props.selectCourse} options={this.props.options} />
           <h4>Tax: {toCurrency(parseFloat(this.props.flightInfo.tax))}</h4>
           <h3>Total: {toCurrency(parseFloat(this.props.flightInfo.totalPrice))} </h3>
         </div>
@@ -51,13 +52,15 @@ var GolfClubDashboard = React.createClass({
     var today = new Date();
     var queryDate = today.getDate() + '/' + (today.getMonth()+1) + '/' + today.getFullYear();
 
-
     return {
       flightsArray:[], dashBoardStatusText:null,
       days: this.updateDays(today), queryDate:queryDate,
       loadFlight: false, selectedFlight:null,
       flightInfo:{pax:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00}
     }
+  },
+  getDefaultProps: function(){
+      return { options: {displayCourseGroup:true}};
   },
   updateDays: function(newDate){
     //new Date must be type Date
@@ -81,6 +84,19 @@ var GolfClubDashboard = React.createClass({
       });
     });
 
+  },
+  loadReservationJSON: function(reservation_id, currentFlightInfo){
+    var handle = this;
+    if(reservation_id != null){
+      $.getJSON(`${handle.props.paths.user_reservations}/${reservation_id}`, null, function(data){
+        //update flight info from data in user_reservations
+        var reserve = data.user_reservation;
+        var newFlightInfo = Object.assign(currentFlightInfo,
+          {pax:reserve.count_pax, buggy:reserve.count_buggy, caddy:reserve.count_caddy,
+            insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price});
+        handle.setState({flightInfo:newFlightInfo});
+      });
+    }
   },
   dateChanged: function(dateText){
     //console.log('date changed to', dateText);
@@ -108,6 +124,12 @@ var GolfClubDashboard = React.createClass({
     newFlightInfo = this.updatePrice(newFlightInfo, flight);
 
     this.setState({flightInfo:newFlightInfo});
+  },
+  selectCourse: function(e){
+    //load and update the course info when selected
+    console.log("selected course id", e.target.dataset.courseId);
+    console.log("should load user_reservation", e.target.dataset.reservationId)
+    this.loadReservationJSON(e.target.dataset.reservationId, this.state.flightInfo);
   },
   updatePrice: function(newFlightInfo, flight){
     //var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
@@ -141,6 +163,8 @@ var GolfClubDashboard = React.createClass({
     newFlightInfo = this.updatePrice(newFlightInfo, flight);
 
     //load user_reservations info if necessary
+    this.loadReservationJSON(flight.user_reservation_id, newFlightInfo);
+    /*
     if(flight.user_reservation_id != null){
         $.getJSON(`${handle.props.paths.user_reservations}/${flight.user_reservation_id}`, null, function(data){
           //update flight info from data in user_reservations
@@ -151,6 +175,7 @@ var GolfClubDashboard = React.createClass({
           handle.setState({flightInfo:newFlightInfo});
         });
     }
+    */
 
     //setup the state
     this.setState({
@@ -186,7 +211,8 @@ var GolfClubDashboard = React.createClass({
         <div className="col-lg-4">
           <GolfClubDashStatus status={this.state.dashBoardStatusText} loadFlight={this.state.loadFlight}
             flightsArray={this.state.flightsArray} selectedArray={this.state.selectedArray} selectedFlight={this.state.selectedFlight}
-            days={this.state.days} updatePax={this.updatePax} flightInfo={this.state.flightInfo} />
+            selectCourse={this.selectCourse}
+            days={this.state.days} updatePax={this.updatePax} flightInfo={this.state.flightInfo} options={this.props.options}/>
         </div>
       </div>
     )
