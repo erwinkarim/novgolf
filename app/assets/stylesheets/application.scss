@@ -95,6 +95,11 @@ body{
     font-family: quicksand, sans-serif;
 }
 
+.toggle-style{
+    background-image: none;
+    border: none;
+}
+
 .text-reader{
     @include media-breakpoint-down(md){
         font-family: "Source Sans Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
