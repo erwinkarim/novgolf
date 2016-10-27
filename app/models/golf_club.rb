@@ -61,8 +61,10 @@ class GolfClub < ActiveRecord::Base
   # 2. club ranking algothrim
   # 3. don't return results if looking for something in the past??
   # TODO: better way to display since each flight times can bring diffrent prices
+  # TODO: issue, the 30 limit might make some of the courses off because, better way to get course data??
   def self.search options = {}
-    default_options = { :query => "", :dateTimeQuery => Time.now, :spread => 30.minutes, :pax => 8, :club_id => 0..10000000 }
+    default_options = { :query => "", :dateTimeQuery => Time.now, :spread => 30.minutes, :pax => 8, :club_id => 0..10000000,
+      :limit => 300, :offset => 0 }
 
     options = default_options.merge(options)
 
@@ -100,7 +102,7 @@ class GolfClub < ActiveRecord::Base
         (flight_schedules.min_pax.lte options[:pax]) &
         (flight_matrices.send("day#{queryDay}").eq 1) &
         (id.in options[:club_id])
-      }.limit(30
+      }.limit(options[:limit]
       ).pluck(:id,
         :name, :session_price, :tee_time, :min_pax,
         :max_pax, :cart, :caddy, :insurance,
@@ -138,7 +140,7 @@ class GolfClub < ActiveRecord::Base
               :courses => [{ id:n[19], user_reservation_id:n[18], reserve_status:n[11],  }]
             }
           else
-            selected_flight.first[:courses] << {id:n[19], user_reservation_id:n[18], reserve_status:n[11] }
+            selected_flight.first[:courses] << { id:n[19], user_reservation_id:n[18], reserve_status:n[11] }
           end
           p
         end
@@ -207,7 +209,12 @@ class GolfClub < ActiveRecord::Base
         cs.save!
       end
 
+      #generate courses
+      club.generate_courses
+
       #create the ammenities
+
+      club
     end
   end
 
