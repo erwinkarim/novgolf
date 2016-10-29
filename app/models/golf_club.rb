@@ -60,11 +60,11 @@ class GolfClub < ActiveRecord::Base
   # 1. remove clubs that is fully booked
   # 2. club ranking algothrim
   # 3. don't return results if looking for something in the past??
-  # TODO: better way to display since each flight times can bring diffrent prices
-  # TODO: issue, the 30 limit might make some of the courses off because, better way to get course data??
+  # TODO: optional capture of course data, by default, just say how many is occupied vs #of courses and min status of the courses
+  # TODO:
   def self.search options = {}
     default_options = { :query => "", :dateTimeQuery => Time.now, :spread => 30.minutes, :pax => 8, :club_id => 0..10000000,
-      :limit => 300, :offset => 0 }
+      :limit => 300, :offset => 0 , :adminMode => false}
 
     options = default_options.merge(options)
 
@@ -79,7 +79,7 @@ class GolfClub < ActiveRecord::Base
       queryDay = options[:dateTimeQuery].cwday
     end
     #if looking from the past, skip
-    if options[:dateTimeQuery] < DateTime.now then
+    if options[:dateTimeQuery] < DateTime.now && options[:adminMode] == false then
       return []
     end
 
@@ -103,48 +103,53 @@ class GolfClub < ActiveRecord::Base
         (flight_matrices.send("day#{queryDay}").eq 1) &
         (id.in options[:club_id])
       }.limit(options[:limit]
-      ).pluck(:id,
+      ).group( " golf_clubs.id,
+        golf_clubs.name, session_price, tee_time, min_pax,
+        max_pax, cart, caddy, insurance,
+        flight_matrices.id, tr.booking_time, charge_schedules.note,
+        min_cart, max_cart, min_caddy, max_caddy,
+        insurance_mode, tr.id
+      ").pluck(:id,
         :name, :session_price, :tee_time, :min_pax,
         :max_pax, :cart, :caddy, :insurance,
-        :'flight_matrices.id', :'tr.booking_time', :'tr.status', :'charge_schedules.note',
+        :'flight_matrices.id', :'tr.booking_time', :'min(tr.status) as tr_min_status', :'charge_schedules.note',
         :min_cart, :max_cart, :min_caddy, :max_caddy,
-        :insurance_mode, :'tr.id', :'course_listings.id', :'tr.course_listing_id'
+        :insurance_mode, :'tr.id', :'count(course_listings.id) as cl_count', :'count(tr.course_listing_id) as ur_cl_count'
       ).inject([]){ |p,n|
         club = p.select{ |x| x[:club][:id] == n[0] }.first
         booked_time = n[10].nil? ? nil : n[10].strftime("%H:%M")
         if club.nil? then
           p << {
-            :club => { :tax_schedule => GolfClub.find(n[0]).tax_schedule, :id => n[0], :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:created_at => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
+            :club => { :tax_schedule => GolfClub.find(n[0]).tax_schedule, :id => n[0],
+              :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:created_at => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
             :flights => [ {
-                :minPax => n[4], :maxPax => n[5],
-                :minCart => n[13], :maxCart => n[14],
-                :minCaddy => n[15], :maxCaddy => n[16],
-                :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11],
-                :user_reservation_id => n[18],
-                :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]},
-                :courses => [{ id:n[19], user_reservation_id:n[18], reserve_status:n[11],  }]
+              :minPax => n[4], :maxPax => n[5],
+              :minCart => n[13], :maxCart => n[14],
+              :minCaddy => n[15], :maxCaddy => n[16],
+              :tee_time => n[3].strftime("%H:%M"),
+              :matrix_id => n[9],
+              :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]},
+              :course_data => { :status => n[20].nil? || n[20] < n[19] ? 0 : n[11] }
             }],
             :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
           }
         else
           # TODO: find the appropiate flights, add courses, or new flight if necessary
           selected_flight = club[:flights].select{ |x| x[:matrix_id] == n[9]}
-          if selected_flight.empty? then
-            club[:flights] << {
-              :minPax => n[4], :maxPax => n[5],
-              :minCart => n[13], :maxCart => n[14],
-              :minCaddy => n[15], :maxCaddy => n[16],
-              :tee_time => n[3].strftime("%H:%M"), :booked => booked_time, :matrix_id => n[9], :reserve_status => n[11] ,
-              :user_reservation_id => n[18],
-              :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]},
-              :courses => [{ id:n[19], user_reservation_id:n[18], reserve_status:n[11],  }]
-            }
-          else
-            selected_flight.first[:courses] << { id:n[19], user_reservation_id:n[18], reserve_status:n[11] }
-          end
+          club[:flights] << {
+            :minPax => n[4], :maxPax => n[5],
+            :minCart => n[13], :maxCart => n[14],
+            :minCaddy => n[15], :maxCaddy => n[16],
+            :tee_time => n[3].strftime("%H:%M"),
+            :matrix_id => n[9],
+            :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]},
+            :course_data => { :status => n[20].nil? || n[20] < n[19] ? 0 : n[11] }
+          }
           p
         end
       }
+
+      #if more details course data require, go ask the database
 
       #inject the photo path after search
   end

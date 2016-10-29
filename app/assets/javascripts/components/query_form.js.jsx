@@ -35,7 +35,7 @@ var QueryForm = React.createClass({
   render: function() {
 
     if (this.props.showSearchNav){
-      var toggleStyle = {'background-image':'none', width:'100%', 'border':'none'};
+      var toggleStyle = {backgroundImage:'none', width:'100%', 'border':'none'};
       var searchNav =
         <div className="font-special">
           <nav className="navbar navbar-light bg-faded">

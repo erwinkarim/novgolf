@@ -16,7 +16,7 @@ var GolfCardTimes = React.createClass({
     var clickFn = null;
     if(this.props.adminMode){
       //admin mode - disable disabled
-      switch ( Math.min(...this.props.flight.courses.map((e,i) => { return e.reserve_status}) ) ) {
+      switch ( this.props.flight.course_data.status ){
         case 1: reserve_status = "warning"; break;
         case 2: reserve_status = "danger"; break;
         default: true;
@@ -24,7 +24,7 @@ var GolfCardTimes = React.createClass({
       clickFn = this.props.handleClick;
     } else {
       //normal mode
-      switch ( Math.min(...this.props.flight.courses.map((e,i) => { return e.reserve_status}) ) ) {
+      switch ( this.props.flight.course_data.status ){
         case 1: reserve_status = "warning disabled"; break;
         case 2: reserve_status = "danger disabled"; break;
         default: clickFn = this.props.handleClick;
@@ -97,7 +97,7 @@ var GolfCoursesGroup = React.createClass({
     return (
       <div>
         <p>Courses:</p>
-        <div className="btn-group" data-toggle="buttons">{ this.props.flight.courses.map( (e,i) => {
+        <div className="btn-group" data-toggle="buttons">{ this.props.flight.course_data.courses.map( (e,i) => {
           var reserve_status = "secondary"
           switch (e.reserve_status) {
             case 1: reserve_status = "warning"; break;
