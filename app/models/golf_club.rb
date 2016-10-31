@@ -64,7 +64,7 @@ class GolfClub < ActiveRecord::Base
   # TODO:
   def self.search options = {}
     default_options = { :query => "", :dateTimeQuery => Time.now, :spread => 30.minutes, :pax => 8, :club_id => 0..10000000,
-      :limit => 300, :offset => 0 , :adminMode => false}
+      :limit => 300, :offset => 0 , :adminMode => false, :loadCourseData => false}
 
     options = default_options.merge(options)
 
@@ -91,7 +91,7 @@ class GolfClub < ActiveRecord::Base
     # todo: remove clubs that is fully booked in the time period
     #get current reservations, excluding failed/canceled attempts
     tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).where.not(:status => [4,5,6]).to_sql
-    self.joins{
+    results = self.joins{
         flight_schedules.flight_matrices
       }.joins{ course_listings
       }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joins{
@@ -106,30 +106,29 @@ class GolfClub < ActiveRecord::Base
       ).group( " golf_clubs.id,
         golf_clubs.name, session_price, tee_time, min_pax,
         max_pax, cart, caddy, insurance,
-        flight_matrices.id, tr.booking_time, charge_schedules.note,
+        flight_matrices.id, charge_schedules.note,
         min_cart, max_cart, min_caddy, max_caddy,
-        insurance_mode, tr.id
+        insurance_mode
       ").pluck(:id,
-        :name, :session_price, :tee_time, :min_pax,
-        :max_pax, :cart, :caddy, :insurance,
-        :'flight_matrices.id', :'tr.booking_time', :'min(tr.status) as tr_min_status', :'charge_schedules.note',
-        :min_cart, :max_cart, :min_caddy, :max_caddy,
-        :insurance_mode, :'tr.id', :'count(course_listings.id) as cl_count', :'count(tr.course_listing_id) as ur_cl_count'
+        :name, :session_price, :tee_time, :min_pax, #4
+        :max_pax, :cart, :caddy, :insurance,        #8
+        :'flight_matrices.id', :'min(tr.status) as tr_min_status', :'charge_schedules.note', :min_cart,  #12
+        :max_cart, :min_caddy, :max_caddy, :insurance_mode,  #16
+        :'count(course_listings.id) as cl_count', :'count(tr.course_listing_id) as ur_cl_count'
       ).inject([]){ |p,n|
         club = p.select{ |x| x[:club][:id] == n[0] }.first
-        booked_time = n[10].nil? ? nil : n[10].strftime("%H:%M")
         if club.nil? then
           p << {
             :club => { :tax_schedule => GolfClub.find(n[0]).tax_schedule, :id => n[0],
               :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:created_at => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
             :flights => [ {
               :minPax => n[4], :maxPax => n[5],
-              :minCart => n[13], :maxCart => n[14],
-              :minCaddy => n[15], :maxCaddy => n[16],
+              :minCart => n[12], :maxCart => n[13],
+              :minCaddy => n[14], :maxCaddy => n[15],
               :tee_time => n[3].strftime("%H:%M"),
               :matrix_id => n[9],
-              :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]},
-              :course_data => { :status => n[20].nil? || n[20] < n[19] ? 0 : n[11] }
+              :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[11], :insurance_mode => n[16]},
+              :course_data => { :status => n[18].nil? || n[18] < n[17] ? 0 : n[10] }
             }],
             :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
           }
@@ -138,18 +137,47 @@ class GolfClub < ActiveRecord::Base
           selected_flight = club[:flights].select{ |x| x[:matrix_id] == n[9]}
           club[:flights] << {
             :minPax => n[4], :maxPax => n[5],
-            :minCart => n[13], :maxCart => n[14],
-            :minCaddy => n[15], :maxCaddy => n[16],
+            :minCart => n[12], :maxCart => n[13],
+            :minCaddy => n[14], :maxCaddy => n[15],
             :tee_time => n[3].strftime("%H:%M"),
             :matrix_id => n[9],
-            :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[12], :insurance_mode => n[17]},
-            :course_data => { :status => n[20].nil? || n[20] < n[19] ? 0 : n[11] }
+            :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[11], :insurance_mode => n[16]},
+            :course_data => { :status => n[18].nil? || n[18] < n[17] ? 0 : n[10] }
           }
           p
         end
       }
 
       #if more details course data require, go ask the database
+      if options[:loadCourseData] then
+        queryDate =  options[:dateTimeQuery].strftime("%Y-%m-%d")
+        course_results = self.joins{
+            flight_schedules.flight_matrices
+          }.joins{ course_listings
+          }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joins{
+            flight_schedules.charge_schedule
+          }.where{
+            ( (name.like "%#{query}%") ) &
+            (flight_matrices.tee_time.in timeRange ) &
+            (flight_schedules.min_pax.lte options[:pax]) &
+            (flight_matrices.send("day#{queryDay}").eq 1) &
+            (id.in options[:club_id])
+          }.limit(options[:limit]
+          ).pluck( :id,
+              :'flight_matrices.id as fm_id', :'course_listings.id as cl_id', :'tr.id ur_id', :'tr.status as tr_status'
+          ).inject(results){ |p,n|
+            flight_handle = p.select{|x| x[:club][:id] == n[0]}.first[:flights].select{|x| x[:matrix_id] == n[1]}.first
+            if flight_handle[:course_data][:courses].nil? then
+              flight_handle[:course_data][:courses] = []
+            end
+            flight_handle[:course_data][:courses] << {
+              id:n[2], reservation_id:n[3], reservation_status:n[4]
+            }
+            p
+          }
+      end
+
+      results
 
       #inject the photo path after search
   end

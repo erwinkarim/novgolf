@@ -15,7 +15,10 @@ class GolfClubsController < ApplicationController
       @date = Date.today + 1.day
     end
 
-    @result = GolfClub.search({ :dateTimeQuery => Time.parse("#{@date} 14:00 +0000"), :spread => 9.hours, :club_id => params[:id]}).first
+    loadCourseData = params.has_key?(:loadcoursedata) ? params[:loadcoursedata] : false
+
+    @result = GolfClub.search({ dateTimeQuery:Time.parse("#{@date} 14:00 +0000"), spread:9.hours, club_id:params[:id],
+      loadCourseData:loadCourseData}).first
     #handle empty result
     @result = @result.nil? ? {:club => [], :flights => [], :queryData => []} : @result
 

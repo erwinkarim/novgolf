@@ -77,7 +77,7 @@ var GolfClubDashboard = React.createClass({
 
     var handle = this;
     this.state.days.map( (e,i) => {
-      $.getJSON(handle.props.paths.club_path, {date:e}, function(data){
+      $.getJSON(handle.props.paths.club_path, {date:e, loadcoursedata:true}, function(data){
         var newFlightsArray = handle.state.flightsArray;
         newFlightsArray[i] = data.flights;
         handle.setState({flightsArray:newFlightsArray});
@@ -129,7 +129,17 @@ var GolfClubDashboard = React.createClass({
     //load and update the course info when selected
     console.log("selected course id", e.target.dataset.courseId);
     console.log("should load user_reservation", e.target.dataset.reservationId)
-    this.loadReservationJSON(e.target.dataset.reservationId, this.state.flightInfo);
+    if (e.target.dataset.reservationId == null){
+      //if there's no reservation ID, update flightInfo to default values
+      var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
+      var newFlightInfo = {pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, tax:0.00, totalPrice:0.00};
+      newFlightInfo = this.updatePrice(newFlightInfo, flight);
+      this.setState({flightInfo:newFlightInfo});
+
+    }else{
+      this.loadReservationJSON(e.target.dataset.reservationId, this.state.flightInfo);
+
+    }
   },
   updatePrice: function(newFlightInfo, flight){
     //var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];

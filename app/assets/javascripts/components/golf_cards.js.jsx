@@ -99,15 +99,15 @@ var GolfCoursesGroup = React.createClass({
         <p>Courses:</p>
         <div className="btn-group" data-toggle="buttons">{ this.props.flight.course_data.courses.map( (e,i) => {
           var reserve_status = "secondary"
-          switch (e.reserve_status) {
+          switch (e.reservation_status) {
             case 1: reserve_status = "warning"; break;
             case 2: reserve_status = "danger"; break;
             default: reserve_status = "secondary";
           };
           return (
             <label className={`btn btn-${reserve_status}`} key={i} onClick={this.props.selectCourse}
-              data-index={i} data-course-id={e.id} data-reservation-id={e.user_reservation_id}>
-              <input type="radio" name="courses" option={`course-${e.id}`}  />
+              data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}>
+              <input type="radio" name="courses" value={`course-${e.id}`}  />
               {e.id}
             </label>
           );
@@ -135,6 +135,7 @@ var ReserveFormPage = React.createClass({
   },
   rawNote: function(){
     md = new Remarkable();
+    //return null;
     return { __html: md.render(this.props.flight.prices.note) };
   },
   render: function(){
