@@ -18,6 +18,20 @@ var QueryForm = React.createClass({
   componentDidMount: function(){
     $(this.refs.queryDate).datepicker({ minDate:0, dateFormat:'dd/mm/yy' });
     $(this.refs.queryTime).timepicker({ disableTextInput:'true', minTime:'6:00am', maxTime:'11:00pm', timeFormat:'H:i'});
+
+    var countries = [
+      { value: 'Andorra', data: 'AD' },
+      { value: 'Singapore', data: 'SG' },
+      { value: 'Malaysia', data: 'MY' },
+      { value: 'Zimbabwe', data: 'ZZ' }
+    ];
+
+    $(this.refs.query).autocomplete({
+      serviceUrl: '/suggest',
+      dataType:'json',
+      deferRequestBy:100,
+      paramName:'q'
+    });
   },
   getInitialState: function(){
       return {
@@ -60,7 +74,7 @@ var QueryForm = React.createClass({
             <div className="form-inline">
               <div className="form-group">
                 <span> </span>
-                <input id="query" ref="query" ref="q" name="q" className="form-control" type="text"
+                <input id="query" ref="query" id="q" name="q" className="form-control" type="text"
                   placeholder="Golf Course" value={this.state.queryString} onChange={this.handleChange} />
               </div>
               <span> </span>

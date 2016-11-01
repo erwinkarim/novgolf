@@ -26,6 +26,7 @@ Rails.application.routes.draw do
     get 'reset'
     get 'session_data'
     get 'tab_test'
+    get 'suggest'
   end
 
   #to manage golf clubs

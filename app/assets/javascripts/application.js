@@ -32,4 +32,5 @@
 //= require react_ujs
 //= require components
 //= require ready
+//= require jquery.autocomplete.min.js
 //= require_tree .
