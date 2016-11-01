@@ -14,7 +14,9 @@ var GolfClubDashStatus = React.createClass({
   render:function(){
     //load the flight info if booked, default is null
     var flightInfo = (<div>No Flights Selected</div>);
+    var disableFnBtn = true;
     if(this.props.loadFlight){
+      disableFnBtn = false;
       var flight = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight];
       flightInfo = (
         <div>
@@ -26,16 +28,16 @@ var GolfClubDashStatus = React.createClass({
       )
     };
 
+
     return(
       <div className="card" id="dashStatus" ref="dashStatus" style={ {background:'papayawhip'} }>
         <ul className="list-group list-group-flush">
           <li className="list-group-item">{this.props.status}</li>
           <li className="list-group-item">{ flightInfo }</li>
           <li className="list-group-item">
-            <button className="btn btn-secondary" type="button">Reserve</button>
-            <button className="btn btn-secondary" type="button">Cancel</button>
-            <button className="btn btn-secondary" type="button">Move</button>
-            <button className="btn btn-secondary" type="button">Update</button>
+            <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
+            <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
+            <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
           </li>
         </ul>
       </div>
@@ -46,6 +48,7 @@ var GolfClubDashStatus = React.createClass({
 var GolfClubDashboard = React.createClass({
   propTypes: {
       club:React.PropTypes.object,
+      token:React.PropTypes.string,
       paths:React.PropTypes.object
   },
   getInitialState: function(){
@@ -56,22 +59,29 @@ var GolfClubDashboard = React.createClass({
       flightsArray:[], dashBoardStatusText:null,
       days: this.updateDays(today), queryDate:queryDate,
       loadFlight: false, selectedFlight:null,
-      flightInfo:{pax:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00}
+      flightInfo:{pax:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00},
+      tick:60
     }
+  },
+  tick: function(){
+    //reload the schedule every 60-90 seconds
+    var newTick = this.state.tick - 1;
+    if(newTick == 0){
+      newTick = 60;
+      this.loadSchedule();
+    };
+    this.setState({tick:newTick});
   },
   getDefaultProps: function(){
       return { options: {displayCourseGroup:true}};
   },
   updateDays: function(newDate){
     //new Date must be type Date
-    //console.log("updating days array from", newDate);
     days = arrayFromRange(0,6).map( (e,i) => {
-        newDay = new Date();
-        newDay.setDate(newDate.getDate() + e);
-        return newDay.getDate() + '/' + (newDay.getMonth() + 1) + '/' + newDay.getFullYear();
+      var newDay = new Date(newDate.getTime() + (60*60*24*1000*e));
+      return newDay.getDate() + '/' + (newDay.getMonth() + 1) + '/' + newDay.getFullYear();
     });
     return days;
-    //this.setState({days:days});
   },
   loadSchedule: function(){
 
@@ -102,7 +112,7 @@ var GolfClubDashboard = React.createClass({
     //console.log('date changed to', dateText);
     if(dateText != this.state.days[0]){
       this.setState({days: this.updateDays(new Date(dateText)),
-        loadFlight:false,selectedArray:null, selectedFlight:null
+        loadFlight:false,selectedArray:null, selectedFlight:null, tick:60
       });
       $('.btn-group').find('.active').toggleClass('active');
       this.loadSchedule();
@@ -127,8 +137,8 @@ var GolfClubDashboard = React.createClass({
   },
   selectCourse: function(e){
     //load and update the course info when selected
-    console.log("selected course id", e.target.dataset.courseId);
-    console.log("should load user_reservation", e.target.dataset.reservationId)
+    //console.log("selected course id", e.target.dataset.courseId);
+    //console.log("should load user_reservation", e.target.dataset.reservationId)
     if (e.target.dataset.reservationId == null){
       //if there's no reservation ID, update flightInfo to default values
       var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
@@ -194,6 +204,32 @@ var GolfClubDashboard = React.createClass({
       flightInfo:newFlightInfo
     });
   },
+  reservationUpdate: function(e){
+    console.log("update reservation");
+  },
+  reservationCancel: function(e){
+    console.log("cancel reservation");
+
+  },
+  reservationNew: function(e){
+    console.log("new reservation");
+
+    $.post(this.props.paths.user_reservations, {}, function(data){
+      //reload the schedule if reservation successful
+    },'json' );
+    $.ajax(this.props.paths.user_reservations, {
+      data: {},
+      dataType:'json',
+      method:'POST',
+      success: function(data){
+        $.snackbar({content:'New Reservation'});
+      },
+      error: function(){
+        $.snackbar({content:'Failed to reserve Flight'});
+      }
+    });
+
+  },
   componentDidMount:function(){
     var handle = this;
     $(this.refs.datepicker).datepicker({
@@ -201,14 +237,22 @@ var GolfClubDashboard = React.createClass({
       altFormat:'mm/dd/yy',
       onClose:function(dateText){ handle.dateChanged(dateText); }
     });
+    this.interval = setInterval(this.tick, 1000);
 
     this.loadSchedule();
+  },
+  componentWillUnmount: function(){
+      clearInterval(this.interval);
   },
   render: function(){
     return (
       <div className="row">
         <div className="col-lg-8">
-          <input className="datepicker" ref="datepicker" type="text" defaultValue={this.state.queryDate} style={ {zIndex:100, position:'relative'}}/>
+          <p>
+            <input className="datepicker form-control" ref="datepicker"
+              type="text" defaultValue={this.state.queryDate} style={ {zIndex:100, position:'relative'}}/>
+            Refresh in {this.state.tick} seconds...
+          </p>
           { this.state.flightsArray.map( (e,i) => {
             return (
               <div key={i} >
@@ -222,7 +266,9 @@ var GolfClubDashboard = React.createClass({
           <GolfClubDashStatus status={this.state.dashBoardStatusText} loadFlight={this.state.loadFlight}
             flightsArray={this.state.flightsArray} selectedArray={this.state.selectedArray} selectedFlight={this.state.selectedFlight}
             selectCourse={this.selectCourse}
-            days={this.state.days} updatePax={this.updatePax} flightInfo={this.state.flightInfo} options={this.props.options}/>
+            days={this.state.days} updatePax={this.updatePax} flightInfo={this.state.flightInfo} options={this.props.options}
+            reservationUpdate={this.reservationUpdate} reservationCancel={this.reservationCancel} reservationNew={this.reservationNew}
+            />
         </div>
       </div>
     )

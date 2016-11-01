@@ -17,7 +17,13 @@ class Admin::GolfClubsController < ApplicationController
     if current_user.id == @golf_club.user_id then
       respond_to do |format|
         format.html
-        format.json
+        format.json {
+          date = params.has_key?(:date) ? Date.parse(params[:date]) : Date.today + 1.day
+          result = GolfClub.search({ dateTimeQuery:Time.parse("#{date} 14:00 +0000"), spread:9.hours, club_id:params[:id],
+            loadCourseData:true, adminMode:true}).first
+          result = result.nil? ? {:club => [], :flights => [], :queryData => []} : result
+          render json:result
+        }
       end
     else
       render :file => "public/401.html", :code => :unauthorized

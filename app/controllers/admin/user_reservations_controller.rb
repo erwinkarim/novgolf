@@ -13,5 +13,9 @@ class Admin::UserReservationsController < ApplicationController
   end
 
   def create
+    respond_to do |format|
+      format.html { render { text:"attempt to create a reservation with #{params.inspect}"} }
+      format.json { render json: {test:'text'} }
+    end
   end
 end

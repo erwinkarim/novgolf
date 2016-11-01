@@ -7,6 +7,6 @@
         %li.breadcrumb-item
           %a{ :href => admin_golf_club_path(@golf_club) } #{ @golf_club.name }
         %li.active.breadcrumb-item DashBoard
-      %p Here lies golfClubDashBoard
   = react_component("GolfClubDashboard", { club: @golf_club.attributes.merge({tax_schedule:@golf_club.tax_schedule}),
-    paths:{ club_path:golf_club_path(@golf_club ), user_reservations:admin_user_reservations_path} })
+    token:form_authenticity_token,
+    paths:{ club_path:admin_golf_club_path(@golf_club), user_reservations:admin_user_reservations_path} })

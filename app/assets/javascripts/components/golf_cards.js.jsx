@@ -37,12 +37,25 @@ var GolfCardTimes = React.createClass({
       </h5>
     ) : null ;
 
+    var courseIndicator = ("courses" in this.props.flight.course_data) ? (
+      this.props.flight.course_data.courses.map( (e,i) => {
+        var indicatorClass = null;
+        switch (e.reservation_status) {
+          case 1: indicatorClass = "warning"; break;
+          case 2: indicatorClass = "danger"; break;
+          default: indicatorClass = null;
+        }
+        return (indicatorClass == null ? null : <i key={i} className={`text-${indicatorClass} fa fa-circle`}></i>)
+      })
+    )
+    : null;
+
     return (
       <label ref="teeTimeLabel" className={"btn btn-"+reserve_status} onClick={clickFn} data-tee-time={this.props.flight.tee_time}
         value={this.props.index} data-value={this.props.index} data-arrayIndex={this.props.arrayIndex}>
         <input type={this.props.btnGroupMode} name="teeTimes[]" value={this.props.flight.tee_time} />
         { prices }
-        {this.props.flight.tee_time}
+        {courseIndicator} {this.props.flight.tee_time}
       </label>
     );
   }
