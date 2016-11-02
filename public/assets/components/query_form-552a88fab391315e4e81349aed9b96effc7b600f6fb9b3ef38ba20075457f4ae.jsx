@@ -18,6 +18,20 @@ var QueryForm = React.createClass({
   componentDidMount: function(){
     $(this.refs.queryDate).datepicker({ minDate:0, dateFormat:'dd/mm/yy' });
     $(this.refs.queryTime).timepicker({ disableTextInput:'true', minTime:'6:00am', maxTime:'11:00pm', timeFormat:'H:i'});
+
+    var countries = [
+      { value: 'Andorra', data: 'AD' },
+      { value: 'Singapore', data: 'SG' },
+      { value: 'Malaysia', data: 'MY' },
+      { value: 'Zimbabwe', data: 'ZZ' }
+    ];
+
+    $(this.refs.query).autocomplete({
+      serviceUrl: '/suggest',
+      dataType:'json',
+      deferRequestBy:100,
+      paramName:'q'
+    });
   },
   getInitialState: function(){
       return {
@@ -33,12 +47,14 @@ var QueryForm = React.createClass({
     return this.setState({queryString:newQueryString});
   },
   render: function() {
+
     if (this.props.showSearchNav){
+      var toggleStyle = {backgroundImage:'none', width:'100%', 'border':'none'};
       var searchNav =
-        <div>
+        <div className="font-special">
           <nav className="navbar navbar-light bg-faded">
-            <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#search-query-form">
-              <i className="fa fa-search"></i>{ ` Searching ${this.props.queryString} on ${this.props.queryDate}@${this.props.queryTime}` }
+            <button className="navbar-toggler btn-block" style={ toggleStyle } type="button" data-toggle="collapse" data-target="#search-query-form">
+              <i className="fa fa-search"></i>{ ` Refine Search ` }
             </button>
           </nav>
           <br />
@@ -52,30 +68,29 @@ var QueryForm = React.createClass({
     return (
       <div>
         {searchNav}
-        <div className="col-xs-12">
+        <div className="col-xs-12 font-special">
           <form id="search-query-form" className={"form-inline collapse" + collapseClass }  method="get" action={this.props.queryTarget} key="query1">
             <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
             <div className="form-inline">
               <div className="form-group">
-                <label className={dropShadowClass}>I would like to play in </label>
                 <span> </span>
-                <input id="query" ref="query" ref="q" name="q" className="form-control" type="text"
-                  placeholder="Golf Club" value={this.state.queryString} onChange={this.handleChange} />
+                <input id="query" ref="query" id="q" name="q" className="form-control" type="text"
+                  placeholder="Golf Course" value={this.state.queryString} onChange={this.handleChange} />
               </div>
               <span> </span>
               <div className="form-group">
-                <label className={dropShadowClass}> on </label>
                 <span> </span>
                 <input id="flight-date" name="date" className="datepicker" ref="queryDate" type="text"
                     className="form-control" placeholder="Date" value={this.state.queryDate} onChange={function(){}} />
               </div>
               <span> </span>
               <div className="form-group">
-                <label className={dropShadowClass}> @ </label> <input id="flight-time" name="time" ref="queryTime" className="form-control" type="text"
+                <input id="flight-time" name="time" ref="queryTime" className="form-control" type="text"
                   placeholder="Golf Club" value={this.state.queryTime} onChange={function(){}} />
               </div>
               <span> </span>
-              <button className="btn btn-primary" type="submit">Search</button>
+              <div className="text-xs-center hidden-md-up"><button className="btn btn-primary" type="submit">Search</button></div>
+              <div className="hidden-sm-down"><br /><button className="btn btn-primary" type="submit">Search</button></div>
             </div>
             <div style={ {color:'black'}}>
               <br />
