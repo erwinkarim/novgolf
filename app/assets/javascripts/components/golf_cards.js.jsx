@@ -104,7 +104,10 @@ var GolfCardTimesGroup = React.createClass({
 //should show statuses
 var GolfCoursesGroup = React.createClass({
   propTypes:{
-      flight: React.PropTypes.object
+      flight: React.PropTypes.object, selectedCourse: React.PropTypes.number
+  },
+  getDefaultProps: function(){
+      return {selectedCourse:0};
   },
   render: function(){
     return (
@@ -117,8 +120,9 @@ var GolfCoursesGroup = React.createClass({
             case 2: reserve_status = "danger"; break;
             default: reserve_status = "secondary";
           };
+          var activeState = (i == this.props.selectedCourse) ? "active" : null;
           return (
-            <label className={`btn btn-${reserve_status}`} key={i} onClick={this.props.selectCourse}
+            <label className={`btn btn-${reserve_status} ${activeState}`} key={i} onClick={this.props.selectCourse}
               data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}>
               <input type="radio" name="courses" value={`course-${e.id}`}  />
               {e.id}
@@ -155,7 +159,7 @@ var ReserveFormPage = React.createClass({
     var activeClass = (this.props.isActive) ? "active" : "";
     var golfCourses = (this.props.options.displayCourseGroup) ? (
       <div className="card-block">
-        <GolfCoursesGroup flight={this.props.flight} selectCourse={this.props.selectCourse}/>
+        <GolfCoursesGroup flight={this.props.flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}/>
       </div>
     ) : null;
     return (
@@ -244,7 +248,6 @@ var ReserveFormPage = React.createClass({
 });
 
 //form to reserve flights
-// have to think about when teeTimes goes blank because it's being loaded
 var GolfReserveForm = React.createClass({
     propTypes: {
       crsfToken: React.PropTypes.string,
@@ -318,10 +321,6 @@ var GolfReserveForm = React.createClass({
 
     },
     handleClick: function(e){
-      //console.log('clicked ', e.target.value)
-
-      //update the selected TeeTimes and current teeTimes index
-
       if(e.target.className.match(/disabled/) != null){
         //ensure that if you click, nothing happens
         e.target.className = e.target.className.replace(/active/, "");

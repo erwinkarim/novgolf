@@ -2,7 +2,7 @@ var GolfClubDashStatus = React.createClass({
   propTypes:{
     status:React.PropTypes.string,
     flightsArray: React.PropTypes.array, days: React.PropTypes.array,
-    selectedArray: React.PropTypes.number, selectedFlight: React.PropTypes.number,
+    selectedArray: React.PropTypes.number, selectedFlight: React.PropTypes.number, selectedCourse: React.PropTypes.number,
     loadFlight: React.PropTypes.bool
   },
   getDefaultProps: function(){
@@ -21,7 +21,7 @@ var GolfClubDashStatus = React.createClass({
       flightInfo = (
         <div>
           <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
-            selectCourse={this.props.selectCourse} options={this.props.options} />
+            selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse} />
           <h4>Tax: {toCurrency(parseFloat(this.props.flightInfo.tax))}</h4>
           <h3>Total: {toCurrency(parseFloat(this.props.flightInfo.totalPrice))} </h3>
         </div>
@@ -51,6 +51,9 @@ var GolfClubDashboard = React.createClass({
       token:React.PropTypes.string,
       paths:React.PropTypes.object
   },
+  getDefaultProps: function(){
+      return { options: {displayCourseGroup:true, GolfClubTimesShowPrices:false}};
+  },
   getInitialState: function(){
     var today = new Date();
     var queryDate = today.getDate() + '/' + (today.getMonth()+1) + '/' + today.getFullYear();
@@ -58,7 +61,7 @@ var GolfClubDashboard = React.createClass({
     return {
       flightsArray:[], dashBoardStatusText:null,
       days: this.updateDays(today), queryDate:queryDate,
-      loadFlight: false, selectedFlight:null,
+      loadFlight: false, selectedArray:null, selectedFlight:null, selectedCourse:null,
       flightInfo:{pax:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00},
       tick:60
     }
@@ -71,9 +74,6 @@ var GolfClubDashboard = React.createClass({
       this.loadSchedule();
     };
     this.setState({tick:newTick});
-  },
-  getDefaultProps: function(){
-      return { options: {displayCourseGroup:true, GolfClubTimesShowPrices:false}};
   },
   updateDays: function(newDate){
     //new Date must be type Date
@@ -144,11 +144,11 @@ var GolfClubDashboard = React.createClass({
       var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
       var newFlightInfo = {pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, tax:0.00, totalPrice:0.00};
       newFlightInfo = this.updatePrice(newFlightInfo, flight);
-      this.setState({flightInfo:newFlightInfo});
+      this.setState({flightInfo:newFlightInfo, selectedCourse:parseInt(e.target.dataset.index)});
 
     }else{
       this.loadReservationJSON(e.target.dataset.reservationId, this.state.flightInfo);
-
+      this.setState({selectedCourse:parseInt(e.target.dataset.index)});
     }
   },
   updatePrice: function(newFlightInfo, flight){
@@ -183,24 +183,15 @@ var GolfClubDashboard = React.createClass({
     newFlightInfo = this.updatePrice(newFlightInfo, flight);
 
     //load user_reservations info if necessary
-    this.loadReservationJSON(flight.user_reservation_id, newFlightInfo);
-    /*
-    if(flight.user_reservation_id != null){
-        $.getJSON(`${handle.props.paths.user_reservations}/${flight.user_reservation_id}`, null, function(data){
-          //update flight info from data in user_reservations
-          var reserve = data.user_reservation;
-          newFlightInfo = Object.assign(newFlightInfo,
-            {pax:reserve.count_pax, buggy:reserve.count_buggy, caddy:reserve.count_caddy,
-              insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price});
-          handle.setState({flightInfo:newFlightInfo});
-        });
-    }
-    */
+    var user_reservation_id = Math.min.apply(null, flight.course_data.courses.map((e,i) => e.reservation_id) );
+    if(user_reservation_id){
+      this.loadReservationJSON(user_reservation_id, newFlightInfo);
+    };
 
     //setup the state
     this.setState({
       dashBoardStatusText:newDashText,
-      selectedArray:parseInt(e.target.dataset.arrayindex), selectedFlight: parseInt(e.target.dataset.value), loadFlight:true,
+      selectedArray:parseInt(e.target.dataset.arrayindex), selectedFlight: parseInt(e.target.dataset.value), selectedCourse:0, loadFlight:true,
       flightInfo:newFlightInfo
     });
   },
@@ -214,15 +205,18 @@ var GolfClubDashboard = React.createClass({
   reservationNew: function(e){
     console.log("new reservation");
 
-    $.post(this.props.paths.user_reservations, {}, function(data){
-      //reload the schedule if reservation successful
-    },'json' );
+    var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
+
     $.ajax(this.props.paths.user_reservations, {
-      data: {},
+      data: {
+        golf_club_id:this.props.club.id, booking_date:this.state.days[this.state.selectedArray], booking_time:flight.tee_time,
+        flight_matrix_id:flight.matrix_id,
+        flight_info:this.state.flightInfo
+      },
       dataType:'json',
       method:'POST',
       success: function(data){
-        $.snackbar({content:'New Reservation'});
+        $.snackbar({content:data.message});
       },
       error: function(){
         $.snackbar({content:'Failed to reserve Flight'});
@@ -265,7 +259,8 @@ var GolfClubDashboard = React.createClass({
         </div>
         <div className="col-lg-4">
           <GolfClubDashStatus status={this.state.dashBoardStatusText} loadFlight={this.state.loadFlight}
-            flightsArray={this.state.flightsArray} selectedArray={this.state.selectedArray} selectedFlight={this.state.selectedFlight}
+            flightsArray={this.state.flightsArray}
+            selectedArray={this.state.selectedArray} selectedFlight={this.state.selectedFlight} selectedCourse={this.state.selectedCourse}
             selectCourse={this.selectCourse}
             days={this.state.days} updatePax={this.updatePax} flightInfo={this.state.flightInfo} options={this.props.options}
             reservationUpdate={this.reservationUpdate} reservationCancel={this.reservationCancel} reservationNew={this.reservationNew}

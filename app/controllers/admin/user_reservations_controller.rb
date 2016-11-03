@@ -12,10 +12,22 @@ class Admin::UserReservationsController < ApplicationController
     end
   end
 
+  # POST     /admin/user_reservations(.:format)
+  # sample Parameters: {"golf_club_id"=>"2", "booking_date"=>"5/11/2016", "booking_time"=>"08:08",
+  #    "flight_matrix_id"=>"73",
+  #    "flight_info"=>{"pax"=>"2", "buggy"=>"1", "caddy"=>"1", "insurance"=>"0", "tax"=>"37.8", "totalPrice"=>"667.8"}}
   def create
-    respond_to do |format|
-      format.html { render { text:"attempt to create a reservation with #{params.inspect}"} }
-      format.json { render json: {test:'text'} }
+    #get the charge schedule based on flight_matrix_id
+    ur = UserReservation.create_reservation params[:flight_matrix_id], current_user.id, params[:booking_date], params[:flight_info]
+    if ur.valid? then
+      ur.payment_attempted!
+      respond_to do |format|
+        format.json { render json: {message:"Reservation #{ur.id} created"}, status: :ok}
+      end
+    else
+      respond_to do |format|
+        format.json { render json: {message:'Failed to create a reservation'}, status: :unprocessable_entity }
+      end
     end
   end
 end

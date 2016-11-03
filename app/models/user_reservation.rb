@@ -29,7 +29,7 @@ class UserReservation < ActiveRecord::Base
   has_secure_token
 
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,
-    :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed]
+    :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed, :reservation_failed]
 
   after_initialize :init
 
@@ -66,6 +66,57 @@ class UserReservation < ActiveRecord::Base
   def booking_datetime
     #"#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
     DateTime.parse "#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
+  end
+
+  #streamline method to generate user reservation
+  #includes the sanity checks, etc...
+  # flight_info must be format {:pax, :caddy, :buggy, :insurance}, ie- count, everything else will be calculated
+  def self.create_reservation flight_matrix_id, user_id, booked_date = Date.today, flight_info = {}
+    Rails.logger.info "flight_info check = #{flight_info}"
+    Rails.logger.info "flight_info[:pax] = #{flight_info[:pax]}"
+    Rails.logger.info "flight_info['pax'] = #{flight_info["pax"]}"
+
+    #sanity checks, expects that flight_info has all the necessary keys and values
+    flight_info = flight_info.symbolize_keys
+
+    # get the flight matrix
+    #get the charge schedule based on flight_matrix_id
+    # => will get the associated golf club
+    # => will get the associated booking time
+    # get the current pricing at this time
+    fm = FlightMatrix.find(flight_matrix_id)
+    cs = ChargeSchedule.where(:flight_schedule_id => fm.flight_schedule_id ).first
+    club = GolfClub.find(cs.golf_club_id)
+    club_id = cs.golf_club_id
+    booking_date_clause = booked_date
+    booking_time_clause = fm.tee_time
+
+    # create the new user_reservation, with the correct flight_info and cost calculation
+    ur = UserReservation.new
+    self.transaction do
+      taxation = (flight_info[:pax].to_i * cs.session_price + flight_info[:caddy].to_i * cs.caddy +
+          flight_info[:buggy].to_i * cs.cart + flight_info[:insurance].to_i * cs.insurance) * club.tax_schedule.rate
+      ur = UserReservation.new(
+        user_id:user_id, golf_club_id: cs.golf_club_id, flight_matrix_id:fm.id,
+        booking_date: booking_date_clause, booking_time: booking_time_clause,
+        count_pax:flight_info[:pax], count_caddy:flight_info[:caddy], count_buggy: flight_info[:buggy] , count_insurance:flight_info[:insurance],
+        actual_pax:flight_info[:pax].to_i * cs.session_price, actual_caddy: flight_info[:caddy].to_i * cs.caddy,
+          actual_buggy:flight_info[:buggy].to_i * cs.cart, actual_insurance: flight_info[:insurance].to_i * cs.insurance,
+          actual_tax: taxation,
+        status:0
+      )
+
+      #find the free coursetime
+      first_course_id = (club.course_listings.map{ |x| x.id } -
+        UserReservation.where{ (golf_club_id.eq club_id) & (booking_date.eq booking_date_clause) &
+          (booking_time.eq booking_time_clause) & (status.not_in [4,5,6])
+        }.map{|x| x.course_listing_id }).first
+      ur.assign_attributes({course_listing_id:first_course_id})
+
+      ur.save!
+      ur.reservation_created!
+    end
+    ur
   end
 
   #generate the random user reservation complete with review

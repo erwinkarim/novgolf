@@ -1,6 +1,14 @@
 class UserReservationsController < ApplicationController
   before_action :authenticate_user!
 
+  #sample params
+  #   Parameters: {
+  #   "authenticity_token"=>"EW9cJY07AH52Gwe4H9YHsHOO6op06Ohy0d0IO07Lni+gTI2/Riyock0XifYq2urjdPfaFvB6TUolnpwxN//g2g==",
+  #   "club"=>{"id"=>"2"},
+  #   "info"=>{"date"=>"04/11/2016", "total_price"=>"3362"},
+  #   "teeTimes"=>["06:41", "06:49"],
+  #   "flight"=>{"c10615"=>{"matrix_id"=>"52", "tee_time"=>"06:41", "count"=>{"pax"=>"3", "buggy"=>"1", "caddy"=>"1", "insurance"=>"3"},
+  #          "price"=>{"pax"=>"1260", "cart"=>"48", "caddy"=>"37", "insurance"=>"108"} }, .... }
   def reserve
     @club = GolfClub.find(params[:golf_club_id])
 
@@ -18,6 +26,7 @@ class UserReservationsController < ApplicationController
     #Rails.logger.info "the session flight is is #{session[:flight]  }"
   end
 
+  #handle cases where some of the reservations did not go throught
   def processing
     #set that you need to complete this transaction (get reservation confirmation token) within 10 minutes
     @club = GolfClub.find(params[:golf_club_id])
@@ -29,42 +38,21 @@ class UserReservationsController < ApplicationController
     #create a reservation w/o token to show that this flight is being reserved
     UserReservation.transaction do
       session[:flight].each_pair do |k,v|
-        tax = (v["price"]["pax"].to_f + v["price"]["cart"].to_f + v["price"]["caddy"].to_f + v["price"]["insurance"].to_f) * @club.tax_schedule.rate
+        ur = UserReservation.create_reservation v["matrix_id"], current_user.id, Date.parse(session[:info]["date"]), v["count"]
+        if ur.valid? then
+          ur.regenerate_token
 
-        #get the first available course
-        booking_date_clause = Date.parse(session[:info]["date"])
-        booking_time_clause = v["tee_time"]
-
-        first_course_id = (@club.course_listings.map{ |x| x.id } -
-          UserReservation.where{ (golf_club_id.eq club_id) & (booking_date.eq booking_date_clause) &
-            (booking_time.eq booking_time_clause) & (status.not_in [4,5,6])
-          }.map{|x| x.course_listing_id }).first
-
-        #if no course available, break return error, break this
-        if first_course_id.nil? then
-          render :status => :unprocessable_entity, :text => "Unable to find a free course"
-          return
+          ur.reservation_created!
+          ur.payment_attempted!
+          session[:reservation_ids] << ur.id
+        else
+          ur.reservation_failed!
         end
-
-        reservation = current_user.user_reservations.new( :golf_club_id => params[:golf_club_id],
-          :booking_date => Date.parse(session[:info]["date"]), :booking_time => v["tee_time"],
-          :actual_buggy => v["price"]["cart"], :actual_caddy => v["price"]["caddy"],
-          :actual_pax => v["price"]["pax"], :actual_insurance => v["price"]["insurance"],
-          :count_buggy => v["count"]["buggy"], :count_caddy => v["count"]["caddy"],
-          :count_pax => v["count"]["pax"], :count_insurance => v["count"]["insurance"],
-          :course_listing_id => first_course_id,
-          :actual_tax => tax,
-          :flight_matrix_id => v["matrix_id"] )
-
-
-        reservation.regenerate_token
-        #reservation.save!
-
-        reservation.reservation_created!
-        reservation.payment_attempted!
-        session[:reservation_ids] << reservation.id
       end
     end
+
+    #update the total price to be charged before sending it out to online payment gateway
+    session[:info]["grand_total"] = UserReservation.where(id: session[:reservation_ids]).inject(0){|p,v| p += v.total_price }
 
     #check payment status in 11 minutes
     CheckPaymentStatusJob.set(wait: 11.minutes).perform_later(UserReservation.find(session[:reservation_ids]))
