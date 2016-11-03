@@ -36,6 +36,7 @@ var GolfClubDashStatus = React.createClass({
           <li className="list-group-item">{ flightInfo }</li>
           <li className="list-group-item">
             <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
+            <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationConfirm}>Confirm</button>
             <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
             <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
           </li>
@@ -196,15 +197,43 @@ var GolfClubDashboard = React.createClass({
     });
   },
   reservationUpdate: function(e){
-    console.log("update reservation");
+    var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
+    if("courses" in flight.course_data){
+      var course = flight.course_data.courses[this.state.selectedCourse];
+      if(course.reservation_id){
+        $.ajax(`${this.props.paths.user_reservations}/${course.reservation_id}`,{
+          method:"PATCH",
+          dataType:'json',
+          success: function(data){
+            console.log("update reservation");
+          }
+        });
+      };
+    };
   },
   reservationCancel: function(e){
-    console.log("cancel reservation");
+    //check if course is there
+    var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
+    if("courses" in flight.course_data){
+      var course = flight.course_data.courses[this.state.selectedCourse];
+      if(course.reservation_id){
+        console.log("cancel reservation ", course.reservation_id);
+        $.ajax(`${this.props.paths.user_reservations}/${course.reservation_id}`,{
+          method:"DELETE",
+          dataType:'json',
+          success: function(data){
+              console.log("successfully send request to delete reservation");
+          }
+        });
+      };
+    };
+
 
   },
   reservationNew: function(e){
     console.log("new reservation");
 
+    var handle = this;
     var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
 
     $.ajax(this.props.paths.user_reservations, {
@@ -217,11 +246,29 @@ var GolfClubDashboard = React.createClass({
       method:'POST',
       success: function(data){
         $.snackbar({content:data.message});
+        handle.loadSchedule();
       },
       error: function(){
         $.snackbar({content:'Failed to reserve Flight'});
       }
     });
+
+  },
+  reservationConfirm: function(e){
+    var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
+    if("courses" in flight.course_data){
+      var course = flight.course_data.courses[this.state.selectedCourse];
+      if(course.reservation_id){
+        console.log("confirm reservation", course.reservation_id);
+        $.ajax(`${this.props.paths.user_reservations}/${course.reservation_id}/confirm`,{
+          method:"POST",
+          dataType:'json',
+          success: function(data){
+            console.log("successfully send request to confirm reservation");
+          }
+        });
+      };
+    };
 
   },
   componentDidMount:function(){
@@ -264,6 +311,7 @@ var GolfClubDashboard = React.createClass({
             selectCourse={this.selectCourse}
             days={this.state.days} updatePax={this.updatePax} flightInfo={this.state.flightInfo} options={this.props.options}
             reservationUpdate={this.reservationUpdate} reservationCancel={this.reservationCancel} reservationNew={this.reservationNew}
+            reservationConfirm={this.reservationConfirm}
             />
         </div>
       </div>

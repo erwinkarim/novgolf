@@ -21,13 +21,24 @@ class Admin::UserReservationsController < ApplicationController
     ur = UserReservation.create_reservation params[:flight_matrix_id], current_user.id, params[:booking_date], params[:flight_info]
     if ur.valid? then
       ur.payment_attempted!
-      respond_to do |format|
-        format.json { render json: {message:"Reservation #{ur.id} created"}, status: :ok}
-      end
+      render json: {message:"Reservation #{ur.id} created"}, status: :ok
     else
-      respond_to do |format|
-        format.json { render json: {message:'Failed to create a reservation'}, status: :unprocessable_entity }
-      end
+      render json: {message:'Failed to create a reservation'}, status: :unprocessable_entity
     end
+  end
+
+  # DELETE   /admin/user_reservations/:id(.:format)
+  def destroy
+    render json: {message:'destoryed'}
+  end
+
+  # PUT/PATCH    /admin/golf_clubs/:id(.:format)
+  def update
+    render json: {message:'updated'}
+  end
+
+  # POST     /admin/user_reservations/:user_reservation_id/confirm
+  def confirm
+    render json: {message:'confirmed'}
   end
 end

@@ -72,10 +72,6 @@ class UserReservation < ActiveRecord::Base
   #includes the sanity checks, etc...
   # flight_info must be format {:pax, :caddy, :buggy, :insurance}, ie- count, everything else will be calculated
   def self.create_reservation flight_matrix_id, user_id, booked_date = Date.today, flight_info = {}
-    Rails.logger.info "flight_info check = #{flight_info}"
-    Rails.logger.info "flight_info[:pax] = #{flight_info[:pax]}"
-    Rails.logger.info "flight_info['pax'] = #{flight_info["pax"]}"
-
     #sanity checks, expects that flight_info has all the necessary keys and values
     flight_info = flight_info.symbolize_keys
 
@@ -88,7 +84,7 @@ class UserReservation < ActiveRecord::Base
     cs = ChargeSchedule.where(:flight_schedule_id => fm.flight_schedule_id ).first
     club = GolfClub.find(cs.golf_club_id)
     club_id = cs.golf_club_id
-    booking_date_clause = booked_date
+    booking_date_clause = Date.parse(booked_date).strftime("%Y-%m-%d")
     booking_time_clause = fm.tee_time
 
     # create the new user_reservation, with the correct flight_info and cost calculation
@@ -112,6 +108,7 @@ class UserReservation < ActiveRecord::Base
           (booking_time.eq booking_time_clause) & (status.not_in [4,5,6])
         }.map{|x| x.course_listing_id }).first
       ur.assign_attributes({course_listing_id:first_course_id})
+      Rails.logger.info "new course id = #{first_course_id}"
 
       ur.save!
       ur.reservation_created!
