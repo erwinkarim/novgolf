@@ -29,12 +29,25 @@ class Admin::UserReservationsController < ApplicationController
 
   # DELETE   /admin/user_reservations/:id(.:format)
   def destroy
-    render json: {message:'destoryed'}
+    ur = UserReservation.find(params[:id])
+    ur.canceled_by_club!
+
+    render json: {message:"Reservation #{ur.id} canceld by #{current_user.name}" }
   end
 
   # PUT/PATCH    /admin/golf_clubs/:id(.:format)
+  # required params :flight_info => {:pax, :buggy, :caddy, :insurance }
   def update
-    render json: {message:'updated'}
+    #update the schedule and recalculate the pricing
+
+    flight_info = params[:flight_info]
+    ur = UserReservation.find(params[:id])
+    ur.transaction do
+      ur.update_attributes({ count_pax:flight_info[:pax], count_buggy:flight_info[:buggy],
+        count_caddy:flight_info[:caddy], count_insurance:flight_info[:insurance]})
+      ur.update_pricing
+    end
+    render json: {message:"Update Pricing for #{ur.id}"}
   end
 
   # POST     /admin/user_reservations/:user_reservation_id/confirm

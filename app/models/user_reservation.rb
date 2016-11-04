@@ -1,4 +1,5 @@
 class UserReservation < ActiveRecord::Base
+  # TODO: lock changes in count and actual 24 hours after the booking date and time
   require "assets/name_generator"
 
   belongs_to :user
@@ -66,6 +67,23 @@ class UserReservation < ActiveRecord::Base
   def booking_datetime
     #"#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
     DateTime.parse "#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
+  end
+
+  #update the pricing in case the values are changing.
+  def update_pricing
+
+    cs = self.flight_matrix.flight_schedule.charge_schedule
+
+    self.transaction do
+      taxation = (self.count_pax * cs.session_price + self.count_caddy * cs.caddy +
+        self.count_buggy * cs.cart + self.count_insurance * cs.insurance) * self.golf_club.tax_schedule.rate
+      self.assign_attributes({
+        actual_pax: self.count_pax * cs.session_price, actual_caddy: self.count_caddy * cs.caddy, actual_buggy: self.count_buggy * cs.cart,
+        actual_insurance: self.count_insurance * cs.insurance, actual_tax:taxation
+      })
+      self.save!
+    end
+
   end
 
   #streamline method to generate user reservation

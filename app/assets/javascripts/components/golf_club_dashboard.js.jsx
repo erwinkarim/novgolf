@@ -37,7 +37,7 @@ var GolfClubDashStatus = React.createClass({
           <li className="list-group-item">
             <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
             <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationConfirm}>Confirm</button>
-            <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
+            <button className="btn btn-danger" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
             <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
           </li>
         </ul>
@@ -203,9 +203,11 @@ var GolfClubDashboard = React.createClass({
       if(course.reservation_id){
         $.ajax(`${this.props.paths.user_reservations}/${course.reservation_id}`,{
           method:"PATCH",
+          data: { flight_info: this.state.flightInfo },
           dataType:'json',
           success: function(data){
-            console.log("update reservation");
+            $.snackbar({content:data.message});
+            this.loadSchedule();
           }
         });
       };
@@ -214,6 +216,7 @@ var GolfClubDashboard = React.createClass({
   reservationCancel: function(e){
     //check if course is there
     var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
+    var handle = this;
     if("courses" in flight.course_data){
       var course = flight.course_data.courses[this.state.selectedCourse];
       if(course.reservation_id){
@@ -222,7 +225,8 @@ var GolfClubDashboard = React.createClass({
           method:"DELETE",
           dataType:'json',
           success: function(data){
-              console.log("successfully send request to delete reservation");
+            $.snackbar({content:data.message});
+            handle.loadSchedule();
           }
         });
       };
