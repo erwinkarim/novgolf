@@ -52,6 +52,10 @@ class Admin::UserReservationsController < ApplicationController
 
   # POST     /admin/user_reservations/:user_reservation_id/confirm
   def confirm
-    render json: {message:'confirmed'}
+    ur = UserReservation.find(params[:user_reservation_id])
+    ur.transaction do
+      ur.reservation_confirmed!
+    end
+    render json: {message:"Reservation #{ur.id} confirmed"}
   end
 end

@@ -19,6 +19,7 @@ var GolfCardTimes = React.createClass({
       switch ( this.props.flight.course_data.status ){
         case 1: reserve_status = "warning"; break;
         case 2: reserve_status = "danger"; break;
+        case 3: reserve_status = "danger"; break;
         default: true;
       }
       clickFn = this.props.handleClick;
@@ -26,7 +27,8 @@ var GolfCardTimes = React.createClass({
       //normal mode
       switch ( this.props.flight.course_data.status ){
         case 1: reserve_status = "warning disabled"; break;
-        case 2: reserve_status = "danger disabled"; break;
+        case 2: reserve_status = "danger disabled"; break; //payment_confirmed
+        case 3: reserve_status = "danger disabled"; break; //reservation_confirmed - confirmed by club, not payment not confirmed
         default: clickFn = this.props.handleClick;
       };
     }
@@ -43,6 +45,7 @@ var GolfCardTimes = React.createClass({
         switch (e.reservation_status) {
           case 1: indicatorClass = "warning"; break;
           case 2: indicatorClass = "danger"; break;
+          case 3: indicatorClass = "danger"; break;
           default: indicatorClass = null;
         }
         return (indicatorClass == null ? null : <i key={i} className={`text-${indicatorClass} fa fa-circle`}></i>)
@@ -118,6 +121,7 @@ var GolfCoursesGroup = React.createClass({
           switch (e.reservation_status) {
             case 1: reserve_status = "warning"; break;
             case 2: reserve_status = "danger"; break;
+            case 3: reserve_status = "danger"; break;
             default: reserve_status = "secondary";
           };
           var activeState = (i == this.props.selectedCourse) ? "active" : null;
