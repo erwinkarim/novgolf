@@ -179,7 +179,7 @@ var ReserveFormPage = React.createClass({
                 onChange={this.props.updatePrice}
                 value={this.props.flightInfo.pax} ref="paxCount" className=""
                 data-index={this.props.flightInfo.index} data-target="pax">
-              { arrayFromRange(this.props.flight.minPax, this.props.flight.maxPax).map( (e,i) =>
+              { arrayFromRange(0, this.props.flight.maxPax).map( (e,i) =>
                 <option key={i}>{e}</option>
               )}</select>
             </div>
@@ -189,6 +189,20 @@ var ReserveFormPage = React.createClass({
             </label>
             <input type="hidden" value={this.props.flightInfo.pax*parseFloat(this.props.flight.prices.flight)}
               name={"flight[" + this.props.flightInfo.id + "][price][pax]"} />
+          </div>
+          <div className="form-group row">
+            <div className="col-xs-2">
+              <select name={ "flight[" + this.props.flightInfo.id + "][count][member]"}
+                onChange={this.props.updatePrice}
+                value={this.props.flightInfo.member} ref="memberCount" className=""
+                data-index={this.props.flightInfo.index} data-target="member">
+              { arrayFromRange(0, this.props.flight.maxPax).map( (e,i) =>
+                <option key={i}>{e}</option>
+              )}</select>
+            </div>
+            <label className="col-xs-5"> x Members </label>
+            <label className="col-xs-5">RM 0.00 </label>
+            <input type="hidden" value="0" name={"flight[" + this.props.flightInfo.id + "][price][member]"} />
           </div>
           <div className="form-group row">
             <div className="col-xs-2">
@@ -253,173 +267,204 @@ var ReserveFormPage = React.createClass({
 
 //form to reserve flights
 var GolfReserveForm = React.createClass({
-    propTypes: {
-      crsfToken: React.PropTypes.string,
-      reserveTarget: React.PropTypes.string,
-      club: React.PropTypes.object,
-      flights: React.PropTypes.array,
-      insurance_modes: React.PropTypes.array,
-      options: React.PropTypes.object
-    },
-    getDefaultProps: function(){
-      return {
-        reserve_target:"/", options: golfCardDefaultOptions
+  propTypes: {
+    crsfToken: React.PropTypes.string,
+    reserveTarget: React.PropTypes.string,
+    club: React.PropTypes.object,
+    flights: React.PropTypes.array,
+    insurance_modes: React.PropTypes.array,
+    options: React.PropTypes.object
+  },
+  getDefaultProps: function(){
+    return {
+      reserve_target:"/", options: golfCardDefaultOptions
+    }
+  },
+  getInitialState: function(){
+    return {
+      //teeTimes:this.props.teeTimes,
+      selectedTeeTimes:[],
+      selectedTeeTimesIndex: 0,
+      flightInfo:[],
+      defaultFlightInfo: {pax:0, member:0, buggy:0, caddy:0, insurance:0},
+      prices: [],
+      random_id: randomID(),
+      tax:0,
+      totalPrice: 0
+    }
+  },
+  componentDidMount: function(){
+    $(this.refs.reserveBtnLi).hide();
+  },
+  componentWillReceiveProps: function(nextProps){
+    if(nextProps.queryDate != this.props.queryDate){
+      this.setState({
+        selectedTeeTimes:[], selectedTeeTimesIndex:0,
+        flightInfo:[], totalPrice:0
+      })
+    };
+  },
+  updateTotalPrice: function(){
+      //calculate the new total price
+      var newTotalPrice = 0;
+      this.state.flightInfo.map( (e,i) => {
+          newTotalPrice += (
+            e.pax * parseFloat(this.props.flights[e.flightIndex].prices.flight) +
+            e.buggy * parseFloat(this.props.flights[e.flightIndex].prices.cart) +
+            e.caddy * parseFloat(this.props.flights[e.flightIndex].prices.caddy) +
+            e.insurance * parseFloat(this.props.flights[e.flightIndex].prices.insurance)
+          )
+      });
+      return newTotalPrice;
+  },
+  updatePrice: function(e){
+    var handle = $(e.target);
+    //console.log('new value is ', e.target.value  );
+
+    var newFlightInfo = this.state.flightInfo;
+    newFlightInfo[handle.data('index')][handle.data('target')] = parseInt(e.target.value);
+    var flightIndex = newFlightInfo[handle.data('index')].flightIndex;
+    var flight = newFlightInfo[e.target.dataset.index];
+
+    //update the members + ball count to be at between min_pax and max_pax values
+    if(e.target.dataset.target == "pax" || e.target.dataset.target == "member"){
+      //get the min/max pax
+      var minPax = this.props.flights[flightIndex].minPax;
+      var maxPax = this.props.flights[flightIndex].maxPax;
+
+      switch (e.target.dataset.target) {
+        case "pax":
+          //if less than min pax, reset ball count to (minPax - member)
+          //if more than max pax, reset member count to be at (maxPax - paxCount)
+          if(flight.member + flight.pax < minPax){
+              flight.pax = minPax - flight.member;
+          }
+          if(flight.member + flight.pax > maxPax){
+              flight.member = maxPax - flight.pax;
+          }
+          break;
+        case "member":
+          //if less than min pax, reset balls to (minpax - member)
+          //if more than max pax, reset balls count to be at (maxPax - member)
+          if(flight.member + flight.pax < minPax){
+              flight.pax = minPax - flight.member;
+          }
+          if(flight.member + flight.pax > maxPax){
+              flight.pax = maxPax - flight.member;
+          }
+        break;
+        default:
       }
-    },
-    getInitialState: function(){
-      return {
-        //teeTimes:this.props.teeTimes,
-        selectedTeeTimes:[],
-        selectedTeeTimesIndex: 0,
-        flightInfo:[],
-        defaultFlightInfo: {pax:0, buggy:0, caddy:0, insurance:0},
-        prices: [],
-        random_id: randomID(),
-        tax:0,
-        totalPrice: 0
+    }
+
+    //update the insurance count automatically if insurance mode is madatory
+    if(($.inArray(this.props.flights[flightIndex].prices.insurance_mode,[1,2]) != -1) &&
+      (handle.data('target') == 'pax') ){
+        newFlightInfo[handle.data('index')]['insurance'] = parseInt(e.target.value);
+    }
+
+    var newTotalPrice = this.updateTotalPrice();
+    var newTax = (newTotalPrice * this.props.club.tax_schedule.rate);
+
+    this.setState({flightInfo:newFlightInfo, totalPrice:newTotalPrice, tax:newTax});
+
+
+  },
+  handleClick: function(e){
+    if(e.target.className.match(/disabled/) != null){
+      //ensure that if you click, nothing happens
+      e.target.className = e.target.className.replace(/active/, "");
+      return;
+    } else {
+      //check if this is inside current state
+      var newTeeTimes = this.state.selectedTeeTimes;
+      var newIndex = this.state.selectedTeeTimesIndex;
+      var newFlightInfo = this.state.flightInfo;
+      var value = e.currentTarget.dataset.value;
+      var arrayPos = $.inArray(value, newTeeTimes);
+
+      if( arrayPos != -1){
+          //console.log('value is in array');
+          newTeeTimes.splice(arrayPos, 1);
+          newIndex = 0;
+
+          newFlightInfo.splice(arrayPos, 1);
+      }else {
+        //console.log('value is not in array');
+        newTeeTimes.push(value);
+        newTeeTimes.sort();
+        newIndex = $.inArray(value, newTeeTimes);
+
+        var fi = Object.assign({}, this.state.defaultFlightInfo);
+        Object.assign( fi,
+          {
+            id:randomID(), teeTime:this.props.flights[value].tee_time, index:newIndex, flightIndex:value,
+            pax:this.props.flights[value].minPax, insurance:this.props.flights[value].minPax,
+              buggy:this.props.flights[value].minCart, caddy:this.props.flights[value].minCaddy
+          }
+        );
+        newFlightInfo.splice($.inArray(value, newTeeTimes), 0, fi ) ;
       }
-    },
-    componentDidMount: function(){
-      $(this.refs.reserveBtnLi).hide();
-    },
-    componentWillReceiveProps: function(nextProps){
-      if(nextProps.queryDate != this.props.queryDate){
-        this.setState({
-          selectedTeeTimes:[], selectedTeeTimesIndex:0,
-          flightInfo:[], totalPrice:0
-        })
-      };
-    },
-    updateTotalPrice: function(){
-        //calculate the new total price
-        var newTotalPrice = 0;
-        this.state.flightInfo.map( (e,i) => {
-            newTotalPrice += (
-              e.pax * parseFloat(this.props.flights[e.flightIndex].prices.flight) +
-              e.buggy * parseFloat(this.props.flights[e.flightIndex].prices.cart) +
-              e.caddy * parseFloat(this.props.flights[e.flightIndex].prices.caddy) +
-              e.insurance * parseFloat(this.props.flights[e.flightIndex].prices.insurance)
-            )
-        });
-        return newTotalPrice;
-    },
-    updatePrice: function(e){
-        var handle = $(e.target);
-        //console.log('new value is ', e.target.value  );
 
-        var newFlightInfo = this.state.flightInfo;
-        newFlightInfo[handle.data('index')][handle.data('target')] = parseInt(e.target.value);
-        var flightIndex = newFlightInfo[handle.data('index')].flightIndex;
+      //need to re-adjust each child of flightInfo.index into order as this can be issue when flights are not clicked in-order
+      newFlightInfo.map( (e,i) => Object.assign(e, {index:i}));
 
-        //update the insurance count automatically if insurance mode is madatory
-        if(($.inArray(this.props.flights[flightIndex].prices.insurance_mode,[1,2]) != -1) &&
-          (handle.data('target') == 'pax') ){
-            newFlightInfo[handle.data('index')]['insurance'] = parseInt(e.target.value);
-        }
+      this.setState({selectedTeeTimes:newTeeTimes, selectedTeeTimesIndex:newIndex, flightInfo:newFlightInfo});
+      var newTotalPrice = this.updateTotalPrice();
+      var newTax = (newTotalPrice * this.props.club.tax_schedule.rate);
+      this.setState({totalPrice:newTotalPrice, tax:newTax});
 
-        var newTotalPrice = this.updateTotalPrice();
-        var newTax = (newTotalPrice * this.props.club.tax_schedule.rate);
+    }
+  },
+  render: function(){
+    //handle slide up and down function here
+    //if(this.state.selectedTeeTimes.length >= Math.ceil(this.props.flight.selectedPax/this.props.flight.maxPax)){
+    if(this.state.flightInfo.length > 0){
+      $(this.refs.reserveBtnLi).slideDown();
+    }else{
+      $(this.refs.reserveBtnLi).slideUp();
+    };
 
-        this.setState({flightInfo:newFlightInfo, totalPrice:newTotalPrice, tax:newTax});
+    return (
+      <form action={this.props.reserveTarget} method="post">
+        <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
+        <input type="hidden" name="club[id]" value={this.props.club.id} />
+        <input type="hidden" name="info[date]" value={this.props.queryData.date} />
+        <li className="list-group-item">
+          <GolfCardTimesGroup flights={this.props.flights} handleClick={this.handleClick} queryDate={this.props.queryDate} options={this.props.options}/>
+        </li>
+        <li className="list-group-item" ref="reserveBtnLi" >
+          {/* time stamps */}
+          <ul className="nav nav-pills" id={ "nav-" + this.state.random_id }>{ this.state.selectedTeeTimes.map( (e,i) =>
+            {
+              var isActive = (this.state.selectedTeeTimesIndex == i) ? "active" : ""
+              return (
+                <li key={i} className="nav-item">
+                  <a href={ `#flight-tab-${this.state.flightInfo[i].id}` } className={`nav-link ${isActive}`} data-toggle="pill">
+                    {this.props.flights[e].tee_time}
+                  </a>
+                </li>
+              )
+            }
+          )}</ul>
+          <br />
 
-
-    },
-    handleClick: function(e){
-      if(e.target.className.match(/disabled/) != null){
-        //ensure that if you click, nothing happens
-        e.target.className = e.target.className.replace(/active/, "");
-        return;
-      } else {
-        //check if this is inside current state
-        var newTeeTimes = this.state.selectedTeeTimes;
-        var newIndex = this.state.selectedTeeTimesIndex;
-        var newFlightInfo = this.state.flightInfo;
-        var value = e.currentTarget.dataset.value;
-        var arrayPos = $.inArray(value, newTeeTimes);
-
-        if( arrayPos != -1){
-            //console.log('value is in array');
-            newTeeTimes.splice(arrayPos, 1);
-            newIndex = 0;
-
-            newFlightInfo.splice(arrayPos, 1);
-        }else {
-            //console.log('value is not in array');
-            newTeeTimes.push(value);
-            newTeeTimes.sort();
-            newIndex = $.inArray(value, newTeeTimes);
-
-            var fi = Object.assign({}, this.state.defaultFlightInfo);
-            Object.assign( fi,
-              {
-                id:randomID(), teeTime:this.props.flights[value].tee_time, index:newIndex, flightIndex:value,
-                pax:this.props.flights[value].minPax, insurance:this.props.flights[value].minPax,
-                buggy:this.props.flights[value].minCart, caddy:this.props.flights[value].minCaddy
-              }
-            );
-            newFlightInfo.splice($.inArray(value, newTeeTimes), 0, fi ) ;
-
-        }
-
-        //need to re-adjust each child of flightInfo.index into order as this can be issue when flights are not clicked in-order
-        newFlightInfo.map( (e,i) => Object.assign(e, {index:i}));
-
-        this.setState({selectedTeeTimes:newTeeTimes, selectedTeeTimesIndex:newIndex, flightInfo:newFlightInfo});
-        var newTotalPrice = this.updateTotalPrice();
-        var newTax = (newTotalPrice * this.props.club.tax_schedule.rate);
-        this.setState({totalPrice:newTotalPrice, tax:newTax});
-
-      }
-    },
-    render: function(){
-      //handle slide up and down function here
-      //if(this.state.selectedTeeTimes.length >= Math.ceil(this.props.flight.selectedPax/this.props.flight.maxPax)){
-      if(this.state.flightInfo.length > 0){
-        $(this.refs.reserveBtnLi).slideDown();
-      }else{
-        $(this.refs.reserveBtnLi).slideUp();
-      };
-
-      return (
-        <form action={this.props.reserveTarget} method="post">
-          <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
-          <input type="hidden" name="club[id]" value={this.props.club.id} />
-          <input type="hidden" name="info[date]" value={this.props.queryData.date} />
-          <li className="list-group-item">
-            <GolfCardTimesGroup flights={this.props.flights} handleClick={this.handleClick} queryDate={this.props.queryDate} options={this.props.options}/>
-          </li>
-          <li className="list-group-item" ref="reserveBtnLi" >
-            {/* time stamps */}
-            <ul className="nav nav-pills" id={ "nav-" + this.state.random_id }>{ this.state.selectedTeeTimes.map( (e,i) =>
-              {
-                var isActive = (this.state.selectedTeeTimesIndex == i) ? "active" : ""
-                return (
-                  <li key={i} className="nav-item">
-                    <a href={ `#flight-tab-${this.state.flightInfo[i].id}` } className={`nav-link ${isActive}`} data-toggle="pill">
-                      {this.props.flights[e].tee_time}
-                    </a>
-                  </li>
-                )
-              }
-            )}</ul>
-            <br />
-
-            {/* form pages */}
-            <div ref="flightPages" className="tab-content"> { this.state.flightInfo.map( (e,i) =>
-              {
-                var isActive = (this.state.selectedTeeTimesIndex == i) ? true : false;
-                return (
-                  <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} isActive={isActive}
-                    insurance_modes={this.props.insurance_modes} options={this.props.options} />
-                )
-              }
-            )}</div>
-            <div>
-              <h5>Tax: {toCurrency(this.state.tax)}</h5>
-              <h4>Grand Total: {toCurrency(this.state.totalPrice + this.state.tax)} </h4>
-              <input type="hidden" name="info[total_price]" value={this.state.totalPrice} />
-            </div>
-            <button type="submit" className="btn btn-primary">Book!</button>
+          {/* form pages */}
+          <div ref="flightPages" className="tab-content"> { this.state.flightInfo.map( (e,i) =>
+            {
+              var isActive = (this.state.selectedTeeTimesIndex == i) ? true : false;
+              return (
+                <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} isActive={isActive}
+                  insurance_modes={this.props.insurance_modes} options={this.props.options} />
+              )
+            }
+          )}</div>
+          <div>
+            <h5>Tax: {toCurrency(this.state.tax)}</h5>
+            <h4>Grand Total: {toCurrency(this.state.totalPrice + this.state.tax)} </h4>
+            <input type="hidden" name="info[total_price]" value={this.state.totalPrice} />
+          </div>
+          <button type="submit" className="btn btn-primary">Book!</button>
           </li>
         </form>
       )
@@ -429,76 +474,71 @@ var GolfReserveForm = React.createClass({
 // a simple component to show the day's schedule given the golf_club_id and also the date
 // queryDate must be in DD-MM-YYYY format
 var GolfSchedule = React.createClass({
-    propTypes: {
-      crsfToken: React.PropTypes.string,
-      paths: React.PropTypes.object,
-      queryDate: React.PropTypes.string,
-      queryData: React.PropTypes.object,
-      club: React.PropTypes.object,
-      flights: React.PropTypes.array,
-      options: React.PropTypes.object
-    },
-    getDefaultProps: function(){
+  propTypes: {
+    crsfToken: React.PropTypes.string,
+    paths: React.PropTypes.object,
+    queryDate: React.PropTypes.string,
+    queryData: React.PropTypes.object,
+    club: React.PropTypes.object,
+    flights: React.PropTypes.array,
+    options: React.PropTypes.object
+  },
+  getDefaultProps: function(){
+    return {
+        paths: { reserve:"/", golfClub:"/"}, options:golfCardDefaultOptions
+    };
+  },
+  getInitialState: function(){
       return {
-          paths: { reserve:"/", golfClub:"/"}, options:golfCardDefaultOptions
-      };
-    },
-    getInitialState: function(){
-        return {
-          queryDate: this.props.queryDate,
-          queryData: this.props.queryData,
-          flights: this.props.flights
-        }
-    },
-    componentDidMount: function(){
-      var handle = this;
-      $(this.refs.queryDate).datepicker({ minDate:0,
-        onSelect: function(dateText){
-            handle.dateChanged(dateText);
-            return;
-        },
-        dateFormat:'dd/mm/yy'
-      });
-    },
-    dateChanged: function(e){
-      //handle when the date changed
-      //get updated teeTimes
-      var handle = this;
-      $.getJSON(this.props.paths.golfClub, { date:e },  function(data){
-        var newFlights = (data == null) ? [] : data.flights;
-        var newQueryData = handle.state.queryData;
-        newQueryData.date = e;
-        handle.setState({flights:newFlights , queryDate:e, queryData:newQueryData})
-      });
-    },
-    render: function(){
-      /*
-          <GolfReserveForm crsfToken={this.props.crsfToken} club={this.props.club} teeTimes={this.state.teeTimes} prices={this.props.prices}
-            reserveTarget={this.props.path.reserveTarget} flight={this.state.flight}/>
-      */
-      return (
-        <ul className="list-group list-group-flush">
-          <li className="list-group-item">
-            <fieldset className="form-group">
-              <label>I have <select>{
-                  [2,3,4,5,6,7,8].map( (e,i) =>
-                      <option key={i}>{e}</option>
-                  )
-                }
-                </select> balls
-              </label>
-            </fieldset>
-            <fieldset className="form-group">
-              <input type="text" className="datepicker form-control" ref="queryDate" name="dateQuery" value={this.state.queryDate}
-              style={ {zIndex:1000, position:'relative'}} onChange={this.dateChanged }/>
-            </fieldset>
-          </li>
-          <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
-            club={this.props.club} flights={this.state.flights} queryData={this.state.queryData}
-            insurance_modes={this.props.insurance_modes} options={this.props.options }/>
-        </ul>
-      );
-    }
+        queryDate: this.props.queryDate,
+        queryData: this.props.queryData,
+        flights: this.props.flights
+      }
+  },
+  componentDidMount: function(){
+    var handle = this;
+    $(this.refs.queryDate).datepicker({ minDate:0,
+      onSelect: function(dateText){
+          handle.dateChanged(dateText);
+          return;
+      },
+      dateFormat:'dd/mm/yy'
+    });
+  },
+  dateChanged: function(e){
+    //handle when the date changed
+    //get updated teeTimes
+    var handle = this;
+    $.getJSON(this.props.paths.golfClub, { date:e },  function(data){
+      var newFlights = (data == null) ? [] : data.flights;
+      var newQueryData = handle.state.queryData;
+      newQueryData.date = e;
+      handle.setState({flights:newFlights , queryDate:e, queryData:newQueryData})
+    });
+  },
+  render: function(){
+    /*
+        <GolfReserveForm crsfToken={this.props.crsfToken} club={this.props.club} teeTimes={this.state.teeTimes} prices={this.props.prices}
+          reserveTarget={this.props.path.reserveTarget} flight={this.state.flight}/>
+    */
+    return (
+      <ul className="list-group list-group-flush">
+        <li className="list-group-item">
+          <fieldset className="form-group">
+            <label>I have <select>{ [2,3,4,5,6,7,8].map( (e,i) => <option key={i}>{e}</option> ) } </select> balls
+            </label>
+          </fieldset>
+          <fieldset className="form-group">
+            <input type="text" className="datepicker form-control" ref="queryDate" name="dateQuery" value={this.state.queryDate}
+            style={ {zIndex:1000, position:'relative'}} onChange={this.dateChanged }/>
+          </fieldset>
+        </li>
+        <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
+          club={this.props.club} flights={this.state.flights} queryData={this.state.queryData}
+          insurance_modes={this.props.insurance_modes} options={this.props.options }/>
+      </ul>
+    );
+  }
 });
 
 var GolfCards = React.createClass({
