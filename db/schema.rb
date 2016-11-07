@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161025020539) do
+ActiveRecord::Schema.define(version: 20161107033642) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -186,8 +186,8 @@ ActiveRecord::Schema.define(version: 20161025020539) do
     t.integer  "actual_caddy",       limit: 4
     t.integer  "actual_buggy",       limit: 4
     t.integer  "actual_pax",         limit: 4
-    t.datetime "created_at",                                              null: false
-    t.datetime "updated_at",                                              null: false
+    t.datetime "created_at",                                                          null: false
+    t.datetime "updated_at",                                                          null: false
     t.integer  "golf_club_id",       limit: 4
     t.datetime "booking_datetime"
     t.date     "booking_date"
@@ -202,6 +202,7 @@ ActiveRecord::Schema.define(version: 20161025020539) do
     t.integer  "count_insurance",    limit: 4
     t.decimal  "actual_tax",                     precision: 10, scale: 2
     t.integer  "course_listing_id",  limit: 4
+    t.integer  "actual_member",      limit: 4,                            default: 0
   end
 
   add_index "user_reservations", ["charge_schedule_id"], name: "index_user_reservations_on_charge_schedule_id", using: :btree

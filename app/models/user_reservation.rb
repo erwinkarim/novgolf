@@ -36,6 +36,7 @@ class UserReservation < ActiveRecord::Base
 
   def init
     status ||= 0
+    actual_member ||= 0
   end
 
   def validates_booking_datetime
