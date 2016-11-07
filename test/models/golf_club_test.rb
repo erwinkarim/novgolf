@@ -16,7 +16,8 @@ class GolfClubTest < ActiveSupport::TestCase
   should have_many(:photos)
   should have_many(:amenities)
   should have_many(:amenity_lists)
-
+  should have_many(:course_listings)
+  
   should belong_to(:user)
   should belong_to(:tax_schedule)
 

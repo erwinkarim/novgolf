@@ -55,6 +55,24 @@
             %strong URL
             #{ link_to golf_club_path(@golf_club), golf_club_path(@golf_club), { :target => "_blank"} }
   .row
+    %h2 Courses
+    .col-xs-12.col-md-8
+      .card
+        .card-header Courses
+        .card-block
+          %table.table
+            %thead
+              %tr
+                %th ID
+                %th Name
+                %th Status
+            %tbody
+              - @course_listings.each do |course|
+                %tr
+                  %td #{course.id}
+                  %td #{course.name}
+                  %td #{course.course_status.desc}
+  .row
     %h2 Pricing And Scheduling
     .col-xs-12.col-md-8
       .card

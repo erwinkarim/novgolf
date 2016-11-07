@@ -42,4 +42,16 @@ class WelcomeController < ApplicationController
     @clubs = GolfClub.search({:dateTimeQuery => Time.parse("07:00 +0800") + 1.day })
   end
 
+  # GET      /suggest(.:format)
+  def suggest
+    query = params[:q]
+    respond_to do |format|
+      format.json{
+        render json: {
+          query:params[:q],
+          suggestions:GolfClub.where{ upper(name).like "%#{query}%"}.map { |x| {value:x.name, data:x.id}  }
+        }
+      }
+    end
+  end
 end

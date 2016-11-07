@@ -27,7 +27,7 @@
                 .dropdown-menu
                   %a.dropdown-item{ :href => user_reservations_path(current_user)} My Bookings
                   %a.dropdown-item{ :href => user_path(current_user)} My Profile
-                  - if current_user.admin? then
+                  - if current_user.superadmin? || current_user.admin? then
                     -# admin namespace is optimized for large screen. no easy way to go to admin in phone
                     .dropdown-divider.hidden-md-down
                     %a.dropdown-item.hidden-md-down{href:admin_golf_clubs_path } Admin Dashboard

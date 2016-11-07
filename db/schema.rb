@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160926073934) do
+ActiveRecord::Schema.define(version: 20161025020539) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -53,6 +53,24 @@ ActiveRecord::Schema.define(version: 20160926073934) do
 
   add_index "charge_schedules", ["flight_schedule_id"], name: "index_charge_schedules_on_flight_schedule_id", using: :btree
   add_index "charge_schedules", ["golf_club_id"], name: "index_charge_schedules_on_golf_club_id", using: :btree
+
+  create_table "course_listings", force: :cascade do |t|
+    t.integer  "golf_club_id",     limit: 4
+    t.text     "name",             limit: 255
+    t.integer  "course_status_id", limit: 4
+    t.datetime "created_at",                   null: false
+    t.datetime "updated_at",                   null: false
+  end
+
+  add_index "course_listings", ["course_status_id"], name: "index_course_listings_on_course_status_id", using: :btree
+  add_index "course_listings", ["golf_club_id"], name: "index_course_listings_on_golf_club_id", using: :btree
+
+  create_table "course_statuses", force: :cascade do |t|
+    t.text     "desc",       limit: 255
+    t.boolean  "available"
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+  end
 
   create_table "flight_matrices", force: :cascade do |t|
     t.integer  "flight_schedule_id", limit: 4
@@ -183,9 +201,11 @@ ActiveRecord::Schema.define(version: 20160926073934) do
     t.integer  "count_pax",          limit: 4
     t.integer  "count_insurance",    limit: 4
     t.decimal  "actual_tax",                     precision: 10, scale: 2
+    t.integer  "course_listing_id",  limit: 4
   end
 
   add_index "user_reservations", ["charge_schedule_id"], name: "index_user_reservations_on_charge_schedule_id", using: :btree
+  add_index "user_reservations", ["course_listing_id"], name: "index_user_reservations_on_course_listing_id", using: :btree
   add_index "user_reservations", ["flight_matrix_id"], name: "index_user_reservations_on_flight_matrix_id", using: :btree
   add_index "user_reservations", ["golf_club_id"], name: "index_user_reservations_on_golf_club_id", using: :btree
   add_index "user_reservations", ["user_id"], name: "index_user_reservations_on_user_id", using: :btree
@@ -225,6 +245,8 @@ ActiveRecord::Schema.define(version: 20160926073934) do
   add_foreign_key "amenity_lists", "golf_clubs"
   add_foreign_key "charge_schedules", "flight_schedules"
   add_foreign_key "charge_schedules", "golf_clubs"
+  add_foreign_key "course_listings", "course_statuses"
+  add_foreign_key "course_listings", "golf_clubs"
   add_foreign_key "flight_matrices", "flight_schedules"
   add_foreign_key "flight_schedules", "golf_clubs"
   add_foreign_key "golf_clubs", "tax_schedules"
@@ -235,6 +257,7 @@ ActiveRecord::Schema.define(version: 20160926073934) do
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"
   add_foreign_key "user_reservations", "charge_schedules"
+  add_foreign_key "user_reservations", "course_listings"
   add_foreign_key "user_reservations", "flight_matrices"
   add_foreign_key "user_reservations", "golf_clubs"
   add_foreign_key "user_reservations", "users"

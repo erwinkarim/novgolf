@@ -10,8 +10,9 @@
         %li.active.breadcrumb-item Edit
   .row
     = react_component( "GolfClubForm", { form:{ crsfToken:form_authenticity_token, action_path:admin_golf_club_path(params[:id]), method:'patch'},
-      club:@golf_club.attributes.merge({ open_hour:@golf_club.open_hour.strftime("%H:%M"), close_hour:@golf_club.close_hour.strftime("%H:%M"), tax_schedule:@golf_club.tax_schedule}),
+      club:@golf_club_attributes,
       flightSchedules:@flight_schedules,
       amenities:@golf_club.amenity_listings,
       flightDummy:@dummy, insurance_modes:ChargeSchedule.insurance_modes.map{ |k,v| k } ,
+      dummy_data:@dummy_data,
       paths: {tax_schedule_path:admin_golf_club_tax_schedule_path(@golf_club)} })

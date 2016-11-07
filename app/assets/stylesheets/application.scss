@@ -34,6 +34,21 @@
   font-family: "source sans pro";
   src: url('/fonts/source-sans-pro.otf') format('opentype');
 }
+@font-face {
+  font-family: "source sans pro";
+  src: url('/fonts/source-sans-pro-bold.otf') format('opentype');
+  font-weight: bold;
+}
+@font-face {
+  font-family: "source sans pro";
+  src: url('/fonts/source-sans-pro-it.otf') format('opentype');
+  font-style: italic;
+}
+@font-face {
+  font-family: "source sans pro";
+  src: url('/fonts/source-sans-pro-boldit.otf') format('opentype');
+  font-weight: bold; font-style: italic;
+}
 
 body{
   #font-family: "San Francisco", "Myriad Set Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
@@ -43,12 +58,16 @@ body{
 
 .card-columns {
   @include media-breakpoint-only(sm){
-      column-count: 1;
+    column-count: 1;
   }
   @include media-breakpoint-up(md) {
     column-count: 2;
   }
 }
+
+// handle cases where tab-content are inside card-columns
+.card-columns .card .tab-content > .tab-pane{ display:none; }
+.card-columns .card .tab-content > .active { display:block; }
 
 .card-columns-original{
   @include media-breakpoint-only(sm){
@@ -78,6 +97,11 @@ body{
 
 .font-special{
     font-family: quicksand, sans-serif;
+}
+
+.toggle-style{
+    background-image: none;
+    border: none;
 }
 
 .text-reader{
@@ -176,3 +200,11 @@ body{
 .grid-item--height2 { height: 200px; }
 .grid-item--height3 { height: 260px; }
 .grid-item--height4 { height: 360px; }
+
+/* for autocomplete suggestion */
+.autocomplete-suggestions { border: 1px solid #999; background: #FFF; overflow: auto; }
+.autocomplete-suggestion { padding: 2px 5px; white-space: nowrap; overflow: hidden; }
+.autocomplete-selected { background: #F0F0F0; }
+.autocomplete-suggestions strong { font-weight: normal; color: #3399FF; }
+.autocomplete-group { padding: 2px 5px; }
+.autocomplete-group strong { display: block; border-bottom: 1px solid #000; }

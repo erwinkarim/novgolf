@@ -12,10 +12,18 @@ class Admin::GolfClubsController < ApplicationController
     #ensure that you can actually view this
     @golf_club = GolfClub.find(params[:id])
 
+    @course_listings = @golf_club.course_listings
+
     if current_user.id == @golf_club.user_id then
       respond_to do |format|
         format.html
-        format.json
+        format.json {
+          date = params.has_key?(:date) ? Date.parse(params[:date]) : Date.today + 1.day
+          result = GolfClub.search({ dateTimeQuery:Time.parse("#{date} 14:00 +0000"), spread:9.hours, club_id:params[:id],
+            loadCourseData:true, adminMode:true}).first
+          result = result.nil? ? {:club => [], :flights => [], :queryData => []} : result
+          render json:result
+        }
       end
     else
       render :file => "public/401.html", :code => :unauthorized
@@ -94,6 +102,15 @@ class Admin::GolfClubsController < ApplicationController
         }
       )
     end
+    @dummy_data = {course_listing:CourseListing.new.attributes.merge({golf_club_id:@golf_club.id}), course_status:CourseStatus.all}
+
+    @golf_club_attributes = @golf_club.attributes.merge(
+      { open_hour:@golf_club.open_hour.strftime("%H:%M"), close_hour:@golf_club.close_hour.strftime("%H:%M"), tax_schedule:@golf_club.tax_schedule}
+    )
+    @golf_club_attributes = @golf_club.course_listings.empty? ?
+      @golf_club_attributes.merge({course_listings:[@dummy_data[:course_listing]]}) :
+      @golf_club_attributes.merge( { course_listings: @golf_club.course_listings} )
+
     @dummy = (FlightSchedule.new.attributes.merge("charge_schedule" => ChargeSchedule.new.attributes)).
       merge("flight_matrices" => [FlightMatrix.new.attributes.merge("tee_time" => "7:00am")])
   end
@@ -111,6 +128,7 @@ class Admin::GolfClubsController < ApplicationController
     # find the golf club
     # create a transaction
     # update the club
+    # => update the course listings
     # =>  update the flight schedules
     #   => update the charge schedule associated with the flight schedules
     #   => update the flight matrices assocaited with the flight scheduleso
@@ -119,6 +137,9 @@ class Admin::GolfClubsController < ApplicationController
 
     gc.transaction do
       gc.update_attributes(golf_club_params)
+
+      # course listings
+      gc.setCourseListing(params[:courses])
 
       # flight schedules
       gc.setFlightSchedule(params[:flight])

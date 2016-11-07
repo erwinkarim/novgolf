@@ -26,6 +26,7 @@ Rails.application.routes.draw do
     get 'reset'
     get 'session_data'
     get 'tab_test'
+    get 'suggest'
   end
 
   #to manage golf clubs
@@ -42,8 +43,8 @@ Rails.application.routes.draw do
       #this is for MVP + 1
       #resources :charge_schedules, :only => [:index]
     end
-    resources :user_reservations, :only => [:create, :show, :index] do
-
+    resources :user_reservations, :only => [:create, :show, :destroy, :update], constraints: {format:'json'} do
+      post 'confirm'
     end
   end
 
