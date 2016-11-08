@@ -17,7 +17,7 @@ var QueryForm = React.createClass({
   },
   componentDidMount: function(){
     $(this.refs.queryDate).datepicker({ minDate:0, dateFormat:'dd/mm/yy' });
-    $(this.refs.queryTime).timepicker({ disableTextInput:'true', minTime:'6:00am', maxTime:'11:00pm', timeFormat:'H:i'});
+    $(this.refs.queryTime).timepicker({ disableTextInput:'true', minTime:'6:00am', maxTime:'7:00pm', timeFormat:'H:i'});
 
     var countries = [
       { value: 'Andorra', data: 'AD' },
@@ -98,7 +98,7 @@ var QueryForm = React.createClass({
                 <div className="card">
                   <div className="card-block">
                     I have <select name="pax" className="form-control" defaultValue={this.props.queryPax}>{ [2,3,4,5,6,7,8].map( (e,i) =>
-                      <option key={i}>{e}</option>)}</select> balls in my flight(s)
+                      <option key={i}>{e}</option>)}</select> balls in my game(s)
                   </div>
                 </div>
               </div>
