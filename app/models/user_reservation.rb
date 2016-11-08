@@ -9,6 +9,7 @@ class UserReservation < ActiveRecord::Base
   belongs_to :course_listing
 
   has_one :review, as: :topic
+  has_many :ur_member_details
 
   #each club id should have a unique booking date and time
   #  and unique course #
@@ -22,7 +23,7 @@ class UserReservation < ActiveRecord::Base
   #need to check when this feature is available
   validates_presence_of :user_id, :flight_matrix_id
   validates_presence_of :actual_pax, :actual_buggy, :actual_caddy, :actual_insurance, :actual_tax
-  validates_presence_of :count_pax, :count_buggy, :count_caddy, :count_insurance
+  validates_presence_of :count_pax, :count_buggy, :count_caddy, :count_insurance, :count_member
   validates_presence_of :booking_date, :booking_time, :course_listing_id
   validates_presence_of :status
   validate :validates_booking_datetime, on: :create
@@ -36,7 +37,7 @@ class UserReservation < ActiveRecord::Base
 
   def init
     status ||= 0
-    actual_member ||= 0
+    count_member ||= 0
   end
 
   def validates_booking_datetime
@@ -103,7 +104,7 @@ class UserReservation < ActiveRecord::Base
     cs = ChargeSchedule.where(:flight_schedule_id => fm.flight_schedule_id ).first
     club = GolfClub.find(cs.golf_club_id)
     club_id = cs.golf_club_id
-    booking_date_clause = Date.parse(booked_date).strftime("%Y-%m-%d")
+    booking_date_clause = booked_date.class == String ? (Date.parse(booked_date).strftime("%Y-%m-%d")) : booked_date.strftime("%Y-%m-%d")
     booking_time_clause = fm.tee_time
 
     # create the new user_reservation, with the correct flight_info and cost calculation
@@ -115,6 +116,7 @@ class UserReservation < ActiveRecord::Base
         user_id:user_id, golf_club_id: cs.golf_club_id, flight_matrix_id:fm.id,
         booking_date: booking_date_clause, booking_time: booking_time_clause,
         count_pax:flight_info[:pax], count_caddy:flight_info[:caddy], count_buggy: flight_info[:buggy] , count_insurance:flight_info[:insurance],
+          count_member:flight_info[:member],
         actual_pax:flight_info[:pax].to_i * cs.session_price, actual_caddy: flight_info[:caddy].to_i * cs.caddy,
           actual_buggy:flight_info[:buggy].to_i * cs.cart, actual_insurance: flight_info[:insurance].to_i * cs.insurance,
           actual_tax: taxation,

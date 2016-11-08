@@ -29,8 +29,10 @@ class UserReservationsController < ApplicationController
   #handle cases where some of the reservations did not go throught
   #POST /golf_clubs/:golf_club_id/user_reservations/processing
   def processing
+    session[:members] = params[:members]
+
     # need to check all members ids + name has been fullfilled, otherwise go black
-    params[:members].each_pair do |k,v|
+    session[:members].each_pair do |k,v|
       if v[:name].empty? || v[:id].empty? then
         #keep members info as session variables
         session[:members] = params[:members]
@@ -58,6 +60,15 @@ class UserReservationsController < ApplicationController
           ur.reservation_created!
           ur.payment_attempted!
           session[:reservation_ids] << ur.id
+
+          #generate the appropiate member id/name to be linked with this
+          if ur.count_member > 0 then
+            session[:members].each_pair do |k,v|
+              Rails.logger.info "v is #{v}"
+              ur_member_detail = UrMemberDetail.new(name:v[:name], member_id:v[:id], user_reservation_id:ur.id)
+              ur_member_detail.save!
+            end
+          end
         else
           ur.reservation_failed!
         end
@@ -80,6 +91,12 @@ class UserReservationsController < ApplicationController
       @reservations = UserReservation.find(session[:reservation_ids])
       @reservations.each do |reservation|
         reservation.payment_confirmed!
+
+        #destroy the sessions that is not being used anymore
+        session.delete(:members)
+        session.delete(:info)
+        session.delete(:flight)
+        session.delete(:golf_club_id)
 
         #send out review in the future
         UserReservationMailer.request_review(reservation).deliver_later(wait_until: reservation.booking_datetime + 12.hours)

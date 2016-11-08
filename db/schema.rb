@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161107033642) do
+ActiveRecord::Schema.define(version: 20161108060649) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -180,6 +180,16 @@ ActiveRecord::Schema.define(version: 20161107033642) do
     t.datetime "updated_at",                                     null: false
   end
 
+  create_table "ur_member_details", force: :cascade do |t|
+    t.string   "name",                limit: 255
+    t.string   "member_id",           limit: 255
+    t.integer  "user_reservation_id", limit: 4
+    t.datetime "created_at",                      null: false
+    t.datetime "updated_at",                      null: false
+  end
+
+  add_index "ur_member_details", ["user_reservation_id"], name: "index_ur_member_details_on_user_reservation_id", using: :btree
+
   create_table "user_reservations", force: :cascade do |t|
     t.integer  "user_id",            limit: 4
     t.integer  "charge_schedule_id", limit: 4
@@ -202,7 +212,7 @@ ActiveRecord::Schema.define(version: 20161107033642) do
     t.integer  "count_insurance",    limit: 4
     t.decimal  "actual_tax",                     precision: 10, scale: 2
     t.integer  "course_listing_id",  limit: 4
-    t.integer  "actual_member",      limit: 4,                            default: 0
+    t.integer  "count_member",       limit: 4,                            default: 0
   end
 
   add_index "user_reservations", ["charge_schedule_id"], name: "index_user_reservations_on_charge_schedule_id", using: :btree
@@ -257,6 +267,7 @@ ActiveRecord::Schema.define(version: 20161107033642) do
   add_foreign_key "line_items", "users"
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"
+  add_foreign_key "ur_member_details", "user_reservations"
   add_foreign_key "user_reservations", "charge_schedules"
   add_foreign_key "user_reservations", "course_listings"
   add_foreign_key "user_reservations", "flight_matrices"

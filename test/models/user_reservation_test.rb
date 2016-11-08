@@ -10,6 +10,7 @@ class UserReservationTest < ActiveSupport::TestCase
   should validate_presence_of(:count_caddy)
   should validate_presence_of(:count_buggy)
   should validate_presence_of(:count_insurance)
+  should validate_presence_of(:count_member)
   should validate_presence_of(:booking_date)
   should validate_presence_of(:booking_time)
   should validate_presence_of(:course_listing_id)
