@@ -54,6 +54,7 @@ Rails.application.routes.draw do
     resources :user_reservations, :only => [:index] do
       collection do
         post 'reserve'
+        get 'reserve'
         post 'processing'
         post 'confirmation'
         get 'failure'
