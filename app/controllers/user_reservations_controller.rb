@@ -14,6 +14,9 @@ class UserReservationsController < ApplicationController
     session[:info] = params[:info]
     session[:teeTimes] = params[:teeTimes]
     session[:golf_club_id] = params[:golf_club_id]
+
+    #delete members keys
+    session.delete(:members)
   end
 
   # POST /golf_clubs/:golf_club_id/user_reservations/processing
@@ -21,14 +24,14 @@ class UserReservationsController < ApplicationController
     session[:members] = params[:members]
 
     # need to check all members ids + name has been fullfilled, otherwise go black
-    session[:members].each_pair do |k,v|
-      if v[:name].empty? || v[:id].empty? then
-        #keep members info as session variables
-        session[:members] = params[:members]
-        flash[:error] = "Some Members Id/Name is incomplete"
-        redirect_to reserve_golf_club_user_reservations_path(session[:golf_club_id],
-          {info:session[:info], flight:session[:flight], teeTimes:params[:teeTimes]})
-        return
+    session[:members].each_pair do |k,members_for_flight|
+      members_for_flight.each_pair do |k_flight, member|
+        if member[:name].empty? || member[:id].empty? then
+          flash[:error] = "Some Members Id/Name is incomplete"
+          redirect_to reserve_golf_club_user_reservations_path(session[:golf_club_id],
+            {info:session[:info], flight:session[:flight], teeTimes:params[:teeTimes]})
+          return
+        end
       end
     end
 
@@ -52,9 +55,9 @@ class UserReservationsController < ApplicationController
 
           #generate the appropiate member id/name to be linked with this
           if ur.count_member > 0 then
-            session[:members].each_pair do |k,v|
-              Rails.logger.info "v is #{v}"
-              ur_member_detail = UrMemberDetail.new(name:v[:name], member_id:v[:id], user_reservation_id:ur.id)
+            session[:members][k].each_pair do |flight_key,member|
+              Rails.logger.info "member is #{member}"
+              ur_member_detail = UrMemberDetail.new(name:member[:name], member_id:member[:id], user_reservation_id:ur.id)
               ur_member_detail.save!
             end
           end
