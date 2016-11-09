@@ -63,7 +63,7 @@ var GolfClubDashboard = React.createClass({
       flightsArray:[], dashBoardStatusText:null,
       days: this.updateDays(today), queryDate:queryDate,
       loadFlight: false, selectedArray:null, selectedFlight:null, selectedCourse:null,
-      flightInfo:{pax:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00},
+      flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00},
       tick:60
     }
   },
@@ -125,6 +125,10 @@ var GolfClubDashboard = React.createClass({
     var newFlightInfo = this.state.flightInfo;
     var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
 
+    newFlightInfo = flightFunctions.updateCount(e, newFlightInfo, flight);
+    newFlightInfo = this.updatePrice(newFlightInfo, flight);
+
+    /*
     newFlightInfo[e.target.dataset.target] = e.target.value;
 
     //update the insurance count automatically if insurance mode is madatory
@@ -132,7 +136,7 @@ var GolfClubDashboard = React.createClass({
       (e.target.dataset.target == 'pax') ){
         newFlightInfo.insurance = parseInt(e.target.value);
     }
-    newFlightInfo = this.updatePrice(newFlightInfo, flight);
+    */
 
     this.setState({flightInfo:newFlightInfo});
   },
@@ -180,7 +184,7 @@ var GolfClubDashboard = React.createClass({
 
     var flight = this.state.flightsArray[e.target.dataset.arrayindex][e.target.dataset.value];
     //todo: need to handle cases where the flight has already been reserved
-    var newFlightInfo = {pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, tax:0.00, totalPrice:0.00};
+    var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, tax:0.00, totalPrice:0.00};
     newFlightInfo = this.updatePrice(newFlightInfo, flight);
 
     //load the user_reservation_id for the first course

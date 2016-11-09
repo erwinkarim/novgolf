@@ -1,14 +1,7 @@
 class UserReservationsController < ApplicationController
   before_action :authenticate_user!
 
-  #sample params
-  #   Parameters: {
-  #   "authenticity_token"=>"EW9cJY07AH52Gwe4H9YHsHOO6op06Ohy0d0IO07Lni+gTI2/Riyock0XifYq2urjdPfaFvB6TUolnpwxN//g2g==",
-  #   "club"=>{"id"=>"2"},
-  #   "info"=>{"date"=>"04/11/2016", "total_price"=>"3362"},
-  #   "teeTimes"=>["06:41", "06:49"],
-  #   "flight"=>{"c10615"=>{"matrix_id"=>"52", "tee_time"=>"06:41", "count"=>{"pax"=>"3", "buggy"=>"1", "caddy"=>"1", "insurance"=>"3"},
-  #          "price"=>{"pax"=>"1260", "cart"=>"48", "caddy"=>"37", "insurance"=>"108"} }, .... }
+  # POST/GET     /golf_clubs/:golf_club_id/user_reservations/reserve(.:format)
   def reserve
     @club = GolfClub.find(params[:golf_club_id])
 
@@ -21,13 +14,9 @@ class UserReservationsController < ApplicationController
     session[:info] = params[:info]
     session[:teeTimes] = params[:teeTimes]
     session[:golf_club_id] = params[:golf_club_id]
-
-
-    #Rails.logger.info "the session flight is is #{session[:flight]  }"
   end
 
-  #handle cases where some of the reservations did not go throught
-  #POST /golf_clubs/:golf_club_id/user_reservations/processing
+  # POST /golf_clubs/:golf_club_id/user_reservations/processing
   def processing
     session[:members] = params[:members]
 

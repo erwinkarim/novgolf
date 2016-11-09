@@ -3,6 +3,83 @@ var golfCardDefaultOptions = {
     displayCourseGroup:false
 };
 
+/*
+  get the e, the trigger, flightInfo (current state of choose flight) and flight (flight min and max) and update the counts appropiately
+  * e must have dataset values {target: info that will be changed, value: the new value}
+  * will update the member + pax count to be between flight.minPax and flight.maxPax
+  * will update the insurnace count to member + pax if the insurance is inclusive
+  * return the updated flightInfo
+*/
+class flightFunctions {
+  static updateCount(e, flightInfo, flight){
+    /*
+      get the e, the trigger, flightInfo (current state of choose flight) and flight (flight min and max) and update the counts appropiately
+      * e must have dataset values {target: info that will be changed, value: the new value}
+      * will update the member + pax count to be between flight.minPax and flight.maxPax
+      * will update the insurnace count to member + pax if the insurance is inclusive
+      * return the updated flightInfo
+    */
+    flightInfo[e.target.dataset.target] = parseInt(e.target.value);
+
+    if(e.target.dataset.target == "pax" || e.target.dataset.target == "member"){
+      //get the min/max pax
+      var minPax = flight.minPax;
+      var maxPax = flight.maxPax;
+
+      switch (e.target.dataset.target) {
+        case "pax":
+          //if less than min pax, reset ball count to (minPax - member)
+          //if more than max pax, reset member count to be at (maxPax - paxCount)
+          if(flightInfo.member + flightInfo.pax < minPax){
+            flightInfo.pax = minPax - flightInfo.member;
+          }
+          if(flightInfo.member + flightInfo.pax > maxPax){
+            flightInfo.member = maxPax - flightInfo.pax;
+          }
+          break;
+        case "member":
+          //if less than min pax, reset balls to (minpax - member)
+          //if more than max pax, reset balls count to be at (maxPax - member)
+          if(flightInfo.member + flightInfo.pax < minPax){
+            flightInfo.pax = minPax - flightInfo.member;
+          }
+          if(flightInfo.member + flightInfo.pax > maxPax){
+              flightInfo.pax = maxPax - flightInfo.member;
+          }
+        break;
+        default:
+      }
+    }
+
+    //update the insurance count automatically if insurance mode is madatory
+    if(($.inArray(flight.prices.insurance_mode,[1,2]) != -1) &&
+      (e.target.dataset.target == 'pax' || e.target.dataset.target == 'member') ){
+        flightInfo.insurance = flightInfo.member + flightInfo.pax;
+    }
+
+    //return update flightInfo
+    return flightInfo
+
+  }
+  static updateTotals(flightInfos, flights, club){
+    //get the flightInfo totals, returns an object with {total:X, tax:X, grand_total:x}
+    var newTotalPrice = 0;
+    flightInfos.map( (e,i) => {
+      newTotalPrice += (
+        e.pax * parseFloat(flights[e.flightIndex].prices.flight) +
+        e.buggy * parseFloat(flights[e.flightIndex].prices.cart) +
+        e.caddy * parseFloat(flights[e.flightIndex].prices.caddy) +
+        e.insurance * parseFloat(flights[e.flightIndex].prices.insurance)
+      )
+    });
+
+    var newTax = newTotalPrice * club.tax_schedule.rate;
+
+    return {total:newTotalPrice, tax: newTax, grand_total:newTax + newTotalPrice};
+
+  }
+};
+
 var GolfCardTimes = React.createClass({
   propTypes: {btnGroupMode:React.PropTypes.string, arrayIndex:React.PropTypes.number, adminMode:React.PropTypes.bool },
   componentWillReceiveProps: function(nextProps){
@@ -259,6 +336,7 @@ var ReserveFormPage = React.createClass({
           </div>
           <h4>Notes</h4>
           <div dangerouslySetInnerHTML={ this.rawNote()}></div>
+          <p>Number of balls in this flight must between {this.props.flight.minPax} and  {this.props.flight.maxPax}. Club T&C applies</p>
         </div>
       </div>
     )
@@ -304,6 +382,7 @@ var GolfReserveForm = React.createClass({
       })
     };
   },
+  /*
   updateTotalPrice: function(){
       //calculate the new total price
       var newTotalPrice = 0;
@@ -317,58 +396,17 @@ var GolfReserveForm = React.createClass({
       });
       return newTotalPrice;
   },
+  */
   updatePrice: function(e){
-    var handle = $(e.target);
-    //console.log('new value is ', e.target.value  );
-
     var newFlightInfo = this.state.flightInfo;
-    newFlightInfo[handle.data('index')][handle.data('target')] = parseInt(e.target.value);
-    var flightIndex = newFlightInfo[handle.data('index')].flightIndex;
-    var flight = newFlightInfo[e.target.dataset.index];
+    var flightIndex = newFlightInfo[e.target.dataset.index].flightIndex;
+    var flight = flightFunctions.updateCount(e, newFlightInfo[e.target.dataset.index], this.props.flights[flightIndex] );
 
-    //update the members + ball count to be at between min_pax and max_pax values
-    if(e.target.dataset.target == "pax" || e.target.dataset.target == "member"){
-      //get the min/max pax
-      var minPax = this.props.flights[flightIndex].minPax;
-      var maxPax = this.props.flights[flightIndex].maxPax;
+    newFlightInfo[e.target.dataset.index] = flight;
 
-      switch (e.target.dataset.target) {
-        case "pax":
-          //if less than min pax, reset ball count to (minPax - member)
-          //if more than max pax, reset member count to be at (maxPax - paxCount)
-          if(flight.member + flight.pax < minPax){
-              flight.pax = minPax - flight.member;
-          }
-          if(flight.member + flight.pax > maxPax){
-              flight.member = maxPax - flight.pax;
-          }
-          break;
-        case "member":
-          //if less than min pax, reset balls to (minpax - member)
-          //if more than max pax, reset balls count to be at (maxPax - member)
-          if(flight.member + flight.pax < minPax){
-              flight.pax = minPax - flight.member;
-          }
-          if(flight.member + flight.pax > maxPax){
-              flight.pax = maxPax - flight.member;
-          }
-        break;
-        default:
-      }
-    }
+    var totals = flightFunctions.updateTotals(newFlightInfo, this.props.flights, this.props.club);
 
-    //update the insurance count automatically if insurance mode is madatory
-    if(($.inArray(this.props.flights[flightIndex].prices.insurance_mode,[1,2]) != -1) &&
-      (handle.data('target') == 'pax') ){
-        newFlightInfo[handle.data('index')]['insurance'] = parseInt(e.target.value);
-    }
-
-    var newTotalPrice = this.updateTotalPrice();
-    var newTax = (newTotalPrice * this.props.club.tax_schedule.rate);
-
-    this.setState({flightInfo:newFlightInfo, totalPrice:newTotalPrice, tax:newTax});
-
-
+    this.setState({flightInfo:newFlightInfo, totalPrice:totals.total, tax:totals.tax});
   },
   handleClick: function(e){
     if(e.target.className.match(/disabled/) != null){
@@ -410,9 +448,12 @@ var GolfReserveForm = React.createClass({
       newFlightInfo.map( (e,i) => Object.assign(e, {index:i}));
 
       this.setState({selectedTeeTimes:newTeeTimes, selectedTeeTimesIndex:newIndex, flightInfo:newFlightInfo});
+      /*
       var newTotalPrice = this.updateTotalPrice();
       var newTax = (newTotalPrice * this.props.club.tax_schedule.rate);
-      this.setState({totalPrice:newTotalPrice, tax:newTax});
+      */
+      var totals = flightFunctions.updateTotals(newFlightInfo, this.props.flights, this.props.club)
+      this.setState({totalPrice:totals.total, tax:totals.tax});
 
     }
   },
