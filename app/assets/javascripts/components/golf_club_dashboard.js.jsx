@@ -21,7 +21,8 @@ var GolfClubDashStatus = React.createClass({
       flightInfo = (
         <div>
           <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
-            selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse} />
+            selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
+            updateMembersList={this.props.updateMembersList} />
           <h4>Tax: {toCurrency(parseFloat(this.props.flightInfo.tax))}</h4>
           <h3>Total: {toCurrency(parseFloat(this.props.flightInfo.totalPrice))} </h3>
         </div>
@@ -53,7 +54,7 @@ var GolfClubDashboard = React.createClass({
       paths:React.PropTypes.object
   },
   getDefaultProps: function(){
-      return { options: {displayCourseGroup:true, GolfClubTimesShowPrices:false}};
+      return { options: {displayCourseGroup:true, GolfClubTimesShowPrices:false, displayMembersModal:true}};
   },
   getInitialState: function(){
     var today = new Date();
@@ -103,8 +104,8 @@ var GolfClubDashboard = React.createClass({
         //update flight info from data in user_reservations
         var reserve = data.user_reservation;
         var newFlightInfo = Object.assign(currentFlightInfo,
-          {pax:reserve.count_pax, buggy:reserve.count_buggy, caddy:reserve.count_caddy,
-            insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price});
+          {pax:reserve.count_pax, member:reserve.count_member, buggy:reserve.count_buggy, caddy:reserve.count_caddy,
+            insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price, members:reserve.ur_member_details});
         handle.setState({flightInfo:newFlightInfo});
       });
     }
@@ -184,7 +185,7 @@ var GolfClubDashboard = React.createClass({
 
     var flight = this.state.flightsArray[e.target.dataset.arrayindex][e.target.dataset.value];
     //todo: need to handle cases where the flight has already been reserved
-    var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, tax:0.00, totalPrice:0.00};
+    var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, members:[], tax:0.00, totalPrice:0.00};
     newFlightInfo = this.updatePrice(newFlightInfo, flight);
 
     //load the user_reservation_id for the first course
@@ -200,6 +201,9 @@ var GolfClubDashboard = React.createClass({
       selectedArray:parseInt(e.target.dataset.arrayindex), selectedFlight: parseInt(e.target.dataset.value), selectedCourse:0, loadFlight:true,
       flightInfo:newFlightInfo
     });
+  },
+  updateMembersList: function(e){
+    console.log("update members list", e);
   },
   reservationUpdate: function(e){
     var handle = this;
@@ -246,11 +250,16 @@ var GolfClubDashboard = React.createClass({
     var handle = this;
     var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
 
+    //sanity check. ensure that members + id field are populated before updating it
+    if(Math.max(...this.state.flightInfo.members.map( (member, i) => { return member.name == "" || member.id == "" })) ){
+      $.snackbar({content:'Some ID/Members is not populated'});
+      return;
+    };
+
     $.ajax(this.props.paths.user_reservations, {
       data: {
         golf_club_id:this.props.club.id, booking_date:this.state.days[this.state.selectedArray], booking_time:flight.tee_time,
-        flight_matrix_id:flight.matrix_id,
-        flight_info:this.state.flightInfo
+        flight_matrix_id:flight.matrix_id, flight_info:this.state.flightInfo
       },
       dataType:'json',
       method:'POST',
@@ -324,6 +333,7 @@ var GolfClubDashboard = React.createClass({
             days={this.state.days} updatePax={this.updatePax} flightInfo={this.state.flightInfo} options={this.props.options}
             reservationUpdate={this.reservationUpdate} reservationCancel={this.reservationCancel} reservationNew={this.reservationNew}
             reservationConfirm={this.reservationConfirm}
+            updateMembersList={this.updateMembersList}
             />
         </div>
       </div>

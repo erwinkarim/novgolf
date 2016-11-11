@@ -6,7 +6,8 @@ class Admin::UserReservationsController < ApplicationController
     user_reservation = UserReservation.find(params[:id])
 
     if user_reservation.golf_club.user == current_user then
-      render json: { :user_reservation => user_reservation.attributes.merge({total_price:user_reservation.total_price}) }
+      render json: { :user_reservation => user_reservation.attributes.merge({total_price:user_reservation.total_price,
+        ur_member_details:user_reservation.ur_member_details.to_a}) }
     else
       render :file => "public/404", status: :unauthorized
     end
@@ -18,7 +19,22 @@ class Admin::UserReservationsController < ApplicationController
   #    "flight_info"=>{"pax"=>"2", "buggy"=>"1", "caddy"=>"1", "insurance"=>"0", "tax"=>"37.8", "totalPrice"=>"667.8"}}
   def create
     #get the charge schedule based on flight_matrix_id
-    ur = UserReservation.create_reservation params[:flight_matrix_id], current_user.id, params[:booking_date], params[:flight_info]
+
+    flight_info = params[:flight_info]
+    #check the members list to ensure that they are sane
+    if flight_info["members"].inject(false){|p,v| p || (v["name"].empty? || v["id"].empty?)} then
+      render json: {message:'Failed to create a reservation'}, status: :unprocessable_entity
+      return
+    end
+
+    UserReservation.transaction do
+      #create the reservation
+      ur = UserReservation.create_reservation params[:flight_matrix_id], current_user.id, params[:booking_date], params[:flight_info]
+      flight_info["members"].each do | member |
+        ur_member_details = UrMemberDetails.create({name:member["name"], member_id:member["id"], user_reservation_id:ur.id})
+      end
+    end
+
     if ur.valid? then
       ur.payment_attempted!
       render json: {message:"Reservation #{ur.id} created"}, status: :ok

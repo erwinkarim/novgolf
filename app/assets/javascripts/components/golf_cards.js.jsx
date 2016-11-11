@@ -49,6 +49,14 @@ class flightFunctions {
         break;
         default:
       }
+
+      //push empty members data if members.length > member
+      if('members' in flightInfo && flightInfo.member > flightInfo.members.length){
+        console.log("pushing dummy into members");
+        for(var n of arrayFromRange(flightInfo.members.length + 1, flightInfo.member)){
+          flightInfo.members.push({name:'', id:''});
+        };
+      };
     }
 
     //update the insurance count automatically if insurance mode is madatory
@@ -237,14 +245,60 @@ var ReserveFormPage = React.createClass({
     return { __html: md.render(this.props.flight.prices.note) };
   },
   render: function(){
+    console.log("render ReserveFormPage");
+
     var activeClass = (this.props.isActive) ? "active" : "";
     var golfCourses = (this.props.options.displayCourseGroup) ? (
       <div className="card-block">
         <GolfCoursesGroup flight={this.props.flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}/>
       </div>
     ) : null;
+
+    var membersLink = (this.props.options.displayMembersModal) ? (
+      <a href="#membersModal" data-toggle="modal"> x Members </a>
+    ) : " x Members";
+
+    var membersModal = (this.props.options.displayMembersModal) ? (
+      <div id="membersModal" className="modal fade">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <button type="button" className="close" data-dismiss="modal">&times;</button>
+              <h4 className="modal-title">Members List</h4>
+            </div>
+            <div className="modal-body">
+              <div className="container-fluid">
+                { this.props.flightInfo.members.map( (e,i) =>
+                  <div className="form-group row">
+                    <div className="col-sm-5">
+                      <input type="text" className="form-control"/>
+                    </div>
+                    <div className="col-sm-5">
+                      <input type="text" className="form-control"/>
+                    </div>
+                    <div className="col-sm-2">
+                      <button className="btn btn-danger"><i className="fa fa-minus"></i></button>
+                    </div>
+                  </div>
+                )}
+                <div className="form-group row">
+                  <div className="col-sm-12">
+                    <button className="btn btn-primary"><i className="fa fa-plus"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : null;
+
     return (
       <div className={`tab-pane card ${activeClass}`} id={`flight-tab-${this.props.flightInfo.id}`} >
+        { membersModal }
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][matrix_id]"} value={this.props.flight.matrix_id} />
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][tee_time]"} value={this.props.flightInfo.teeTime} />
         <div className="card-header" style={ {color:'black'}}>{ this.props.flightInfo.teeTime }</div>
@@ -277,7 +331,7 @@ var ReserveFormPage = React.createClass({
                 <option key={i}>{e}</option>
               )}</select>
             </div>
-            <label className="col-xs-5"> x Members </label>
+            <label className="col-xs-5">{ membersLink }</label>
             <label className="col-xs-5">RM 0.00 </label>
             <input type="hidden" value="0" name={"flight[" + this.props.flightInfo.id + "][price][member]"} />
           </div>
