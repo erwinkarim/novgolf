@@ -51,10 +51,11 @@ var GolfClubDashboard = React.createClass({
   propTypes: {
       club:React.PropTypes.object,
       token:React.PropTypes.string,
-      paths:React.PropTypes.object
+      paths:React.PropTypes.object,
+      refreshEvery:React.PropTypes.number
   },
   getDefaultProps: function(){
-      return { options: {displayCourseGroup:true, GolfClubTimesShowPrices:false, displayMembersModal:true}};
+      return { options: {displayCourseGroup:true, GolfClubTimesShowPrices:false, displayMembersModal:true}, refreshEvery:60};
   },
   getInitialState: function(){
     var today = new Date();
@@ -64,18 +65,13 @@ var GolfClubDashboard = React.createClass({
       flightsArray:[], dashBoardStatusText:null,
       days: this.updateDays(today), queryDate:queryDate,
       loadFlight: false, selectedArray:null, selectedFlight:null, selectedCourse:null,
-      flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00},
-      tick:60
+      flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00}
     }
   },
   tick: function(){
-    //reload the schedule every 60-90 seconds
-    var newTick = this.state.tick - 1;
-    if(newTick == 0){
-      newTick = 60;
-      this.loadSchedule();
-    };
-    this.setState({tick:newTick});
+    //reload the schedule every 60 seconds
+    //later update to pub-sub
+    this.loadSchedule();
   },
   updateDays: function(newDate){
     //new Date must be type Date
@@ -148,7 +144,8 @@ var GolfClubDashboard = React.createClass({
     if (e.target.dataset.reservationId == null){
       //if there's no reservation ID, update flightInfo to default values
       var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
-      var newFlightInfo = {pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, tax:0.00, totalPrice:0.00};
+      var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0,
+        tax:0.00, totalPrice:0.00, members:[]};
       newFlightInfo = this.updatePrice(newFlightInfo, flight);
       this.setState({flightInfo:newFlightInfo, selectedCourse:parseInt(e.target.dataset.index)});
 
@@ -171,6 +168,8 @@ var GolfClubDashboard = React.createClass({
 
   },
   handleClick: function(e){
+    //happends when i click on a flight time
+
     var handle = this;
     //console.log('button clicked', e.target.dataset);
 
@@ -184,7 +183,6 @@ var GolfClubDashboard = React.createClass({
       + this.state.flightsArray[e.target.dataset.arrayindex][e.target.dataset.value].tee_time;
 
     var flight = this.state.flightsArray[e.target.dataset.arrayindex][e.target.dataset.value];
-    //todo: need to handle cases where the flight has already been reserved
     var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, members:[], tax:0.00, totalPrice:0.00};
     newFlightInfo = this.updatePrice(newFlightInfo, flight);
 
@@ -198,12 +196,45 @@ var GolfClubDashboard = React.createClass({
     //setup the state
     this.setState({
       dashBoardStatusText:newDashText,
-      selectedArray:parseInt(e.target.dataset.arrayindex), selectedFlight: parseInt(e.target.dataset.value), selectedCourse:0, loadFlight:true,
+      selectedArray:parseInt(e.target.dataset.arrayindex),
+      selectedFlight: parseInt(e.target.dataset.value), selectedCourse:0, loadFlight:true,
       flightInfo:newFlightInfo
     });
   },
   updateMembersList: function(e){
-    console.log("update members list", e);
+    var membersArray = $(e).serializeArray();
+
+    console.log("membersArray", membersArray);
+    //need to massage the data into [ {name:, member_id: , id:}, {...}] format
+    //at least it will be in 3s
+
+    var newMemberInfo = [];
+    var inputIndex = 0;
+    var memberInfo = {name:'', member_id:'', id:0};
+
+    membersArray.forEach( function(e){
+      switch (inputIndex) {
+        case 0:
+          inputIndex += 1;
+          memberInfo.name = e.value;
+          break;
+        case 1:
+          inputIndex += 1;
+          memberInfo.member_id = e.value;
+        default:
+          //push into the array and reset
+          newMemberInfo.push( Object.assign({}, memberInfo) ) ;
+          inputIndex = 0;
+      }
+    });
+
+    console.log("newMemberInfo:", newMemberInfo);
+
+    //update the members state
+    var newFlightInfo = this.state.flightInfo;
+    newFlightInfo.members = newMemberInfo;
+    this.setState( {flightInfo:newFlightInfo});
+
   },
   reservationUpdate: function(e){
     var handle = this;
@@ -251,7 +282,9 @@ var GolfClubDashboard = React.createClass({
     var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
 
     //sanity check. ensure that members + id field are populated before updating it
-    if(Math.max(...this.state.flightInfo.members.map( (member, i) => { return member.name == "" || member.id == "" })) ){
+    if(this.state.flightInfo.members.length > 0 &&
+      Math.max(...this.state.flightInfo.members.map( (member, i) => { return member.name == "" || member.member_id == "" }))
+    ){
       $.snackbar({content:'Some ID/Members is not populated'});
       return;
     };
@@ -299,7 +332,7 @@ var GolfClubDashboard = React.createClass({
       altFormat:'mm/dd/yy',
       onClose:function(dateText){ handle.dateChanged(dateText); }
     });
-    this.interval = setInterval(this.tick, 1000);
+    this.interval = setInterval(this.tick, this.props.refreshEvery * 1000);
 
     this.loadSchedule();
   },
@@ -313,7 +346,7 @@ var GolfClubDashboard = React.createClass({
           <p>
             <input className="datepicker form-control" ref="datepicker"
               type="text" defaultValue={this.state.queryDate} style={ {zIndex:100, position:'relative'}}/>
-            Refresh in {this.state.tick} seconds...
+            Updates in {Date(Date.now + this.props.refreshEvery*1000)} ...
           </p>
           { this.state.flightsArray.map( (e,i) => {
             return (

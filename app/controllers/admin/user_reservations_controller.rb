@@ -22,16 +22,22 @@ class Admin::UserReservationsController < ApplicationController
 
     flight_info = params[:flight_info]
     #check the members list to ensure that they are sane
-    if flight_info["members"].inject(false){|p,v| p || (v["name"].empty? || v["id"].empty?)} then
-      render json: {message:'Failed to create a reservation'}, status: :unprocessable_entity
-      return
+    unless params.has_key?(:flight_info) then
+      if flight_info["members"].inject(false){|p,v| p || (v[1]["name"].empty? || v[1]["member_id"].empty?)} then
+        render json: {message:'Failed to create a reservation'}, status: :unprocessable_entity
+        return
+      end
     end
 
+    ur = UserReservation.new
     UserReservation.transaction do
       #create the reservation
       ur = UserReservation.create_reservation params[:flight_matrix_id], current_user.id, params[:booking_date], params[:flight_info]
-      flight_info["members"].each do | member |
-        ur_member_details = UrMemberDetails.create({name:member["name"], member_id:member["id"], user_reservation_id:ur.id})
+      unless params.has_key?(:flight_info) then
+        flight_info["members"].each_pair do |index, member|
+          ur_member_details = UrMemberDetail.new({name:member["name"], member_id:member["id"], user_reservation_id:ur.id})
+          ur_member_details.save!
+        end
       end
     end
 

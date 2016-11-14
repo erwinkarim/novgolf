@@ -44,18 +44,24 @@ class flightFunctions {
             flightInfo.pax = minPax - flightInfo.member;
           }
           if(flightInfo.member + flightInfo.pax > maxPax){
-              flightInfo.pax = maxPax - flightInfo.member;
+            flightInfo.pax = maxPax - flightInfo.member;
           }
         break;
         default:
       }
 
-      //push empty members data if members.length > member
+      //push empty members data if members.length < member
       if('members' in flightInfo && flightInfo.member > flightInfo.members.length){
         console.log("pushing dummy into members");
         for(var n of arrayFromRange(flightInfo.members.length + 1, flightInfo.member)){
           flightInfo.members.push({name:'', id:''});
         };
+      };
+
+      //delete members data if members.length > member
+      if('members' in flightInfo && flightInfo.member < flightInfo.members.length){
+        var amount_deleted = flightInfo.members.length - flightInfo.member;
+        flightInfo.members.splice(flightInfo.members.length - amount_deleted, amount_deleted);
       };
     }
 
@@ -244,9 +250,15 @@ var ReserveFormPage = React.createClass({
     //return null;
     return { __html: md.render(this.props.flight.prices.note) };
   },
+  componentDidMount: function(){
+    var handle = this;
+    if(this.props.options.displayMembersModal){
+      $('#membersModal').on('hide.bs.modal', function(){
+        handle.props.updateMembersList(handle.refs.memberBody);
+      });
+    };
+  },
   render: function(){
-    console.log("render ReserveFormPage");
-
     var activeClass = (this.props.isActive) ? "active" : "";
     var golfCourses = (this.props.options.displayCourseGroup) ? (
       <div className="card-block">
@@ -267,29 +279,48 @@ var ReserveFormPage = React.createClass({
               <h4 className="modal-title">Members List</h4>
             </div>
             <div className="modal-body">
-              <div className="container-fluid">
-                { this.props.flightInfo.members.map( (e,i) =>
-                  <div className="form-group row">
-                    <div className="col-sm-5">
-                      <input type="text" className="form-control"/>
+              <form action="/" className="container-fluid" ref="memberBody">
+                { this.props.flightInfo.members.map( (e,i) => {
+                  var random_id = randomID();
+                  return (
+                    <div key={i} ref="memberInfo" className="form-group row">
+                      <input type="hidden"  name={`members[${random_id}][id]`} defaultValue={this.props.flightInfo.members[i].id} />
+                      <div className="col-sm-5">
+                        <input type="text" className="form-control" name={`members[${random_id}][name]`}
+                          defaultValue={this.props.flightInfo.members[i].name } placeholder="Member Name"/>
+                      </div>
+                      <div className="col-sm-5">
+                        <input type="text" className="form-control" name={`members[${random_id}][id]`}
+                          defaultValue={this.props.flightInfo.members[i].member_id} placeholder="Member ID"/>
+                      </div>
+                      <div className="col-sm-2">
+                        <button className="btn btn-danger" onClick={this.props.updatePrice}
+                          value={this.props.flightInfo.member - 1} data-index={this.props.flightInfo.index} data-target="member"
+                          disabled={this.props.flightInfo.member + this.props.flightInfo.pax == this.props.flight.minPax}
+                        >
+                          <i className="fa fa-minus"></i>
+                        </button>
+                      </div>
                     </div>
-                    <div className="col-sm-5">
-                      <input type="text" className="form-control"/>
-                    </div>
-                    <div className="col-sm-2">
-                      <button className="btn btn-danger"><i className="fa fa-minus"></i></button>
-                    </div>
-                  </div>
+                  )}
                 )}
                 <div className="form-group row">
                   <div className="col-sm-12">
-                    <button className="btn btn-primary"><i className="fa fa-plus"></i></button>
+                    <button className="btn btn-primary" onClick={this.props.updatePrice}
+                      type="button"
+                      value={this.props.flightInfo.member + 1} data-index={this.props.flightInfo.index} data-target="member"
+                      disabled={this.props.flightInfo.member == this.props.flight.maxPax}
+                    >
+                      <i className="fa fa-plus"></i>
+                    </button>
                   </div>
                 </div>
-              </div>
+              </form>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" className="btn btn-secondary" data-dismiss="modal">
+                Close
+              </button>
             </div>
           </div>
         </div>
