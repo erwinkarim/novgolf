@@ -204,10 +204,8 @@ var GolfClubDashboard = React.createClass({
   updateMembersList: function(e){
     var membersArray = $(e).serializeArray();
 
-    console.log("membersArray", membersArray);
     //need to massage the data into [ {name:, member_id: , id:}, {...}] format
     //at least it will be in 3s
-
     var newMemberInfo = [];
     var inputIndex = 0;
     var memberInfo = {name:'', member_id:'', id:0};
@@ -216,19 +214,22 @@ var GolfClubDashboard = React.createClass({
       switch (inputIndex) {
         case 0:
           inputIndex += 1;
-          memberInfo.name = e.value;
+          memberInfo.id = e.value;
           break;
         case 1:
           inputIndex += 1;
+          memberInfo.name = e.value;
+          break;
+        case 2:
+          inputIndex += 1;
           memberInfo.member_id = e.value;
-        default:
-          //push into the array and reset
           newMemberInfo.push( Object.assign({}, memberInfo) ) ;
           inputIndex = 0;
+          break;
+        default:
+          //do nothing
       }
     });
-
-    console.log("newMemberInfo:", newMemberInfo);
 
     //update the members state
     var newFlightInfo = this.state.flightInfo;

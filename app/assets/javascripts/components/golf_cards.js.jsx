@@ -124,12 +124,14 @@ var GolfCardTimes = React.createClass({
       };
     }
 
+    //show the prices
     var prices = this.props.options.GolfClubTimesShowPrices ? (
       <h5 value={this.props.index} data-value={this.props.index} data-arrayIndex={this.props.arrayIndex} >
         {toCurrency(this.props.flight.prices.flight)}
       </h5>
     ) : null ;
 
+    //shouw course indicators, small dots that show course status that is not empty
     var courseIndicator = ("courses" in this.props.flight.course_data) ? (
       this.props.flight.course_data.courses.map( (e,i) => {
         var indicatorClass = null;
@@ -290,7 +292,7 @@ var ReserveFormPage = React.createClass({
                           defaultValue={this.props.flightInfo.members[i].name } placeholder="Member Name"/>
                       </div>
                       <div className="col-sm-5">
-                        <input type="text" className="form-control" name={`members[${random_id}][id]`}
+                        <input type="text" className="form-control" name={`members[${random_id}][member_id]`}
                           defaultValue={this.props.flightInfo.members[i].member_id} placeholder="Member ID"/>
                       </div>
                       <div className="col-sm-2">

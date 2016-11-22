@@ -31,7 +31,7 @@ class UserReservation < ActiveRecord::Base
   has_secure_token
 
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,
-    :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed, :reservation_failed]
+    :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed, :reservation_failed, :requires_members_verification]
 
   after_initialize :init
 
