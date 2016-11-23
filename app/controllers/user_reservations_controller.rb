@@ -82,7 +82,13 @@ class UserReservationsController < ApplicationController
     if Time.now < grace then
       @reservations = UserReservation.find(session[:reservation_ids])
       @reservations.each do |reservation|
-        reservation.payment_confirmed!
+        # if got members, need to be verified by the club first, but do send out the email regrading
+        # the reservation(s)
+        if reservation.count_member > 0 then
+          reservation.requires_members_verification!
+        else
+          reservation.payment_confirmed!
+        end
 
         #destroy the sessions that is not being used anymore
         session.delete(:members)

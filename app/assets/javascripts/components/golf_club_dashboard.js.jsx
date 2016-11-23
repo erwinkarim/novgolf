@@ -65,7 +65,7 @@ var GolfClubDashboard = React.createClass({
       flightsArray:[], dashBoardStatusText:null,
       days: this.updateDays(today), queryDate:queryDate,
       loadFlight: false, selectedArray:null, selectedFlight:null, selectedCourse:null,
-      flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00}
+      flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[]}
     }
   },
   tick: function(){
@@ -202,7 +202,7 @@ var GolfClubDashboard = React.createClass({
     });
   },
   updateMembersList: function(e){
-    var membersArray = $(e).serializeArray();
+    var membersArray = $(this.refs.memberBody).serializeArray();
 
     //need to massage the data into [ {name:, member_id: , id:}, {...}] format
     //at least it will be in 3s
@@ -316,6 +316,7 @@ var GolfClubDashboard = React.createClass({
         console.log("confirm reservation", course.reservation_id);
         $.ajax(`${this.props.paths.user_reservations}/${course.reservation_id}/confirm`,{
           method:"POST",
+          data:{flight_info:this.state.flightInfo},
           dataType:'json',
           success: function(data){
             $.snackbar({content:data.message});
@@ -328,21 +329,100 @@ var GolfClubDashboard = React.createClass({
   },
   componentDidMount:function(){
     var handle = this;
+
+    //always update the member list on close
+    $('#membersModal').on('hide.bs.modal', function(){
+      handle.updateMembersList();
+    });
+
+    //setup the datepicker
     $(this.refs.datepicker).datepicker({
       dateFormat:'dd/M/yy',
       altFormat:'mm/dd/yy',
       onClose:function(dateText){ handle.dateChanged(dateText); }
     });
+
+    //update every refreshEvery seconds
     this.interval = setInterval(this.tick, this.props.refreshEvery * 1000);
 
+    //finally, load the damn schedule
     this.loadSchedule();
+
   },
   componentWillUnmount: function(){
       clearInterval(this.interval);
   },
   render: function(){
+    //var membersModal = (this.props.options.displayMembersModal) ? (
+    //handle initial cases when selectedArray is not loaded yet
+    var modalMinMember = 0;
+    var modalMaxMember = 5;
+
+    if(this.state.selectedArray != null){
+        modalMinMember = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight].minPax;
+        modalMaxMember = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight].maxPax;
+    };
+
+    var membersModal = true ? (
+      <div id="membersModal" className="modal fade">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <button type="button" className="close" data-dismiss="modal">&times;</button>
+              <h4 className="modal-title">Members List</h4>
+            </div>
+            <div className="modal-body">
+              <form action="/" className="container-fluid" ref="memberBody">
+                { this.state.flightInfo.members.map( (e,i) => {
+                  var random_id = randomID();
+                  return (
+                    <div key={i} ref="memberInfo" className="form-group row">
+                      <input type="hidden"  name={`members[${random_id}][id]`} defaultValue={this.state.flightInfo.members[i].id} />
+                      <div className="col-sm-5">
+                        <input type="text" className="form-control" name={`members[${random_id}][name]`}
+                          defaultValue={this.state.flightInfo.members[i].name } placeholder="Member Name"/>
+                      </div>
+                      <div className="col-sm-5">
+                        <input type="text" className="form-control" name={`members[${random_id}][member_id]`}
+                          defaultValue={this.state.flightInfo.members[i].member_id} placeholder="Member ID"/>
+                      </div>
+                      <div className="col-sm-2">
+                        <button className="btn btn-danger" onClick={this.updatePax}
+                          value={this.state.flightInfo.member - 1} data-index={this.state.flightInfo.index} data-target="member"
+                          disabled={this.state.flightInfo.member + this.state.flightInfo.pax == modalMinMember}
+                        >
+                          <i className="fa fa-minus"></i>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                )}
+                <div className="form-group row">
+                  <div className="col-sm-12">
+                    <button className="btn btn-primary" onClick={this.updatePax}
+                      type="button"
+                      value={this.state.flightInfo.member + 1} data-index={this.state.flightInfo.index} data-target="member"
+                      disabled={this.state.flightInfo.member ==
+                        this.state.selectedArray ==  modalMaxMember }
+                    >
+                      <i className="fa fa-plus"></i>
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-primary" data-dismiss="modal">Update Members</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : null;
+    //var membersModal = null;
+
     return (
       <div className="row">
+        {membersModal}
         <div className="col-lg-8">
           <p>
             <input className="datepicker form-control" ref="datepicker"

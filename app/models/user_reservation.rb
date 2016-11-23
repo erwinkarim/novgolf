@@ -17,7 +17,8 @@ class UserReservation < ActiveRecord::Base
   validates :golf_club_id, uniqueness: {
     scope: [:booking_date, :booking_time, :course_listing_id],
     #validation will be enforced during creation, payment and confirmation stage, but not when it was canceled or failed
-    conditions: -> { where( status: [0,1,2,3])}
+    # or when status is requires_members_verification
+    conditions: -> { where( status: [0,1,2,3,8])}
   }
   #validates :token, uniqueness: true
   #need to check when this feature is available
@@ -69,6 +70,36 @@ class UserReservation < ActiveRecord::Base
   def booking_datetime
     #"#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
     DateTime.parse "#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
+  end
+
+  #update the counts if things change and update the pricing as well
+  # expected format for flightInfo { count_pax:, }
+  def update_counts flight_info = {}
+    self.transaction do
+      #update count
+      self.update_attributes({ count_pax:flight_info[:pax], count_buggy:flight_info[:buggy],
+        count_member:flight_info[:member],
+        count_caddy:flight_info[:caddy], count_insurance:flight_info[:insurance]})
+
+      #update member info, if there's members
+      #delete members that are not in the list anymore
+      if flight_info.has_key? :members then
+        UrMemberDetail.where(:id => self.ur_member_details.map{|x| x.id} - flight_info[:members].map{|x| x[1]["id"].to_i}).each{ |x| x.destroy }
+        # cycle through the members, update/create info and delete if there are not there
+        flight_info[:members].each_pair do |k,member|
+          if member["id"].empty? then
+            new_member = self.ur_member_details.new({member_id:member["member_id"], name:member["name"]})
+            new_member.save!
+          else
+            ur_member_detail = UrMemberDetail.find(member["id"])
+            ur_member_detail.update_attributes({member_id:member["member_id"], name:member["name"]})
+          end
+        end
+      end
+
+      #update the pricing
+      self.update_pricing
+    end
   end
 
   #update the pricing in case the values are changing.

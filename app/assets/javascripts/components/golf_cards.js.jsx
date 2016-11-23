@@ -111,6 +111,7 @@ var GolfCardTimes = React.createClass({
         case 1: reserve_status = "warning"; break;
         case 2: reserve_status = "danger"; break;
         case 3: reserve_status = "danger"; break;
+        case 8: reserve_status = "warning blink"; break;
         default: true;
       }
       clickFn = this.props.handleClick;
@@ -118,6 +119,7 @@ var GolfCardTimes = React.createClass({
       //normal mode
       switch ( this.props.flight.course_data.status ){
         case 1: reserve_status = "warning disabled"; break;
+        case 8: reserve_status = "warning disabled"; break;
         case 2: reserve_status = "danger disabled"; break; //payment_confirmed
         case 3: reserve_status = "danger disabled"; break; //reservation_confirmed - confirmed by club, not payment not confirmed
         default: clickFn = this.props.handleClick;
@@ -139,6 +141,7 @@ var GolfCardTimes = React.createClass({
           case 1: indicatorClass = "warning"; break;
           case 2: indicatorClass = "danger"; break;
           case 3: indicatorClass = "danger"; break;
+          case 8: indicatorClass = "warning blink"; break;
           default: indicatorClass = null;
         }
         return (indicatorClass == null ? null : <i key={i} className={`text-${indicatorClass} fa fa-circle`}></i>)
@@ -213,6 +216,7 @@ var GolfCoursesGroup = React.createClass({
           var reserve_status = "secondary"
           switch (e.reservation_status) {
             case 1: reserve_status = "warning"; break;
+            case 8: reserve_status = "warning blink"; break;
             case 2: reserve_status = "danger"; break;
             case 3: reserve_status = "danger"; break;
             default: reserve_status = "secondary";
@@ -226,6 +230,7 @@ var GolfCoursesGroup = React.createClass({
             </label>
           );
         })}</div>
+        <div>Status: { this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text} </div>
       </div>
     );
   }
@@ -252,14 +257,6 @@ var ReserveFormPage = React.createClass({
     //return null;
     return { __html: md.render(this.props.flight.prices.note) };
   },
-  componentDidMount: function(){
-    var handle = this;
-    if(this.props.options.displayMembersModal){
-      $('#membersModal').on('hide.bs.modal', function(){
-        handle.props.updateMembersList(handle.refs.memberBody);
-      });
-    };
-  },
   render: function(){
     var activeClass = (this.props.isActive) ? "active" : "";
     var golfCourses = (this.props.options.displayCourseGroup) ? (
@@ -272,66 +269,8 @@ var ReserveFormPage = React.createClass({
       <a href="#membersModal" data-toggle="modal"> x Members </a>
     ) : " x Members";
 
-    var membersModal = (this.props.options.displayMembersModal) ? (
-      <div id="membersModal" className="modal fade">
-        <div className="modal-dialog modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <button type="button" className="close" data-dismiss="modal">&times;</button>
-              <h4 className="modal-title">Members List</h4>
-            </div>
-            <div className="modal-body">
-              <form action="/" className="container-fluid" ref="memberBody">
-                { this.props.flightInfo.members.map( (e,i) => {
-                  var random_id = randomID();
-                  return (
-                    <div key={i} ref="memberInfo" className="form-group row">
-                      <input type="hidden"  name={`members[${random_id}][id]`} defaultValue={this.props.flightInfo.members[i].id} />
-                      <div className="col-sm-5">
-                        <input type="text" className="form-control" name={`members[${random_id}][name]`}
-                          defaultValue={this.props.flightInfo.members[i].name } placeholder="Member Name"/>
-                      </div>
-                      <div className="col-sm-5">
-                        <input type="text" className="form-control" name={`members[${random_id}][member_id]`}
-                          defaultValue={this.props.flightInfo.members[i].member_id} placeholder="Member ID"/>
-                      </div>
-                      <div className="col-sm-2">
-                        <button className="btn btn-danger" onClick={this.props.updatePrice}
-                          value={this.props.flightInfo.member - 1} data-index={this.props.flightInfo.index} data-target="member"
-                          disabled={this.props.flightInfo.member + this.props.flightInfo.pax == this.props.flight.minPax}
-                        >
-                          <i className="fa fa-minus"></i>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                )}
-                <div className="form-group row">
-                  <div className="col-sm-12">
-                    <button className="btn btn-primary" onClick={this.props.updatePrice}
-                      type="button"
-                      value={this.props.flightInfo.member + 1} data-index={this.props.flightInfo.index} data-target="member"
-                      disabled={this.props.flightInfo.member == this.props.flight.maxPax}
-                    >
-                      <i className="fa fa-plus"></i>
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-dismiss="modal">
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    ) : null;
-
     return (
       <div className={`tab-pane card ${activeClass}`} id={`flight-tab-${this.props.flightInfo.id}`} >
-        { membersModal }
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][matrix_id]"} value={this.props.flight.matrix_id} />
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][tee_time]"} value={this.props.flightInfo.teeTime} />
         <div className="card-header" style={ {color:'black'}}>{ this.props.flightInfo.teeTime }</div>
