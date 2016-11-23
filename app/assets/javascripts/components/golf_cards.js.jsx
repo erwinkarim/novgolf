@@ -230,7 +230,10 @@ var GolfCoursesGroup = React.createClass({
             </label>
           );
         })}</div>
-        <div>Status: { this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text} </div>
+        <p className="card-text">Status: { this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text} </p>
+        <p className="card-text">
+          Selected Course: {this.props.flight.course_data.courses[this.props.selectedCourse].id}; 
+          Reservation ID:{this.props.flight.course_data.courses[this.props.selectedCourse].reservation_id} </p>
       </div>
     );
   }
