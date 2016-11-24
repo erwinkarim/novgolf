@@ -9,7 +9,7 @@ class UserReservation < ActiveRecord::Base
   belongs_to :course_listing
 
   has_one :review, as: :topic
-  has_many :ur_member_details
+  has_many :ur_member_details, dependent: :destroy
 
   #each club id should have a unique booking date and time
   #  and unique course #
@@ -37,8 +37,8 @@ class UserReservation < ActiveRecord::Base
   after_initialize :init
 
   def init
-    status ||= 0
-    count_member ||= 0
+    self.status ||= 0
+    self.count_member ||= 0
   end
 
   def validates_booking_datetime
