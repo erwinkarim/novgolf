@@ -1,14 +1,7 @@
 class UserReservationsController < ApplicationController
   before_action :authenticate_user!
 
-  #sample params
-  #   Parameters: {
-  #   "authenticity_token"=>"EW9cJY07AH52Gwe4H9YHsHOO6op06Ohy0d0IO07Lni+gTI2/Riyock0XifYq2urjdPfaFvB6TUolnpwxN//g2g==",
-  #   "club"=>{"id"=>"2"},
-  #   "info"=>{"date"=>"04/11/2016", "total_price"=>"3362"},
-  #   "teeTimes"=>["06:41", "06:49"],
-  #   "flight"=>{"c10615"=>{"matrix_id"=>"52", "tee_time"=>"06:41", "count"=>{"pax"=>"3", "buggy"=>"1", "caddy"=>"1", "insurance"=>"3"},
-  #          "price"=>{"pax"=>"1260", "cart"=>"48", "caddy"=>"37", "insurance"=>"108"} }, .... }
+  # POST/GET     /golf_clubs/:golf_club_id/user_reservations/reserve(.:format)
   def reserve
     @club = GolfClub.find(params[:golf_club_id])
 
@@ -22,12 +15,26 @@ class UserReservationsController < ApplicationController
     session[:teeTimes] = params[:teeTimes]
     session[:golf_club_id] = params[:golf_club_id]
 
-
-    #Rails.logger.info "the session flight is is #{session[:flight]  }"
+    #delete members keys
+    session.delete(:members)
   end
 
-  #handle cases where some of the reservations did not go throught
+  # POST /golf_clubs/:golf_club_id/user_reservations/processing
   def processing
+    session[:members] = params[:members]
+
+    # need to check all members ids + name has been fullfilled, otherwise go black
+    session[:members].each_pair do |k,members_for_flight|
+      members_for_flight.each_pair do |k_flight, member|
+        if member[:name].empty? || member[:id].empty? then
+          flash[:error] = "Some Members Id/Name is incomplete"
+          redirect_to reserve_golf_club_user_reservations_path(session[:golf_club_id],
+            {info:session[:info], flight:session[:flight], teeTimes:params[:teeTimes]})
+          return
+        end
+      end
+    end
+
     #set that you need to complete this transaction (get reservation confirmation token) within 10 minutes
     @club = GolfClub.find(params[:golf_club_id])
     club_id = @club.id
@@ -45,6 +52,15 @@ class UserReservationsController < ApplicationController
           ur.reservation_created!
           ur.payment_attempted!
           session[:reservation_ids] << ur.id
+
+          #generate the appropiate member id/name to be linked with this
+          if ur.count_member > 0 then
+            session[:members][k].each_pair do |flight_key,member|
+              Rails.logger.info "member is #{member}"
+              ur_member_detail = UrMemberDetail.new(name:member[:name], member_id:member[:id], user_reservation_id:ur.id)
+              ur_member_detail.save!
+            end
+          end
         else
           ur.reservation_failed!
         end
@@ -66,7 +82,19 @@ class UserReservationsController < ApplicationController
     if Time.now < grace then
       @reservations = UserReservation.find(session[:reservation_ids])
       @reservations.each do |reservation|
-        reservation.payment_confirmed!
+        # if got members, need to be verified by the club first, but do send out the email regrading
+        # the reservation(s)
+        if reservation.count_member > 0 then
+          reservation.requires_members_verification!
+        else
+          reservation.payment_confirmed!
+        end
+
+        #destroy the sessions that is not being used anymore
+        session.delete(:members)
+        session.delete(:info)
+        session.delete(:flight)
+        session.delete(:golf_club_id)
 
         #send out review in the future
         UserReservationMailer.request_review(reservation).deliver_later(wait_until: reservation.booking_datetime + 12.hours)

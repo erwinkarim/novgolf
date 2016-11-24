@@ -40,6 +40,11 @@
                 %td #{ @reservation.count_pax }
                 %td Balls
                 %td #{ number_to_currency(@reservation.actual_pax, { :unit => "RM "} )}
+              - if @reservation.count_member > 0 then
+                %tr
+                  %td #{ @reservation.count_member }
+                  %td Members
+                  %td RM0.00
               %tr
                 %td #{ @reservation.count_caddy}
                 %td Caddy
@@ -61,6 +66,20 @@
                   %h4 Total Price:
                 %td
                   %h4 #{ number_to_currency(@reservation.total_price, { :unit => "RM "} )}
+      - if @reservation.count_member > 0 then
+        .card
+          .card-header Members
+          .card-block
+            %table.table
+              %thead
+                %tr
+                  %th Name
+                  %th ID
+              %tbody
+                - @reservation.ur_member_details.each do |member_detail|
+                  %tr
+                    %td #{ member_detail.name }
+                    %td #{ member_detail.member_id }
       .card
         .card-header Review
         - if @review.nil? then

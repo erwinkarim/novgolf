@@ -90,7 +90,7 @@ class GolfClub < ActiveRecord::Base
 
     # todo: remove clubs that is fully booked in the time period
     #get current reservations, excluding failed/canceled attempts
-    tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).where(:status => [0,1,2,3]).to_sql
+    tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).where(:status => [0,1,2,3,8]).to_sql
     results = self.joins{
         flight_schedules.flight_matrices
       }.joins{ course_listings
@@ -171,7 +171,8 @@ class GolfClub < ActiveRecord::Base
               flight_handle[:course_data][:courses] = []
             end
             flight_handle[:course_data][:courses] << {
-              id:n[2], reservation_id:n[3], reservation_status:n[4]
+              id:n[2], reservation_id:n[3], reservation_status:n[4],
+                reservation_status_text: UserReservation.statuses.select{ |k,v| v == n[4]}.keys.first
             }
             p
           }

@@ -1,67 +1,90 @@
 .container
-  .row
-    .col-xs-12.col-md-8.col-md-offset-2
-      %h2 Review your reservation
-  .row
-    .col-xs-12.col-md-8.col-md-offset-2
-      .card
-        .card-header
-          %h3 Flight
-        %ul.list-group.list-group-flush
-          %li.list-group-item #{ @club.name }
-          %li.list-group-item #{ simple_format(@club.address)}
-          %li.list-group-item
-            %strong Flight Date
-            #{ Date.parse(params[:info][:date]).strftime("%d/%b/%Y")}
-  .row
-    .col-xs-12.col-md-8.col-md-offset-2
-      - params[:flight].each_pair do |k,v|
+  = form_tag processing_golf_club_user_reservations_path(params[:golf_club_id]) do
+    .row
+      .col-xs-12.col-md-8.col-md-offset-2
+        %h2 Review your reservation
+    .row
+      .col-xs-12.col-md-8.col-md-offset-2
         .card
-          .card-header #{v[:tee_time]} Flight Details
-          .card-block
-            %table.table
-              %thead
-                %tr
-                  %th Qty
-                  %th Item
-                  %th Total
-              %tbody
-                %tr
-                  %td #{ v[:count][:pax]}
-                  %td Pax
-                  %td #{ number_to_currency(v[:price][:pax], { :unit => "RM"}) }
-                %tr
-                  %td #{ v[:count][:caddy]}
-                  %td Caddy
-                  %td #{ number_to_currency(v[:price][:caddy], { :unit => "RM"}) }
-                %tr
-                  %td #{ v[:count][:buggy]}
-                  %td Buggy
-                  %td #{ number_to_currency(v[:price][:cart], { :unit => "RM"}) }
-                %tr
-                  %td #{ v[:count][:insurance]}
-                  %td Insurance
-                  %td #{ number_to_currency(v[:price][:insurance], { :unit => "RM"}) }
-  .row
-    .col-xs-12.col-md-8.col-md-offset-2
-      %table.table
-        %thead
-          %tr
-            %th Item
-            %th Amount
-        %tbody
-          %tr
-            %td Total
-            %td  #{number_to_currency(params[:info][:total_price], {:unit => "RM"})}
-          %tr
-            %td Tax (#{number_to_percentage(@club.tax_schedule.rate*100)})
-            %td  #{number_to_currency(params[:info][:tax], {:unit => "RM"})}
-          %tr
-            %td
-              %h3 Grand Total
-            %td
-              %h3 #{number_to_currency(params[:info][:grand_total], {:unit => "RM"})}
-  .row
-    .col-xs-12.col-md-8.col-md-offset-2
-      = form_tag processing_golf_club_user_reservations_path(params[:golf_club_id]) do
+          .card-header
+            %h3 Flight
+          %ul.list-group.list-group-flush
+            %li.list-group-item #{ @club.name }
+            %li.list-group-item #{ simple_format(@club.address)}
+            %li.list-group-item
+              %strong Flight Date
+              #{ Date.parse(params[:info][:date]).strftime("%d/%b/%Y")}
+    .row
+      .col-xs-12.col-md-8.col-md-offset-2
+        - params[:flight].each_pair do |k,v|
+          .card
+            .card-header #{v[:tee_time]} Flight Details
+            .card-block
+              %table.table
+                %thead
+                  %tr
+                    %th Qty
+                    %th Item
+                    %th Total
+                %tbody
+                  %tr
+                    %td #{ v[:count][:pax]}
+                    %td Pax
+                    %td #{ number_to_currency(v[:price][:pax], { :unit => "RM"}) }
+                  %tr
+                    %td #{ v[:count][:member]}
+                    %td Pax
+                    %td RM 0.00
+                  %tr
+                    %td #{ v[:count][:caddy]}
+                    %td Caddy
+                    %td #{ number_to_currency(v[:price][:caddy], { :unit => "RM"}) }
+                  %tr
+                    %td #{ v[:count][:buggy]}
+                    %td Buggy
+                    %td #{ number_to_currency(v[:price][:cart], { :unit => "RM"}) }
+                  %tr
+                    %td #{ v[:count][:insurance]}
+                    %td Insurance
+                    %td #{ number_to_currency(v[:price][:insurance], { :unit => "RM"}) }
+            - if v[:count][:member].to_i > 0 then
+              .card-block
+                %p.card-text Please key in each member's name and ID number
+                %table.table
+                  %thead
+                    %tr
+                      %th Name
+                      %td ID
+                  - (1..(v[:count][:member].to_i)).each do |x|
+                    - random_id = SecureRandom::hex(6)
+                    %tr
+                      - has_name = session.has_key?(:members) ? session[:members].select{|x| x == k}.map{ |k,v| v[:name]}.empty? : false
+                      %td{ class: !has_name ? 'has-danger' : ''}
+                        %input.form-control{type:'text', name:"members[#{k}][#{random_id}][name]", placeholder:'Name',
+                          class: !has_name ? 'form-control-danger' : '' }
+                      - has_id = session.has_key?(:members) ? session[:members].select{|x| x == k}.map{ |k,v| v[:id]}.empty? : false
+                      %td{ class: !has_id ? 'has-danger' : ''}
+                        %input.form-control{type:'text', name:"members[#{k}][#{random_id}][id]", placeholder:'ID Number',
+                          class: !has_name ? 'form-control-danger' : ''}
+    .row
+      .col-xs-12.col-md-8.col-md-offset-2
+        %table.table
+          %thead
+            %tr
+              %th Item
+              %th Amount
+          %tbody
+            %tr
+              %td Total
+              %td  #{number_to_currency(params[:info][:total_price], {:unit => "RM"})}
+            %tr
+              %td Tax (#{number_to_percentage(@club.tax_schedule.rate*100)})
+              %td  #{number_to_currency(params[:info][:tax], {:unit => "RM"})}
+            %tr
+              %td
+                %h3 Grand Total
+              %td
+                %h3 #{number_to_currency(params[:info][:grand_total], {:unit => "RM"})}
+    .row
+      .col-xs-12.col-md-8.col-md-offset-2
         %button.btn.btn-primary{ :type => 'submit'} Proceed to Payment
