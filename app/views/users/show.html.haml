@@ -8,9 +8,6 @@
     .col-xs-12.col-md-4
       .card
         %img.card-img-top.img-responsive{ :src => (@user.image.nil? || @user.image.empty?) ? '/images/users/default.jpg' : @user.image }
-      .card
-        .card-block
-          %p.card-text Joined JomGolf since #{ @user.created_at.strftime("%b %Y")}
       - if user_signed_in? && current_user.id == @user.id then
         .card
           .card-header Action
@@ -29,14 +26,14 @@
                 %th Name
                 %td #{ @user.name }
               %tr
-                %th Home Club
+                %th Active Membership
                 %td #{ @user.home_club || "None Yet"}
               %tr
                 %th Handicap
                 %td #{ @user.handicap  || "None Yet"}
     .col-xs-12.col-md-6
       .card
-        .card-header Usual Spots
+        .card-header Gangs
         .card-block
           %p.card-text
             - if @hangouts.empty? then
