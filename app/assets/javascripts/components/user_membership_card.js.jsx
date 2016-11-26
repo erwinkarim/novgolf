@@ -1,20 +1,29 @@
 var UserMembershipCard = React.createClass({
-  propTypes: {membershipList: React.PropTypes.array},
-  getDefaultProps: function(){
-    return {membershipList:[]}
-  },
   getInitialState: function(){
     return {
-      membershipList:this.props.membershipList
+      membershipList:[]
     }
   },
-  updateMembership: function(e){
-    console.log("update membership");
+  componentDidMount: function(){
+    //should load the membership list here
+
+  },
+  membershipOps: {
+    newMembership: function(e){
+      console.log("new membership");
+
+    },
+    deleteMembership: function(e){
+      console.log("delete membership");
+    },
+    updateMembership: function(e){
+      console.log("update membership");
+    }
   },
   render: function() {
     return (
       <div className="card">
-        <UserMembershipModal updateMembership={this.updateMembership} membershipList={this.state.membershipList}/>
+        <UserMembershipModal membershipOps={this.membershipOps} membershipList={this.state.membershipList}/>
         <div className="card-header">Membership</div>
         <ul className="list-group list-group-flush">
           <li className="list-group-item">None yet...</li>
@@ -40,11 +49,20 @@ var UserMembershipModal = React.createClass({
             </div>
             <div className="modal-body">
               <p>Something about membership here</p>
+              <form className="container-fluid" action="/">
+                <div className="form-group row">
+                  <div className="col-sm-12">
+                    <button type="button" className="btn btn-primary" onClick={this.props.membershipOps.newMembership}>
+                      <i className="fa fa-plus"></i>
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancel</button>
               <button style={ {marginLeft:"5px"}} type="button" className="btn btn-primary" data-dismiss="modal"
-                onClick={this.props.updateMembership} data-dismiss="modal">Update Membership
+                onClick={this.props.membershipOps.updateMembership} data-dismiss="modal">Update Membership
               </button>
             </div>
           </div>
