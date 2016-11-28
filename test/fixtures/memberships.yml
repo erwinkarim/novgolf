@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user_id: 1
+  golf_club_id:
+  expires_at: 2016-11-28
+  alt_club_name: MyString
+
+two:
+  user_id: 2
+  golf_club_id:
+  expires_at: 2016-11-28
+  alt_club_name: MyString

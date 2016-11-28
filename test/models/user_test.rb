@@ -10,6 +10,7 @@ class UserTest < ActiveSupport::TestCase
   should have_many(:photos)
   should have_one(:profile_picture)
   should have_many(:reviews)
+  should have_many(:memberships)
 
   # test "the truth" do
   #   assert true

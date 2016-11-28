@@ -7,6 +7,7 @@ class User < ActiveRecord::Base
 
   has_many :user_reservations
   has_many :golf_clubs
+  has_many :memberships
 
   has_many :photos, as: :imageable
   has_many :reviews

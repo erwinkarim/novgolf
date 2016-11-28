@@ -9,6 +9,7 @@ class GolfClub < ActiveRecord::Base
   has_many :amenities, :through => :amenity_lists
   has_many :photos, as: :imageable
   has_many :course_listings
+  has_many :memberships
 
   belongs_to :user
   #should have has_many :reviews where topic_type = UserReservation

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161125030142) do
+ActiveRecord::Schema.define(version: 20161128025239) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -146,6 +146,18 @@ ActiveRecord::Schema.define(version: 20161125030142) do
 
   add_index "line_items", ["user_id"], name: "index_line_items_on_user_id", using: :btree
 
+  create_table "memberships", force: :cascade do |t|
+    t.integer  "user_id",       limit: 4
+    t.integer  "golf_club_id",  limit: 4
+    t.date     "expires_at"
+    t.string   "alt_club_name", limit: 255
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
+  end
+
+  add_index "memberships", ["golf_club_id"], name: "index_memberships_on_golf_club_id", using: :btree
+  add_index "memberships", ["user_id"], name: "index_memberships_on_user_id", using: :btree
+
   create_table "photos", force: :cascade do |t|
     t.integer  "sequence",       limit: 4
     t.integer  "user_id",        limit: 4
@@ -264,6 +276,8 @@ ActiveRecord::Schema.define(version: 20161125030142) do
   add_foreign_key "line_item_listings", "charge_schedules"
   add_foreign_key "line_item_listings", "line_items"
   add_foreign_key "line_items", "users"
+  add_foreign_key "memberships", "golf_clubs"
+  add_foreign_key "memberships", "users"
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"
   add_foreign_key "ur_member_details", "user_reservations"
