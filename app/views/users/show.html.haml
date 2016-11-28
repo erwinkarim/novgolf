@@ -28,7 +28,7 @@
               %tr
                 %th Handicap
                 %td #{ @user.handicap  || "None Yet"}
-      = react_component "UserMembershipCard", {}
+      = react_component "UserMembershipCard", {current_user:current_user, memberships_path:user_memberships_path(@user)}
     .col-xs-12.col-md-6
       .card
         .card-header Gangs

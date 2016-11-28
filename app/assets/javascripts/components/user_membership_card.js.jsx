@@ -3,6 +3,7 @@ var defaultMembership = {
 };
 
 var UserMembershipCard = React.createClass({
+  propTypes: { current_user: React.PropTypes.object, memberships_path:React.PropTypes.string },
   getInitialState: function(){
     return {
       memberships:[]
@@ -10,6 +11,12 @@ var UserMembershipCard = React.createClass({
   },
   componentDidMount: function(){
     //should load the membership list here
+    fetch(`${this.props.memberships_path}`).then( function(response){
+      return response.json();
+    }).then(function(json){
+      console.log('json', json);
+    });
+
 
   },
   newMembership: function(e){
@@ -29,6 +36,13 @@ var UserMembershipCard = React.createClass({
     console.log("update membership");
   },
   render: function() {
+    var footer = this.props.current_user == null ?
+      null : (
+        <div className="card-footer">
+          <a href="#membershipModal" data-toggle="modal">Edit Membership</a>
+        </div>
+      );
+
     return (
       <div className="card">
         <UserMembershipModal
@@ -38,9 +52,7 @@ var UserMembershipCard = React.createClass({
         <ul className="list-group list-group-flush">
           <li className="list-group-item">None yet...</li>
         </ul>
-        <div className="card-footer">
-          <a href="#membershipModal" data-toggle="modal">Edit Membership</a>
-        </div>
+        { footer }
       </div>
     );
   }
