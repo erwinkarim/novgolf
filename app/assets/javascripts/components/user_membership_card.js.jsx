@@ -1,29 +1,39 @@
+var defaultMembership = {
+    id:0, user_id:0, name:randomID(), golf_club_id:0, expires:"2001-12-31"
+};
+
 var UserMembershipCard = React.createClass({
   getInitialState: function(){
     return {
-      membershipList:[]
+      memberships:[]
     }
   },
   componentDidMount: function(){
     //should load the membership list here
 
   },
-  membershipOps: {
-    newMembership: function(e){
-      console.log("new membership");
+  newMembership: function(e){
+    console.log("new membership");
+    var newMemberships = this.state.memberships;
+    newMemberships.push(defaultMembership);
+    this.setState({memberships:newMemberships})
+  },
+  deleteMembership: function(e){
+    console.log("delete membership");
+    var newMemberships = this.state.memberships;
+    newMemberships.splice(e.target.dataset.index, 1);
+    this.setState({memberships:newMemberships});
 
-    },
-    deleteMembership: function(e){
-      console.log("delete membership");
-    },
-    updateMembership: function(e){
-      console.log("update membership");
-    }
+  },
+  updateMembership: function(e){
+    console.log("update membership");
   },
   render: function() {
     return (
       <div className="card">
-        <UserMembershipModal membershipOps={this.membershipOps} membershipList={this.state.membershipList}/>
+        <UserMembershipModal
+          newMembership={this.newMembership} deleteMembership={this.deleteMembership} updateMembership={this.updateMembership}
+          memberships={this.state.memberships} />
         <div className="card-header">Membership</div>
         <ul className="list-group list-group-flush">
           <li className="list-group-item">None yet...</li>
@@ -37,11 +47,11 @@ var UserMembershipCard = React.createClass({
 });
 
 var UserMembershipModal = React.createClass({
-  propTypes: {membershipList:React.PropTypes.array },
+  propTypes: {memberships:React.PropTypes.array },
   render: function(){
     return (
       <div ref="membershipModal" className="modal fade" id="membershipModal">
-        <div className="modal-dialog" role="document">
+        <div className="modal-dialog modal-lg" role="document">
           <div className="modal-content">
             <div className="modal-header">
               <button type="button" className="close" data-dismiss="modal"><span>&times;</span></button>
@@ -50,9 +60,25 @@ var UserMembershipModal = React.createClass({
             <div className="modal-body">
               <p>Something about membership here</p>
               <form className="container-fluid" action="/">
-                <div className="form-group row">
+                <div className="form-group row">{ this.props.memberships.map( (e,i) => {
+                      return (
+                        <div key={i}>
+                          <div className="col-md-8 col-sm-12 form-group">
+                            <input type="text" defaultValue={e.club_name} placeholder="Club Name" className="form-control" />
+                          </div>
+                          <div className="col-md-2 col-sm-12 form-group">
+                            <input type="text" defaultValue={e.expires}  placeholder="Expires" className="form-control" />
+                          </div>
+                          <div className="col-md-2 col-sm-12 form-group">
+                            <button type="button" className="btn btn-danger" onClick={this.props.deleteMembership}
+                              data-index={i} ><i className="fa fa-minus"></i></button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  }
                   <div className="col-sm-12">
-                    <button type="button" className="btn btn-primary" onClick={this.props.membershipOps.newMembership}>
+                    <button type="button" className="btn btn-primary" onClick={this.props.newMembership}>
                       <i className="fa fa-plus"></i>
                     </button>
                   </div>
@@ -62,7 +88,7 @@ var UserMembershipModal = React.createClass({
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancel</button>
               <button style={ {marginLeft:"5px"}} type="button" className="btn btn-primary" data-dismiss="modal"
-                onClick={this.props.membershipOps.updateMembership} data-dismiss="modal">Update Membership
+                onClick={this.props.updateMembership} data-dismiss="modal">Update Membership
               </button>
             </div>
           </div>
