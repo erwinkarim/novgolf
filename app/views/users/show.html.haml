@@ -28,7 +28,8 @@
               %tr
                 %th Handicap
                 %td #{ @user.handicap  || "None Yet"}
-      = react_component "UserMembershipCard", {current_user:current_user, memberships_path:user_memberships_path(@user)}
+      = react_component "UserMembershipCard",
+        {memberships_path:user_memberships_path(@user), allowEdit: @user == current_user, csrfToken:form_authenticity_token }
     .col-xs-12.col-md-6
       .card
         .card-header Gangs

@@ -1,9 +1,16 @@
 var defaultMembership = {
-    id:0, user_id:0, name:randomID(), golf_club_id:0, expires:"2001-12-31"
+  id:undefined, alt_club_name:undefined, club_name:undefined, golf_club_id:undefined,
+//    input date only accept YYYY-MM-DD format
+//    expires_at: (new Date(Date.now() + 60*60*24*365*1000).toLocaleDateString() )
+  expires_at: "2017-12-31"
 };
 
 var UserMembershipCard = React.createClass({
-  propTypes: { current_user: React.PropTypes.object, memberships_path:React.PropTypes.string },
+  propTypes: {
+    memberships_path:React.PropTypes.string, allowEdit:React.PropTypes.bool, csrfToken:React.PropTypes.string },
+  getDefaultProps: function(){
+    return {allowEdit:false};
+  },
   getInitialState: function(){
     return {
       memberships:[]
@@ -11,47 +18,43 @@ var UserMembershipCard = React.createClass({
   },
   componentDidMount: function(){
     //should load the membership list here
-    fetch(`${this.props.memberships_path}`).then( function(response){
+    handle = this;
+    fetch(this.props.memberships_path).then( function(response){
       return response.json();
     }).then(function(json){
-      console.log('json', json);
+      handle.setState({memberships:json});
     });
-
-
   },
-  newMembership: function(e){
-    console.log("new membership");
-    var newMemberships = this.state.memberships;
-    newMemberships.push(defaultMembership);
-    this.setState({memberships:newMemberships})
-  },
-  deleteMembership: function(e){
-    console.log("delete membership");
-    var newMemberships = this.state.memberships;
-    newMemberships.splice(e.target.dataset.index, 1);
-    this.setState({memberships:newMemberships});
-
-  },
-  updateMembership: function(e){
-    console.log("update membership");
+  updateMembership: function(newMemberships){
+    this.setState({memberships:newMemberships.slice(0)});
   },
   render: function() {
-    var footer = this.props.current_user == null ?
-      null : (
+    //show modal if allow to edit
+    var membershipModal = (this.props.allowEdit) ? (
+      <UserMembershipModal csrfToken={this.props.csrfToken} memberships={this.state.memberships}
+        memberships_path={this.props.memberships_path} updateMembership={this.updateMembership} />
+    ) : null;
+    var footer = (this.props.allowEdit) ?
+      (
         <div className="card-footer">
           <a href="#membershipModal" data-toggle="modal">Edit Membership</a>
         </div>
-      );
+      ) : null ;
 
+    var membershipList = this.state.memberships.length == 0 ?  (
+      <ul className="list-group list-group-flush">
+        <li className="list-group-item">None yet...</li>
+      </ul>
+    ) : (
+      <ul className="list-group list-group-flush">{ this.state.memberships.map( (e,i) => {
+        return (<li key={i} className="list-group-item">{e.club_name}</li> )
+      })}</ul>
+    )
     return (
       <div className="card">
-        <UserMembershipModal
-          newMembership={this.newMembership} deleteMembership={this.deleteMembership} updateMembership={this.updateMembership}
-          memberships={this.state.memberships} />
+        { membershipModal }
         <div className="card-header">Membership</div>
-        <ul className="list-group list-group-flush">
-          <li className="list-group-item">None yet...</li>
-        </ul>
+        { membershipList}
         { footer }
       </div>
     );
@@ -59,7 +62,57 @@ var UserMembershipCard = React.createClass({
 });
 
 var UserMembershipModal = React.createClass({
-  propTypes: {memberships:React.PropTypes.array },
+  propTypes: {memberships:React.PropTypes.array, csrfToken:React.PropTypes.string },
+  getInitialState: function(){
+    //clone the array
+    var newMemberships = this.props.memberships.slice(0);
+    return {memberships:newMemberships};
+  },
+  componentDidMount: function(){
+    //setup datepicker for each date field
+  },
+  componentWillReceiveProps: function(nextProps){
+    this.setState({memberships:nextProps.memberships});
+  },
+  sendUpdates:function(){
+    //send forms and if successful, update parent about memberships list change
+    var form = document.querySelector('#membership-form');
+    var handle = this;
+    fetch(this.props.memberships_path, {
+      credentials: 'same-origin',
+      method:'POST',
+      body: new FormData(form)
+    }).then( function(response){
+      return response.json();
+    }).then( function(json){
+      //send updates to the mothership
+      handle.props.updateMembership(handle.state.memberships);
+    });
+  },
+  newMembership: function(e){
+    console.log("new memberships");
+    var newMemberships = this.state.memberships;
+    newMemberships.push( Object.assign({}, defaultMembership) );
+
+    this.setState((prevState) => ({
+      memberships: newMemberships
+    }))
+  },
+  updateMembership: function(e){
+    var newMemberships = this.state.memberships;
+    newMemberships[e.target.dataset.index][`${e.target.dataset.value}`] = e.target.value;
+
+    this.setState( (prevState) => ( {memberships:newMemberships}));
+  },
+  deleteMembership: function(e){
+    var newMemberships = this.state.memberships;
+    newMemberships.splice(e.target.dataset.index, 1);
+    this.setState({memberships:newMemberships});
+  },
+  resetForm: function(){
+    var newMemberships = this.props.memberships.slice(0);
+    this.setState({memberships:newMemberships});
+  },
   render: function(){
     return (
       <div ref="membershipModal" className="modal fade" id="membershipModal">
@@ -70,27 +123,36 @@ var UserMembershipModal = React.createClass({
               <h4 className="modal-title">Membership</h4>
             </div>
             <div className="modal-body">
-              <p>Something about membership here</p>
-              <form className="container-fluid" action="/">
-                <div className="form-group row">{ this.props.memberships.map( (e,i) => {
-                      return (
-                        <div key={i}>
-                          <div className="col-md-8 col-sm-12 form-group">
-                            <input type="text" defaultValue={e.club_name} placeholder="Club Name" className="form-control" />
-                          </div>
-                          <div className="col-md-2 col-sm-12 form-group">
-                            <input type="text" defaultValue={e.expires}  placeholder="Expires" className="form-control" />
-                          </div>
-                          <div className="col-md-2 col-sm-12 form-group">
-                            <button type="button" className="btn btn-danger" onClick={this.props.deleteMembership}
-                              data-index={i} ><i className="fa fa-minus"></i></button>
-                          </div>
+              <p>Membership Details</p>
+              <form className="container-fluid" method="post" id="membership-form" ref="membershipsForm" action={this.props.memberships_path}>
+                <input type="hidden" name="authenticity_token" value={this.props.csrfToken} />
+                <div className="form-group row">
+                  { this.state.memberships.map( (e,i) => {
+                    var random_id = randomID();
+                    return (
+                      <div key={i}>
+                        <input type="hidden" defaultValue={e.golf_club_id} name={`memberships[${random_id}][golf_club_id]`} />
+                        <input type="hidden" defaultValue={e.id} name={`memberships[${random_id}][id]`} />
+                        <div className="col-md-7 col-sm-12 form-group">
+                          <input type="text" value={e.club_name} onChange={this.updateMembership}
+                            name={`memberships[${random_id}][club_name]`}
+                            placeholder="Club Name" data-index={i} data-value="club_name" className="form-control" />
                         </div>
+                        <div className="col-md-3 col-sm-12 form-group">
+                          <input type="date" value={e.expires_at} onChange={this.updateMembership}
+                            name={`memberships[${random_id}][expires_at]`}
+                            placeholder="Expires" data-index={i} data-value="expires_at" className="form-control expires_date_field" />
+                        </div>
+                        <div className="col-md-2 col-sm-12 form-group">
+                          <button type="button" className="btn btn-danger" onClick={this.deleteMembership}
+                            data-index={i} ><i className="fa fa-minus"></i></button>
+                        </div>
+                      </div>
                       );
                     })
                   }
                   <div className="col-sm-12">
-                    <button type="button" className="btn btn-primary" onClick={this.props.newMembership}>
+                    <button type="button" className="btn btn-primary" onClick={this.newMembership}>
                       <i className="fa fa-plus"></i>
                     </button>
                   </div>
@@ -98,9 +160,9 @@ var UserMembershipModal = React.createClass({
               </form>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={this.resetForm}>Cancel</button>
               <button style={ {marginLeft:"5px"}} type="button" className="btn btn-primary" data-dismiss="modal"
-                onClick={this.props.updateMembership} data-dismiss="modal">Update Membership
+                onClick={this.sendUpdates} data-dismiss="modal">Update Membership
               </button>
             </div>
           </div>

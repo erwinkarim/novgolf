@@ -23,9 +23,39 @@ class User < ActiveRecord::Base
     self.image || "/images/users/default.jpg"
   end
 
-  def set_memberships memberships={}
+  # update the memberships sets, membership will arrive in {random_id => {membership_detail}, random_id => {membership_detail} } fashion
+  def set_memberships new_memberships={}
+    #current_memberships = self.memberships
+
+    self.transaction do
+      #delete keys that are not there yet
+      Membership.where( :id => self.memberships.map{ |x| x.id} -
+        new_memberships.map{ |k,v| v["id"].to_i }.select{ |x| !x.zero?}).each{ |x| x.destroy }
+
+      #create / modify existings keys
+      new_memberships.each_pair do |random_id, membership|
+        if membership[:id].nil? || membership[:id].empty? then
+          #new membership
+          if membership[:golf_club_id].nil? || membership[:golf_club_id].empty? then
+            #user alt_club_name
+            newMembership = self.memberships.new(alt_club_name:membership[:club_name], expires_at:membership[:expires_at])
+          else
+            newMembership = self.memberships.new(golf_club_id:membership[:golf_club_id], expires_at:membership[:expires_at])
+          end
+          newMembership.save!
+        else
+          #update current membership
+          current_membership = Membership.find(membership[:id])
+          if membership[:golf_club_id].nil? || membership[:golf_club_id].empty? then
+            current_membership.update_attributes(alt_club_name:membership[:club_name], expires_at:membership[:expires_at])
+          else
+            current_membership.update_attributes(golf_club_id:membership[:golf_club_id], expires_at:membership[:expires_at])
+          end
+        end
+      end
+    end
   end
-  
+
   def self.from_omniauth(auth)
    where(provider: auth.provider, uid: auth.uid).first_or_create do |user|
      user.email = auth.info.email
