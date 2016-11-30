@@ -65,7 +65,7 @@ var UserMembershipModal = React.createClass({
   propTypes: {memberships:React.PropTypes.array, csrfToken:React.PropTypes.string },
   getInitialState: function(){
     //clone the array
-    var newMemberships = this.props.memberships.slice(0);
+    var newMemberships = JSON.parse( JSON.stringify(this.props.memberships) )
     return {memberships:newMemberships};
   },
   componentDidMount: function(){
@@ -90,7 +90,6 @@ var UserMembershipModal = React.createClass({
     });
   },
   newMembership: function(e){
-    console.log("new memberships");
     var newMemberships = this.state.memberships;
     newMemberships.push( Object.assign({}, defaultMembership) );
 
@@ -99,7 +98,8 @@ var UserMembershipModal = React.createClass({
     }))
   },
   updateMembership: function(e){
-    var newMemberships = this.state.memberships;
+    //var newMemberships = this.state.memberships.slice(0);
+    var newMemberships = JSON.parse( JSON.stringify(this.state.memberships) )
     newMemberships[e.target.dataset.index][`${e.target.dataset.value}`] = e.target.value;
 
     this.setState( (prevState) => ( {memberships:newMemberships}));
@@ -112,14 +112,15 @@ var UserMembershipModal = React.createClass({
   resetForm: function(){
     var newMemberships = this.props.memberships.slice(0);
     this.setState({memberships:newMemberships});
+    $(this.refs.membershipModal).modal('hide');
   },
   render: function(){
     return (
-      <div ref="membershipModal" className="modal fade" id="membershipModal">
+      <div ref="membershipModal" className="modal fade" id="membershipModal" data-keyboard="false" data-backdrop="static">
         <div className="modal-dialog modal-lg" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <button type="button" className="close" data-dismiss="modal"><span>&times;</span></button>
+              <button type="button" className="close" data-dismiss="modal" onClick={this.resetForm}><span>&times;</span></button>
               <h4 className="modal-title">Membership</h4>
             </div>
             <div className="modal-body">
