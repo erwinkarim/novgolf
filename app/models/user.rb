@@ -38,18 +38,19 @@ class User < ActiveRecord::Base
           #new membership
           if membership[:golf_club_id].nil? || membership[:golf_club_id].empty? then
             #user alt_club_name
-            newMembership = self.memberships.new(alt_club_name:membership[:club_name], expires_at:membership[:expires_at])
+            newMembership = self.memberships.new(alt_club_name:membership[:club_name], golf_club_id:nil, expires_at:membership[:expires_at])
           else
-            newMembership = self.memberships.new(golf_club_id:membership[:golf_club_id], expires_at:membership[:expires_at])
+            newMembership = self.memberships.new(golf_club_id:membership[:golf_club_id], alt_club_name:nil, expires_at:membership[:expires_at])
           end
           newMembership.save!
         else
           #update current membership
+          Rails.logger.info "update current membership #{membership[:id]}"
           current_membership = Membership.find(membership[:id])
           if membership[:golf_club_id].nil? || membership[:golf_club_id].empty? then
-            current_membership.update_attributes(alt_club_name:membership[:club_name], expires_at:membership[:expires_at])
+            current_membership.update_attributes(alt_club_name:membership[:club_name], golf_club_id:nil, expires_at:membership[:expires_at])
           else
-            current_membership.update_attributes(golf_club_id:membership[:golf_club_id], expires_at:membership[:expires_at])
+            current_membership.update_attributes(golf_club_id:membership[:golf_club_id], alt_club_name:nil, expires_at:membership[:expires_at])
           end
         end
       end

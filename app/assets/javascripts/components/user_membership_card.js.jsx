@@ -7,7 +7,9 @@ var defaultMembership = {
 
 var UserMembershipCard = React.createClass({
   propTypes: {
-    memberships_path:React.PropTypes.string, allowEdit:React.PropTypes.bool, csrfToken:React.PropTypes.string },
+    memberships_path:React.PropTypes.string,
+    club_path: React.PropTypes.string,
+    allowEdit:React.PropTypes.bool, csrfToken:React.PropTypes.string },
   getDefaultProps: function(){
     return {allowEdit:false};
   },
@@ -30,6 +32,7 @@ var UserMembershipCard = React.createClass({
   },
   render: function() {
     //show modal if allow to edit
+    var handle = this;
     var membershipModal = (this.props.allowEdit) ? (
       <UserMembershipModal csrfToken={this.props.csrfToken} memberships={this.state.memberships}
         memberships_path={this.props.memberships_path} updateMembership={this.updateMembership} />
@@ -37,7 +40,7 @@ var UserMembershipCard = React.createClass({
     var footer = (this.props.allowEdit) ?
       (
         <div className="card-footer">
-          <a href="#membershipModal" data-toggle="modal">Edit Membership</a>
+          <a href="#membershipModal" data-toggle="modal">Edit Memberships</a>
         </div>
       ) : null ;
 
@@ -47,16 +50,55 @@ var UserMembershipCard = React.createClass({
       </ul>
     ) : (
       <ul className="list-group list-group-flush">{ this.state.memberships.map( (e,i) => {
-        return (<li key={i} className="list-group-item">{e.club_name}</li> )
+        var club_listing = e.golf_club_id == null ? (<li key={i} className="list-group-item">{e.club_name}</li>) : (
+          <li key={i} className="list-group-item"><a href={`${this.props.club_path}/${e.golf_club_id}`}>{e.club_name}</a></li>
+        );
+
+        return (club_listing);
       })}</ul>
     )
     return (
       <div className="card">
         { membershipModal }
-        <div className="card-header">Membership</div>
+        <div className="card-header">Memberships</div>
         { membershipList}
         { footer }
       </div>
+    );
+  }
+});
+
+var AutoCompleteInputField = React.createClass({
+  propTypes: {
+    /* TODO: figure out how to data-* from hash object */
+    changeFn: React.PropTypes.func,
+    name: React.PropTypes.string,
+    value: React.PropTypes.string,
+    indexValue: React.PropTypes.number
+  },
+  componentDidMount: function(){
+    //if multiple same component in the root, it's always get's the last one
+    handle = this;
+    $(this.refs.autocomplete).autocomplete({
+      serviceUrl: '/suggest',
+      dataType:'json',
+      deferRequestBy:100,
+      paramName:'q',
+      onSelect:function(suggestion){
+        handle.props.changeFn({
+          target: {
+            value:suggestion.value,
+            dataset: {index:$(this).attr('data-index'), value:'club_name', suggested_club:suggestion.data }
+          }
+        });
+      }
+    });
+  },
+  render: function(){
+    return (
+      <input ref="autocomplete" className="form-control" type="text"
+        name={this.props.name} value={this.props.value} onChange={this.props.changeFn}
+        data-value="club_name" data-index={this.props.indexValue} />
     );
   }
 });
@@ -67,9 +109,6 @@ var UserMembershipModal = React.createClass({
     //clone the array
     var newMemberships = JSON.parse( JSON.stringify(this.props.memberships) )
     return {memberships:newMemberships};
-  },
-  componentDidMount: function(){
-    //setup datepicker for each date field
   },
   componentWillReceiveProps: function(nextProps){
     this.setState({memberships:nextProps.memberships});
@@ -86,7 +125,8 @@ var UserMembershipModal = React.createClass({
       return response.json();
     }).then( function(json){
       //send updates to the mothership
-      handle.props.updateMembership(handle.state.memberships);
+      //handle.props.updateMembership(handle.state.memberships);
+      handle.props.updateMembership(json.memberships);
     });
   },
   newMembership: function(e){
@@ -101,6 +141,12 @@ var UserMembershipModal = React.createClass({
     //var newMemberships = this.state.memberships.slice(0);
     var newMemberships = JSON.parse( JSON.stringify(this.state.memberships) )
     newMemberships[e.target.dataset.index][`${e.target.dataset.value}`] = e.target.value;
+
+    if("suggested_club" in e.target.dataset){
+      newMemberships[e.target.dataset.index].golf_club_id = e.target.dataset.suggested_club;
+    } else {
+      newMemberships[e.target.dataset.index].golf_club_id = '';
+    };
 
     this.setState( (prevState) => ( {memberships:newMemberships}));
   },
@@ -121,7 +167,7 @@ var UserMembershipModal = React.createClass({
           <div className="modal-content">
             <div className="modal-header">
               <button type="button" className="close" data-dismiss="modal" onClick={this.resetForm}><span>&times;</span></button>
-              <h4 className="modal-title">Membership</h4>
+              <h4 className="modal-title">Memberships</h4>
             </div>
             <div className="modal-body">
               <p>Membership Details</p>
@@ -132,12 +178,13 @@ var UserMembershipModal = React.createClass({
                     var random_id = randomID();
                     return (
                       <div key={i}>
-                        <input type="hidden" defaultValue={e.golf_club_id} name={`memberships[${random_id}][golf_club_id]`} />
-                        <input type="hidden" defaultValue={e.id} name={`memberships[${random_id}][id]`} />
+                        <input type="hidden" value={e.golf_club_id} name={`memberships[${random_id}][golf_club_id]`} />
+                        <input type="hidden" value={e.id} name={`memberships[${random_id}][id]`} />
                         <div className="col-md-7 col-sm-12 form-group">
-                          <input type="text" value={e.club_name} onChange={this.updateMembership}
-                            name={`memberships[${random_id}][club_name]`}
-                            placeholder="Club Name" data-index={i} data-value="club_name" className="form-control" />
+                          <AutoCompleteInputField name={`memberships[${random_id}][club_name]`}
+                            changeFn={this.updateMembership} value={e.club_name}
+                            indexValue={i}
+                          />
                         </div>
                         <div className="col-md-3 col-sm-12 form-group">
                           <input type="date" value={e.expires_at} onChange={this.updateMembership}

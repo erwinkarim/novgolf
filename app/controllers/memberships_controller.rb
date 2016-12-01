@@ -17,13 +17,18 @@ class MembershipsController < ApplicationController
 
     #ensure the membership params is there
     unless params.has_key? :memberships then
-      render json: {message:'memberships list not found'}, :status => :unprocessable_entity
-      return
+      #render json: {message:'memberships list not found'}, :status => :unprocessable_entity
+      #return
+      #this could me no membership at all
+      params[:memberships] = {}
     end
 
     #set the new memberships state
     current_user.set_memberships params[:memberships]
 
-    render json: {message:'message received from server'}
+    render json: {
+      message:'message received from server',
+      memberships:User.find(params[:user_id]).memberships.map{ |x| x.attributes.merge({club_name: x.club_name})}
+    }
   end
 end

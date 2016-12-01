@@ -50,7 +50,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :golf_clubs, :only => [:show] do
+  resources :golf_clubs, :only => [:index, :show] do
     resources :flight_matrices, :only => [:index] do
     end
     resources :user_reservations, :only => [:index] do

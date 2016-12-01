@@ -9,7 +9,7 @@ class Membership < ActiveRecord::Base
 
   def club_name
     #check of golf_club_id
-    (self.golf_club_id.nil? || self.golf_club_id.empty?) ? self.alt_club_name : self.golf_club.name
+    (self.golf_club_id.nil? || self.golf_club_id.blank?) ? self.alt_club_name : self.golf_club.name
   end
 
   private
