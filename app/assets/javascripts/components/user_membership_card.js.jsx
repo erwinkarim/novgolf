@@ -95,8 +95,9 @@ var AutoCompleteInputField = React.createClass({
     });
   },
   render: function(){
+    var includesDanger = this.props.value == "" ? "form-control-danger" : "";
     return (
-      <input ref="autocomplete" className="form-control" type="text"
+      <input ref="autocomplete" className={`form-control ${includesDanger}`} type="text"
         name={this.props.name} value={this.props.value} onChange={this.props.changeFn}
         data-value="club_name" data-index={this.props.indexValue} />
     );
@@ -126,6 +127,7 @@ var UserMembershipModal = React.createClass({
     }).then( function(json){
       //send updates to the mothership
       //handle.props.updateMembership(handle.state.memberships);
+      $(handle.refs.membershipModal).modal('hide');
       handle.props.updateMembership(json.memberships);
     });
   },
@@ -161,6 +163,7 @@ var UserMembershipModal = React.createClass({
     $(this.refs.membershipModal).modal('hide');
   },
   render: function(){
+    var disableUpdateBtn = Math.min(... this.state.memberships.map( (e,i) => e.club_name == ""));
     return (
       <div ref="membershipModal" className="modal fade" id="membershipModal" data-keyboard="false" data-backdrop="static">
         <div className="modal-dialog modal-lg" role="document">
@@ -176,11 +179,12 @@ var UserMembershipModal = React.createClass({
                 <div className="form-group row">
                   { this.state.memberships.map( (e,i) => {
                     var random_id = randomID();
+                    var includesDanger = e.club_name == "" ? "has-danger" : "";
                     return (
                       <div key={i}>
                         <input type="hidden" value={e.golf_club_id} name={`memberships[${random_id}][golf_club_id]`} />
                         <input type="hidden" value={e.id} name={`memberships[${random_id}][id]`} />
-                        <div className="col-md-7 col-sm-12 form-group">
+                        <div className={`col-md-7 col-sm-12 form-group ${includesDanger}`}>
                           <AutoCompleteInputField name={`memberships[${random_id}][club_name]`}
                             changeFn={this.updateMembership} value={e.club_name}
                             indexValue={i}
@@ -210,7 +214,7 @@ var UserMembershipModal = React.createClass({
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={this.resetForm}>Cancel</button>
               <button style={ {marginLeft:"5px"}} type="button" className="btn btn-primary" data-dismiss="modal"
-                onClick={this.sendUpdates} data-dismiss="modal">Update Membership
+                onClick={this.sendUpdates} disabled={disableUpdateBtn}>Update Membership
               </button>
             </div>
           </div>
