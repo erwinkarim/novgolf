@@ -14,7 +14,6 @@ one:
  email: "user1@example.com"
  name: "test user 1"
  image: nil
- home_club: nil
  handicap: 24
  #profile_picture_id: nil
 two:
@@ -22,6 +21,5 @@ two:
  email: "user2@example.com"
  name: "test user 2"
  image: nil
- home_club: nil
  handicap: 24
  #profile_picture_id: nil

@@ -1,4 +1,8 @@
 class GolfClubsController < ApplicationController
+  # GET     /golf_clubs
+  def index
+    redirect_to root_path
+  end
 
   # GET      /golf_clubs/:id
   def show

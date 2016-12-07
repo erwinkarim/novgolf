@@ -24,13 +24,15 @@ class UserReservationsController < ApplicationController
     session[:members] = params[:members]
 
     # need to check all members ids + name has been fullfilled, otherwise go black
-    session[:members].each_pair do |k,members_for_flight|
-      members_for_flight.each_pair do |k_flight, member|
-        if member[:name].empty? || member[:id].empty? then
-          flash[:error] = "Some Members Id/Name is incomplete"
-          redirect_to reserve_golf_club_user_reservations_path(session[:golf_club_id],
-            {info:session[:info], flight:session[:flight], teeTimes:params[:teeTimes]})
-          return
+    if params.has_key? :members then
+      session[:members].each_pair do |k,members_for_flight|
+        members_for_flight.each_pair do |k_flight, member|
+          if member[:name].empty? || member[:id].empty? then
+            flash[:error] = "Some Members Id/Name is incomplete"
+            redirect_to reserve_golf_club_user_reservations_path(session[:golf_club_id],
+              {info:session[:info], flight:session[:flight], teeTimes:params[:teeTimes]})
+            return
+          end
         end
       end
     end

@@ -11,7 +11,7 @@
 // about supported directives.
 //
 //= require jquery
-//= require jquery-ui/datepicker
+//= require jquery-ui/widgets/datepicker
 //= require jquery.timepicker.js
 //= require jquery_ujs
 //= require jquery.sticky.js

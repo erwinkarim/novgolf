@@ -11,6 +11,7 @@ Rails.application.routes.draw do
       end
     end
     resources :reviews
+    resources :memberships
   end
   #devise_scope :user do
   #  delete 'sign_out', :to => 'devise/sessions#destroy', :as => :destroy_user_session
@@ -42,13 +43,14 @@ Rails.application.routes.draw do
       resources :photos, :only => [:index, :create, :update, :destroy]
       #this is for MVP + 1
       #resources :charge_schedules, :only => [:index]
+      resources :memberships, :only => [:index, :show, :destroy]
     end
     resources :user_reservations, :only => [:create, :show, :destroy, :update], constraints: {format:'json'} do
       post 'confirm'
     end
   end
 
-  resources :golf_clubs, :only => [:show] do
+  resources :golf_clubs, :only => [:index, :show] do
     resources :flight_matrices, :only => [:index] do
     end
     resources :user_reservations, :only => [:index] do

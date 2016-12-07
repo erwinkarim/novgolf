@@ -30,7 +30,7 @@
                   - if current_user.superadmin? || current_user.admin? then
                     -# admin namespace is optimized for large screen. no easy way to go to admin in phone
                     .dropdown-divider.hidden-md-down
-                    %a.dropdown-item.hidden-md-down{href:admin_golf_clubs_path } Admin Dashboard
+                    %a.dropdown-item.hidden-md-down{href:admin_golf_clubs_path } Manage Your Clubs
                   .dropdown-divider
                   = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
             - else
