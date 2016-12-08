@@ -3,7 +3,7 @@ var GolfClubDashStatistics = React.createClass({
     flightsArray:React.PropTypes.array
   },
   getInitialState(){
-    return { coursesBooked:0, coursesTotal:0}
+    return { coursesBooked:0, coursesTotal:0, revenue:0}
   },
   componentDidMount: function(){
     this.checkCourseStats(this.props);
@@ -13,10 +13,14 @@ var GolfClubDashStatistics = React.createClass({
   },
   checkCourseStats: function(theProps){
     //get the courses Count
+    var handle = this;
     var courseCount = 0;
     var bookedCourse = 0;
+    var reservation_ids = [];
+
     console.log('check course count');
     if(theProps != undefined){
+      // get the course count / booked courses
       theProps.flightsArray.map( (day,i) => {
         //this is each day
         day.map( (flight, flight_index) => {
@@ -24,10 +28,27 @@ var GolfClubDashStatistics = React.createClass({
             courseCount += 1;
             if(course.reservation_id != null){
               bookedCourse += 1;
+              reservation_ids.push(course.reservation_id);
             }
           });
         });
       });
+
+      //get the revenue generated
+      fetch('/admin/user_reservations/stats', {
+        credentials: 'same-origin',
+        method:'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_list:reservation_ids,
+          authenticity_token:this.props.token
+        })
+      }).then(function(response){
+        return response.json();
+      }).then(function(json){
+        handle.setState({revenue:json.revenue});
+      });
+
     }
 
     this.setState({coursesBooked:bookedCourse, coursesTotal:courseCount});
@@ -39,6 +60,7 @@ var GolfClubDashStatistics = React.createClass({
       <div>
         <h3>Stats</h3>
         <p>Courses: {this.state.coursesBooked}/{this.state.coursesTotal} </p>
+        <p>Revenue: {toCurrency(parseInt(this.state.revenue))}</p>
       </div>
     );
   }
@@ -137,12 +159,16 @@ var GolfClubDashboard = React.createClass({
   loadSchedule: function(){
 
     var handle = this;
-    this.state.days.map( (e,i) => {
-      $.getJSON(handle.props.paths.club_path, {date:e, loadcoursedata:true}, function(data){
-        var newFlightsArray = handle.state.flightsArray;
-        newFlightsArray[i] = data.flights;
-        handle.setState({flightsArray:newFlightsArray});
+    var newFlightsArray = this.state.flightsArray;
+
+    //asynch issues, need to use promise to send and collect
+    //or update the controller to load the next 7 days instead
+    $.getJSON(`${handle.props.paths.club_path}/flights`, {date:this.state.days[0], loadcoursedata:true}, function(data){
+      var newFlightsArray = handle.state.flightsArray;
+      data.map( (search_result, index) => {
+        newFlightsArray[index] = search_result.flights;
       });
+      handle.setState({flightsArray:newFlightsArray});
     });
 
   },
@@ -221,7 +247,7 @@ var GolfClubDashboard = React.createClass({
 
   },
   handleClick: function(e){
-    //happends when i click on a flight time
+    //happens when i click on a flight time
 
     var handle = this;
     //console.log('button clicked', e.target.dataset);
@@ -411,7 +437,7 @@ var GolfClubDashboard = React.createClass({
     var modalMinMember = 0;
     var modalMaxMember = 5;
 
-    var dashStats = (<GolfClubDashStatistics flightsArray={this.state.flightsArray} />);
+    var dashStats = (<GolfClubDashStatistics flightsArray={this.state.flightsArray} token={this.props.token} />);
 
     if(this.state.selectedArray != null){
         modalMinMember = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight].minPax;
