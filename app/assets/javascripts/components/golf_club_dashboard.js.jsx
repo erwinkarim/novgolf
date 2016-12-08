@@ -1,3 +1,49 @@
+var GolfClubDashStatistics = React.createClass({
+  propTypes:{
+    flightsArray:React.PropTypes.array
+  },
+  getInitialState(){
+    return { coursesBooked:0, coursesTotal:0}
+  },
+  componentDidMount: function(){
+    this.checkCourseStats(this.props);
+  },
+  componentWillReceiveProps(nextProps){
+    this.checkCourseStats(nextProps);
+  },
+  checkCourseStats: function(theProps){
+    //get the courses Count
+    var courseCount = 0;
+    var bookedCourse = 0;
+    console.log('check course count');
+    if(theProps != undefined){
+      theProps.flightsArray.map( (day,i) => {
+        //this is each day
+        day.map( (flight, flight_index) => {
+          flight.course_data.courses.map((course, course_index) =>  {
+            courseCount += 1;
+            if(course.reservation_id != null){
+              bookedCourse += 1;
+            }
+          });
+        });
+      });
+    }
+
+    this.setState({coursesBooked:bookedCourse, coursesTotal:courseCount});
+  },
+  render: function(){
+    //calculate couses booked / availabled course
+
+    return (
+      <div>
+        <h3>Stats</h3>
+        <p>Courses: {this.state.coursesBooked}/{this.state.coursesTotal} </p>
+      </div>
+    );
+  }
+});
+
 var GolfClubDashStatus = React.createClass({
   propTypes:{
     status:React.PropTypes.string,
@@ -14,6 +60,8 @@ var GolfClubDashStatus = React.createClass({
   render:function(){
     //load the flight info if booked, default is null
     var flightInfo = (<div>No Flights Selected</div>);
+    var toggleReservationPanel = this.props.status == null ? null : (<a data-toggle="collapse" href="#reservationCollapse">Show/Hide</a>);
+
     var disableFnBtn = true;
     if(this.props.loadFlight){
       disableFnBtn = false;
@@ -33,13 +81,18 @@ var GolfClubDashStatus = React.createClass({
     return(
       <div className="card" id="dashStatus" ref="dashStatus" style={ {background:'papayawhip'} }>
         <ul className="list-group list-group-flush">
-          <li className="list-group-item">{this.props.status}</li>
-          <li className="list-group-item">{ flightInfo }</li>
           <li className="list-group-item">
-            <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
-            <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationConfirm}>Confirm</button>
-            <button className="btn btn-danger" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
-            <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
+            <h3>{this.props.status} <small>{toggleReservationPanel}</small></h3>
+            <div className="collapse in" id="reservationCollapse">
+              { flightInfo }
+              <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
+              <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationConfirm}>Confirm</button>
+              <button className="btn btn-danger" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
+              <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
+            </div>
+          </li>
+          <li className="list-group-item">
+            {this.props.dashStats}
           </li>
         </ul>
       </div>
@@ -358,6 +411,8 @@ var GolfClubDashboard = React.createClass({
     var modalMinMember = 0;
     var modalMaxMember = 5;
 
+    var dashStats = (<GolfClubDashStatistics flightsArray={this.state.flightsArray} />);
+
     if(this.state.selectedArray != null){
         modalMinMember = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight].minPax;
         modalMaxMember = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight].maxPax;
@@ -448,6 +503,7 @@ var GolfClubDashboard = React.createClass({
             reservationUpdate={this.reservationUpdate} reservationCancel={this.reservationCancel} reservationNew={this.reservationNew}
             reservationConfirm={this.reservationConfirm}
             updateMembersList={this.updateMembersList}
+            dashStats={dashStats}
             />
         </div>
       </div>
