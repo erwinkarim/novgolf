@@ -60,7 +60,7 @@ var GolfClubDashStatistics = React.createClass({
       <div>
         <h3>Stats</h3>
         <p>Courses: {this.state.coursesBooked}/{this.state.coursesTotal} </p>
-        <p>Revenue: {toCurrency(parseInt(this.state.revenue))}</p>
+        <p>Revenue: {toCurrency(parseFloat(this.state.revenue))}</p>
       </div>
     );
   }
@@ -79,15 +79,30 @@ var GolfClubDashStatus = React.createClass({
   componentDidMount:function(){
     $(this.refs.dashStatus).sticky({topSpacing:10});
   },
+  toggleChevron: function(){
+    $(this.refs.chevron).toggleClass('fa-angle-double-up');
+    $(this.refs.chevron).toggleClass('fa-angle-double-down');
+  },
   render:function(){
     //load the flight info if booked, default is null
-    var flightInfo = (<div>No Flights Selected</div>);
-    var toggleReservationPanel = this.props.status == null ? null : (<a data-toggle="collapse" href="#reservationCollapse">Show/Hide</a>);
+    var flightInfo = null;
+    var btnRow = null;
+    var toggleReservationPanel = this.props.status == null ? null : (
+      <a onClick={this.toggleChevron} data-toggle="collapse" href="#reservationCollapse"><i ref="chevron" className="fa fa-angle-double-up"></i></a>
+    );
 
     var disableFnBtn = true;
     if(this.props.loadFlight){
       disableFnBtn = false;
       var flight = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight];
+      btnRow = (
+        <div>
+          <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
+          <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationConfirm}>Confirm</button>
+          <button className="btn btn-danger" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
+          <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
+        </div>
+      );
       flightInfo = (
         <div>
           <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
@@ -99,18 +114,15 @@ var GolfClubDashStatus = React.createClass({
       )
     };
 
-
     return(
       <div className="card" id="dashStatus" ref="dashStatus" style={ {background:'papayawhip'} }>
         <ul className="list-group list-group-flush">
           <li className="list-group-item">
-            <h3>{this.props.status} <small>{toggleReservationPanel}</small></h3>
+            <h3>Flight <small>{toggleReservationPanel}</small></h3>
             <div className="collapse in" id="reservationCollapse">
+              <p>Selected: {this.props.status}</p>
               { flightInfo }
-              <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
-              <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationConfirm}>Confirm</button>
-              <button className="btn btn-danger" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
-              <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
+              { btnRow }
             </div>
           </li>
           <li className="list-group-item">
@@ -137,7 +149,7 @@ var GolfClubDashboard = React.createClass({
     var queryDate = today.getDate() + '/' + (today.getMonth()+1) + '/' + today.getFullYear();
 
     return {
-      flightsArray:[], dashBoardStatusText:null,
+      flightsArray:[], dashBoardStatusText:'None Selected',
       days: this.updateDays(today), queryDate:queryDate,
       loadFlight: false, selectedArray:null, selectedFlight:null, selectedCourse:null,
       flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[]}
@@ -189,7 +201,8 @@ var GolfClubDashboard = React.createClass({
     //console.log('date changed to', dateText);
     if(dateText != this.state.days[0]){
       this.setState({days: this.updateDays(new Date(dateText)),
-        loadFlight:false,selectedArray:null, selectedFlight:null, tick:60
+        loadFlight:false,selectedArray:null, selectedFlight:null, tick:60,
+        dashBoardStatusText:'None Selected'
       });
       $('.btn-group').find('.active').toggleClass('active');
       this.loadSchedule();
