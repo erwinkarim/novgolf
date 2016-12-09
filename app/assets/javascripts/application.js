@@ -29,6 +29,7 @@
 //= require utilities
 //= require react
 //= require formatted-text
+//= require d3
 //= require react_ujs
 //= require components
 //= require ready
