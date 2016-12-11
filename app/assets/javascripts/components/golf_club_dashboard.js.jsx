@@ -60,6 +60,11 @@ var GolfClubDashStatistics = React.createClass({
       <div>
         <h3>Stats</h3>
         <p>Courses: {this.state.coursesBooked}/{this.state.coursesTotal} </p>
+        <progress className="progress" value={this.state.coursesBooked} max={this.state.coursesTotal}>
+          <div className="progress">
+            <span className="progress-bar" style={{width:`${this.state.coursesBooked/this.state.coursesTotal*100}%`}}></span>
+          </div>
+        </progress>
         <p>Revenue: {toCurrency(parseFloat(this.state.revenue))}</p>
       </div>
     );
