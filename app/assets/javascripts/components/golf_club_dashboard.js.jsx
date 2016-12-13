@@ -18,7 +18,6 @@ var GolfClubDashStatistics = React.createClass({
     var bookedCourse = 0;
     var reservation_ids = [];
 
-    console.log('check course count');
     if(theProps != undefined){
       // get the course count / booked courses
       theProps.flightsArray.map( (day,i) => {
@@ -424,6 +423,10 @@ var GolfClubDashboard = React.createClass({
     };
 
   },
+  refreshNow: function(e){
+    e.preventDefault();
+    this.loadSchedule();
+  },
   componentDidMount:function(){
     var handle = this;
 
@@ -526,7 +529,7 @@ var GolfClubDashboard = React.createClass({
           <p>
             <input className="datepicker form-control" ref="datepicker"
               type="text" defaultValue={this.state.queryDate} style={ {zIndex:100, position:'relative'}}/>
-            Updates in {Date(Date.now + this.props.refreshEvery*1000)} ...
+            Updates in {Date(Date.now + this.props.refreshEvery*1000)} ... <a href="#" onClick={this.refreshNow}>Refresh Now</a>
           </p>
           { this.state.flightsArray.map( (e,i) => {
             return (
