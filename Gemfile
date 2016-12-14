@@ -114,3 +114,6 @@ gem 'nokogiri'
 
 #static pages
 gem 'high_voltage', '~> 3.0.0'
+
+#generate pie charts and stuff
+#gem 'd3-rails'

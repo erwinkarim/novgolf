@@ -1,6 +1,6 @@
 var GolfClubDashStatistics = React.createClass({
   propTypes:{
-    flightsArray:React.PropTypes.array, days:React.PropTypes.array
+    flightsArray:React.PropTypes.array
   },
   getInitialState(){
     return { coursesBooked:0, coursesTotal:0, revenue:0}
@@ -58,7 +58,6 @@ var GolfClubDashStatistics = React.createClass({
     return (
       <div>
         <h3>Stats</h3>
-        <p>Duration: {this.props.days[0]} to {this.props.days[6]}</p>
         <p>Courses: {this.state.coursesBooked}/{this.state.coursesTotal} </p>
         <progress className="progress" value={this.state.coursesBooked} max={this.state.coursesTotal}>
           <div className="progress">
@@ -459,7 +458,7 @@ var GolfClubDashboard = React.createClass({
     var modalMinMember = 0;
     var modalMaxMember = 5;
 
-    var dashStats = (<GolfClubDashStatistics flightsArray={this.state.flightsArray} days={this.state.days} token={this.props.token} />);
+    var dashStats = (<GolfClubDashStatistics flightsArray={this.state.flightsArray} token={this.props.token} />);
 
     if(this.state.selectedArray != null){
         modalMinMember = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight].minPax;

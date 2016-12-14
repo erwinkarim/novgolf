@@ -40,6 +40,7 @@ Rails.application.routes.draw do
     resources :golf_clubs do
       get 'dashboard'
       get 'tax_schedule'
+      get 'flights'
       resources :photos, :only => [:index, :create, :update, :destroy]
       #this is for MVP + 1
       #resources :charge_schedules, :only => [:index]
@@ -47,6 +48,9 @@ Rails.application.routes.draw do
     end
     resources :user_reservations, :only => [:create, :show, :destroy, :update], constraints: {format:'json'} do
       post 'confirm'
+      collection do
+        post 'stats'
+      end
     end
   end
 

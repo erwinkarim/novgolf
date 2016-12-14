@@ -216,4 +216,21 @@ class UserReservation < ActiveRecord::Base
     end
   end
 
+  # collect stats of a set of reservations_ids
+  def self.stats reservation_ids=[]
+    #sometime set to nil by the controller
+    if reservation_ids.nil? or reservation_ids.empty? then
+      return {count:0, totalRevenue:0.00}
+    end
+
+    reservations = UserReservation.where(id:reservation_ids)
+
+    total_revenue = 0.0
+
+    reservations.each do |reservation|
+      total_revenue += reservation.total_price
+    end
+
+    return { count:reservation_ids.count, totalRevenue:total_revenue}
+  end
 end

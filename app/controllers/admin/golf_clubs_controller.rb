@@ -190,6 +190,27 @@ class Admin::GolfClubsController < ApplicationController
     }
   end
 
+  #return the flight array on date + next 6 days
+  #json only format
+  # GET      /admin/golf_clubs/:golf_club_id/flights(.:format)
+  def flights
+    club = GolfClub.find(params[:golf_club_id])
+    if club.user_id != current_user.id then
+      render json:{message:'you do not own this club'}, status: :unauthorized
+      return
+    end
+
+    date = params.has_key?(:date) ? Date.parse(params[:date]) : Date.today + 1.day
+    results = []
+    (date..date+6).each do |date_query|
+      result = GolfClub.search({ dateTimeQuery:Time.parse("#{date_query} 14:00 +0000"), spread:9.hours, club_id:club.id,
+        loadCourseData:true, adminMode:true}).first
+      results << (result.nil? ? {:club => [], :flights => [], :queryData => []} : result)
+    end
+
+    render json:results
+
+  end
 
   def golf_club_params
     params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour, :lat, :lng, :tax_schedule_id);

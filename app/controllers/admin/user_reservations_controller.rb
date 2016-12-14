@@ -113,4 +113,11 @@ class Admin::UserReservationsController < ApplicationController
     end
     render json: {message:"Reservation #{ur.id} confirmed"}
   end
+
+  # POST /admin/user_reservations/stats
+  # expected id_list
+  def stats
+    result = UserReservation.stats params[:id_list]
+    render json: {revenue:result[:totalRevenue]}
+  end
 end
