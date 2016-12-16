@@ -10,6 +10,7 @@ class UserReservation < ActiveRecord::Base
 
   has_one :review, as: :topic
   has_many :ur_member_details, dependent: :destroy
+  has_many :ur_transactions, dependent: :destroy
 
   #each club id should have a unique booking date and time
   #  and unique course #

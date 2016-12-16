@@ -26,6 +26,7 @@ class UserReservationTest < ActiveSupport::TestCase
   should have_one(:review)
 
   should have_many(:ur_member_details).dependent(:destroy)
+  should have_many(:ur_transactions).dependent(:destroy)
 
   #ensure the validates_booking_datetime returns true if put correct input
   test "validates_booking_datetime true" do
