@@ -37,9 +37,21 @@ class UserReservation < ActiveRecord::Base
 
   after_initialize :init
 
+  #track changes
+  has_paper_trail :on => [:update], :only => [:actual_pax]
+  after_save :report_changes
+
   def init
     self.status ||= 0
     self.count_member ||= 0
+  end
+
+  def report_changes
+    Rails.logger.info "report changes to ur_transactions"
+
+    #get the previous version
+    last_version = self.paper_trail.previous_version
+    Rails.logger.info "actual_pax changed from #{last_version.actual_pax} to #{self.actual_pax}"
   end
 
   def validates_booking_datetime
