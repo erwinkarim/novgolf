@@ -51,6 +51,7 @@ Rails.application.routes.draw do
       collection do
         post 'stats'
       end
+      resources :ur_transactions, :only => [:index]
     end
   end
 
