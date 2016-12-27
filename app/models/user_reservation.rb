@@ -38,20 +38,58 @@ class UserReservation < ActiveRecord::Base
   after_initialize :init
 
   #track changes
-  has_paper_trail :on => [:update], :only => [:actual_pax]
+  has_paper_trail :on => [:create,:update], :only => [:actual_pax]
+
   after_save :report_changes
 
   def init
+    #zerorize prices upon building
+    self.actual_pax ||= 0.00
+    self.actual_buggy ||= 0.00
+    self.actual_caddy ||= 0.00
+    self.actual_insurance ||= 0.00
+    self.actual_tax ||= 0.00
+
     self.status ||= 0
     self.count_member ||= 0
   end
 
   def report_changes
-    Rails.logger.info "report changes to ur_transactions"
+    #if the paper_trail version changes between current and report, send notice to ur_transactions
+    unless self.versions.nil? || self.versions.empty? then
+      #at least 1 versions is there
 
-    #get the previous version
-    last_version = self.paper_trail.previous_version
-    Rails.logger.info "actual_pax changed from #{last_version.actual_pax} to #{self.actual_pax}"
+      if self.versions.last.id != self.last_paper_trail_id then
+        # get the previous version
+        last_version = self.paper_trail.previous_version
+
+        # see how much changes has been made
+        delta = last_version.nil? ? self.total_price : self.total_price - last_version.total_price
+
+        # report change delta to UrTransaction
+        Rails.logger.info "delta change is #{delta} with last version id is #{self.versions.last.id}"
+        self.transaction do
+          ur_tranx = self.ur_transactions.new({trans_amount:delta, detail_type:UrTransaction.detail_types[:delta_charge]})
+          ur_tranx.save!
+        end
+
+        # update the last_paper_trail_id to the latest version id
+        self.update_column(:last_paper_trail_id, self.versions.last.id)
+      end
+    end
+  end
+
+  #record payments
+  def record_payment amount=0, detail_type=UrTransaction.detail_types[:cc_payment]
+    self.transaction do
+      tranx = self.ur_transactions.new({trans_amount:-(amount), detail_type:detail_type})
+      tranx.save!
+    end
+  end
+
+  #check outstanding balance by looking at transactions
+  def check_outstanding
+    self.ur_transactions.inject(0){|p,n| p += n.trans_amount }
   end
 
   def validates_booking_datetime

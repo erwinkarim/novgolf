@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161223031310) do
+ActiveRecord::Schema.define(version: 20161223090607) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -206,7 +206,6 @@ ActiveRecord::Schema.define(version: 20161223031310) do
     t.datetime "created_at",                                              null: false
     t.datetime "updated_at",                                              null: false
     t.integer  "user_reservation_id", limit: 4
-    t.integer  "tranx_type",          limit: 4
     t.decimal  "trans_amount",                    precision: 8, scale: 2
     t.integer  "detail_type",         limit: 4
     t.string   "notes",               limit: 255
@@ -215,28 +214,29 @@ ActiveRecord::Schema.define(version: 20161223031310) do
   add_index "ur_transactions", ["user_reservation_id"], name: "index_ur_transactions_on_user_reservation_id", using: :btree
 
   create_table "user_reservations", force: :cascade do |t|
-    t.integer  "user_id",            limit: 4
-    t.integer  "charge_schedule_id", limit: 4
-    t.integer  "actual_caddy",       limit: 4
-    t.integer  "actual_buggy",       limit: 4
-    t.integer  "actual_pax",         limit: 4
-    t.datetime "created_at",                                                          null: false
-    t.datetime "updated_at",                                                          null: false
-    t.integer  "golf_club_id",       limit: 4
+    t.integer  "user_id",             limit: 4
+    t.integer  "charge_schedule_id",  limit: 4
+    t.integer  "actual_caddy",        limit: 4
+    t.integer  "actual_buggy",        limit: 4
+    t.integer  "actual_pax",          limit: 4
+    t.datetime "created_at",                                                           null: false
+    t.datetime "updated_at",                                                           null: false
+    t.integer  "golf_club_id",        limit: 4
     t.datetime "booking_datetime"
     t.date     "booking_date"
     t.time     "booking_time"
-    t.integer  "status",             limit: 4
-    t.string   "token",              limit: 255
-    t.integer  "flight_matrix_id",   limit: 4
-    t.decimal  "actual_insurance",               precision: 8,  scale: 2
-    t.integer  "count_caddy",        limit: 4
-    t.integer  "count_buggy",        limit: 4
-    t.integer  "count_pax",          limit: 4
-    t.integer  "count_insurance",    limit: 4
-    t.decimal  "actual_tax",                     precision: 10, scale: 2
-    t.integer  "course_listing_id",  limit: 4
-    t.integer  "count_member",       limit: 4,                            default: 0
+    t.integer  "status",              limit: 4
+    t.string   "token",               limit: 255
+    t.integer  "flight_matrix_id",    limit: 4
+    t.decimal  "actual_insurance",                precision: 8,  scale: 2
+    t.integer  "count_caddy",         limit: 4
+    t.integer  "count_buggy",         limit: 4
+    t.integer  "count_pax",           limit: 4
+    t.integer  "count_insurance",     limit: 4
+    t.decimal  "actual_tax",                      precision: 10, scale: 2
+    t.integer  "course_listing_id",   limit: 4
+    t.integer  "count_member",        limit: 4,                            default: 0
+    t.integer  "last_paper_trail_id", limit: 4
   end
 
   add_index "user_reservations", ["charge_schedule_id"], name: "index_user_reservations_on_charge_schedule_id", using: :btree

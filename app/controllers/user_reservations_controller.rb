@@ -84,6 +84,9 @@ class UserReservationsController < ApplicationController
     if Time.now < grace then
       @reservations = UserReservation.find(session[:reservation_ids])
       @reservations.each do |reservation|
+        #payment has been made for each reservation
+        reservation.record_payment reservation.total_price
+
         # if got members, need to be verified by the club first, but do send out the email regrading
         # the reservation(s)
         if reservation.count_member > 0 then
