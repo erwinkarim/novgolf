@@ -38,7 +38,7 @@ class UserReservation < ActiveRecord::Base
   after_initialize :init
 
   #track changes
-  has_paper_trail :on => [:create,:update], :only => [:actual_pax]
+  has_paper_trail :on => [:create,:update], :only => [:actual_pax, :actual_buggy, :actual_caddy, :actual_insurance]
 
   after_save :report_changes
 

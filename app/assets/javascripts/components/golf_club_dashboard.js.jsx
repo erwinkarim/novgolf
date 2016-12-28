@@ -100,6 +100,8 @@ var GolfClubDashStatus = React.createClass({
     if(this.props.loadFlight){
       disableFnBtn = false;
       var flight = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight];
+      var outstanding_value = this.props.flightTransaction == null ? toCurrency(0.0) : toCurrency(parseFloat(this.props.flightTransaction.outstanding));
+
       btnRow = (
         <div>
           <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
@@ -115,6 +117,7 @@ var GolfClubDashStatus = React.createClass({
             updateMembersList={this.props.updateMembersList} />
           <h4>Tax: {toCurrency(parseFloat(this.props.flightInfo.tax))}</h4>
           <h3>Total: {toCurrency(parseFloat(this.props.flightInfo.totalPrice))} </h3>
+          <h4>Outstanding: {outstanding_value}</h4>
         </div>
       )
     };
@@ -157,7 +160,7 @@ var GolfClubDashboard = React.createClass({
       flightsArray:[], dashBoardStatusText:'None Selected',
       days: this.updateDays(today), queryDate:queryDate,
       loadFlight: false, selectedArray:null, selectedFlight:null, selectedCourse:null,
-      flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[]}
+      flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[]},flightTransaction:null
     }
   },
   tick: function(){
@@ -192,6 +195,7 @@ var GolfClubDashboard = React.createClass({
   loadReservationJSON: function(reservation_id, currentFlightInfo){
     var handle = this;
     if(reservation_id != null){
+      //get reservation info
       $.getJSON(`${handle.props.paths.user_reservations}/${reservation_id}`, null, function(data){
         //update flight info from data in user_reservations
         var reserve = data.user_reservation;
@@ -200,6 +204,12 @@ var GolfClubDashboard = React.createClass({
             insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price, members:reserve.ur_member_details});
         handle.setState({flightInfo:newFlightInfo});
       });
+
+      $.getJSON(`${handle.props.paths.user_reservations}/${reservation_id}/ur_transactions`, null, function(data){
+        handle.setState({flightTransaction:data});
+      });
+
+      //get reservation transactions
     }
   },
   dateChanged: function(dateText){
@@ -244,7 +254,7 @@ var GolfClubDashboard = React.createClass({
       var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0,
         tax:0.00, totalPrice:0.00, members:[]};
       newFlightInfo = this.updatePrice(newFlightInfo, flight);
-      this.setState({flightInfo:newFlightInfo, selectedCourse:parseInt(e.target.dataset.index)});
+      this.setState({flightInfo:newFlightInfo, selectedCourse:parseInt(e.target.dataset.index), flightTransaction:null});
 
     }else{
       this.loadReservationJSON(e.target.dataset.reservationId, this.state.flightInfo);
@@ -288,6 +298,8 @@ var GolfClubDashboard = React.createClass({
     var user_reservation_id = flight.course_data.courses[0].reservation_id;
     if(user_reservation_id){
       this.loadReservationJSON(user_reservation_id, newFlightInfo);
+    } else {
+      this.setState({flightTransaction:null});
     };
 
     //setup the state
@@ -547,6 +559,7 @@ var GolfClubDashboard = React.createClass({
             flightsArray={this.state.flightsArray}
             selectedArray={this.state.selectedArray} selectedFlight={this.state.selectedFlight} selectedCourse={this.state.selectedCourse}
             selectCourse={this.selectCourse}
+            flightTransaction={this.state.flightTransaction}
             days={this.state.days} updatePax={this.updatePax} flightInfo={this.state.flightInfo} options={this.props.options}
             reservationUpdate={this.reservationUpdate} reservationCancel={this.reservationCancel} reservationNew={this.reservationNew}
             reservationConfirm={this.reservationConfirm}
