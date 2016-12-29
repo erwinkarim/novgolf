@@ -95,8 +95,12 @@ var GolfClubDashStatus = React.createClass({
     var toggleReservationPanel = this.props.status == null ? null : (
       <a onClick={this.toggleChevron} data-toggle="collapse" href="#reservationCollapse"><i ref="chevron" className="fa fa-angle-double-up"></i></a>
     );
-
     var disableFnBtn = true;
+
+    var outstandingModalLink = this.props.flightTransaction == null ? <span>Outstanding</span> : (
+      <a href="#ur-transaction-modal" data-toggle="modal">Outstanding</a>
+    );
+
     if(this.props.loadFlight){
       disableFnBtn = false;
       var flight = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight];
@@ -117,7 +121,7 @@ var GolfClubDashStatus = React.createClass({
             updateMembersList={this.props.updateMembersList} />
           <h4>Tax: {toCurrency(parseFloat(this.props.flightInfo.tax))}</h4>
           <h3>Total: {toCurrency(parseFloat(this.props.flightInfo.totalPrice))} </h3>
-          <h4>Outstanding: {outstanding_value}</h4>
+          <h4>{outstandingModalLink}: {outstanding_value}</h4>
         </div>
       )
     };
@@ -535,9 +539,47 @@ var GolfClubDashboard = React.createClass({
     ) : null;
     //var membersModal = null;
 
+
+    var urTransactionModal = this.state.flightTransaction == null ? null : (
+      <div className="modal fade" id="ur-transaction-modal">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <button className="close" data-dismiss="modal" type="button"><span>&times;</span></button>
+              <h4>Transaction Detail</h4>
+            </div>
+            <div className="modal-body">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Detail</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>{ this.state.flightTransaction.transactions.map( (e,i) => {
+                  return (
+                    <tr key={i}>
+                      <td>{e.created_at}</td>
+                      <td>{e.detail_type}</td>
+                      <td>{toCurrency(parseFloat(e.trans_amount))}</td>
+                    </tr>
+                  );
+                })}</tbody>
+              </table>
+            </div>
+            <div className="modal-footer">
+              <button type="button" data-dismiss="modal" className="btn btn-secondary">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
     return (
       <div className="row">
         {membersModal}
+        {urTransactionModal}
         <div className="col-lg-8">
           <p>
             <input className="datepicker form-control" ref="datepicker"
