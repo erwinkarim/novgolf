@@ -90,11 +90,11 @@ class Admin::UserReservationsController < ApplicationController
   end
 
   # POST     /admin/user_reservations/:user_reservation_id/confirm
-  #   Parameters: {"flight"=>{"pax"=>"3", "member"=>"1", "buggy"=>"1", "caddy"=>"1", "insurance"=>"4",
-  #      "members"=>{"0"=>{"name"=>"member one", "member_id"=>"abc 123", "id"=>"18"}},
-  #      "tax"=>"89.34", "totalPrice"=>"1578.34"},
-  #      "user_reservation_id"=>"166"}
-
+  # parameters:   {
+  #   "flight_info"=>{"pax"=>"2", "member"=>"0", "buggy"=>"1", "caddy"=>"1", "insurance"=>"0", "tax"=>"55.5", "totalPrice"=>"980.5"},
+  #   "payment_method"=>"cash", "payment_amount"=>"1000", "user_reservation_id"=>"218"
+  # }
+  # check for method
   def confirm
     ur = UserReservation.find(params[:user_reservation_id])
 
@@ -106,11 +106,27 @@ class Admin::UserReservationsController < ApplicationController
 
     ur.transaction do
       flight_info = params[:flight_info]
+      #update flight info (might induce new transaction if delta change)
       ur.update_counts(flight_info)
 
+      #after update count, record payment method (cc or cash)
+      urTransaction = ur.ur_transactions.new
+      if params[:payment_method] == "cc" then
+        urTransaction.assign_attributes({detail_type: UrTransaction.detail_types[:cc_payment], trans_amount: -(ur.check_outstanding) })
+      else
+        urTransaction.assign_attributes({detail_type: UrTransaction.detail_types[:cash_payment], trans_amount: -(params[:payment_amount].to_f) })
+      end
+      urTransaction.save!
+
+      #record the change amount
+      urTransaction = ur.ur_transactions.new({detail_type: UrTransaction.detail_types[:cash_change], trans_amount:-(ur.check_outstanding) })
+      urTransaction.save!
+
+      #finally, actually confirm the reservation
       ur.reservation_confirmed!
 
     end
+
     render json: {message:"Reservation #{ur.id} confirmed"}
   end
 

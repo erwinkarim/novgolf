@@ -106,10 +106,11 @@ var GolfClubDashStatus = React.createClass({
       var flight = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight];
       var outstanding_value = this.props.flightTransaction == null ? toCurrency(0.0) : toCurrency(parseFloat(this.props.flightTransaction.outstanding));
 
+      //<button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationConfirm}>Confirm</button>
       btnRow = (
         <div>
           <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
-          <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationConfirm}>Confirm</button>
+          <button className="btn btn-secondary" type="button" data-toggle="modal" data-target="#confirmModal">Confirm</button>
           <button className="btn btn-danger" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
           <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
         </div>
@@ -164,7 +165,8 @@ var GolfClubDashboard = React.createClass({
       flightsArray:[], dashBoardStatusText:'None Selected',
       days: this.updateDays(today), queryDate:queryDate,
       loadFlight: false, selectedArray:null, selectedFlight:null, selectedCourse:null,
-      flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[]},flightTransaction:null
+      flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[]},flightTransaction:null,
+      cashValue:0.0
     }
   },
   tick: function(){
@@ -427,9 +429,10 @@ var GolfClubDashboard = React.createClass({
       var course = flight.course_data.courses[this.state.selectedCourse];
       if(course.reservation_id){
         console.log("confirm reservation", course.reservation_id);
+        var payment_amount = parseFloat(e.target.dataset.paymentMethod == "cc" ? handle.state.flightTransaction.outstanding : handle.state.cashValue);
         $.ajax(`${this.props.paths.user_reservations}/${course.reservation_id}/confirm`,{
           method:"POST",
-          data:{flight_info:this.state.flightInfo},
+          data:{flight_info:this.state.flightInfo, payment_method:e.target.dataset.paymentMethod, payment_amount:payment_amount},
           dataType:'json',
           success: function(data){
             $.snackbar({content:data.message});
@@ -439,6 +442,9 @@ var GolfClubDashboard = React.createClass({
       };
     };
 
+  },
+  updateCashValue: function(e){
+    this.setState({cashValue:e.target.value});
   },
   refreshNow: function(e){
     e.preventDefault();
@@ -576,10 +582,42 @@ var GolfClubDashboard = React.createClass({
       </div>
     );
 
+    var confirmModal = this.state.flightTransaction == null ? null : (
+      <div className="modal" id="confirmModal">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <button type="button" className="close" data-dismiss="modal">&times;</button>
+              <h4>Confirm Reservation</h4>
+            </div>
+            <div className="modal-body">
+              <p>Choose Payment Method:-</p>
+              <button className="btn btn-secondary" type="button" data-payment-method="cc" onClick={this.reservationConfirm}>Payment with CC</button>
+              <hr />
+              <div className="form-group">
+                <div className="input-group">
+                  <div className="input-group-addon">RM</div>
+                  <input className="form-control" type="number" name="cash_value" value={this.state.cashValue} onChange={this.updateCashValue} />
+                </div>
+              </div>
+              <button type="button" className="btn btn-secondary" data-cash-value={this.state.cashValue}
+                disabled={this.state.cashValue < parseFloat(this.state.flightTransaction.outstanding) } data-payment-method="cash"
+                onClick={this.reservationConfirm} >
+                Payment With Cash
+              </button>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
     return (
       <div className="row">
         {membersModal}
-        {urTransactionModal}
+        {urTransactionModal} {confirmModal}
         <div className="col-lg-8">
           <p>
             <input className="datepicker form-control" ref="datepicker"
