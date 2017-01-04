@@ -29,6 +29,9 @@ class Admin::UserReservationsController < ApplicationController
 
     #check the members list to ensure that they are sane
     if params.has_key?(:flight_info) && flight_info.has_key?(:members) then
+      if flight_info["members"].nil? then
+        flight_info["members"] = Array.new
+      end
       if flight_info["members"].inject(false){|p,v| p || (v[1]["name"].empty? || v[1]["member_id"].empty?)} then
         render json: {message:'Failed to create a reservation'}, status: :unprocessable_entity
         return
@@ -49,7 +52,7 @@ class Admin::UserReservationsController < ApplicationController
 
     if ur.valid? then
       ur.payment_attempted!
-      render json: {message:"Reservation #{ur.id} created"}, status: :ok
+      render json: {message:"Reservation #{ur.id} created", reservation:ur}, status: :ok
     else
       render json: {message:'Failed to create a reservation'}, status: :unprocessable_entity
     end

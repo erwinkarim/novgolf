@@ -189,14 +189,20 @@ var GolfClubDashboard = React.createClass({
 
     //asynch issues, need to use promise to send and collect
     //or update the controller to load the next 7 days instead
-    $.getJSON(`${handle.props.paths.club_path}/flights`, {date:this.state.days[0], loadcoursedata:true}, function(data){
+    fetch(`${handle.props.paths.club_path}/flights.json?` + $.param({date:this.state.days[0], loadcoursedata:true}), {
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json'}
+    }).then(function(response){
+      return response.json()
+    }).then(function(data){
       var newFlightsArray = handle.state.flightsArray;
       data.map( (search_result, index) => {
         newFlightsArray[index] = search_result.flights;
       });
       handle.setState({flightsArray:newFlightsArray});
-    });
 
+      //auto load transactions if course selected
+    });
   },
   loadReservationJSON: function(reservation_id, currentFlightInfo){
     var handle = this;
@@ -405,22 +411,35 @@ var GolfClubDashboard = React.createClass({
       return;
     };
 
-    $.ajax(this.props.paths.user_reservations, {
-      data: {
+    //change to fetch
+    //get the updated ur_transactions info
+    fetch(this.props.paths.user_reservations,{
+      method:'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body:JSON.stringify({
+        authenticity_token:this.props.token,
         golf_club_id:this.props.club.id, booking_date:this.state.days[this.state.selectedArray], booking_time:flight.tee_time,
         flight_matrix_id:flight.matrix_id, flight_info:this.state.flightInfo
-      },
-      dataType:'json',
-      method:'POST',
-      success: function(data){
-        $.snackbar({content:data.message});
-        handle.loadSchedule();
-      },
-      error: function(){
-        $.snackbar({content:'Failed to reserve Flight'});
-      }
-    });
+      })
+    }).then( function(response){
+      return response.json();
+    }).then(function(data){
+      $.snackbar({content:data.message});
+      handle.loadSchedule();
 
+      //fetch the transactions
+      fetch(`${handle.props.paths.user_reservations}/${data.reservation.id}/ur_transactions`,{
+        credentials:'same-origin'
+      }).then( function(response){
+        return response.json();
+      }).then(function(json){
+        handle.setState({flightTransaction:json});
+      });
+    }).catch(function(ex){
+      $.snackbar({content:'Failed to reserve Flight'});
+      console.log("exception", ex);
+    });
   },
   reservationConfirm: function(e){
     var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
