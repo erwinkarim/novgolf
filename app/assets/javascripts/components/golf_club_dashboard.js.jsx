@@ -202,6 +202,24 @@ var GolfClubDashboard = React.createClass({
       handle.setState({flightsArray:newFlightsArray});
 
       //auto load transactions if course selected
+      if(handle.state.selectedCourse == null){
+        console.log('handle.selectedCourse was null');
+        return 0;
+      };
+
+      var reservation_id = handle.state.flightsArray[handle.state.selectedArray][handle.state.selectedFlight].course_data.courses[handle.state.selectedCourse].reservation_id;
+      if(reservation_id == null){
+        console.log('reservation_id was null');
+        return 0;
+      };
+
+      fetch(`${handle.props.paths.user_reservations}/${reservation_id}/ur_transactions`,{
+        credentials:'same-origin'
+      }).then( function(response){
+        return response.json();
+      }).then(function(json){
+        handle.setState({flightTransaction:json});
+      });
     });
   },
   loadReservationJSON: function(reservation_id, currentFlightInfo){
@@ -389,6 +407,8 @@ var GolfClubDashboard = React.createClass({
           dataType:'json',
           success: function(data){
             $.snackbar({content:data.message});
+            //set the flight transaction to null to kill the outstanding modal link
+            handle.setState({flightTransaction:null});
             handle.loadSchedule();
           }
         });
@@ -427,15 +447,6 @@ var GolfClubDashboard = React.createClass({
     }).then(function(data){
       $.snackbar({content:data.message});
       handle.loadSchedule();
-
-      //fetch the transactions
-      fetch(`${handle.props.paths.user_reservations}/${data.reservation.id}/ur_transactions`,{
-        credentials:'same-origin'
-      }).then( function(response){
-        return response.json();
-      }).then(function(json){
-        handle.setState({flightTransaction:json});
-      });
     }).catch(function(ex){
       $.snackbar({content:'Failed to reserve Flight'});
       console.log("exception", ex);
