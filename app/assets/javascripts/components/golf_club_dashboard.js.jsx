@@ -574,22 +574,51 @@ var GolfClubDashboard = React.createClass({
     ) : null;
     //var membersModal = null;
 
-    var paymentBody = (this.state.flightTransaction == null || parseFloat(this.state.flightTransaction.outstanding) == 0) ? null : (
+    //is expected to be this.state.flightTransaction
+    var cashChangeAmount = (e) => {
+      if(e == null){ return toCurrency(0.0); }
+
+      changeAmount = e.transactions.filter((e) => {return e.detail_type == "cash_change"});
+      if(changeAmount.length == 0){ return toCurrency(0.0); }
+
+      return toCurrency(parseFloat(changeAmount[0].trans_amount));
+
+    };
+
+    var cashChangeBody = (this.state.flightTransaction == null) ? null : (
       <div>
-        <p>Choose Payment Method:-</p>
-        <button className="btn btn-secondary" type="button" data-payment-method="cc" onClick={this.reservationConfirm}>Payment with CC</button>
         <hr />
-        <div className="form-group">
-          <div className="input-group">
-            <div className="input-group-addon">RM</div>
-            <input className="form-control" type="number" name="cash_value" value={this.state.cashValue} onChange={this.updateCashValue} />
-          </div>
-        </div>
-        <button type="button" className="btn btn-secondary" data-cash-value={this.state.cashValue}
-          disabled={this.state.cashValue < parseFloat(this.state.flightTransaction.outstanding) } data-payment-method="cash"
-          onClick={this.reservationConfirm} >
-          Payment With Cash
-        </button>
+        <h2>Transaction Complete</h2>
+        <h2>Change: {cashChangeAmount(this.state.flightTransaction)}</h2>
+      </div>
+    );
+
+    var paymentBody = (this.state.flightTransaction == null || parseFloat(this.state.flightTransaction.outstanding) == 0) ? cashChangeBody : (
+      <div>
+        <h3>Payment</h3>
+        <table className="table">
+          <tbody>
+            <tr>
+              <td>
+                <button className="btn btn-secondary" type="button" data-payment-method="cc"
+                  onClick={this.reservationConfirm}>Payment with CC</button>
+              </td>
+              <td>
+                <div className="form-group">
+                  <div className="input-group">
+                    <div className="input-group-addon">RM</div>
+                    <input className="form-control" type="number" name="cash_value" value={this.state.cashValue} onChange={this.updateCashValue} />
+                  </div>
+                </div>
+                <button type="button" className="btn btn-secondary" data-cash-value={this.state.cashValue}
+                  disabled={this.state.cashValue < parseFloat(this.state.flightTransaction.outstanding) } data-payment-method="cash"
+                  onClick={this.reservationConfirm} >
+                  Payment With Cash
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     );
 
@@ -602,6 +631,7 @@ var GolfClubDashboard = React.createClass({
               <h4>Transaction And Payment</h4>
             </div>
             <div className="modal-body">
+              <h3>Transactions</h3>
               <table className="table table-striped">
                 <thead>
                   <tr>
