@@ -581,7 +581,7 @@ var GolfClubDashboard = React.createClass({
       changeAmount = e.transactions.filter((e) => {return e.detail_type == "cash_change"});
       if(changeAmount.length == 0){ return toCurrency(0.0); }
 
-      return toCurrency(parseFloat(changeAmount[0].trans_amount));
+      return toCurrency(parseFloat([...changeAmount].pop().trans_amount));
 
     };
 

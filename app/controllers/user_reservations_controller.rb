@@ -85,21 +85,24 @@ class UserReservationsController < ApplicationController
       @reservations = UserReservation.find(session[:reservation_ids])
       @reservations.each do |reservation|
         #payment has been made for each reservation
-        reservation.record_payment reservation.total_price
+        UserReservation.transaction do
+          #payment will always be based on cc
+          reservation.record_payment reservation.total_price
 
-        # if got members, need to be verified by the club first, but do send out the email regrading
-        # the reservation(s)
-        if reservation.count_member > 0 then
-          reservation.requires_members_verification!
-        else
-          reservation.payment_confirmed!
+          # if got members, need to be verified by the club first, but do send out the email regrading
+          # the reservation(s)
+          if reservation.count_member > 0 then
+            reservation.requires_members_verification!
+          else
+            reservation.payment_confirmed!
+          end
+
+          #destroy the sessions that is not being used anymore
+          session.delete(:members)
+          session.delete(:info)
+          session.delete(:flight)
+          session.delete(:golf_club_id)
         end
-
-        #destroy the sessions that is not being used anymore
-        session.delete(:members)
-        session.delete(:info)
-        session.delete(:flight)
-        session.delete(:golf_club_id)
 
         #send out review in the future
         UserReservationMailer.request_review(reservation).deliver_later(wait_until: reservation.booking_datetime + 12.hours)

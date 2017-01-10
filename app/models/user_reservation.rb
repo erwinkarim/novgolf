@@ -56,33 +56,36 @@ class UserReservation < ActiveRecord::Base
 
   def report_changes
     #if the paper_trail version changes between current and report, send notice to ur_transactions
-    unless self.versions.nil? || self.versions.empty? then
-      #at least 1 versions is there
+    if self.versions.last.id != self.last_paper_trail_id then
+      # get the previous version
+      last_version = self.paper_trail.previous_version
 
-      if self.versions.last.id != self.last_paper_trail_id then
-        # get the previous version
-        last_version = self.paper_trail.previous_version
+      # see how much changes has been made and what kind of transaction this is
+      delta = last_version.nil? ? self.total_price : self.total_price - last_version.total_price
+      trans_type = last_version.nil? ? UrTransaction.detail_types[:initial_charge] : UrTransaction.detail_types[:delta_charge]
 
-        # see how much changes has been made
-        delta = last_version.nil? ? self.total_price : self.total_price - last_version.total_price
-
-        # report change delta to UrTransaction
-        Rails.logger.info "delta change is #{delta} with last version id is #{self.versions.last.id}"
-        self.transaction do
-          ur_tranx = self.ur_transactions.new({trans_amount:delta, detail_type:UrTransaction.detail_types[:delta_charge]})
-          ur_tranx.save!
-        end
-
-        # update the last_paper_trail_id to the latest version id
-        self.update_column(:last_paper_trail_id, self.versions.last.id)
+      # report change delta to UrTransaction
+      Rails.logger.info "delta change is #{delta} with last version id is #{self.versions.last.id}"
+      self.transaction do
+        ur_tranx = self.ur_transactions.new({trans_amount:delta, detail_type:trans_type})
+        ur_tranx.save!
       end
+
+      # update the last_paper_trail_id to the latest version id
+      self.update_column(:last_paper_trail_id, self.versions.last.id)
     end
   end
 
   #record payments
+  # amount must be more than the total amount own
+  # will record payment on taxes, cut given to jomgolf and actual revenue and cash change that needs to be given
   def record_payment amount=0, detail_type=UrTransaction.detail_types[:cc_payment]
     self.transaction do
       tranx = self.ur_transactions.new({trans_amount:-(amount), detail_type:detail_type})
+      tranx.save!
+
+      #record the change that needs to be given
+      tranx = self.ur_transactions.new({detail_type:UrTransaction.detail_types[:cash_change], trans_amount:-(self.check_outstanding)})
       tranx.save!
     end
   end

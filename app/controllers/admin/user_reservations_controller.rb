@@ -88,7 +88,20 @@ class Admin::UserReservationsController < ApplicationController
 
     ur.transaction do
       ur.update_counts(flight_info)
+      if ur.check_outstanding > 0 then
+        ur.payment_attempted!
+      else
+        #records that you have some change needs to be given back
+        Rails.logger.info "should give back change of #{ur.check_outstanding}"
+
+        #operator will use their own cc terminal to refund. in the future
+        # will use our own system to do refunds
+        urTransaction = ur.ur_transactions.new
+        urTransaction.assign_attributes({detail_type: UrTransaction.detail_types[:cash_change], trans_amount: -(ur.check_outstanding) })
+        urTransaction.save!
+      end
     end
+
     render json: {message:"Update Pricing for #{ur.id}"}
   end
 
@@ -107,23 +120,17 @@ class Admin::UserReservationsController < ApplicationController
       return
     end
 
+    #ensure that payment is always enough to go through
+
     ur.transaction do
       flight_info = params[:flight_info]
       #update flight info (might induce new transaction if delta change)
       ur.update_counts(flight_info)
 
       #after update count, record payment method (cc or cash)
-      urTransaction = ur.ur_transactions.new
-      if params[:payment_method] == "cc" then
-        urTransaction.assign_attributes({detail_type: UrTransaction.detail_types[:cc_payment], trans_amount: -(ur.check_outstanding) })
-      else
-        urTransaction.assign_attributes({detail_type: UrTransaction.detail_types[:cash_payment], trans_amount: -(params[:payment_amount].to_f) })
-      end
-      urTransaction.save!
-
-      #record the change amount
-      urTransaction = ur.ur_transactions.new({detail_type: UrTransaction.detail_types[:cash_change], trans_amount:-(ur.check_outstanding) })
-      urTransaction.save!
+      payment_method = params[:payment_method] == "cc" ? UrTransaction.detail_types[:cc_payment] : UrTransaction.detail_types[:cash_payment]
+      payment_amount = params[:payment_method] == "cc" ? ur.check_outstanding : params[:payment_amount].to_f
+      ur.record_payment payment_amount, payment_method
 
       #finally, actually confirm the reservation
       ur.reservation_confirmed!
