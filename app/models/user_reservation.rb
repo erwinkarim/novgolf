@@ -1,5 +1,4 @@
 class UserReservation < ActiveRecord::Base
-  # TODO: lock changes in count and actual 24 hours after the booking date and time
   require "assets/name_generator"
 
   belongs_to :user
@@ -65,9 +64,27 @@ class UserReservation < ActiveRecord::Base
       trans_type = last_version.nil? ? UrTransaction.detail_types[:initial_charge] : UrTransaction.detail_types[:delta_charge]
 
       # report change delta to UrTransaction
-      Rails.logger.info "delta change is #{delta} with last version id is #{self.versions.last.id}"
+      # Rails.logger.info "delta change is #{delta} with last version id is #{self.versions.last.id}"
       self.transaction do
-        ur_tranx = self.ur_transactions.new({trans_amount:delta, detail_type:trans_type})
+        # if the delta is negative report the delta charge as refunds to tax, revenue and cut to jomgolf
+        if delta.negative? then
+          tax = (delta * self.golf_club.tax_schedule.rate).round(2)
+          provider_share = ((delta - tax) * 0.1).round(2)
+          actual_delta = delta - tax - provider_share
+
+          #tax refund
+          ur_tranx = self.ur_transactions.new({trans_amount:tax, detail_type:UrTransaction.detail_types[:tax_refund]})
+          ur_tranx.save!
+
+          #jomgolf share refund
+          ur_tranx = self.ur_transactions.new({trans_amount:provider_share, detail_type:UrTransaction.detail_types[:provider_share_refund]})
+          ur_tranx.save!
+        else
+          actual_delta = delta
+        end
+
+        #the actual charge
+        ur_tranx = self.ur_transactions.new({trans_amount:actual_delta, detail_type:trans_type})
         ur_tranx.save!
       end
 
@@ -80,8 +97,34 @@ class UserReservation < ActiveRecord::Base
   # amount must be more than the total amount own
   # will record payment on taxes, cut given to jomgolf and actual revenue and cash change that needs to be given
   def record_payment amount=0, detail_type=UrTransaction.detail_types[:cc_payment]
+    # raise error is amount is less that outstanding balance
+    if self.check_outstanding > amount then
+      raise "Amount is not enough to cover expenses"
+    end
+
     self.transaction do
-      tranx = self.ur_transactions.new({trans_amount:-(amount), detail_type:detail_type})
+      #split payment into tax, cut to jomgolf and actual revenue
+      #need to take note when doing delta payments (esp when updating revenue count)
+      outstanding_balance = self.check_outstanding
+      tax_payment = outstanding_balance -  (outstanding_balance / (1 + self.golf_club.tax_schedule.rate)).round(2)
+      jomgolf_cut = ((outstanding_balance - tax_payment) * 0.1).round(2)
+      revenue_payment = outstanding_balance - tax_payment - jomgolf_cut
+      cash_change_amount = amount - outstanding_balance
+
+      #tax payment
+      tranx = self.ur_transactions.new({trans_amount:-(tax_payment), detail_type:UrTransaction.detail_types[:tax_payment]})
+      tranx.save!
+
+      #service provider share
+      tranx = self.ur_transactions.new({trans_amount:-(jomgolf_cut), detail_type:UrTransaction.detail_types[:provider_share]})
+      tranx.save!
+
+      #actual revenue payment
+      tranx = self.ur_transactions.new({trans_amount:-(revenue_payment), detail_type:detail_type})
+      tranx.save!
+
+      #excess balance
+      tranx = self.ur_transactions.new({trans_amount:-(cash_change_amount), detail_type:UrTransaction.detail_types[:excess_payment]})
       tranx.save!
 
       #record the change that needs to be given
