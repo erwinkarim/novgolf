@@ -47,7 +47,8 @@ Rails.application.routes.draw do
       resources :memberships, :only => [:index, :show, :destroy]
     end
     resources :user_reservations, :only => [:create, :show, :destroy, :update], constraints: {format:'json'} do
-      post 'confirm'
+      post 'pay'
+      post 'confirm_members'
       collection do
         post 'stats'
       end

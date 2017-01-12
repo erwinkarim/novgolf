@@ -374,6 +374,11 @@ var GolfClubDashboard = React.createClass({
     newFlightInfo.members = newMemberInfo;
     this.setState( {flightInfo:newFlightInfo});
 
+    //dismiss the modal
+    var dismissModal = typeof e.target.dataset.dismissModal == "undefined" ? true : (e.target.dataset.dismissModal === 'true');
+    if(dismissModal){
+      $(this.refs.membersModal).modal('hide');
+    }
   },
   reservationUpdate: function(e){
     var handle = this;
@@ -381,6 +386,26 @@ var GolfClubDashboard = React.createClass({
     if("courses" in flight.course_data){
       var course = flight.course_data.courses[this.state.selectedCourse];
       if(course.reservation_id){
+        fetch(`${this.props.paths.user_reservations}/${course.reservation_id}`,{
+          method:'PATCH',
+          credentials:'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body:JSON.stringify({ authenticity_token:this.props.token, flight_info: this.state.flightInfo })
+        }).then(function(response){
+          if(response.status >= 200 && response.status < 300){
+            return response.json();
+          } else {
+            throw response.json();
+          }
+        }).then(function(json){
+          $.snackbar({content:json.message});
+          handle.loadSchedule();
+        }).catch(function(error){
+          console.log("error", error);
+          $.snackbar({content:"Unable to Update Reservation"});
+        });
+
+        /*
         $.ajax(`${this.props.paths.user_reservations}/${course.reservation_id}`,{
           method:"PATCH",
           data: { flight_info: this.state.flightInfo },
@@ -390,6 +415,7 @@ var GolfClubDashboard = React.createClass({
             handle.loadSchedule();
           }
         });
+        */
       };
     };
   },
@@ -457,19 +483,64 @@ var GolfClubDashboard = React.createClass({
     if("courses" in flight.course_data){
       var course = flight.course_data.courses[this.state.selectedCourse];
       if(course.reservation_id){
-        console.log("confirm reservation", course.reservation_id);
+        console.log("make payment for reservation", course.reservation_id);
         var payment_amount = parseFloat(e.target.dataset.paymentMethod == "cc" ? handle.state.flightTransaction.outstanding : handle.state.cashValue);
-        $.ajax(`${this.props.paths.user_reservations}/${course.reservation_id}/confirm`,{
-          method:"POST",
-          data:{flight_info:this.state.flightInfo, payment_method:e.target.dataset.paymentMethod, payment_amount:payment_amount},
-          dataType:'json',
-          success: function(data){
-            $.snackbar({content:data.message});
-            handle.loadSchedule();
-          }
+        fetch(`${this.props.paths.user_reservations}/${course.reservation_id}/pay`,{
+          method:'POST',
+          credentials:'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body:JSON.stringify({
+            authenticity_token:this.props.token,
+            flight_info:this.state.flightInfo, payment_method:e.target.dataset.paymentMethod, payment_amount:payment_amount})
+        }).then(function(response){
+          return response.json()
+        }).then(function(json){
+          $.snackbar({content:json.message});
+          handle.loadSchedule();
         });
       };
     };
+
+  },
+  reservationConfirmMembers: function(e){
+    e.preventDefault();
+    var handle = this;
+
+
+    //update the flight members and it's state
+    var p1 = new Promise(function(resolve,reject){
+      handle.updateMembersList(e);
+      resolve();
+    });
+
+    p1.then(function(val){
+      console.log('send msg to confirm members inside promise');
+      //send info about flight updates and refresh the
+      var reservation_id = handle.state
+        .flightsArray[handle.state.selectedArray][handle.state.selectedFlight]
+        .course_data.courses[handle.state.selectedCourse].reservation_id;
+      fetch(`${handle.props.paths.user_reservations}/${reservation_id}/confirm_members`, {
+        method:'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body:JSON.stringify({
+          authenticity_token:handle.props.token
+        })
+      }).then(function(response){
+        return response.json();
+      }).then(function(json){
+        console.log('member list verified');
+        $.snackbar({content:json.message});
+        handle.loadSchedule();
+      });
+
+    }).catch(
+      function(reason){
+        $.snackbar({content:'Unable to verify member list'});
+      }
+    );
+
+    $(handle.refs.membersModal).modal('hide');
 
   },
   updateCashValue: function(e){
@@ -481,11 +552,6 @@ var GolfClubDashboard = React.createClass({
   },
   componentDidMount:function(){
     var handle = this;
-
-    //always update the member list on close
-    $('#membersModal').on('hide.bs.modal', function(){
-      handle.updateMembersList();
-    });
 
     //setup the datepicker
     $(this.refs.datepicker).datepicker({
@@ -517,12 +583,18 @@ var GolfClubDashboard = React.createClass({
         modalMaxMember = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight].maxPax;
     };
 
+    var enableVerifyMemberLink = this.state.selectedArray == null ? false : (
+      this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight]
+      .course_data.courses[this.state.selectedCourse].reservation_status == 8
+    );
+
+    //TODO: make the membersModal another component
     var membersModal = true ? (
-      <div id="membersModal" className="modal fade">
+      <div id="membersModal" ref="membersModal" className="modal fade" data-backdrop="static" data-keyboard="false">
         <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-header">
-              <button type="button" className="close" data-dismiss="modal">&times;</button>
+              <button type="button" className="close" onClick={this.updateMembersList}>&times;</button>
               <h4 className="modal-title">Members List</h4>
             </div>
             <div className="modal-body">
@@ -544,6 +616,7 @@ var GolfClubDashboard = React.createClass({
                         <button className="btn btn-danger" onClick={this.updatePax}
                           value={this.state.flightInfo.member - 1} data-index={this.state.flightInfo.index} data-target="member"
                           disabled={this.state.flightInfo.member + this.state.flightInfo.pax == modalMinMember}
+                          tabIndex="-1"
                         >
                           <i className="fa fa-minus"></i>
                         </button>
@@ -566,7 +639,18 @@ var GolfClubDashboard = React.createClass({
               </form>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-primary" data-dismiss="modal">Update Members</button>
+              <div className="btn-group">
+                <button type="button" className="btn btn-primary" onClick={this.updateMembersList}>Update Members</button>
+                <button type="button" className="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown">
+                  <span className="sr-only">Toggle Dropdown</span>
+                </button>
+                <div className="dropdown-menu">
+                  <a href="#" className={`dropdown-item ${enableVerifyMemberLink ? "" : "disabled"}`}
+                    onClick={this.reservationConfirmMembers} data-dismiss-modal="false">
+                    Update and Verify Member(s)
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -585,6 +669,7 @@ var GolfClubDashboard = React.createClass({
 
     };
 
+    //TODO: make the transaction modal as a component
     var cashChangeBody = (this.state.flightTransaction == null) ? null : (
       <div>
         <hr />

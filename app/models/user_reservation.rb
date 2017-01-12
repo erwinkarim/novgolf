@@ -179,17 +179,20 @@ class UserReservation < ActiveRecord::Base
         count_caddy:flight_info[:caddy], count_insurance:flight_info[:insurance]})
 
       #update member info, if there's members
-      #delete members that are not in the list anymore
       if flight_info.has_key? :members then
-        UrMemberDetail.where(:id => self.ur_member_details.map{|x| x.id} - flight_info[:members].map{|x| x[1]["id"].to_i}).each{ |x| x.destroy }
-        # cycle through the members, update/create info and delete if there are not there
-        flight_info[:members].each_pair do |k,member|
-          if member["id"].empty? then
-            new_member = self.ur_member_details.new({member_id:member["member_id"], name:member["name"]})
-            new_member.save!
-          else
-            ur_member_detail = UrMemberDetail.find(member["id"])
-            ur_member_detail.update_attributes({member_id:member["member_id"], name:member["name"]})
+        unless flight_info[:members].nil? then
+          #delete members that are not in the list anymore
+          UrMemberDetail.where(:id => self.ur_member_details.map{|x| x.id} - flight_info[:members].map{|x| x["id"].to_i}).each{ |x| x.destroy }
+
+          # cycle through the members, update/create info and delete if there are not there
+          flight_info[:members].each do |member|
+            if member["id"].empty? then
+              new_member = self.ur_member_details.new({member_id:member["member_id"], name:member["name"]})
+              new_member.save!
+            else
+              ur_member_detail = UrMemberDetail.find(member["id"])
+              ur_member_detail.update_attributes({member_id:member["member_id"], name:member["name"]})
+            end
           end
         end
       end
