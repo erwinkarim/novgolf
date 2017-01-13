@@ -145,6 +145,108 @@ var GolfClubDashStatus = React.createClass({
   }
 });
 
+var ReservationTransactionModal = React.createClass({
+  propTypes:{
+      flightTransaction:React.PropTypes.object,
+      cashValue:React.PropTypes.number,
+      reservationPay:React.PropTypes.func,
+      updateCashValue:React.PropTypes.func
+  },
+    render: function(){
+    var cashChangeAmount = (e) => {
+      if(e == null){ return toCurrency(0.0); }
+
+      changeAmount = e.transactions.filter((e) => {return e.detail_type == "cash_change"});
+      if(changeAmount.length == 0){ return toCurrency(0.0); }
+
+      return toCurrency(parseFloat([...changeAmount].pop().trans_amount));
+    };
+
+    var cashChangeBody = (this.props.flightTransaction == null) ? null : (
+      <div>
+        <hr />
+        <h2>Transaction Complete</h2>
+        <h2>Change: {cashChangeAmount(this.props.flightTransaction)}</h2>
+      </div>
+    );
+
+    var paymentBody = (this.props.flightTransaction == null || parseFloat(this.props.flightTransaction.outstanding) == 0) ? cashChangeBody : (
+      <div>
+        <h3>Payment</h3>
+        <table className="table">
+          <tbody>
+            <tr>
+              <td>
+                <button className="btn btn-secondary" type="button" data-payment-method="cc"
+                  onClick={this.props.reservationPay}>Payment with CC</button>
+              </td>
+              <td>
+                <div className="form-group">
+                  <div className="input-group">
+                    <div className="input-group-addon">RM</div>
+                    <input className="form-control" type="number" name="cash_value" value={this.props.cashValue} onChange={this.props.updateCashValue} />
+                  </div>
+                </div>
+                <button type="button" className="btn btn-secondary" data-cash-value={this.props.cashValue}
+                  disabled={this.props.cashValue < parseFloat(this.props.flightTransaction.outstanding) } data-payment-method="cash"
+                  onClick={this.props.reservationPay} >
+                  Payment With Cash
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+
+    var urTransactionModal = this.props.flightTransaction == null ? null : (
+      <div className="modal fade" id="ur-transaction-modal">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <button className="close" data-dismiss="modal" type="button"><span>&times;</span></button>
+              <h4>Transaction And Payment</h4>
+            </div>
+            <div className="modal-body">
+              <h3>Transactions</h3>
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Detail</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  { this.props.flightTransaction.transactions.map( (e,i) => {
+                    return (
+                      <tr key={i}>
+                        <td>{e.created_at}</td>
+                        <td>{e.detail_type}</td>
+                        <td>{toCurrency(parseFloat(e.trans_amount))}</td>
+                      </tr>
+                    );
+                  })}
+                  <tr>
+                    <td colSpan="2"><h4>Outstanding</h4></td>
+                    <td><h4>{toCurrency(parseFloat(this.props.flightTransaction.outstanding))}</h4></td>
+                  </tr>
+                </tbody>
+              </table>
+              { paymentBody }
+            </div>
+            <div className="modal-footer">
+              <button type="button" data-dismiss="modal" className="btn btn-secondary">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    return (urTransactionModal);
+  }
+});
+
 var GolfClubDashboard = React.createClass({
   propTypes: {
       club:React.PropTypes.object,
@@ -543,7 +645,7 @@ var GolfClubDashboard = React.createClass({
 
   },
   updateCashValue: function(e){
-    this.setState({cashValue:e.target.value});
+    this.setState({cashValue:parseFloat(e.target.value)});
   },
   refreshNow: function(e){
     e.preventDefault();
@@ -657,103 +759,11 @@ var GolfClubDashboard = React.createClass({
     ) : null;
     //var membersModal = null;
 
-    //is expected to be this.state.flightTransaction
-    var cashChangeAmount = (e) => {
-      if(e == null){ return toCurrency(0.0); }
-
-      changeAmount = e.transactions.filter((e) => {return e.detail_type == "cash_change"});
-      if(changeAmount.length == 0){ return toCurrency(0.0); }
-
-      return toCurrency(parseFloat([...changeAmount].pop().trans_amount));
-
-    };
-
-    //TODO: make the transaction modal as a component
-    var cashChangeBody = (this.state.flightTransaction == null) ? null : (
-      <div>
-        <hr />
-        <h2>Transaction Complete</h2>
-        <h2>Change: {cashChangeAmount(this.state.flightTransaction)}</h2>
-      </div>
-    );
-
-    var paymentBody = (this.state.flightTransaction == null || parseFloat(this.state.flightTransaction.outstanding) == 0) ? cashChangeBody : (
-      <div>
-        <h3>Payment</h3>
-        <table className="table">
-          <tbody>
-            <tr>
-              <td>
-                <button className="btn btn-secondary" type="button" data-payment-method="cc"
-                  onClick={this.reservationPay}>Payment with CC</button>
-              </td>
-              <td>
-                <div className="form-group">
-                  <div className="input-group">
-                    <div className="input-group-addon">RM</div>
-                    <input className="form-control" type="number" name="cash_value" value={this.state.cashValue} onChange={this.updateCashValue} />
-                  </div>
-                </div>
-                <button type="button" className="btn btn-secondary" data-cash-value={this.state.cashValue}
-                  disabled={this.state.cashValue < parseFloat(this.state.flightTransaction.outstanding) } data-payment-method="cash"
-                  onClick={this.reservationPay} >
-                  Payment With Cash
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-
-    var urTransactionModal = this.state.flightTransaction == null ? null : (
-      <div className="modal fade" id="ur-transaction-modal">
-        <div className="modal-dialog modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <button className="close" data-dismiss="modal" type="button"><span>&times;</span></button>
-              <h4>Transaction And Payment</h4>
-            </div>
-            <div className="modal-body">
-              <h3>Transactions</h3>
-              <table className="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Detail</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  { this.state.flightTransaction.transactions.map( (e,i) => {
-                    return (
-                      <tr key={i}>
-                        <td>{e.created_at}</td>
-                        <td>{e.detail_type}</td>
-                        <td>{toCurrency(parseFloat(e.trans_amount))}</td>
-                      </tr>
-                    );
-                  })}
-                  <tr>
-                    <td colSpan="2"><h4>Outstanding</h4></td>
-                    <td><h4>{toCurrency(parseFloat(this.state.flightTransaction.outstanding))}</h4></td>
-                  </tr>
-                </tbody>
-              </table>
-              { paymentBody }
-            </div>
-            <div className="modal-footer">
-              <button type="button" data-dismiss="modal" className="btn btn-secondary">Close</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-
     return (
       <div className="row">
         {membersModal}
-        {urTransactionModal}
+        <ReservationTransactionModal flightTransaction={this.state.flightTransaction} cashValue={this.state.cashValue}
+          reservationPay={this.reservationPay} updateCashValue={this.updateCashValue} />
         <div className="col-lg-8">
           <p>
             <input className="datepicker form-control" ref="datepicker"
