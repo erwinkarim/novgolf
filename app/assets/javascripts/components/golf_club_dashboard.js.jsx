@@ -602,18 +602,6 @@ var GolfClubDashboard = React.createClass({
           console.log("error", error);
           $.snackbar({content:"Unable to Update Reservation"});
         });
-
-        /*
-        $.ajax(`${this.props.paths.user_reservations}/${course.reservation_id}`,{
-          method:"PATCH",
-          data: { flight_info: this.state.flightInfo },
-          dataType:'json',
-          success: function(data){
-            $.snackbar({content:data.message});
-            handle.loadSchedule();
-          }
-        });
-        */
       };
     };
   },
@@ -625,15 +613,18 @@ var GolfClubDashboard = React.createClass({
       var course = flight.course_data.courses[this.state.selectedCourse];
       if(course.reservation_id){
         console.log("cancel reservation ", course.reservation_id);
-        $.ajax(`${this.props.paths.user_reservations}/${course.reservation_id}`,{
-          method:"DELETE",
-          dataType:'json',
-          success: function(data){
-            $.snackbar({content:data.message});
-            //set the flight transaction to null to kill the outstanding modal link
-            handle.setState({flightTransaction:null});
-            handle.loadSchedule();
-          }
+        fetch(`${this.props.paths.user_reservations}/${course.reservation_id}`,{
+          method:'DELETE',
+          credentials:'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body:JSON.stringify({ authenticity_token:this.props.token})
+        }).then(function(response){
+          return response.json();
+        }).then(function(json){
+          $.snackbar({content:json.message});
+          //set the flight transaction to null to kill the outstanding modal link
+          handle.setState({flightTransaction:null});
+          handle.loadSchedule();
         });
       };
     };
