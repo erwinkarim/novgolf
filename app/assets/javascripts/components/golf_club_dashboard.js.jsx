@@ -152,7 +152,7 @@ var ReservationTransactionModal = React.createClass({
       reservationPay:React.PropTypes.func,
       updateCashValue:React.PropTypes.func
   },
-    render: function(){
+  render: function(){
     var cashChangeAmount = (e) => {
       if(e == null){ return toCurrency(0.0); }
 
@@ -244,6 +244,103 @@ var ReservationTransactionModal = React.createClass({
     );
 
     return (urTransactionModal);
+  }
+});
+
+var ReservationMembersModal = React.createClass({
+  propTypes:{
+      updateMembersList:React.PropTypes.func,
+      updatePax:React.PropTypes.func,
+      reservationConfirmMembers:React.PropTypes.func,
+      flightInfo:React.PropTypes.object,
+      flightsArray:React.PropTypes.array,
+      selectedArray:React.PropTypes.number,
+      selectedFlight:React.PropTypes.number,
+      selectedCourse:React.PropTypes.number
+  },
+  render: function(){
+    //handle initial cases when selectedArray is not loaded yet
+    var modalMinMember = 0;
+    var modalMaxMember = 5;
+    if(this.props.selectedArray != null){
+        modalMinMember = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight].minPax;
+        modalMaxMember = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight].maxPax;
+    };
+
+    var enableVerifyMemberLink = this.props.selectedArray == null ? false : (
+      this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight]
+      .course_data.courses[this.props.selectedCourse].reservation_status == 8
+    );
+
+    var membersModal = this.props.selectedArray != null ? (
+      <div id="membersModal" ref="membersModal" className="modal fade" data-backdrop="static" data-keyboard="false">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <button type="button" className="close" onClick={this.props.updateMembersList}>&times;</button>
+              <h4 className="modal-title">Members List</h4>
+            </div>
+            <div className="modal-body">
+              <form action="/" className="container-fluid" ref="memberBody">
+                { this.props.flightInfo.members.map( (e,i) => {
+                  var random_id = randomID();
+                  return (
+                    <div key={i} ref="memberInfo" className="form-group row">
+                      <input type="hidden"  name={`members[${random_id}][id]`} defaultValue={this.props.flightInfo.members[i].id} />
+                      <div className="col-sm-5">
+                        <input type="text" className="form-control" name={`members[${random_id}][name]`}
+                          defaultValue={this.props.flightInfo.members[i].name } placeholder="Member Name"/>
+                      </div>
+                      <div className="col-sm-5">
+                        <input type="text" className="form-control" name={`members[${random_id}][member_id]`}
+                          defaultValue={this.props.flightInfo.members[i].member_id} placeholder="Member ID"/>
+                      </div>
+                      <div className="col-sm-2">
+                        <button className="btn btn-danger" onClick={this.props.updatePax}
+                          value={this.props.flightInfo.member - 1} data-index={this.props.flightInfo.index} data-target="member"
+                          disabled={this.props.flightInfo.member + this.props.flightInfo.pax == modalMinMember}
+                          tabIndex="-1"
+                        >
+                          <i className="fa fa-minus"></i>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                )}
+                <div className="form-group row">
+                  <div className="col-sm-12">
+                    <button className="btn btn-primary" onClick={this.props.updatePax}
+                      type="button"
+                      value={this.props.flightInfo.member + 1} data-index={this.props.flightInfo.index} data-target="member"
+                      disabled={this.props.flightInfo.member ==
+                        this.props.selectedArray ==  modalMaxMember }
+                    >
+                      <i className="fa fa-plus"></i>
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div className="modal-footer">
+              <div className="btn-group">
+                <button type="button" className="btn btn-primary" onClick={this.props.updateMembersList}>Update Members</button>
+                <button type="button" className="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown">
+                  <span className="sr-only">Toggle Dropdown</span>
+                </button>
+                <div className="dropdown-menu">
+                  <a href="#" className={`dropdown-item ${enableVerifyMemberLink ? "" : "disabled"}`}
+                    onClick={this.props.reservationConfirmMembers} data-dismiss-modal="false">
+                    Update and Verify Member(s)
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : null;
+
+    return (membersModal);
   }
 });
 
@@ -441,7 +538,7 @@ var GolfClubDashboard = React.createClass({
     });
   },
   updateMembersList: function(e){
-    var membersArray = $(this.refs.memberBody).serializeArray();
+    var membersArray = $(this.refs.membersModal.refs.memberBody).serializeArray();
 
     //need to massage the data into [ {name:, member_id: , id:}, {...}] format
     //at least it will be in 3s
@@ -478,7 +575,7 @@ var GolfClubDashboard = React.createClass({
     //dismiss the modal
     var dismissModal = typeof e.target.dataset.dismissModal == "undefined" ? true : (e.target.dataset.dismissModal === 'true');
     if(dismissModal){
-      $(this.refs.membersModal).modal('hide');
+      $(this.refs.membersModal.refs.membersModal).modal('hide');
     }
   },
   reservationUpdate: function(e){
@@ -641,7 +738,7 @@ var GolfClubDashboard = React.createClass({
       }
     );
 
-    $(handle.refs.membersModal).modal('hide');
+    $(handle.refs.membersModal.refs.membersModal).modal('hide');
 
   },
   updateCashValue: function(e){
@@ -672,96 +769,15 @@ var GolfClubDashboard = React.createClass({
       clearInterval(this.interval);
   },
   render: function(){
-    //var membersModal = (this.props.options.displayMembersModal) ? (
-    //handle initial cases when selectedArray is not loaded yet
-    var modalMinMember = 0;
-    var modalMaxMember = 5;
-
     var dashStats = (<GolfClubDashStatistics flightsArray={this.state.flightsArray} days={this.state.days} token={this.props.token} />);
-
-    if(this.state.selectedArray != null){
-        modalMinMember = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight].minPax;
-        modalMaxMember = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight].maxPax;
-    };
-
-    var enableVerifyMemberLink = this.state.selectedArray == null ? false : (
-      this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight]
-      .course_data.courses[this.state.selectedCourse].reservation_status == 8
-    );
-
-    //TODO: make the membersModal another component
-    var membersModal = true ? (
-      <div id="membersModal" ref="membersModal" className="modal fade" data-backdrop="static" data-keyboard="false">
-        <div className="modal-dialog modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <button type="button" className="close" onClick={this.updateMembersList}>&times;</button>
-              <h4 className="modal-title">Members List</h4>
-            </div>
-            <div className="modal-body">
-              <form action="/" className="container-fluid" ref="memberBody">
-                { this.state.flightInfo.members.map( (e,i) => {
-                  var random_id = randomID();
-                  return (
-                    <div key={i} ref="memberInfo" className="form-group row">
-                      <input type="hidden"  name={`members[${random_id}][id]`} defaultValue={this.state.flightInfo.members[i].id} />
-                      <div className="col-sm-5">
-                        <input type="text" className="form-control" name={`members[${random_id}][name]`}
-                          defaultValue={this.state.flightInfo.members[i].name } placeholder="Member Name"/>
-                      </div>
-                      <div className="col-sm-5">
-                        <input type="text" className="form-control" name={`members[${random_id}][member_id]`}
-                          defaultValue={this.state.flightInfo.members[i].member_id} placeholder="Member ID"/>
-                      </div>
-                      <div className="col-sm-2">
-                        <button className="btn btn-danger" onClick={this.updatePax}
-                          value={this.state.flightInfo.member - 1} data-index={this.state.flightInfo.index} data-target="member"
-                          disabled={this.state.flightInfo.member + this.state.flightInfo.pax == modalMinMember}
-                          tabIndex="-1"
-                        >
-                          <i className="fa fa-minus"></i>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                )}
-                <div className="form-group row">
-                  <div className="col-sm-12">
-                    <button className="btn btn-primary" onClick={this.updatePax}
-                      type="button"
-                      value={this.state.flightInfo.member + 1} data-index={this.state.flightInfo.index} data-target="member"
-                      disabled={this.state.flightInfo.member ==
-                        this.state.selectedArray ==  modalMaxMember }
-                    >
-                      <i className="fa fa-plus"></i>
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div className="modal-footer">
-              <div className="btn-group">
-                <button type="button" className="btn btn-primary" onClick={this.updateMembersList}>Update Members</button>
-                <button type="button" className="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown">
-                  <span className="sr-only">Toggle Dropdown</span>
-                </button>
-                <div className="dropdown-menu">
-                  <a href="#" className={`dropdown-item ${enableVerifyMemberLink ? "" : "disabled"}`}
-                    onClick={this.reservationConfirmMembers} data-dismiss-modal="false">
-                    Update and Verify Member(s)
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    ) : null;
-    //var membersModal = null;
 
     return (
       <div className="row">
-        {membersModal}
+        <ReservationMembersModal ref="membersModal"
+          updateMembersList={this.updateMembersList} updatePax={this.updatePax} reservationConfirmMembers={this.reservationConfirmMembers}
+          flightsArray={this.state.flightsArray} flightInfo={this.state.flightInfo}
+          selectedArray={this.state.selectedArray} selectedFlight={this.state.selectedFlight} selectedCourse={this.state.selectedCourse}
+        />
         <ReservationTransactionModal flightTransaction={this.state.flightTransaction} cashValue={this.state.cashValue}
           reservationPay={this.reservationPay} updateCashValue={this.updateCashValue} />
         <div className="col-lg-8">
