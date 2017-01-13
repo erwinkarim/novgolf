@@ -81,8 +81,8 @@ class UserReservationsController < ApplicationController
     grace = Time.parse(session[:timeout]) + 5.minutes
 
     #if token got before session timeout. generate token and show out the confirmation page
+    @reservations = UserReservation.find(session[:reservation_ids])
     if Time.now < grace then
-      @reservations = UserReservation.find(session[:reservation_ids])
       @reservations.each do |reservation|
         #payment has been made for each reservation
         UserReservation.transaction do

@@ -106,7 +106,6 @@ var GolfClubDashStatus = React.createClass({
       var flight = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight];
       var outstanding_value = this.props.flightTransaction == null ? toCurrency(0.0) : toCurrency(parseFloat(this.props.flightTransaction.outstanding));
 
-      //<button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationConfirm}>Confirm</button>
       btnRow = (
         <div>
           <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
@@ -477,7 +476,7 @@ var GolfClubDashboard = React.createClass({
       console.log("exception", ex);
     });
   },
-  reservationConfirm: function(e){
+  reservationPay: function(e){
     var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
     var handle = this;
     if("courses" in flight.course_data){
@@ -686,7 +685,7 @@ var GolfClubDashboard = React.createClass({
             <tr>
               <td>
                 <button className="btn btn-secondary" type="button" data-payment-method="cc"
-                  onClick={this.reservationConfirm}>Payment with CC</button>
+                  onClick={this.reservationPay}>Payment with CC</button>
               </td>
               <td>
                 <div className="form-group">
@@ -697,7 +696,7 @@ var GolfClubDashboard = React.createClass({
                 </div>
                 <button type="button" className="btn btn-secondary" data-cash-value={this.state.cashValue}
                   disabled={this.state.cashValue < parseFloat(this.state.flightTransaction.outstanding) } data-payment-method="cash"
-                  onClick={this.reservationConfirm} >
+                  onClick={this.reservationPay} >
                   Payment With Cash
                 </button>
               </td>
@@ -779,7 +778,6 @@ var GolfClubDashboard = React.createClass({
             flightTransaction={this.state.flightTransaction}
             days={this.state.days} updatePax={this.updatePax} flightInfo={this.state.flightInfo} options={this.props.options}
             reservationUpdate={this.reservationUpdate} reservationCancel={this.reservationCancel} reservationNew={this.reservationNew}
-            reservationConfirm={this.reservationConfirm}
             updateMembersList={this.updateMembersList}
             dashStats={dashStats}
             />
