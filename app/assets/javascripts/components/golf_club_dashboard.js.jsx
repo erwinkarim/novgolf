@@ -423,8 +423,12 @@ var GolfClubDashboard = React.createClass({
     var handle = this;
     if(reservation_id != null){
       //get reservation info
-      $.getJSON(`${handle.props.paths.user_reservations}/${reservation_id}`, null, function(data){
-        //update flight info from data in user_reservations
+      fetch(`${handle.props.paths.user_reservations}/${reservation_id}`, {
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json'}
+      }).then(function(response){
+        return response.json();
+      }).then(function(data){
         var reserve = data.user_reservation;
         var newFlightInfo = Object.assign(currentFlightInfo,
           {pax:reserve.count_pax, member:reserve.count_member, buggy:reserve.count_buggy, caddy:reserve.count_caddy,
@@ -432,11 +436,15 @@ var GolfClubDashboard = React.createClass({
         handle.setState({flightInfo:newFlightInfo});
       });
 
-      $.getJSON(`${handle.props.paths.user_reservations}/${reservation_id}/ur_transactions`, null, function(data){
+      //get transactions info
+      fetch(`${handle.props.paths.user_reservations}/${reservation_id}/ur_transactions`, {
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json'}
+      }).then(function(response){
+        return response.json();
+      }).then(function(data){
         handle.setState({flightTransaction:data});
       });
-
-      //get reservation transactions
     }
   },
   dateChanged: function(dateText){
