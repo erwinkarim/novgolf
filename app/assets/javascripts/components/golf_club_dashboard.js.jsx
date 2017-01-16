@@ -178,6 +178,7 @@ var ReservationTransactionModal = React.createClass({
             <tr>
               <td>
                 <button className="btn btn-secondary" type="button" data-payment-method="cc"
+                  disabled={this.props.processing}
                   onClick={this.props.reservationPay}>Payment with CC</button>
               </td>
               <td>
@@ -188,7 +189,8 @@ var ReservationTransactionModal = React.createClass({
                   </div>
                 </div>
                 <button type="button" className="btn btn-secondary" data-cash-value={this.props.cashValue}
-                  disabled={this.props.cashValue < parseFloat(this.props.flightTransaction.outstanding) } data-payment-method="cash"
+                  disabled={this.props.cashValue < parseFloat(this.props.flightTransaction.outstanding) || this.props.processing }
+                  data-payment-method="cash"
                   onClick={this.props.reservationPay} >
                   Payment With Cash
                 </button>
@@ -363,7 +365,8 @@ var GolfClubDashboard = React.createClass({
       days: this.updateDays(today), queryDate:queryDate,
       loadFlight: false, selectedArray:null, selectedFlight:null, selectedCourse:null,
       flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[]},flightTransaction:null,
-      cashValue:0.0
+      cashValue:0.0,
+      processing:false
     }
   },
   tick: function(){
@@ -382,6 +385,7 @@ var GolfClubDashboard = React.createClass({
   loadSchedule: function(){
 
     var handle = this;
+
     var newFlightsArray = this.state.flightsArray;
 
     //asynch issues, need to use promise to send and collect
@@ -672,6 +676,9 @@ var GolfClubDashboard = React.createClass({
       var course = flight.course_data.courses[this.state.selectedCourse];
       if(course.reservation_id){
         //console.log("make payment for reservation", course.reservation_id);
+        handle.setState({processing:true});
+        $.snackbar({content:'Attempting to pay ...'});
+
         var payment_amount = parseFloat(e.target.dataset.paymentMethod == "cc" ? handle.state.flightTransaction.outstanding : handle.state.cashValue);
         fetch(`${this.props.paths.user_reservations}/${course.reservation_id}/pay`,{
           method:'POST',
@@ -684,6 +691,7 @@ var GolfClubDashboard = React.createClass({
           return response.json()
         }).then(function(json){
           $.snackbar({content:json.message});
+          handle.setState({processing:false});
           handle.loadSchedule();
         });
       };
@@ -769,14 +777,16 @@ var GolfClubDashboard = React.createClass({
           selectedArray={this.state.selectedArray} selectedFlight={this.state.selectedFlight} selectedCourse={this.state.selectedCourse}
         />
         <ReservationTransactionModal flightTransaction={this.state.flightTransaction} cashValue={this.state.cashValue}
-          reservationPay={this.reservationPay} updateCashValue={this.updateCashValue} />
+          reservationPay={this.reservationPay} updateCashValue={this.updateCashValue} processing={this.state.processing}/>
         <div className="col-lg-8">
           <p>
             <input className="datepicker form-control" ref="datepicker"
               type="text" defaultValue={this.state.queryDate} style={ {zIndex:100, position:'relative'}}/>
             Updates in {Date(Date.now + this.props.refreshEvery*1000)} ... <a href="#" onClick={this.refreshNow}>Refresh Now</a>
           </p>
-          { this.state.flightsArray.map( (e,i) => {
+          { this.state.flightsArray.length == 0 ?
+            <p><i className="fa fa-cog fa-spin"></i> Loading...</p> :
+            this.state.flightsArray.map( (e,i) => {
             return (
               <div key={i} >
                 <strong>{this.state.days[i]}</strong>
