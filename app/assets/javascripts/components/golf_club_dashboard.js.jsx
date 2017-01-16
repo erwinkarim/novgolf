@@ -400,13 +400,13 @@ var GolfClubDashboard = React.createClass({
 
       //auto load transactions if course selected
       if(handle.state.selectedCourse == null){
-        console.log('handle.selectedCourse was null');
+        //console.log('handle.selectedCourse was null');
         return 0;
       };
 
       var reservation_id = handle.state.flightsArray[handle.state.selectedArray][handle.state.selectedFlight].course_data.courses[handle.state.selectedCourse].reservation_id;
       if(reservation_id == null){
-        console.log('reservation_id was null');
+        //console.log('reservation_id was null');
         return 0;
       };
 
@@ -468,13 +468,6 @@ var GolfClubDashboard = React.createClass({
     newFlightInfo = this.updatePrice(newFlightInfo, flight);
 
     /*
-    newFlightInfo[e.target.dataset.target] = e.target.value;
-
-    //update the insurance count automatically if insurance mode is madatory
-    if(($.inArray(flight.prices.insurance_mode,[1,2]) != -1) &&
-      (e.target.dataset.target == 'pax') ){
-        newFlightInfo.insurance = parseInt(e.target.value);
-    }
     */
 
     this.setState({flightInfo:newFlightInfo});
@@ -607,7 +600,7 @@ var GolfClubDashboard = React.createClass({
           $.snackbar({content:json.message});
           handle.loadSchedule();
         }).catch(function(error){
-          console.log("error", error);
+          //console.log("error", error);
           $.snackbar({content:"Unable to Update Reservation"});
         });
       };
@@ -620,7 +613,7 @@ var GolfClubDashboard = React.createClass({
     if("courses" in flight.course_data){
       var course = flight.course_data.courses[this.state.selectedCourse];
       if(course.reservation_id){
-        console.log("cancel reservation ", course.reservation_id);
+        //console.log("cancel reservation ", course.reservation_id);
         fetch(`${this.props.paths.user_reservations}/${course.reservation_id}`,{
           method:'DELETE',
           credentials:'same-origin',
@@ -640,8 +633,6 @@ var GolfClubDashboard = React.createClass({
 
   },
   reservationNew: function(e){
-    console.log("new reservation");
-
     var handle = this;
     var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
 
@@ -671,7 +662,7 @@ var GolfClubDashboard = React.createClass({
       handle.loadSchedule();
     }).catch(function(ex){
       $.snackbar({content:'Failed to reserve Flight'});
-      console.log("exception", ex);
+      //console.log("exception", ex);
     });
   },
   reservationPay: function(e){
@@ -680,7 +671,7 @@ var GolfClubDashboard = React.createClass({
     if("courses" in flight.course_data){
       var course = flight.course_data.courses[this.state.selectedCourse];
       if(course.reservation_id){
-        console.log("make payment for reservation", course.reservation_id);
+        //console.log("make payment for reservation", course.reservation_id);
         var payment_amount = parseFloat(e.target.dataset.paymentMethod == "cc" ? handle.state.flightTransaction.outstanding : handle.state.cashValue);
         fetch(`${this.props.paths.user_reservations}/${course.reservation_id}/pay`,{
           method:'POST',
@@ -711,7 +702,7 @@ var GolfClubDashboard = React.createClass({
     });
 
     p1.then(function(val){
-      console.log('send msg to confirm members inside promise');
+      //console.log('send msg to confirm members inside promise');
       //send info about flight updates and refresh the
       var reservation_id = handle.state
         .flightsArray[handle.state.selectedArray][handle.state.selectedFlight]
@@ -726,7 +717,7 @@ var GolfClubDashboard = React.createClass({
       }).then(function(response){
         return response.json();
       }).then(function(json){
-        console.log('member list verified');
+        //console.log('member list verified');
         $.snackbar({content:json.message});
         handle.loadSchedule();
       });
