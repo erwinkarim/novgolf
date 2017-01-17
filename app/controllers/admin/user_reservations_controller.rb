@@ -29,7 +29,10 @@ class Admin::UserReservationsController < ApplicationController
 
     #check the members list to ensure that they are sane
     if params.has_key?(:flight_info) && flight_info.has_key?(:members) then
-      if flight_info["members"].inject(false){|p,v| p || (v[1]["name"].empty? || v[1]["member_id"].empty?)} then
+      if flight_info["members"].nil? then
+        flight_info["members"] = Array.new
+      end
+      if flight_info["members"].inject(false){|p,v| p || (v["name"].empty? || v["member_id"].empty?)} then
         render json: {message:'Failed to create a reservation'}, status: :unprocessable_entity
         return
       end
@@ -49,7 +52,7 @@ class Admin::UserReservationsController < ApplicationController
 
     if ur.valid? then
       ur.payment_attempted!
-      render json: {message:"Reservation #{ur.id} created"}, status: :ok
+      render json: {message:"Reservation #{ur.id} created", reservation:ur}, status: :ok
     else
       render json: {message:'Failed to create a reservation'}, status: :unprocessable_entity
     end
@@ -72,30 +75,54 @@ class Admin::UserReservationsController < ApplicationController
   # PUT/PATCH    /admin/golf_clubs/:id(.:format)
   # required params :flight_info => {:pax, :buggy, :caddy, :insurance }
   def update
-    #update the schedule and recalculate the pricing
-
     flight_info = params[:flight_info]
     ur = UserReservation.find(params[:id])
 
     #if trying to update anything that is older than 24 hours, cancel the update
     if ur.booking_date < Date.yesterday then
-      render json: {message:"Cannot update reservation that is older than 24 hours ago"}
+      render json: {message:"Cannot update reservation that is older than 24 hours ago"}, status: :unprocessable_entity
       return
     end
 
+    #check the members list to ensure that they are sane
+    if params.has_key?(:flight_info) && flight_info.has_key?(:members) then
+      if flight_info["members"].nil? then
+        flight_info["members"] = Array.new
+      end
+      if flight_info["members"].inject(false){|p,v| p || (v["name"].empty? || v["member_id"].empty?)} then
+        render json: {message:"Members can't be blank on reservation #{ur.id}"}, status: :unprocessable_entity
+        return
+      end
+    end
+
+    #everything is awesome, now really update the counts and outstanding values
     ur.transaction do
       ur.update_counts(flight_info)
+      if ur.check_outstanding > 0 then
+        ur.payment_attempted!
+      else
+        #records that you have some change needs to be given back
+        Rails.logger.info "should give back change of #{ur.check_outstanding}"
+
+        #operator will use their own cc terminal to refund. in the future
+        # will use our own system to do refunds
+        urTransaction = ur.ur_transactions.new
+        urTransaction.assign_attributes({detail_type: UrTransaction.detail_types[:cash_change], trans_amount: -(ur.check_outstanding) })
+        urTransaction.save!
+      end
     end
+
     render json: {message:"Update Pricing for #{ur.id}"}
   end
 
-  # POST     /admin/user_reservations/:user_reservation_id/confirm
-  #   Parameters: {"flight"=>{"pax"=>"3", "member"=>"1", "buggy"=>"1", "caddy"=>"1", "insurance"=>"4",
-  #      "members"=>{"0"=>{"name"=>"member one", "member_id"=>"abc 123", "id"=>"18"}},
-  #      "tax"=>"89.34", "totalPrice"=>"1578.34"},
-  #      "user_reservation_id"=>"166"}
-
-  def confirm
+  # POST     /admin/user_reservations/:user_reservation_id/pay
+  # handle payment
+  # parameters:   {
+  #   "flight_info"=>{"pax"=>"2", "member"=>"0", "buggy"=>"1", "caddy"=>"1", "insurance"=>"0", "tax"=>"55.5", "totalPrice"=>"980.5"},
+  #   "payment_method"=>"cash", "payment_amount"=>"1000", "user_reservation_id"=>"218"
+  # }
+  # check for method
+  def pay
     ur = UserReservation.find(params[:user_reservation_id])
 
     #block confirmation if reservation is older than 24 hours ago
@@ -104,13 +131,23 @@ class Admin::UserReservationsController < ApplicationController
       return
     end
 
+    #ensure that payment is always enough to go through
+
     ur.transaction do
       flight_info = params[:flight_info]
+      #update flight info (might induce new transaction if delta change)
       ur.update_counts(flight_info)
 
+      #after update count, record payment method (cc or cash)
+      payment_method = params[:payment_method] == "cc" ? UrTransaction.detail_types[:cc_payment] : UrTransaction.detail_types[:cash_payment]
+      payment_amount = params[:payment_method] == "cc" ? ur.check_outstanding : params[:payment_amount].to_f
+      ur.record_payment payment_amount, payment_method
+
+      #finally, actually confirm the reservation
       ur.reservation_confirmed!
 
     end
+
     render json: {message:"Reservation #{ur.id} confirmed"}
   end
 
@@ -119,5 +156,24 @@ class Admin::UserReservationsController < ApplicationController
   def stats
     result = UserReservation.stats params[:id_list]
     render json: {revenue:result[:totalRevenue]}
+  end
+
+  #POST     /admin/user_reservations/:user_reservation_id/confirm_members
+  # confirm the members, change the reservation state to confirmed or awaiting payment
+  # this assumed that the operator manually verified the members and the acknowledge the
+  # members in the flight are genunie
+  def confirm_members
+    ur = UserReservation.find(params[:user_reservation_id])
+
+    #need to check the current user owns the reservation
+
+    if ur.check_outstanding.zero? then
+      ur.reservation_confirmed!
+    else
+      ur.payment_attempted!
+    end
+
+    render json: {message:"Members Verified for #{ur.id}", user_reservation:ur}
+
   end
 end

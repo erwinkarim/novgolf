@@ -81,22 +81,28 @@ class UserReservationsController < ApplicationController
     grace = Time.parse(session[:timeout]) + 5.minutes
 
     #if token got before session timeout. generate token and show out the confirmation page
+    @reservations = UserReservation.find(session[:reservation_ids])
     if Time.now < grace then
-      @reservations = UserReservation.find(session[:reservation_ids])
       @reservations.each do |reservation|
-        # if got members, need to be verified by the club first, but do send out the email regrading
-        # the reservation(s)
-        if reservation.count_member > 0 then
-          reservation.requires_members_verification!
-        else
-          reservation.payment_confirmed!
-        end
+        #payment has been made for each reservation
+        UserReservation.transaction do
+          #payment will always be based on cc
+          reservation.record_payment reservation.total_price
 
-        #destroy the sessions that is not being used anymore
-        session.delete(:members)
-        session.delete(:info)
-        session.delete(:flight)
-        session.delete(:golf_club_id)
+          # if got members, need to be verified by the club first, but do send out the email regrading
+          # the reservation(s)
+          if reservation.count_member > 0 then
+            reservation.requires_members_verification!
+          else
+            reservation.payment_confirmed!
+          end
+
+          #destroy the sessions that is not being used anymore
+          session.delete(:members)
+          session.delete(:info)
+          session.delete(:flight)
+          session.delete(:golf_club_id)
+        end
 
         #send out review in the future
         UserReservationMailer.request_review(reservation).deliver_later(wait_until: reservation.booking_datetime + 12.hours)

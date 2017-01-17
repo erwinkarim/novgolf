@@ -1,5 +1,4 @@
 class UserReservation < ActiveRecord::Base
-  # TODO: lock changes in count and actual 24 hours after the booking date and time
   require "assets/name_generator"
 
   belongs_to :user
@@ -10,6 +9,7 @@ class UserReservation < ActiveRecord::Base
 
   has_one :review, as: :topic
   has_many :ur_member_details, dependent: :destroy
+  has_many :ur_transactions, dependent: :destroy
 
   #each club id should have a unique booking date and time
   #  and unique course #
@@ -36,9 +36,111 @@ class UserReservation < ActiveRecord::Base
 
   after_initialize :init
 
+  #track changes
+  has_paper_trail :on => [:create,:update], :only => [:actual_pax, :actual_buggy, :actual_caddy, :actual_insurance]
+
+  after_save :report_changes
+
   def init
+    #zerorize prices upon building
+    self.actual_pax ||= 0.00
+    self.actual_buggy ||= 0.00
+    self.actual_caddy ||= 0.00
+    self.actual_insurance ||= 0.00
+    self.actual_tax ||= 0.00
+
     self.status ||= 0
     self.count_member ||= 0
+  end
+
+  def report_changes
+    #if the paper_trail version changes between current and report, send notice to ur_transactions
+    if self.versions.last.id != self.last_paper_trail_id then
+      # get the previous version
+      last_version = self.paper_trail.previous_version
+
+      # see how much changes has been made and what kind of transaction this is
+      delta = last_version.nil? ? self.total_price : self.total_price - last_version.total_price
+      trans_type = last_version.nil? ? UrTransaction.detail_types[:initial_charge] : UrTransaction.detail_types[:delta_charge]
+
+      # report change delta to UrTransaction
+      # Rails.logger.info "delta change is #{delta} with last version id is #{self.versions.last.id}"
+      self.transaction do
+        # if the delta is negative report the delta charge as refunds to tax, revenue and cut to jomgolf
+        if delta.negative? then
+          tax = (delta * self.golf_club.tax_schedule.rate).round(2)
+          provider_share = ((delta - tax) * 0.1).round(2)
+          actual_delta = delta - tax - provider_share
+
+          #tax refund
+          ur_tranx = self.ur_transactions.new({trans_amount:tax, detail_type:UrTransaction.detail_types[:tax_refund]})
+          ur_tranx.save!
+
+          #jomgolf share refund
+          ur_tranx = self.ur_transactions.new({trans_amount:provider_share, detail_type:UrTransaction.detail_types[:provider_share_refund]})
+          ur_tranx.save!
+        else
+          actual_delta = delta
+        end
+
+        #the actual charge
+        ur_tranx = self.ur_transactions.new({trans_amount:actual_delta, detail_type:trans_type})
+        ur_tranx.save!
+      end
+
+      # update the last_paper_trail_id to the latest version id
+      self.update_column(:last_paper_trail_id, self.versions.last.id)
+    end
+  end
+
+  #record payments
+  # amount must be more than the total amount own
+  # will record payment on taxes, cut given to jomgolf and actual revenue and cash change that needs to be given
+  def record_payment amount=0, detail_type=UrTransaction.detail_types[:cc_payment]
+    # raise error is amount is less that outstanding balance
+    if self.check_outstanding > amount then
+      raise "Amount is not enough to cover expenses"
+    end
+
+    self.transaction do
+      #split payment into tax, cut to jomgolf and actual revenue
+      #need to take note when doing delta payments (esp when updating revenue count)
+      outstanding_balance = self.check_outstanding
+      tax_payment = outstanding_balance -  (outstanding_balance / (1 + self.golf_club.tax_schedule.rate)).round(2)
+      jomgolf_cut = ((outstanding_balance - tax_payment) * 0.1).round(2)
+      revenue_payment = outstanding_balance - tax_payment - jomgolf_cut
+      cash_change_amount = amount - outstanding_balance
+
+      #tax payment
+      tranx = self.ur_transactions.new({trans_amount:-(tax_payment), detail_type:UrTransaction.detail_types[:tax_payment]})
+      tranx.save!
+
+      #service provider share
+      tranx = self.ur_transactions.new({trans_amount:-(jomgolf_cut), detail_type:UrTransaction.detail_types[:provider_share]})
+      tranx.save!
+
+      #actual revenue payment
+      tranx = self.ur_transactions.new({trans_amount:-(revenue_payment), detail_type:detail_type})
+      tranx.save!
+
+      #excess balance
+      tranx = self.ur_transactions.new({trans_amount:-(cash_change_amount), detail_type:UrTransaction.detail_types[:excess_payment]})
+      tranx.save!
+
+      #record the change that needs to be given
+      tranx = self.ur_transactions.new({detail_type:UrTransaction.detail_types[:cash_change], trans_amount:-(self.check_outstanding)})
+      tranx.save!
+    end
+  end
+
+  #check outstanding balance by looking at transactions
+  def check_outstanding
+    self.ur_transactions.inject(0){|p,n| p += n.trans_amount }
+  end
+
+  def check_change
+    ur_transaction = self.ur_transactions.where(:detail_type => UrTransaction.detail_types[:cash_change]).last
+    ur_transaction.nil? ? 0.0 : ur_transaction.trans_amount
   end
 
   def validates_booking_datetime
@@ -82,17 +184,20 @@ class UserReservation < ActiveRecord::Base
         count_caddy:flight_info[:caddy], count_insurance:flight_info[:insurance]})
 
       #update member info, if there's members
-      #delete members that are not in the list anymore
       if flight_info.has_key? :members then
-        UrMemberDetail.where(:id => self.ur_member_details.map{|x| x.id} - flight_info[:members].map{|x| x[1]["id"].to_i}).each{ |x| x.destroy }
-        # cycle through the members, update/create info and delete if there are not there
-        flight_info[:members].each_pair do |k,member|
-          if member["id"].empty? then
-            new_member = self.ur_member_details.new({member_id:member["member_id"], name:member["name"]})
-            new_member.save!
-          else
-            ur_member_detail = UrMemberDetail.find(member["id"])
-            ur_member_detail.update_attributes({member_id:member["member_id"], name:member["name"]})
+        unless flight_info[:members].nil? then
+          #delete members that are not in the list anymore
+          UrMemberDetail.where(:id => self.ur_member_details.map{|x| x.id} - flight_info[:members].map{|x| x["id"].to_i}).each{ |x| x.destroy }
+
+          # cycle through the members, update/create info and delete if there are not there
+          flight_info[:members].each do |member|
+            if member["id"].empty? then
+              new_member = self.ur_member_details.new({member_id:member["member_id"], name:member["name"]})
+              new_member.save!
+            else
+              ur_member_detail = UrMemberDetail.find(member["id"])
+              ur_member_detail.update_attributes({member_id:member["member_id"], name:member["name"]})
+            end
           end
         end
       end

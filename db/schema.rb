@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161128025239) do
+ActiveRecord::Schema.define(version: 20161223090607) do
 
   create_table "amenities", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -202,29 +202,41 @@ ActiveRecord::Schema.define(version: 20161128025239) do
 
   add_index "ur_member_details", ["user_reservation_id"], name: "index_ur_member_details_on_user_reservation_id", using: :btree
 
+  create_table "ur_transactions", force: :cascade do |t|
+    t.datetime "created_at",                                              null: false
+    t.datetime "updated_at",                                              null: false
+    t.integer  "user_reservation_id", limit: 4
+    t.decimal  "trans_amount",                    precision: 8, scale: 2
+    t.integer  "detail_type",         limit: 4
+    t.string   "notes",               limit: 255
+  end
+
+  add_index "ur_transactions", ["user_reservation_id"], name: "index_ur_transactions_on_user_reservation_id", using: :btree
+
   create_table "user_reservations", force: :cascade do |t|
-    t.integer  "user_id",            limit: 4
-    t.integer  "charge_schedule_id", limit: 4
-    t.integer  "actual_caddy",       limit: 4
-    t.integer  "actual_buggy",       limit: 4
-    t.integer  "actual_pax",         limit: 4
-    t.datetime "created_at",                                                          null: false
-    t.datetime "updated_at",                                                          null: false
-    t.integer  "golf_club_id",       limit: 4
+    t.integer  "user_id",             limit: 4
+    t.integer  "charge_schedule_id",  limit: 4
+    t.integer  "actual_caddy",        limit: 4
+    t.integer  "actual_buggy",        limit: 4
+    t.integer  "actual_pax",          limit: 4
+    t.datetime "created_at",                                                           null: false
+    t.datetime "updated_at",                                                           null: false
+    t.integer  "golf_club_id",        limit: 4
     t.datetime "booking_datetime"
     t.date     "booking_date"
     t.time     "booking_time"
-    t.integer  "status",             limit: 4
-    t.string   "token",              limit: 255
-    t.integer  "flight_matrix_id",   limit: 4
-    t.decimal  "actual_insurance",               precision: 8,  scale: 2
-    t.integer  "count_caddy",        limit: 4
-    t.integer  "count_buggy",        limit: 4
-    t.integer  "count_pax",          limit: 4
-    t.integer  "count_insurance",    limit: 4
-    t.decimal  "actual_tax",                     precision: 10, scale: 2
-    t.integer  "course_listing_id",  limit: 4
-    t.integer  "count_member",       limit: 4,                            default: 0
+    t.integer  "status",              limit: 4
+    t.string   "token",               limit: 255
+    t.integer  "flight_matrix_id",    limit: 4
+    t.decimal  "actual_insurance",                precision: 8,  scale: 2
+    t.integer  "count_caddy",         limit: 4
+    t.integer  "count_buggy",         limit: 4
+    t.integer  "count_pax",           limit: 4
+    t.integer  "count_insurance",     limit: 4
+    t.decimal  "actual_tax",                      precision: 10, scale: 2
+    t.integer  "course_listing_id",   limit: 4
+    t.integer  "count_member",        limit: 4,                            default: 0
+    t.integer  "last_paper_trail_id", limit: 4
   end
 
   add_index "user_reservations", ["charge_schedule_id"], name: "index_user_reservations_on_charge_schedule_id", using: :btree
@@ -263,6 +275,17 @@ ActiveRecord::Schema.define(version: 20161128025239) do
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
 
+  create_table "versions", force: :cascade do |t|
+    t.string   "item_type",  limit: 191,        null: false
+    t.integer  "item_id",    limit: 4,          null: false
+    t.string   "event",      limit: 255,        null: false
+    t.string   "whodunnit",  limit: 255
+    t.text     "object",     limit: 4294967295
+    t.datetime "created_at"
+  end
+
+  add_index "versions", ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id", using: :btree
+
   add_foreign_key "amenity_lists", "amenities"
   add_foreign_key "amenity_lists", "golf_clubs"
   add_foreign_key "charge_schedules", "flight_schedules"
@@ -281,6 +304,7 @@ ActiveRecord::Schema.define(version: 20161128025239) do
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"
   add_foreign_key "ur_member_details", "user_reservations"
+  add_foreign_key "ur_transactions", "user_reservations"
   add_foreign_key "user_reservations", "charge_schedules"
   add_foreign_key "user_reservations", "course_listings"
   add_foreign_key "user_reservations", "flight_matrices"
