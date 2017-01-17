@@ -3,7 +3,8 @@ source 'https://rubygems.org'
 #ruby '2.3.0'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '4.2.7'
+#gem 'rails', '4.2.7'
+gem 'rails', '5.0.1'
 
 # Use sqlite3 as the database for Active Record
 # Use SCSS for stylesheets
@@ -83,7 +84,8 @@ gem 'bootstrap', '= 4.0.0.alpha5'
 gem 'react-rails'
 
 #database
-gem 'squeel'
+#no longer supported in 5
+#gem 'squeel'
 gem 'mysql2'
 
 #tokenizer

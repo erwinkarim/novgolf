@@ -1,4 +1,5 @@
 #for rails 4.2 can delete this for rails 5.0 as it's already included
+=begin
 require 'securerandom'
 require 'concurrent/scheduled_task'
 require 'concurrent/executor/thread_pool_executor'
@@ -119,3 +120,4 @@ module ActiveJob
     end
   end
 end
+=end
