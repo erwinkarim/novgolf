@@ -97,14 +97,23 @@ var GolfClubDashStatus = React.createClass({
     );
     var disableFnBtn = true;
 
+    var outstandingText = this.props.flightTransaction == null ? "Outstanding" : (
+      parseFloat(this.props.flightTransaction.outstanding) == 0 ? "Cash Change" : "Outstanding"
+    );
+
     var outstandingModalLink = this.props.flightTransaction == null ? <span>Outstanding</span> : (
-      <a href="#ur-transaction-modal" data-toggle="modal">Outstanding</a>
+      <a href="#ur-transaction-modal" data-toggle="modal">{outstandingText}</a>
     );
 
     if(this.props.loadFlight){
       disableFnBtn = false;
       var flight = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight];
-      var outstanding_value = this.props.flightTransaction == null ? toCurrency(0.0) : toCurrency(parseFloat(this.props.flightTransaction.outstanding));
+      var outstanding_value = this.props.flightTransaction == null ? toCurrency(0.0) : 
+      (
+        parseFloat(this.props.flightTransaction.outstanding) == 0 ?
+        toCurrency(parseFloat(this.props.flightTransaction.change)) :
+        toCurrency(parseFloat(this.props.flightTransaction.outstanding))
+      );
 
       btnRow = (
         <div>
@@ -385,8 +394,8 @@ var GolfClubDashboard = React.createClass({
   loadSchedule: function(){
 
     var handle = this;
-
     var newFlightsArray = this.state.flightsArray;
+    $.snackbar({content:'Loading Schedule...'});
 
     //asynch issues, need to use promise to send and collect
     //or update the controller to load the next 7 days instead
@@ -401,6 +410,7 @@ var GolfClubDashboard = React.createClass({
         newFlightsArray[index] = search_result.flights;
       });
       handle.setState({flightsArray:newFlightsArray});
+      $.snackbar({content:'Schedule loaded'});
 
       //auto load transactions if course selected
       if(handle.state.selectedCourse == null){
@@ -421,6 +431,7 @@ var GolfClubDashboard = React.createClass({
       }).then(function(json){
         handle.setState({flightTransaction:json});
       });
+
     });
   },
   loadReservationJSON: function(reservation_id, currentFlightInfo){

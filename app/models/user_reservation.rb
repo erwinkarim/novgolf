@@ -138,6 +138,11 @@ class UserReservation < ActiveRecord::Base
     self.ur_transactions.inject(0){|p,n| p += n.trans_amount }
   end
 
+  def check_change
+    ur_transaction = self.ur_transactions.where(:detail_type => UrTransaction.detail_types[:cash_change]).last
+    ur_transaction.nil? ? 0.0 : ur_transaction.trans_amount
+  end
+
   def validates_booking_datetime
     #ensure that the booking date and time falls on the correct
     if self.booking_date.nil? || self.booking_time.nil? || self.flight_matrix_id.nil? then
