@@ -43,14 +43,18 @@ class UserReservation < ActiveRecord::Base
 
   def init
     #zerorize prices upon building
-    self.actual_pax ||= 0.00
-    self.actual_buggy ||= 0.00
-    self.actual_caddy ||= 0.00
-    self.actual_insurance ||= 0.00
-    self.actual_tax ||= 0.00
+    begin
+      self.actual_pax ||= 0.00
+      self.actual_buggy ||= 0.00
+      self.actual_caddy ||= 0.00
+      self.actual_insurance ||= 0.00
+      self.actual_tax ||= 0.00
 
-    self.status ||= 0
-    self.count_member ||= 0
+      self.status ||= 0
+      self.count_member ||= 0
+    rescue ActiveModel::MissingAttributeError
+      Rails.logger.info "some stuff are not found"
+    end
   end
 
   def report_changes
@@ -261,8 +265,11 @@ class UserReservation < ActiveRecord::Base
 
       #find the free coursetime
       first_course_id = (club.course_listings.map{ |x| x.id } -
-        UserReservation.where{ (golf_club_id.eq club_id) & (booking_date.eq booking_date_clause) &
-          (booking_time.eq booking_time_clause) & (status.not_in [4,5,6])
+        UserReservation.where.has{
+          (golf_club_id == club_id) &
+          (booking_date == booking_date_clause) &
+          (booking_time == booking_time_clause) &
+          (status.not_in [4,5,6])
         }.map{|x| x.course_listing_id }).first
       ur.assign_attributes({course_listing_id:first_course_id})
       Rails.logger.info "new course id = #{first_course_id}"

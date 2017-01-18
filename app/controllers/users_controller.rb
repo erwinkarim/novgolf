@@ -4,7 +4,7 @@ class UsersController < ApplicationController
   def show
       @user = User.find(params[:id])
       userId = @user.id
-      hangouts_id = UserReservation.where{ (created_at.gt 6.months.ago) && (user_id.eq userId)}.
+      hangouts_id = UserReservation.where.has{ (created_at > 6.months.ago) & (user_id == userId)}.
         select("golf_club_id, count(*) as golf_club_count, 0 as status, 0 as count_member").
         group(:golf_club_id).order("golf_club_count desc").limit(3).map{ |x| x.golf_club_id }
       @hangouts = GolfClub.find(hangouts_id)
