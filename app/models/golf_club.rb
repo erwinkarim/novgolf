@@ -155,25 +155,25 @@ class GolfClub < ActiveRecord::Base
         end
       }
 
-=begin
       #if more details course data require, go ask the database
       if options[:loadCourseData] then
         queryDate =  options[:dateTimeQuery].strftime("%Y-%m-%d")
-        course_results = self.joining{
+        course_query_statement = self.joining{
             flight_schedules.flight_matrices
           }.joining{ course_listings
-          }.joining("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joins{
+          }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joining{
             flight_schedules.charge_schedule
           }.where.has{
             ( (name.like "%#{query}%") ) &
-            (flight_matrices.tee_time.in timeRange ) &
+            (flight_schedules.flight_matrices.tee_time.in timeRange ) &
             (flight_schedules.min_pax <= options[:pax]) &
-            (flight_matrices.send("day#{queryDay}") == 1) &
+            (flight_schedules.flight_matrices.send("day#{queryDay}") == 1) &
             (id.in options[:club_id])
           }.limit(options[:limit]
-          ).pluck( :id,
-              :'flight_matrices.id as fm_id', :'course_listings.id as cl_id', :'tr.id ur_id', :'tr.status as tr_status'
-          ).inject(results){ |p,n|
+          ).selecting{ [id,
+              flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'), 'tr.id as ur_id', 'tr.status as tr_status'
+          ]}.to_sql
+          course_results = ActiveRecord::Base.connection.execute(course_query_statement).inject(results){ |p,n|
             flight_handle = p.select{|x| x[:club][:id] == n[0]}.first[:flights].select{|x| x[:matrix_id] == n[1]}.first
             if flight_handle[:course_data][:courses].nil? then
               flight_handle[:course_data][:courses] = []
@@ -185,7 +185,6 @@ class GolfClub < ActiveRecord::Base
             p
           }
       end
-=end
 
       results
 
