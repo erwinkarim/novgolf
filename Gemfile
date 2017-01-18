@@ -86,6 +86,7 @@ gem 'react-rails'
 #database
 #no longer supported in 5
 #gem 'squeel'
+gem 'baby_squeel'
 gem 'mysql2'
 
 #tokenizer
