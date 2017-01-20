@@ -45,6 +45,9 @@ Rails.application.routes.draw do
        #this is for MVP + 1
        #resources :charge_schedules, :only => [:index]
        resources :memberships, :only => [:index, :show, :destroy]
+       collection do
+         get 'tax_schedules'
+       end
      end
      resources :user_reservations, :only => [:create, :show, :destroy, :update], constraints: {format:'json'} do
        post 'pay'

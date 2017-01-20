@@ -38,6 +38,7 @@
             %a.card-link.btn.btn-primary{ :href => admin_golf_club_memberships_path(@golf_club) } Memberships
           %li.list-group-item
             %a.card-link.btn.btn-secondary{ :href => edit_admin_golf_club_path(@golf_club) } Edit
+            %button.btn.btn-danger{ type:'button', data:{toggle:'modal', target:'#deleteClubModal'}} Delete
           %li.list-group-item
             %a.card-link.btn.btn-secondary{ :href => admin_golf_club_photos_path(@golf_club) } Photos
       .card
@@ -181,6 +182,8 @@
       %ul
         - @golf_club.amenity_listings.each do |amenity|
           %li{:class => amenity[:available] ? "" : "text-muted" } #{ amenity[:label]}
+= react_component("GolfClubDeleteModal", {clubName:@golf_club.name, delete_path:admin_golf_club_path(@golf_club),
+  token:form_authenticity_token})
 :javascript
   var map;
   var initMap = function(){

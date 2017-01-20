@@ -651,7 +651,7 @@ var GolfClubForm = React.createClass({
 
     }).fail(function(jqXHR, textStatus, errorThrown){
       console.log('error:', jqXHR );
-      $('#flash_msgs').append('Errors detected;')
+      $.snackbar({content:'Errors Detected', style:'error' })
     });
   },
   newCourse: function(e){

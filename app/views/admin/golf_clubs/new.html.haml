@@ -1,14 +1,16 @@
-- content_for(:head){ "Admin - new - "}
+- content_for(:head){ "Admin - New Golf Club - "}
 .container
   .row
     .col-xs-12
       %ol.breadcrumb
-        %li
+        %li.breadcrumb-item
           %a{ :href => admin_golf_clubs_path} Admin
-        %li.active New
+        %li.active.breadcrumb-item New Golf Club
   .row
     = react_component( "GolfClubForm", { form:{ crsfToken:form_authenticity_token, action_path:admin_golf_clubs_path, method:'post'},
-      club:@golf_club,
+      club:@golf_club_attributes,
       flightSchedules:@flight_schedules,
       amenities:@golf_club.amenity_listings,
-      flightDummy:@flight_schedules.first, insurance_modes:ChargeSchedule.insurance_modes.map{ |k,v| k }  })
+      flightDummy:@flight_schedules.first, insurance_modes:ChargeSchedule.insurance_modes.map{ |k,v| k },
+      dummy_data:@dummy_data,
+      paths: {tax_schedule_path:tax_schedules_admin_golf_clubs_path} })
