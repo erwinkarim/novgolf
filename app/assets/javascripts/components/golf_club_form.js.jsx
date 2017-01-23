@@ -442,6 +442,17 @@ var FlightBox = React.createClass({
     flightDummy:React.PropTypes.object
   },
   getInitialState: function(){
+    //zeroized the flightSchedules.id if it's null
+    var newFlightSchedules = this.props.flightSchedules;
+
+    newFlightSchedules = newFlightSchedules.map((e,i) => {
+      e.id = e.id == null ? 0 : e.id;
+      e.charge_schedule.id = e.charge_schedule.id == null ? 0 : e.charge_schedule.id;
+      e.name = e.name == null ? "" : e.name;
+      
+      return e;
+    });
+
     return {
         flightSchedules:this.props.flightSchedules,
         teeTimes:this.props.flightSchedules.map( (e,i) => e.flight_matrices.map( (e2,i2) => e2.tee_time) )
