@@ -247,8 +247,8 @@ var FlightSchedulePriceCard = React.createClass({
           <a href={`#collapse-${this.state.random_id}`} data-toggle="collapse">
             <i className="fa fa-chevron-up" ref="chevronState"></i></a> {this.props.flightSchedule.name} Flight Schedule / Pricing
           <div className="pull-right">
-            <button className="close" type="button" onClick={this.props.deleteSchedule} value={this.props.scheduleIndex}>
-              <span value={this.props.scheduleIndex}>&times;</span>
+            <button className="close" type="button" onClick={this.props.deleteSchedule} data-value={this.props.scheduleIndex}>
+              <span data-value={this.props.scheduleIndex}>&times;</span>
             </button>
           </div>
         </div>
@@ -460,12 +460,14 @@ var FlightBox = React.createClass({
     //delete flight schedules
 
     //can't delete the first one
-    if(e.target.value == 0){
+    if(e.target.dataset.value == 0){
       return;
     }
 
+    console.log('e.target', e.target);
+    console.log('delete schedule index', parseInt(e.target.dataset.value,10));
     //figure out why this doesn't work
-    var arrayIndex = parseInt(e.target.value, 10);
+    var arrayIndex = parseInt(e.target.dataset.value, 10);
     var newFlightSchedules = this.state.flightSchedules;
     var newTeeTimes = this.state.teeTimes;
 
@@ -532,7 +534,9 @@ var FlightBox = React.createClass({
                   <FlightSchedulePriceCard key={i} scheduleIndex={i}
                     flightSchedule={e}
                     teeTimes={this.state.teeTimes[i]} deleteTeeTime={this.deleteTeeTime} addTeeTime={this.addTeeTime}
-                    handleClose={this.handleClose} updateFlightInfo={this.updateFlightInfo} insurance_modes={this.props.insurance_modes} />
+                    handleClose={this.handleClose} updateFlightInfo={this.updateFlightInfo} insurance_modes={this.props.insurance_modes}
+                    deleteSchedule={this.deleteSchedule}
+                     />
               )}
               <button type="button" onClick={this.newSchedule} className="btn btn-primary">
                 <i className="fa fa-plus"></i>

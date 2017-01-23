@@ -329,7 +329,7 @@ class GolfClub < ActiveRecord::Base
         flight_schedules.map{ |k,v| v["flight_id"].to_i }.select{ |x| !x.zero? }) ).each{|y| y.destroy }
 
       flight_schedules.each_pair do |idx, elm|
-        puts "updating the flight schedules"
+        #puts "updating the flight schedules"
         if(elm["flight_id"].empty? ) then
           #create new flight_schedule
           fs = self.flight_schedules.new(:name => elm["name"],
