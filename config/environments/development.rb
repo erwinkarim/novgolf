@@ -57,4 +57,8 @@ Rails.application.configure do
   #time zone aware
   config.active_record.time_zone_aware_types = [:datetime, :time]
 
+  #testing queue adapter
+  #config.active_job.queue_adapter = :shoryuken_later
+  config.active_job.queue_adapter = :shoryuken
+
 end
