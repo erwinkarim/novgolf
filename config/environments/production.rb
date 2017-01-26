@@ -88,7 +88,8 @@ Rails.application.configure do
   #config.action_mailer.delivery_method = :aws_sdk
   config.action_mailer.default_url_options = { host: 'beta.jomgolf.com.my', port: 80}
 
-  config.active_job.queue_adapter = :shoryuken_later
+  #config.active_job.queue_adapter = :shoryuken_later
+  config.active_job.queue_adapter = :shoryuken
 
   #ensure mails are delivered
   config.action_mailer.perform_deliveries = true
