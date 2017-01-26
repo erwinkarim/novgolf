@@ -116,6 +116,9 @@ gem 'snackbarjs-rails'
 #premailer, auto-include css for emails
 gem 'premailer-rails'
 gem 'nokogiri'
+#mjml
+gem 'mjml-rails'
+
 
 #static pages
 gem 'high_voltage', '~> 3.0.0'
