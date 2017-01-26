@@ -105,7 +105,8 @@ class UserReservationsController < ApplicationController
         end
 
         #send out review in the future
-        UserReservationMailer.request_review(reservation).deliver_later(wait_until: reservation.booking_datetime + 12.hours)
+        #wait until i've resolve the issue about shoryuken-later
+        #UserReservationMailer.request_review(reservation).deliver_later(wait_until: reservation.booking_datetime + 12.hours)
       end
 
       #send out email to confirm

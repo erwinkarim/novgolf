@@ -63,9 +63,7 @@ end
 
 #group :production do
 #  gem 'mysql2'
-#gem 'shoryuken-later'
 gem 'shoryuken'
-#gem 'shoryuken-waiter'
 #end
 
 gem 'dotenv-rails'
