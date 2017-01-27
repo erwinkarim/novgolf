@@ -27,7 +27,7 @@ Rails.application.configure do
   end
 
   # Don't care if the mailer can't send.
-  #config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = false
 
   config.action_mailer.perform_caching = false
 
@@ -60,4 +60,8 @@ Rails.application.configure do
   #testing queue adapter
   #config.active_job.queue_adapter = :shoryuken_later
   config.active_job.queue_adapter = :shoryuken
+
+  #mailer settings
+  config.action_mailer.perform_deliveries = false
+  config.action_mailer.default_url_options = { host: 'localhost.localdomain', port: 5000}
 end

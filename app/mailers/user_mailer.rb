@@ -1,8 +1,10 @@
 class UserMailer < ApplicationMailer
-  layout 'mailer'
+  #layout 'mailer'
+  layout false
+
   def test
     mail(to: "erwinkarim@gmail.com", subject: "Test!!!") do |format|
-      #format.html
+      format.text
       format.mjml
     end
   end
