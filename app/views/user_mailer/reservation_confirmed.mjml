@@ -1,0 +1,18 @@
+%mjml
+  %mj-body
+    %mj-container
+      %mj-section
+        %mj-column
+          %mj-text{ 'font-size':'20px', color:'#595959', align:'center'} Reservation Confirmed
+          %mj-divider{ 'border-color':'#F45E43'}
+      %mj-section
+        %mj-column
+          %mj-text You reservation(s) has been confirmed. 
+          %mj-table
+            - @reservations.each do |reservation|
+              %tr
+                %td
+                  (#{link_to reservation.token, user_reservation_url(reservation.user_id, reservation)})
+                  #{reservation.booking_date} #{reservation.booking_time.localtime.strftime('%H:%M')} @ #{reservation.golf_club.name}
+          %mj-text Thank You,
+          %mj-text JomGolf Team
