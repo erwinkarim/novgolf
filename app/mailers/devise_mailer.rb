@@ -12,8 +12,51 @@ class DeviseMailer < Devise::Mailer
     mail(
       template_path: 'devise/mailer',
       from: "JomGolf <do-not-reply@jomgolf.com.my>",
-      to: record.email, 
+      to: record.email,
       subject: "Confirm Your Email"
+    ) do |format|
+      format.mjml
+      format.text
+    end
+  end
+
+  def reset_password_instructions(record, token, opts={})
+    @token = token
+    @resource = record
+    # Custom logic to send the email with MJML
+    mail(
+      template_path: 'devise/mailer',
+      from: "JomGolf <do-not-reply@jomgolf.com.my>",
+      to: record.email,
+      subject: "Reset Your Password"
+    ) do |format|
+      format.mjml
+      format.text
+    end
+  end
+
+  def unlock_instructions(record, token, opts={})
+    @token = token
+    @resource = record
+    # Custom logic to send the email with MJML
+    mail(
+      template_path: 'devise/mailer',
+      from: "JomGolf <do-not-reply@jomgolf.com.my>",
+      to: record.email,
+      subject: "Unlock Your Account"
+    ) do |format|
+      format.mjml
+      format.text
+    end
+  end
+
+  def password_change(record, opts={})
+    @resource = record
+    mail(
+      template_path: 'devise/mailer',
+      from: "JomGolf <do-not-reply@jomgolf.com.my>",
+      to: record.email,
+      subject: "Change Your Password"
     ) do |format|
       format.mjml
       format.text
