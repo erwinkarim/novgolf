@@ -105,7 +105,8 @@ class UserReservationsController < ApplicationController
         end
 
         #send out review in the future
-        UserReservationMailer.request_review(reservation).deliver_later(wait_until: reservation.booking_datetime + 12.hours)
+        #wait until i've resolve the issue about shoryuken-later
+        #UserReservationMailer.request_review(reservation).deliver_later(wait_until: reservation.booking_datetime + 12.hours)
       end
 
       #send out email to confirm
@@ -143,7 +144,7 @@ class UserReservationsController < ApplicationController
     #only show review form if it's 12 hours after tee time and date
     flight_is_12hours_old= DateTime.parse("#{@reservation.booking_date} #{@reservation.booking_time.to_datetime.strftime('%H:%M')} +0000") <
       DateTime.now + 12.hours
-    @allow_to_review = @reservation.payment_confirmed?
+    @allow_to_review = @reservation.payment_confirmed? || @reservation.reservation_confirmed?
     @show_review_form = flight_is_12hours_old && @reservation.payment_confirmed? && @reservation.review.nil?
 
     respond_to do |format|

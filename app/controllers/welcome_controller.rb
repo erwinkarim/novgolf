@@ -49,7 +49,7 @@ class WelcomeController < ApplicationController
       format.json{
         render json: {
           query:params[:q],
-          suggestions:GolfClub.where{ upper(name).like "%#{query}%"}.map { |x| {value:x.name, data:x.id}  }
+          suggestions:GolfClub.where.has{ upper(name).like "%#{query}%"}.map { |x| {value:x.name, data:x.id}  }
         }
       }
     end

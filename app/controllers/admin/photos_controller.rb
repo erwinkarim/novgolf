@@ -68,9 +68,9 @@ class Admin::PhotosController < ApplicationController
     if photo.user_id == current_user.id then
       #update the photo
       photo.update_attributes(photo_params)
-      render :nothing => true, :status => :ok
+      head :ok
     else
-      render :nothing => true, :status => :unauthorized
+      head :unauthorized
     end
   end
 

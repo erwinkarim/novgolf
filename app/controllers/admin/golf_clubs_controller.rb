@@ -47,11 +47,22 @@ class Admin::GolfClubsController < ApplicationController
   # GET      /admin/golf_clubs/new
   def new
     @golf_club = GolfClub.new
+    @dummy_data = {course_listing:CourseListing.new.attributes.merge({golf_club_id:@golf_club.id}), course_status:CourseStatus.all}
+    @golf_club_attributes = @golf_club.attributes.merge(
+      { open_hour:@golf_club.open_hour.strftime("%H:%M"), close_hour:@golf_club.close_hour.strftime("%H:%M"), tax_schedule:@golf_club.tax_schedule}
+    )
+    @golf_club_attributes = @golf_club.course_listings.empty? ?
+      @golf_club_attributes.merge({course_listings:[@dummy_data[:course_listing]]}) :
+      @golf_club_attributes.merge( { course_listings: @golf_club.course_listings} )
+
     #need to merge w/ default
+    @dummy = (FlightSchedule.new.attributes.merge("charge_schedule" => ChargeSchedule.new.attributes)).
+      merge("flight_matrices" => [FlightMatrix.new.attributes.merge("tee_time" => "7:00am")])
     @flight_schedules = [
       (FlightSchedule.new.attributes.merge("charge_schedule" => ChargeSchedule.new.attributes)).
       merge("flight_matrices" => [FlightMatrix.new.attributes.merge("tee_time" => "07:00am")])
     ]
+
   end
 
   # POST     /admin/golf_clubs(.:format)
@@ -173,6 +184,10 @@ class Admin::GolfClubsController < ApplicationController
     render json: {tax_schedules:TaxSchedule.all, selected:GolfClub.find(params[:golf_club_id]).tax_schedule.id}
   end
 
+  def tax_schedules
+    render json: {tax_schedules:TaxSchedule.all, selected:TaxSchedule.first.id}
+  end
+
   # GET      /admin/golf_clubs/:golf_club_id/line_items
   def charge_schedules
     # should return the line items + appropiate charges
@@ -214,5 +229,21 @@ class Admin::GolfClubsController < ApplicationController
 
   def golf_club_params
     params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour, :lat, :lng, :tax_schedule_id);
+  end
+
+  # DELETE   /admin/golf_clubs/:id(.:format)
+  def destroy
+    club = GolfClub.find(params[:id])
+
+    destroy_attemp = club.destroy
+
+    if destroy_attemp then
+      flash[:notice] = "Club '#{club.name}' has been deleted"
+      redirect_to admin_golf_clubs_path
+    else
+      flash[:error] = "Unable to delete club #{club.name}"
+      render json {message:'delete attemp failed'}, status: :internal_server_error
+    end
+
   end
 end

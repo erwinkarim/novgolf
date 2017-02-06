@@ -24,6 +24,8 @@ class GolfClub < ActiveRecord::Base
   after_initialize :init
 
   def init
+    # TODO: consider to skip this if method is not available because of ActiveRelation model is
+    # punch out this model, but w/o all the attributes
     #auto create the default price schedule
     self.open_hour ||= Time.parse("2001-01-01 10:00 UTC")
     self.close_hour ||= Time.parse("2001-01-01 20:00 UTC")
@@ -64,7 +66,8 @@ class GolfClub < ActiveRecord::Base
   # TODO: optional capture of course data, by default, just say how many is occupied vs #of courses and min status of the courses
   # TODO:
   def self.search options = {}
-    default_options = { :query => "", :dateTimeQuery => Time.now, :spread => 30.minutes, :pax => 8, :club_id => 0..10000000,
+    default_options = { :query => "", :dateTimeQuery => DateTime.parse("#{Date.tomorrow} 07:00"), :spread => 30.minutes,
+      :pax => 8, :club_id => 0..10000000,
       :limit => 300, :offset => 0 , :adminMode => false, :loadCourseData => false}
 
     options = default_options.merge(options)
@@ -92,16 +95,16 @@ class GolfClub < ActiveRecord::Base
     # todo: remove clubs that is fully booked in the time period
     #get current reservations, excluding failed/canceled attempts
     tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).where(:status => [0,1,2,3,8]).to_sql
-    results = self.joins{
+    sql_statement = self.joining{
         flight_schedules.flight_matrices
-      }.joins{ course_listings
-      }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joins{
+      }.joining{ course_listings
+      }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joining{
         flight_schedules.charge_schedule
-      }.where{
+      }.where.has{
         ( (name.like "%#{query}%") ) &
-        (flight_matrices.tee_time.in timeRange ) &
-        (flight_schedules.min_pax.lte options[:pax]) &
-        (flight_matrices.send("day#{queryDay}").eq 1) &
+        (flight_schedules.flight_matrices.tee_time.in timeRange ) &
+        (flight_schedules.min_pax <= options[:pax]) &
+        (flight_schedules.flight_matrices.send("day#{queryDay}") == 1) &
         (id.in options[:club_id])
       }.limit(options[:limit]
       ).group( " golf_clubs.id,
@@ -110,13 +113,16 @@ class GolfClub < ActiveRecord::Base
         flight_matrices.id, charge_schedules.note,
         min_cart, max_cart, min_caddy, max_caddy,
         insurance_mode
-      ").pluck(:id,
-        :name, :session_price, :tee_time, :min_pax, #4
-        :max_pax, :cart, :caddy, :insurance,        #8
-        :'flight_matrices.id', :'min(tr.status) as tr_min_status', :'charge_schedules.note', :min_cart,  #12
-        :max_cart, :min_caddy, :max_caddy, :insurance_mode,  #16
-        :'count(course_listings.id) as cl_count', :'count(tr.course_listing_id) as ur_cl_count'
-      ).inject([]){ |p,n|
+      ").selecting{[id,
+        name, flight_schedules.charge_schedule.session_price, flight_schedules.flight_matrices.tee_time, flight_schedules.min_pax, #4
+        flight_schedules.max_pax, flight_schedules.charge_schedule.cart, flight_schedules.charge_schedule.caddy, flight_schedules.charge_schedule.insurance,        #8
+        flight_schedules.flight_matrices.id, 'min(tr.status) as tr_min_status', flight_schedules.charge_schedule.note, flight_schedules.min_cart,  #12
+        flight_schedules.max_cart, flight_schedules.min_caddy, flight_schedules.max_caddy, flight_schedules.charge_schedule.insurance_mode,  #16
+        'count(course_listings.id) as cl_count', 'count(tr.course_listing_id) as ur_cl_count'
+        ]
+      }.to_sql
+
+      results = ActiveRecord::Base.connection.execute(sql_statement).inject([]){ |p,n|
         club = p.select{ |x| x[:club][:id] == n[0] }.first
         if club.nil? then
           p << {
@@ -152,21 +158,22 @@ class GolfClub < ActiveRecord::Base
       #if more details course data require, go ask the database
       if options[:loadCourseData] then
         queryDate =  options[:dateTimeQuery].strftime("%Y-%m-%d")
-        course_results = self.joins{
+        course_query_statement = self.joining{
             flight_schedules.flight_matrices
-          }.joins{ course_listings
-          }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joins{
+          }.joining{ course_listings
+          }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joining{
             flight_schedules.charge_schedule
-          }.where{
+          }.where.has{
             ( (name.like "%#{query}%") ) &
-            (flight_matrices.tee_time.in timeRange ) &
-            (flight_schedules.min_pax.lte options[:pax]) &
-            (flight_matrices.send("day#{queryDay}").eq 1) &
+            (flight_schedules.flight_matrices.tee_time.in timeRange ) &
+            (flight_schedules.min_pax <= options[:pax]) &
+            (flight_schedules.flight_matrices.send("day#{queryDay}") == 1) &
             (id.in options[:club_id])
           }.limit(options[:limit]
-          ).pluck( :id,
-              :'flight_matrices.id as fm_id', :'course_listings.id as cl_id', :'tr.id ur_id', :'tr.status as tr_status'
-          ).inject(results){ |p,n|
+          ).selecting{ [id,
+              flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'), 'tr.id as ur_id', 'tr.status as tr_status'
+          ]}.to_sql
+          course_results = ActiveRecord::Base.connection.execute(course_query_statement).inject(results){ |p,n|
             flight_handle = p.select{|x| x[:club][:id] == n[0]}.first[:flights].select{|x| x[:matrix_id] == n[1]}.first
             if flight_handle[:course_data][:courses].nil? then
               flight_handle[:course_data][:courses] = []
@@ -322,7 +329,7 @@ class GolfClub < ActiveRecord::Base
         flight_schedules.map{ |k,v| v["flight_id"].to_i }.select{ |x| !x.zero? }) ).each{|y| y.destroy }
 
       flight_schedules.each_pair do |idx, elm|
-        puts "updating the flight schedules"
+        #puts "updating the flight schedules"
         if(elm["flight_id"].empty? ) then
           #create new flight_schedule
           fs = self.flight_schedules.new(:name => elm["name"],
@@ -407,7 +414,7 @@ class GolfClub < ActiveRecord::Base
 
   #return reviews
   def reviews
-    Review.joins{ user_reservation.golf_club }.where(:'user_reservations.golf_club_id' => self.id).order(:created_at => :desc)
+    Review.joining{ user_reservation.golf_club }.where(:'user_reservations.golf_club_id' => self.id).order(:created_at => :desc)
   end
 
   # get rating stats for over 6 months ago

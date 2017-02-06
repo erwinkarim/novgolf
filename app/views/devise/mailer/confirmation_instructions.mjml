@@ -1,0 +1,14 @@
+%mjml
+  %mj-body
+    %mj-container
+      %mj-section
+        %mj-column
+          %mj-text{ 'font-size':'20px', color:'#595959', align:'center'} Confirm Your Account
+          %mj-divider{ 'border-color':'#F45E43'}
+      %mj-section
+        %mj-column
+          %mj-text Welcome #{@email} !
+          %mj-text You can confirm you account email through the link below!!
+          %mj-button{href:confirmation_url(@resource, confirmation_token:@token) } Confirm My Account
+          %mj-text Thank You,
+          %mj-text JomGolf Team

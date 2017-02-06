@@ -1,0 +1,15 @@
+%mjml
+  %mj-body
+    %mj-container
+      %mj-section
+        %mj-column
+          %mj-text{ 'font-size':'20px', color:'#595959', align:'center'} Review your recent flight
+          %mj-divider{ 'border-color':'#F45E43'}
+      %mj-section
+        %mj-column
+          %mj-text #{@user.name || @user.email}, 
+          %mj-text
+            We hope that you have a great time at #{ @reservation.golf_club.name}. We appreciate if you can take your time to review your flight and experince in the club
+          %mj-button{href:new_user_review_url(@user, {topic_id:@reservation.id, topic_type:@resevation.class.name}) } Review Flight
+          %mj-text Thank you,
+          %mj-text JomGolf Team

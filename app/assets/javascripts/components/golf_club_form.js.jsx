@@ -247,8 +247,8 @@ var FlightSchedulePriceCard = React.createClass({
           <a href={`#collapse-${this.state.random_id}`} data-toggle="collapse">
             <i className="fa fa-chevron-up" ref="chevronState"></i></a> {this.props.flightSchedule.name} Flight Schedule / Pricing
           <div className="pull-right">
-            <button className="close" type="button" onClick={this.props.deleteSchedule} value={this.props.scheduleIndex}>
-              <span value={this.props.scheduleIndex}>&times;</span>
+            <button className="close" type="button" onClick={this.props.deleteSchedule} data-value={this.props.scheduleIndex}>
+              <span data-value={this.props.scheduleIndex}>&times;</span>
             </button>
           </div>
         </div>
@@ -442,6 +442,17 @@ var FlightBox = React.createClass({
     flightDummy:React.PropTypes.object
   },
   getInitialState: function(){
+    //zeroized the flightSchedules.id if it's null
+    var newFlightSchedules = this.props.flightSchedules;
+
+    newFlightSchedules = newFlightSchedules.map((e,i) => {
+      e.id = e.id == null ? 0 : e.id;
+      e.charge_schedule.id = e.charge_schedule.id == null ? 0 : e.charge_schedule.id;
+      e.name = e.name == null ? "" : e.name;
+      
+      return e;
+    });
+
     return {
         flightSchedules:this.props.flightSchedules,
         teeTimes:this.props.flightSchedules.map( (e,i) => e.flight_matrices.map( (e2,i2) => e2.tee_time) )
@@ -460,12 +471,14 @@ var FlightBox = React.createClass({
     //delete flight schedules
 
     //can't delete the first one
-    if(e.target.value == 0){
+    if(e.target.dataset.value == 0){
       return;
     }
 
+    console.log('e.target', e.target);
+    console.log('delete schedule index', parseInt(e.target.dataset.value,10));
     //figure out why this doesn't work
-    var arrayIndex = parseInt(e.target.value, 10);
+    var arrayIndex = parseInt(e.target.dataset.value, 10);
     var newFlightSchedules = this.state.flightSchedules;
     var newTeeTimes = this.state.teeTimes;
 
@@ -532,7 +545,9 @@ var FlightBox = React.createClass({
                   <FlightSchedulePriceCard key={i} scheduleIndex={i}
                     flightSchedule={e}
                     teeTimes={this.state.teeTimes[i]} deleteTeeTime={this.deleteTeeTime} addTeeTime={this.addTeeTime}
-                    handleClose={this.handleClose} updateFlightInfo={this.updateFlightInfo} insurance_modes={this.props.insurance_modes} />
+                    handleClose={this.handleClose} updateFlightInfo={this.updateFlightInfo} insurance_modes={this.props.insurance_modes}
+                    deleteSchedule={this.deleteSchedule}
+                     />
               )}
               <button type="button" onClick={this.newSchedule} className="btn btn-primary">
                 <i className="fa fa-plus"></i>
@@ -651,7 +666,7 @@ var GolfClubForm = React.createClass({
 
     }).fail(function(jqXHR, textStatus, errorThrown){
       console.log('error:', jqXHR );
-      $('#flash_msgs').append('Errors detected;')
+      $.snackbar({content:'Errors Detected', style:'error' })
     });
   },
   newCourse: function(e){

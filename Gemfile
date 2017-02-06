@@ -3,7 +3,8 @@ source 'https://rubygems.org'
 #ruby '2.3.0'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '4.2.7'
+#gem 'rails', '4.2.7'
+gem 'rails', '5.0.1'
 
 # Use sqlite3 as the database for Active Record
 # Use SCSS for stylesheets
@@ -13,7 +14,7 @@ gem 'sass-rails', '~> 5.0'
 gem 'uglifier', '>= 1.3.0'
 
 # Use CoffeeScript for .coffee assets and views
-gem 'coffee-rails', '~> 4.1.0'
+gem 'coffee-rails', '~> 4.2'
 # See https://github.com/rails/execj/#readme for more supported runtimes
 #gem 'therubyracer', platforms: :ruby
 
@@ -28,7 +29,7 @@ gem 'hammerjs-rails'
 gem 'turbolinks'
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-gem 'jbuilder', '~> 2.0'
+gem 'jbuilder', '~> 2.5'
 
 # bundle exec rake doc:rails generates the API under doc/api.
 gem 'sdoc', '~> 0.4.0', group: :doc
@@ -49,6 +50,8 @@ group :development, :test do
   gem 'byebug'
   gem 'shoulda', '~> 3.5'
   gem 'shoulda-matchers', '~> 2.0'
+  gem 'listen', '~> 3.0.5'
+
 end
 
 group :development do
@@ -58,12 +61,16 @@ group :development do
 
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
+  gem 'spring-watcher-listen', '~> 2.0.0'
 end
 
-group :production do
+# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
+gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+
+#group :production do
 #  gem 'mysql2'
-  gem 'shoryuken-later'
-end
+gem 'shoryuken'
+#end
 
 gem 'dotenv-rails'
 
@@ -83,7 +90,9 @@ gem 'bootstrap', '= 4.0.0.alpha5'
 gem 'react-rails'
 
 #database
-gem 'squeel'
+#no longer supported in 5
+#gem 'squeel'
+gem 'baby_squeel'
 gem 'mysql2'
 
 #tokenizer
@@ -113,6 +122,9 @@ gem 'snackbarjs-rails'
 #premailer, auto-include css for emails
 gem 'premailer-rails'
 gem 'nokogiri'
+#mjml
+gem 'mjml-rails'
+
 
 #static pages
 gem 'high_voltage', '~> 3.0.0'
