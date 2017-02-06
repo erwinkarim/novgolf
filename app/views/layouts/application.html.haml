@@ -10,29 +10,26 @@
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
     = javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}"
   %body
-    %nav.navbar
-      %button.navbar-toggler.hidden-sm-up{ :type => "button", :data => { :toggle => 'collapse', :target => '#navbar-collapse'}} &#9776;
-      %a.navbar-brand.hidden-sm-up.font-special{ href:root_path, style:'float:none; color:black; padding:0rem; font-size:1.5rem;' }
+    %nav.navbar.navbar-light.bg-faded.navbar-toggleable-md
+      %button.navbar-toggler.navbar-toggler-right{ type:'button', data:{ toggle:'collapse', target:'#navbar-target'}}
+        %span.navbar-toggler-icon
+      %a.navbar-brand{href:'/' }
         %span{style:'color:#97dd63;' } JOM
         %span{style:'color:black; margin-left:-0.35rem;' } GOLF
-      .collapse.navbar-toggleable-xs#navbar-collapse
-        %a.navbar-brand.hidden-xs-down.font-special{href:root_path, style:'color:black; padding:0rem; font-size:1.6rem;' }
-          %span{style:'color:#97dd63;' } JOM
-          %span{style:'color:black; margin-left:-0.35rem;' } GOLF
-        %ul.nav.navbar-nav
-          %li.nav-item
+      .collapse.navbar-collapse#navbar-target
+        %ul.navbar-nav.mr-auto
+          %li.nav-item.dropdown
             - if user_signed_in? then
-              .dropdown
-                %a.nav-link{ :href => '#', :'data-toggle' => 'dropdown' } #{current_user.name || current_user.email}
-                .dropdown-menu
-                  %a.dropdown-item{ :href => user_reservations_path(current_user)} My Bookings
-                  %a.dropdown-item{ :href => user_path(current_user)} My Profile
-                  - if current_user.superadmin? || current_user.admin? then
-                    -# admin namespace is optimized for large screen. no easy way to go to admin in phone
-                    .dropdown-divider.hidden-md-down
-                    %a.dropdown-item.hidden-md-down{href:admin_golf_clubs_path } Manage Your Clubs
-                  .dropdown-divider
-                  = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
+              %a.nav-link.dropdown-toggle{ :href => '#', :'data-toggle' => 'dropdown' } #{current_user.name || current_user.email}
+              .dropdown-menu
+                %a.dropdown-item{ :href => user_reservations_path(current_user)} My Bookings
+                %a.dropdown-item{ :href => user_path(current_user)} My Profile
+                - if current_user.superadmin? || current_user.admin? then
+                  -# admin namespace is optimized for large screen. no easy way to go to admin in phone
+                  .dropdown-divider.hidden-md-down
+                  %a.dropdown-item.hidden-md-down{href:admin_golf_clubs_path } Manage Your Clubs
+                .dropdown-divider
+                = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
             - else
               %a.nav-link{ :href => '#login-modal', :data => { :toggle => 'modal'} }
                 Login
