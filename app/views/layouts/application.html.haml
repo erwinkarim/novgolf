@@ -10,7 +10,7 @@
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
     = javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}"
   %body
-    %nav.navbar.navbar-light.bg-faded.navbar-toggleable-md
+    %nav.navbar.navbar-light.navbar-toggleable-md
       %button.navbar-toggler.navbar-toggler-right{ type:'button', data:{ toggle:'collapse', target:'#navbar-target'}}
         %span.navbar-toggler-icon
       %a.navbar-brand{href:'/' }
@@ -20,7 +20,7 @@
         %ul.navbar-nav.mr-auto
           %li.nav-item.dropdown
             - if user_signed_in? then
-              %a.nav-link.dropdown-toggle{ :href => '#', :'data-toggle' => 'dropdown' } #{current_user.name || current_user.email}
+              %a.nav-link.active.dropdown-toggle{ :href => '#', :'data-toggle' => 'dropdown' } #{current_user.name || current_user.email}
               .dropdown-menu
                 %a.dropdown-item{ :href => user_reservations_path(current_user)} My Bookings
                 %a.dropdown-item{ :href => user_path(current_user)} My Profile
@@ -31,7 +31,7 @@
                 .dropdown-divider
                 = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
             - else
-              %a.nav-link{ :href => '#login-modal', :data => { :toggle => 'modal'} }
+              %a.active.nav-link{ :href => '#login-modal', :data => { :toggle => 'modal'} }
                 Login
     = yield
     = insert_paloma_hook

@@ -1,7 +1,7 @@
 - content_for(:head){ "Search results -"}
 .container
   .row
-    .col-xs-12
+    .col-lg
       = react_component "QueryForm", { crsfToken: form_authenticity_token,
         queryString:params.has_key?(:q) ? params[:q] : "",
         queryTarget: search_path,
