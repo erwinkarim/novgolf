@@ -8,20 +8,26 @@
             %img.center-block{ :src => RQRCode::QRCode.new(@reservation.token, :size => 4, :level => :h).to_img.resize(256,256).to_data_url }
         %ul.list-group.list-group-flush
           %li.list-group-item
-            %strong Status:
-            #{ @reservation.status }
+            %p.mb-0
+              %strong Status:
+              #{ @reservation.status }
           %li.list-group-item
-            %strong Club:
-            #{ @reservation.golf_club.name }
+            %p.mb-0
+              %strong Club:
+              #{ @reservation.golf_club.name }
           %li.list-group-item
-            %strong Flight Date and Time
-            #{ @reservation.booking_date} @ #{@reservation.booking_time.strftime("%H:%M")}
+            %p.mb-0
+              %strong Flight Date and Time:
+              #{ @reservation.booking_date} @ #{@reservation.booking_time.strftime("%H:%M")}
           %li.list-group-item
-            %strong Course
-            #{ @reservation.course_listing.name }
+            %p.mb-0
+              %strong Course:
+              #{ @reservation.course_listing.name }
           %li.list-group-item
-            %strong Location
-            #{ @reservation.golf_club.address } #{ link_to "link", "http://google.com.my/maps?q=#{@reservation.golf_club.lat.html_safe},#{@reservation.golf_club.lng.html_safe}", :target => "_blank"}
+            %p.mb-0
+              %strong Location:
+              #{ @reservation.golf_club.address }
+              #{ link_to "link", "http://google.com.my/maps?q=#{@reservation.golf_club.lat.html_safe},#{@reservation.golf_club.lng.html_safe}", :target => "_blank"}
           - if @reservation.payment_attempted? then
             %li.list-group-item
               %strong Note:
