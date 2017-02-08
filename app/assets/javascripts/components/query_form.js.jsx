@@ -89,7 +89,7 @@ var QueryForm = React.createClass({
               <div className="text-center hidden-md-up"><button className="btn btn-primary" type="submit">Search</button></div>
               <div className="hidden-sm-down"><br /><button className="btn btn-primary" type="submit">Search</button></div>
             </div>
-            <div className="col-12">
+            <div className="col-12 col-md-6">
               <br />
               <div className="card">
                 <div className="card-block">

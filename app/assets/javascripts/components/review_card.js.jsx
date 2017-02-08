@@ -120,7 +120,7 @@ var ReviewList = React.createClass({
       ""
 
     return (
-      <div className="card">
+      <div className="card mb-2">
         { header }
         <ul className="list-group list-group-flush">
           { review_list }

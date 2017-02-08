@@ -1,8 +1,8 @@
 - content_for(:head){"Reservation #{@reservation.token} - "}
 .container
   .row
-    .col-xs-12.col-md-6
-      .card
+    .col-12.col-md-6
+      .card.mb-2
         - if (@reservation.payment_confirmed? || @reservation.reservation_confirmed?) && !@reservation.token.nil? then
           .card-block
             %img.center-block{ :src => RQRCode::QRCode.new(@reservation.token, :size => 4, :level => :h).to_img.resize(256,256).to_data_url }
@@ -26,7 +26,7 @@
             %li.list-group-item
               %strong Note:
               We detect that you attempting to pay for this booking. If you lost the payment page, please wait around 10 minutes for the booking to be released again
-      .card
+      .card.mb-2
         .card-header Details
         .card-block
           %table.table
@@ -80,7 +80,7 @@
                   %tr
                     %td #{ member_detail.name }
                     %td #{ member_detail.member_id }
-      .card
+      .card.mb-2
         .card-header Review
         - if @review.nil? then
           - if @show_review_form then

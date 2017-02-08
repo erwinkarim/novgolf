@@ -1,15 +1,15 @@
 - content_for(:head){ "#{@user.name || @user.email} - "}
 .container
   .row
-    .col-xs-12
+    .col
       %h3.display-4 #{@user.name || @user.email}
 .container
   .row
-    .col-xs-12.col-md-4
-      .card
+    .col-12.col-md-4
+      .card.mb-2
         %img.card-img-top.img-responsive{ :src => (@user.image.nil? || @user.image.empty?) ? '/images/users/default.jpg' : @user.image }
       - if user_signed_in? && current_user.id == @user.id then
-        .card
+        .card.mb-2
           .card-header Action
           %ul.list-group.list-group-flush
             %li.list-group-item
@@ -17,7 +17,7 @@
             - if current_user.provider.nil? then
               %li.list-group-item
                 = link_to "Change Password", edit_user_registration_path
-      .card
+      .card.mb-2
         .card-header Info
         .card-block
           %table.table
@@ -30,8 +30,8 @@
                 %td #{ @user.handicap  || "None Yet"}
       = react_component "UserMembershipCard",
         {memberships_path:user_memberships_path(@user), allowEdit: @user == current_user, csrfToken:form_authenticity_token, club_path:golf_clubs_path }
-    .col-xs-12.col-md-6
-      .card
+    .col-12.col-md-8
+      .card.mb-2
         .card-header Gangs
         .card-block
           %p.card-text

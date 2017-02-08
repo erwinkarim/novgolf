@@ -124,7 +124,7 @@ class UserReservationsController < ApplicationController
   def user_index
     #ensure that you are authorized to see this
     if current_user.id == params[:user_id].to_i then
-      @reservations = current_user.user_reservations.includes(:golf_club).order(:booking_date => :desc, :booking_time => :desc).limit(30)
+      @reservations = current_user.user_reservations.includes(:golf_club).order(:booking_date => :desc, :booking_time => :desc).limit(40)
 
       #cutoff time between past and future is yesterday
       cutoffDate = 1.day.ago
