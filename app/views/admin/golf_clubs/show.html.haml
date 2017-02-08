@@ -10,7 +10,7 @@
       %h1 Club Info
     .col-12.col-md-8
       .card.mb-2
-        .card-header Title
+        .card-header Club Name
         .card-block
           %p.card-text #{ @golf_club.name}
       .card.mb-2
@@ -38,10 +38,11 @@
         .card-header Tools
         %ul.list-group.list-group-flush
           %li.list-group-item
-            %a.card-link.btn.btn-primary{ :href => admin_golf_club_dashboard_path(@golf_club) } Dashboard
-            %a.card-link.btn.btn-primary{ :href => admin_golf_club_memberships_path(@golf_club) } Memberships
+            %p.mb-0
+              %a.mb-2.btn.btn-primary{ :href => admin_golf_club_dashboard_path(@golf_club) } Dashboard
+              %a.mb-2.btn.btn-primary{ :href => admin_golf_club_memberships_path(@golf_club) } Memberships
           %li.list-group-item
-            %a.card-link.btn.btn-secondary.mr-2{ :href => edit_admin_golf_club_path(@golf_club) } Edit
+            %a.card-link.btn.btn-secondary.mr-1{ :href => edit_admin_golf_club_path(@golf_club) } Edit
             %button.btn.btn-danger{ type:'button', data:{toggle:'modal', target:'#deleteClubModal'}} Delete
           %li.list-group-item
             %a.card-link.btn.btn-secondary{ :href => admin_golf_club_photos_path(@golf_club) } Photos
@@ -97,74 +98,74 @@
         - random_id = SecureRandom.hex(6)
         .card.mb-2
           .card-header
-            %a{ :href => "#flight-#{random_id}", :'data-toggle' => 'collapse'}
-              %i.fa.fa-chevron-up{ :id => "chevron-#{random_id}"}
+            %a{ href:"#flight-#{random_id}", 'data-toggle':'collapse'}
+              %i.fa.fa-chevron-down{ :id => "chevron-#{random_id}"}
             #{ flight_schedule.name.nil? || flight_schedule.name.empty? ? "Flight ID: #{flight_schedule.id}" : flight_schedule.name }
-          %ul.list-group.list-group-flush.collapse.in.flight-info-collapse{ :id => "flight-#{random_id}",
-            :data => {:summary => "#summary-#{random_id}", :chevron => "#chevron-#{random_id}" } }
-            %li.list-group-item
-              %h4 Flight Settings
-              %table.table
-                %thead
-                  %tr
-                    %th Item
-                    %th Value
-                %tbody
-                  %tr
-                    %td Min Balls per Flight
-                    %td #{ flight_schedule.min_pax }
-                  %tr
-                    %td Max Balls per Flight
-                    %td #{ flight_schedule.max_pax }
-                  %tr
-                    %td Min Buggy per Flight
-                    %td #{ flight_schedule.min_cart }
-                  %tr
-                    %td Max Buggy per Flight
-                    %td #{ flight_schedule.max_cart }
-                  %tr
-                    %td Min Caddy per Flight
-                    %td #{ flight_schedule.min_caddy }
-                  %tr
-                    %td Max Caddy per Flight
-                    %td #{ flight_schedule.max_caddy }
-            %li.list-group-item
-              %h4 Notes
-              = simple_format(prices.note)
-            %li.list-group-item
-              %h4 Pricing
-              %table.table
-                %thead
-                  %tr
-                    %th Item
-                    %th Fee
-                %tbody
-                  %tr
-                    %td Flight
-                    %td #{ number_to_currency(prices.session_price, :unit => "MYR ") }
-                  %tr
-                    %td Buggy
-                    %td #{ number_to_currency(prices.cart, :unit => "MYR ") }
-                  %tr
-                    %td Caddy
-                    %td #{ number_to_currency(prices.caddy, :unit => "MYR ") }
-                  %tr
-                    %td Insurance
-                    %td #{ number_to_currency(prices.insurance, :unit => "MYR ") }
-                  %tr
-                    %td Insurance Mode
-                    %td #{ prices.insurance_mode }
-            %li.list-group-item
-              %h4 Flight Days
-              .btn-group.flex-wrap{ :'data-toggle' => 'buttons'}
-                - flight_schedule.flight_matrices.first.attributes.select{ |k,v| k.to_s.match(/day[1-7]/)}.map do |x,y|
-                  %label.btn.btn-secondary{ :class => (y==1) ? "active" : "", :disabled => true }
-                    #{ (x[3].to_i == 7) ? "Sunday" : DateTime::DAYNAMES[ (x[3].to_i)]}
-              %h4 Flight Times
-              .btn-group.flex-wrap
-                - flight_schedule.flight_matrices.map{|x| x.tee_time}.sort.each do |flight_time|
-                  %button.btn.btn-secondary{ :type => 'button' } #{ flight_time.strftime("%H:%M") }
-          .card-block{ :id => "summary-#{random_id}", :style => "display:none;"}
+          .collapse.flight-info-collapse{ id:"flight-#{random_id}", data:{ summary:"#summary-#{random_id}", chevron:"#chevron-#{random_id}" }}
+            %ul.list-group.list-group-flush
+              %li.list-group-item
+                %h4 Flight Settings
+                %table.table
+                  %thead
+                    %tr
+                      %th Item
+                      %th Value
+                  %tbody
+                    %tr
+                      %td Min Balls per Flight
+                      %td #{ flight_schedule.min_pax }
+                    %tr
+                      %td Max Balls per Flight
+                      %td #{ flight_schedule.max_pax }
+                    %tr
+                      %td Min Buggy per Flight
+                      %td #{ flight_schedule.min_cart }
+                    %tr
+                      %td Max Buggy per Flight
+                      %td #{ flight_schedule.max_cart }
+                    %tr
+                      %td Min Caddy per Flight
+                      %td #{ flight_schedule.min_caddy }
+                    %tr
+                      %td Max Caddy per Flight
+                      %td #{ flight_schedule.max_caddy }
+              %li.list-group-item
+                %h4 Notes
+                = simple_format(prices.note)
+              %li.list-group-item
+                %h4 Pricing
+                %table.table
+                  %thead
+                    %tr
+                      %th Item
+                      %th Fee
+                  %tbody
+                    %tr
+                      %td Flight
+                      %td #{ number_to_currency(prices.session_price, :unit => "MYR ") }
+                    %tr
+                      %td Buggy
+                      %td #{ number_to_currency(prices.cart, :unit => "MYR ") }
+                    %tr
+                      %td Caddy
+                      %td #{ number_to_currency(prices.caddy, :unit => "MYR ") }
+                    %tr
+                      %td Insurance
+                      %td #{ number_to_currency(prices.insurance, :unit => "MYR ") }
+                    %tr
+                      %td Insurance Mode
+                      %td #{ prices.insurance_mode }
+              %li.list-group-item
+                %h4 Flight Days
+                .btn-group.flex-wrap{ :'data-toggle' => 'buttons'}
+                  - flight_schedule.flight_matrices.first.attributes.select{ |k,v| k.to_s.match(/day[1-7]/)}.map do |x,y|
+                    %label.btn.btn-secondary{ :class => (y==1) ? "active" : "", :disabled => true }
+                      #{ (x[3].to_i == 7) ? "Sunday" : DateTime::DAYNAMES[ (x[3].to_i)]}
+                %h4 Flight Times
+                .btn-group.flex-wrap
+                  - flight_schedule.flight_matrices.map{|x| x.tee_time}.sort.each do |flight_time|
+                    %button.btn.btn-secondary{ :type => 'button' } #{ flight_time.strftime("%H:%M") }
+          .card-block{ id:"summary-#{random_id}"}
             %p.card-text
               Tee Days:
               .btn-group.flex-wrap{ :'data-toggle' => 'buttons'}
