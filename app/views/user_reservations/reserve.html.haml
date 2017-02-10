@@ -1,11 +1,11 @@
 .container
   = form_tag processing_golf_club_user_reservations_path(params[:golf_club_id]) do
     .row
-      .col-xs-12.col-md-8.col-md-offset-2
+      .col-12.col-md-8.col-md-offset-2
         %h2 Review your reservation
     .row
-      .col-xs-12.col-md-8.col-md-offset-2
-        .card
+      .col-12.col-md-8.col-md-offset-2
+        .card.mb-2
           .card-header
             %h3 Flight
           %ul.list-group.list-group-flush
@@ -15,9 +15,9 @@
               %strong Flight Date
               #{ Date.parse(params[:info][:date]).strftime("%d/%b/%Y")}
     .row
-      .col-xs-12.col-md-8.col-md-offset-2
+      .col-12.col-md-8.col-md-offset-2
         - params[:flight].each_pair do |k,v|
-          .card
+          .card.mb-2
             .card-header #{v[:tee_time]} Flight Details
             .card-block
               %table.table
@@ -67,7 +67,7 @@
                         %input.form-control{type:'text', name:"members[#{k}][#{random_id}][id]", placeholder:'ID Number',
                           class: !has_name ? 'form-control-danger' : ''}
     .row
-      .col-xs-12.col-md-8.col-md-offset-2
+      .col-12.col-md-8.col-md-offset-2
         %table.table
           %thead
             %tr
@@ -86,5 +86,5 @@
               %td
                 %h3 #{number_to_currency(params[:info][:grand_total], {:unit => "RM"})}
     .row
-      .col-xs-12.col-md-8.col-md-offset-2
+      .col-12.col-md-8.col-md-offset-2
         %button.btn.btn-primary{ :type => 'submit'} Proceed to Payment

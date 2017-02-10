@@ -125,6 +125,15 @@ body{
      height: auto;
 }
 
+/* handle overflows */
+.overflow-x-scroll{
+  overflow-x: scroll;
+}
+
+.overflow-y-scroll{
+  overflow-y: scroll;
+}
+
 .text-black{
   color:#292b2c;
 }
