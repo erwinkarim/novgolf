@@ -1,5 +1,5 @@
 .modal.fade#login-modal
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
         %button.close{ :type => 'button', :'data-dismiss' => 'modal'}
@@ -10,18 +10,20 @@
           %i.fa.fa-facebook-square.fa-3x
         Login with Facebook
         %hr
-        = form_tag session_path(:user), :class => "form-inline" do
-          .form-group
-            %input.form-control{ :type => "user[email]", :type => "text", :placeholder => "email"}
-            %input.form-control{ :type => "user[password]", :type => "password", :placeholder => "password"}
-            %label
-              %input{ :type => "checkbox", :name => "user[remember_me]"}
-              Remember Me
-            %br
-            %br
+        = form_tag session_path(:user)  do
+          .form-group.row
+            .col-12.col-md-6
+              %input.form-control.mb-2{ :type => "user[email]", :type => "text", :placeholder => "email"}
+            .col-12.col-md-6
+              %input.form-control{ :type => "user[password]", :type => "password", :placeholder => "password"}
+          .form-group.row
+            .col-12
+              %label
+                %input{ :type => "checkbox", :name => "user[remember_me]"}
+                Remember Me
           %button.btn.btn-secondary Sign in
-        = link_to "Forgot your password?", new_password_path(:user)
-        or
+          = link_to "Forgot your password?", new_password_path(:user)
+        %hr
         = link_to "Sign Up",  new_user_registration_path
       .modal-footer
         %button.btn.btn-secondary{ :type => "button", :'data-dismiss' => 'modal'} Close

@@ -20,19 +20,23 @@ var PhotoUploader = React.createClass({
   render: function(){
     return (
       <li className="list-group-item">
-        <span className="btn btn-success fileinput-button">
-          <i class="fa fa-plus"></i>
-          <span>Select or Drop files...</span>
-          <input className="" ref="fileUploader" data-url={this.props.path} name="files[]" multiple={true} type="file" />
-        </span>
-        <span>
-          <ul>
-            <li>Large photos will be automatically resized to fix a 1920x1080 pixels box</li>
-            <li>Small Photo will be resized to fix a 1280x720 pixels box</li>
-            <li>If the resized photos is > 1MB it will not be uploaded</li>
-            <li>Only supported format is JPEG</li>
-          </ul>
-        </span>
+        <p>
+          <span className="btn btn-success fileinput-button">
+            <i class="fa fa-plus"></i>
+            <span>Select or Drop files...</span>
+            <input className="" ref="fileUploader" data-url={this.props.path} name="files[]" multiple={true} type="file" />
+          </span>
+        </p>
+        <p>
+          <span>
+            <ul>
+              <li>Large photos will be automatically resized to fix a 1920x1080 pixels box</li>
+              <li>Small Photo will be resized to fix a 1280x720 pixels box</li>
+              <li>If the resized photos is > 1MB it will not be uploaded</li>
+              <li>Only supported format is JPEG</li>
+            </ul>
+          </span>
+        </p>
       </li>
     );
   }
@@ -84,20 +88,20 @@ var PhotoAdminViewer =  React.createClass({
         var random_id = randomID();
 
         return (
-          <div className="card" key={i}>
+          <div className="card mb-2" key={i}>
             <a className="gallery card-img-top" href={e.url}>
               <img className="img-responsive" src={e.url} />
             </a>
             <div className="card-block">
-              <form action={e.delete} onSubmit={this.updatePhoto} >
+              <form className="mb-2" action={e.delete} onSubmit={this.updatePhoto} >
                 <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
                 <fieldset className="form-group">
                   <label>Caption</label>
                   <input type="text" defaultValue={e.name} className="form-control" name="photo[caption]" />
                 </fieldset>
                 <button className="btn btn-primary" type="submit">Update Photo</button>
+                <button className="btn btn-link" data-toggle="collapse" data-target={`#delete-${random_id}`}>Delete Photo</button>
               </form>
-              <button className="btn btn-link" data-toggle="collapse" data-target={`#delete-${random_id}`}>Delete Photo</button>
               <div className="collapse" id={`delete-${random_id}`}>
                 <div className="card">
                   <div className="card-block">
@@ -142,7 +146,7 @@ var PhotoAdmin = React.createClass({
   },
   render: function() {
     return (
-      <div className="card">
+      <div className="card mb-2">
         <ul className="list-group list-group-flush">
           <PhotoUploader path={this.props.paths.upload} updatePhotoList={this.updatePhotoList}/>
           <PhotoAdminViewer path={this.props.paths.upload} photoList={this.state.photoList} updatePhotoList={this.updatePhotoList}
