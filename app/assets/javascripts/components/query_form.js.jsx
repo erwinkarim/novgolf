@@ -52,7 +52,7 @@ var QueryForm = React.createClass({
       var toggleStyle = {backgroundImage:'none', width:'100%', 'border':'none'};
       var searchNav =
         <nav className="navbar navbar-light bg-faded">
-          <button className="btn btn-block navbar-toggler" type="button" data-toggle="collapse" data-target="#search-query-form">
+          <button className="btn border-0 btn-block navbar-toggler" type="button" data-toggle="collapse" data-target="#search-query-form">
             <i className="fa fa-search"></i> Refine Search
           </button>
         </nav>

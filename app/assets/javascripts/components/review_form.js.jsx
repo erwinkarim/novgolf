@@ -51,7 +51,7 @@ var ReviewFormMeat = React.createClass({
   render: function(){
     return (
       <li className="list-group-item">
-        <div className="form-group">
+        <div className="form-group w-100">
           <label>Your Comments</label>
           <textarea name="review[comment]" className="form-control" rows="10" defaultValue={this.props.review.comment}
             placeholder="Your comments here. Not more than 320 characters"></textarea>

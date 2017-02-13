@@ -104,6 +104,10 @@ body{
     border: none;
 }
 
+.text-wrap{
+    word-wrap: break-word;
+}
+
 .text-reader{
     @include media-breakpoint-down(md){
         font-family: "Source Sans Pro","Helvetica Neue","Helvetica","Arial",sans-serif;

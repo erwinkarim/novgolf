@@ -7,8 +7,8 @@ class GolfClub < ActiveRecord::Base
   has_many :flight_matrices, :through => :flight_schedules
   has_many :amenity_lists, :dependent => :destroy
   has_many :amenities, :through => :amenity_lists
-  has_many :photos, as: :imageable
-  has_many :course_listings
+  has_many :photos, as: :imageable, :dependent => :destroy
+  has_many :course_listings, :dependent => :destroy
   has_many :memberships
 
   belongs_to :user

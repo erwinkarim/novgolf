@@ -1,13 +1,13 @@
 - content_for(:head){ "#{@user.name || @user.email} - "}
 .container
   .row
-    .col
+    .col-12.text-wrap
       %h3.display-4 #{@user.name || @user.email}
 .container
   .row
     .col-12.col-md-4
       .card.mb-2
-        %img.card-img-top.img-responsive{ :src => (@user.image.nil? || @user.image.empty?) ? '/images/users/default.jpg' : @user.image }
+        %img.card-img-top.img-responsive{ :src => (@user.image.nil?  || @user.image.empty?) ? '/images/users/default.jpg' : @user.image }
       - if user_signed_in? && current_user.id == @user.id then
         .card.mb-2
           .card-header Action

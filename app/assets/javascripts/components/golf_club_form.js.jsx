@@ -255,16 +255,12 @@ var FlightSchedulePriceCard = React.createClass({
         <div className="collapse" id={`collapse-${this.state.random_id}`} ref="cardContent">
           <ul className="list-group list-group-flush collapse">
             <li className="list-group-item">
-              <p className="card-text mb-0 w-100">
-                <h4>Name: </h4>
-                <form>
-                  <div className="form-group row">
-                    <label className="col-4">Schedule Name</label>
-                    <input className="form-control col-8" name={`flight[${this.state.random_id}][name]`}
-                      data-index={this.props.scheduleIndex} data-target="name" onChange={this.props.updateFlightInfo} value={this.props.flightSchedule.name} />
-                  </div>
-                </form>
-              </p>
+              <h4 className="w-100">Name: </h4>
+              <div className="w-100 form-group row">
+                <label className="col-4">Schedule Name</label>
+                <input className="form-control col-8" name={`flight[${this.state.random_id}][name]`}
+                  data-index={this.props.scheduleIndex} data-target="name" onChange={this.props.updateFlightInfo} value={this.props.flightSchedule.name} />
+              </div>
             </li>
             <li className="list-group-item">
               <h4>Price:</h4>
@@ -462,12 +458,14 @@ var FlightBox = React.createClass({
     var newFlightSchedules = this.props.flightSchedules;
 
     newFlightSchedules = newFlightSchedules.map((e,i) => {
-      e.id = e.id == null ? 0 : e.id;
-      e.charge_schedule.id = e.charge_schedule.id == null ? 0 : e.charge_schedule.id;
+      e.id = e.id == null ? '' : e.id;
+      e.charge_schedule.id = e.charge_schedule.id == null ? '' : e.charge_schedule.id;
       e.name = e.name == null ? "" : e.name;
 
       return e;
     });
+    /*
+    */
 
     return {
         flightSchedules:this.props.flightSchedules,
@@ -486,13 +484,16 @@ var FlightBox = React.createClass({
   deleteSchedule: function(e){
     //delete flight schedules
 
-    //can't delete the first one
-    if(e.target.dataset.value == 0){
+    //can't delete if there's the last one
+    //if(e.target.dataset.value == 0){
+    if(this.state.flightSchedules.length == 1){
       return;
     }
 
+    /*
     console.log('e.target', e.target);
     console.log('delete schedule index', parseInt(e.target.dataset.value,10));
+    */
     //figure out why this doesn't work
     var arrayIndex = parseInt(e.target.dataset.value, 10);
     var newFlightSchedules = this.state.flightSchedules;
