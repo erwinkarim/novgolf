@@ -67,8 +67,7 @@ var GeneralBox = React.createClass({
     //var closeHourStr = closeHourObj.getUTCHours() + ":" + closeHourObj.getUTCMinutes();
 
     return (
-      <div className="panel mb-2">
-        <div className="collapse in panel-collapse" id="general">
+        <div className="mb-2 collapse show" id="general" role="tabpanel">
           <div className="card mb-2">
             <div className="card-header">General</div>
             <div className="card-block">
@@ -113,7 +112,6 @@ var GeneralBox = React.createClass({
             newCourse={this.props.newCourse} deleteCourse={this.props.deleteCourse} updateCourse={this.props.updateCourse}
             courses={this.props.club.course_listings} dummyData={this.props.dummyData} />
         </div>
-      </div>
     );
   }
 });
@@ -547,8 +545,7 @@ var FlightBox = React.createClass({
   },
   render: function(){
     return (
-      <div className="panel mb-2">
-        <div className="collapse panel-collapse" id="flight">
+        <div className="collapse mb-2" id="flight" role="tabpanel" >
           <div className="card">
             <div className="card-header">Flight Schedules and Pricing</div>
             <div className="card-block">
@@ -572,7 +569,6 @@ var FlightBox = React.createClass({
             </div>
           </div>
         </div>
-      </div>
     );
   }
 });
@@ -628,8 +624,7 @@ var AmenitiesCheckBox = React.createClass({
 var AmenitiesBox = React.createClass({
   render: function(){
     return (
-      <div className="panel mb-2">
-        <div className="collapse panel-collapse" id="amenities">
+        <div className="collapse mb-2" id="amenities" role="tabpanel">
           <div className="card">
             <div className="card-header">Amenities</div>
             <div className="card-block">
@@ -641,7 +636,6 @@ var AmenitiesBox = React.createClass({
             </div>
           </div>
         </div>
-      </div>
     );
   }
 });
@@ -717,22 +711,20 @@ var GolfClubForm = React.createClass({
 
     return (
       <div className="row">
-        <div className="col-4">
-          <ul className="list-group">
-            <li className="list-group-item">
-              <a href="#general" data-toggle="collapse" data-parent="#accordion">General</a>
-            </li>
-            <li className="list-group-item">
-              <a href="#flight" data-toggle="collapse" data-parent="#accordion">Flight Schedules and Pricing</a>
-            </li>
-            <li className="list-group-item">
-              <a href="#amenities" data-toggle="collapse" data-parent="#accordion">Amenities</a>
-            </li>
-          </ul>
-        </div>
+        <ul className="list-group col-4">
+          <li className="list-group-item">
+            <a href="#general" data-toggle="collapse" data-parent="#club-form-parent">General</a>
+          </li>
+          <li className="list-group-item">
+            <a href="#flight" data-toggle="collapse" data-parent="#club-form-parent">Flight Schedules and Pricing</a>
+          </li>
+          <li className="list-group-item">
+            <a href="#amenities" data-toggle="collapse" data-parent="#club-form-parent">Amenities</a>
+          </li>
+        </ul>
         <div className="col-8">
           <form method={this.props.form.method} action={this.props.form.action_path} ref="golf_form" id="golf_form" >
-            <div id="accordion" role="tablist">
+            <div id="club-form-parent" role="tablist">
               <input type="hidden" name="authenticity_token" value={this.props.form.crsfToken} />
               <GeneralBox club={this.state.club} contentChanged={this.contentChanged} updateLocation={this.updateLocation}
                 newCourse={this.newCourse} deleteCourse={this.deleteCourse} updateCourse={this.updateCourse}
