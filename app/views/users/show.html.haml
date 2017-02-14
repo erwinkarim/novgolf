@@ -7,7 +7,7 @@
   .row
     .col-12.col-md-4
       .card.mb-2
-        %img.card-img-top.img-responsive{ :src => (@user.image.nil?  || @user.image.empty?) ? '/images/users/default.jpg' : @user.image }
+        %img.card-img-top.img-responsive{src:@user.image_path}
       - if user_signed_in? && current_user.id == @user.id then
         .card.mb-2
           .card-header Action
