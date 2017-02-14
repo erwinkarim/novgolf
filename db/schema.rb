@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161223090607) do
+ActiveRecord::Schema.define(version: 20170214025356) do
 
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -247,7 +247,7 @@ ActiveRecord::Schema.define(version: 20161223090607) do
     t.string   "uid"
     t.string   "password"
     t.string   "name"
-    t.string   "image"
+    t.string   "image_path"
     t.integer  "role"
     t.integer  "handicap"
     t.integer  "profile_picture_id"

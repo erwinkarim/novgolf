@@ -281,7 +281,7 @@ class UserReservation < ActiveRecord::Base
   end
 
   #generate the random user reservation complete with review
-  def self.generate_random_reservation user = User.first
+  def self.generate_random_reservation user = User.random
     #get the club
     ids = GolfClub.all.limit(100).pluck(:id)
     club = GolfClub.find( ids[rand(0..ids.length-1)])
