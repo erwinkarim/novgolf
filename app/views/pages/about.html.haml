@@ -2,11 +2,11 @@
   .container
 .container
   .row
-    .col-xs-12
+    .col-12
       %h1.display-1 About!!
   .row
-    - (1..2).each do |num|
-      .col-xs-12.col-md-6.col-lg-4
+    - (1..10).each do |num|
+      .col-12.col-md-6.col-lg-4.mb-4
         .card
           .m-x-auto
             %img.img-responsive{ src:"images/about/person#{num}.jpeg"}

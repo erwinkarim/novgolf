@@ -67,9 +67,9 @@ var GeneralBox = React.createClass({
     //var closeHourStr = closeHourObj.getUTCHours() + ":" + closeHourObj.getUTCMinutes();
 
     return (
-        <div className="mb-2 collapse show" id="general" role="tabpanel">
+        <div className="mb-2" id="general" role="tabpanel">
           <div className="card mb-2">
-            <div className="card-header">General</div>
+            <h3 className="card-header">General</h3>
             <div className="card-block">
               <div className="form-group">
                 <label>Name</label>
@@ -120,7 +120,7 @@ var CourseListingForm = React.createClass({
   render: function(){
     var disableDeleteButton = this.props.courses.length < 2 ? true : false;
     return (
-      <div className="card">
+      <div className="card" id="course-list">
         <h3 className="card-header">Course Listings</h3>
         <div className="card-block">
           <table className="table">
@@ -545,9 +545,9 @@ var FlightBox = React.createClass({
   },
   render: function(){
     return (
-        <div className="collapse mb-2" id="flight" role="tabpanel" >
+        <div className="mb-2" id="flight" role="tabpanel" >
           <div className="card">
-            <div className="card-header">Flight Schedules and Pricing</div>
+            <h3 className="card-header">Flight Schedules and Pricing</h3>
             <div className="card-block">
               Warning: remove flight schedules with caution
             </div>
@@ -610,7 +610,7 @@ var AmenitiesCheckBox = React.createClass({
   propTypes: { amenity: React.PropTypes.object },
   render: function(){
     return (
-        <div className="col-xs-12 col-md-4">
+        <div className="col-12 col-md-4">
           <div className="checkbox">
             <label>
               <input type="checkbox" name={ "amenities[" + this.props.amenity.amenity_id + "]"} defaultChecked={this.props.amenity.available} /> { this.props.amenity.label }
@@ -624,9 +624,9 @@ var AmenitiesCheckBox = React.createClass({
 var AmenitiesBox = React.createClass({
   render: function(){
     return (
-        <div className="collapse mb-2" id="amenities" role="tabpanel">
+        <div className="mb-2" id="amenities" role="tabpanel">
           <div className="card">
-            <div className="card-header">Amenities</div>
+            <h3 className="card-header">Amenities</h3>
             <div className="card-block">
               <div className="container">
                 <div className="row card-text">{ this.props.amenities.map( (e,i) =>
@@ -651,6 +651,10 @@ var GolfClubForm = React.createClass({
   },
   getInitialState: function(){
     return { disabledSubmit: false, club:this.props.club }
+  },
+  componentDidMount: function(){
+    //setup sticky
+    $('#form-menu').sticky({topSpacing:10});
   },
   contentChanged: function(e){
 
@@ -711,17 +715,22 @@ var GolfClubForm = React.createClass({
 
     return (
       <div className="row">
-        <ul className="list-group col-4">
-          <li className="list-group-item">
-            <a href="#general" data-toggle="collapse" data-parent="#club-form-parent">General</a>
-          </li>
-          <li className="list-group-item">
-            <a href="#flight" data-toggle="collapse" data-parent="#club-form-parent">Flight Schedules and Pricing</a>
-          </li>
-          <li className="list-group-item">
-            <a href="#amenities" data-toggle="collapse" data-parent="#club-form-parent">Amenities</a>
-          </li>
-        </ul>
+        <div className="col-4">
+          <ul className="list-group" id="form-menu">
+            <li className="list-group-item">
+              <a href="#general">General</a>
+            </li>
+            <li className="list-group-item">
+              <a href="#course-list">Course List</a>
+            </li>
+            <li className="list-group-item">
+              <a href="#flight">Flight Schedules and Pricing</a>
+            </li>
+            <li className="list-group-item">
+              <a href="#amenities">Amenities</a>
+            </li>
+          </ul>
+        </div>
         <div className="col-8">
           <form method={this.props.form.method} action={this.props.form.action_path} ref="golf_form" id="golf_form" >
             <div id="club-form-parent" role="tablist">

@@ -1,9 +1,9 @@
 .container
   .row
-    .col-xs-12.col-md-6
+    .col-12.col-md-6
       %h2 Forgot Your Password?
   .row
-    .col-xs-12.col-md-6
+    .col-12.col-md-6
       = form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f|
         = devise_error_messages!
         .form-group

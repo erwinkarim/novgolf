@@ -11,8 +11,8 @@
         showSearchNav:true, collapseSearchForm:true }
   .row{ :style => 'padding-top:15px;'}
     - if @clubs.empty? then
-      .col-xs-12
-        %p.lead Sorry, no nothing found!
+      .col-12
+        %p.lead Sorry, nothing found!
     - else
       .card-columns
         - @clubs.each do |club|
