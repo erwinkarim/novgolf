@@ -10,3 +10,4 @@
           %label Email
           = f.email_field :email, autofocus: true, :class => 'form-control'
         %button.btn.btn-primary{ :type => "submit"} Send me reset password instructions
+      = render "devise/shared/links"

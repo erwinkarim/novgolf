@@ -1,0 +1,13 @@
+.container
+  .row
+    .col-12
+      %h2 Resend unlock instructions
+    .col-12
+      = form_for(resource, as: resource_name, url: unlock_path(resource_name), html: { method: :post}) do |f|
+        = devise_error_messages!
+
+        .form-group
+          = f.label :email
+          %br
+        %button.btn.btn-primary{ type:'submit'} Resend unlock instructions
+      = render "confirmations/shared/links"
