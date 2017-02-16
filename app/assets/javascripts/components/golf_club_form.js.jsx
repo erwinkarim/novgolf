@@ -684,6 +684,10 @@ var GolfClubForm = React.createClass({
       $.snackbar({content:'Errors Detected', style:'error' })
     });
   },
+  smoothScroll: function(e){
+      e.preventDefault();
+      document.querySelector(e.target.dataset.target).scrollIntoView({ behavior: 'smooth' });
+  },
   newCourse: function(e){
     var newClub = this.state.club;
     newClub.course_listings.push(jQuery.extend({}, this.props.dummy_data.course_listing) );
@@ -718,16 +722,16 @@ var GolfClubForm = React.createClass({
         <div className="col-4">
           <ul className="list-group" id="form-menu">
             <li className="list-group-item">
-              <a href="#general">General</a>
+              <a href="#general" data-target="#general" onClick={this.smoothScroll}>General</a>
             </li>
             <li className="list-group-item">
-              <a href="#course-list">Course List</a>
+              <a href="#course-list" data-target="#course-list" onClick={this.smoothScroll}>Course List</a>
             </li>
             <li className="list-group-item">
-              <a href="#flight">Flight Schedules and Pricing</a>
+              <a href="#flight" data-target="#flight" onClick={this.smoothScroll}>Flight Schedules and Pricing</a>
             </li>
             <li className="list-group-item">
-              <a href="#amenities">Amenities</a>
+              <a href="amenities" data-target="#amenities" onClick={this.smoothScroll}>Amenities</a>
             </li>
           </ul>
         </div>
