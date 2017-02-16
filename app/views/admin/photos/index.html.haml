@@ -1,17 +1,19 @@
 - content_for(:head){ "Admin - #{@golf_club.name} photos - "}
 .container
   .row
-    %ol.breadcrumb
-      %li.breadcrumb-item
-        %a{ :href => admin_golf_clubs_path} Admin
-      %li.breadcrumb-item
-        %a{ :href => admin_golf_club_path(@golf_club) } #{ @golf_club.name }
-      %li.active.breadcrumb-item Photos
-    %h1 #{@golf_club.name} Photos
-    .col-xs-12.col-md-8
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{ :href => admin_golf_clubs_path} Admin
+        %li.breadcrumb-item
+          %a{ :href => admin_golf_club_path(@golf_club) } #{ @golf_club.name }
+        %li.active.breadcrumb-item Photos
+    .col-12
+      %h1 #{@golf_club.name} Photos
+    .col-12.col-md-8
       = react_component( "PhotoAdmin", { crsfToken: form_authenticity_token,
         paths: { upload:admin_golf_club_photos_path(@golf_club) } } );
-    .col-xs-12.col-md-4
+    .col-12.col-md-4
       .card
         .card-header Tools
         .card-block

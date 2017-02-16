@@ -58,7 +58,7 @@ var UserMembershipCard = React.createClass({
       })}</ul>
     )
     return (
-      <div className="card">
+      <div className="card mb-2">
         { membershipModal }
         <div className="card-header">Memberships</div>
         { membershipList}
@@ -74,7 +74,8 @@ var AutoCompleteInputField = React.createClass({
     changeFn: React.PropTypes.func,
     name: React.PropTypes.string,
     value: React.PropTypes.string,
-    indexValue: React.PropTypes.number
+    indexValue: React.PropTypes.number,
+    placeholder: React.PropTypes.string
   },
   componentDidMount: function(){
     //if multiple same component in the root, it's always get's the last one
@@ -99,6 +100,7 @@ var AutoCompleteInputField = React.createClass({
     return (
       <input ref="autocomplete" className={`form-control ${includesDanger}`} type="text"
         name={this.props.name} value={this.props.value} onChange={this.props.changeFn}
+        placeholder={this.props.placeholder}
         data-value="club_name" data-index={this.props.indexValue} />
     );
   }
@@ -170,32 +172,31 @@ var UserMembershipModal = React.createClass({
           <div className="modal-content">
             <div className="modal-header">
               <button type="button" className="close" data-dismiss="modal" onClick={this.resetForm}><span>&times;</span></button>
-              <h4 className="modal-title">Memberships</h4>
+              <h4 className="modal-title">Memberships Details</h4>
             </div>
             <div className="modal-body">
-              <p>Membership Details</p>
               <form className="container-fluid" method="post" id="membership-form" ref="membershipsForm" action={this.props.memberships_path}>
                 <input type="hidden" name="authenticity_token" value={this.props.csrfToken} />
-                <div className="form-group row">
+                <div className="">
                   { this.state.memberships.map( (e,i) => {
                     var random_id = randomID();
                     var includesDanger = e.club_name == "" ? "has-danger" : "";
                     return (
-                      <div key={i}>
+                      <div key={i} className="form-group row">
                         <input type="hidden" value={e.golf_club_id} name={`memberships[${random_id}][golf_club_id]`} />
                         <input type="hidden" value={e.id} name={`memberships[${random_id}][id]`} />
-                        <div className={`col-md-7 col-sm-12 form-group ${includesDanger}`}>
+                        <div className={`col-md-7 col-12 mb-2 mb-sm-0 ${includesDanger}`}>
                           <AutoCompleteInputField name={`memberships[${random_id}][club_name]`}
                             changeFn={this.updateMembership} value={e.club_name}
-                            indexValue={i}
+                            placeholder="Club Name" indexValue={i}
                           />
                         </div>
-                        <div className="col-md-3 col-sm-12 form-group">
+                        <div className="col-md-3 col-12 mb-2 mb-sm-0">
                           <input type="date" value={e.expires_at} onChange={this.updateMembership}
                             name={`memberships[${random_id}][expires_at]`}
                             placeholder="Expires" data-index={i} data-value="expires_at" className="form-control expires_date_field" />
                         </div>
-                        <div className="col-md-2 col-sm-12 form-group">
+                        <div className="col-md-2 col-12 mb-2 mb-sm-0">
                           <button type="button" className="btn btn-danger" onClick={this.deleteMembership}
                             data-index={i} ><i className="fa fa-minus"></i></button>
                         </div>
@@ -203,11 +204,9 @@ var UserMembershipModal = React.createClass({
                       );
                     })
                   }
-                  <div className="col-sm-12">
-                    <button type="button" className="btn btn-primary" onClick={this.newMembership}>
-                      <i className="fa fa-plus"></i>
-                    </button>
-                  </div>
+                  <button type="button" className="btn btn-primary" onClick={this.newMembership}>
+                    <i className="fa fa-plus"></i>
+                  </button>
                 </div>
               </form>
             </div>

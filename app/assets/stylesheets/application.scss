@@ -104,6 +104,10 @@ body{
     border: none;
 }
 
+.text-wrap{
+    word-wrap: break-word;
+}
+
 .text-reader{
     @include media-breakpoint-down(md){
         font-family: "Source Sans Pro","Helvetica Neue","Helvetica","Arial",sans-serif;
@@ -123,6 +127,19 @@ body{
      width: 100%;
      max-width: 100%;
      height: auto;
+}
+
+/* handle overflows */
+.overflow-x-scroll{
+  overflow-x: scroll;
+}
+
+.overflow-y-scroll{
+  overflow-y: scroll;
+}
+
+.text-black{
+  color:#292b2c;
 }
 
 .text-shadow {

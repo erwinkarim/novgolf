@@ -10,7 +10,7 @@
         %a{ :href => photo.avatar.url, :'data-caption' => photo.caption}
 .container
   .row
-    .col-xs-12.col-md-8
+    .col-12.col-md-8
       %h1 #{ @club.name }
       #desc-parent
         #desc-summary
@@ -24,10 +24,11 @@
       - if @got_reviews then
         = react_component "ReviewList", {reviews_path:golf_club_reviews_path(@club), showHeader:true}
 
-    .col-xs-12.col-md-4
+    .col-12.col-md-4
       .card
-        .card-block
-          %h4 Availablity
+        %ul.list-group.list-group-flush
+          %li.list-group-item.text-center
+            %h4 Availability
         = react_component "GolfSchedule", {crsfToken:form_authenticity_token,
           club: @result[:club],
           queryDate: @date,
@@ -36,13 +37,13 @@
           flights: @result[:flights], queryData: @result[:queryData], insurance_modes:ChargeSchedule.insurance_modes.map{ |k,v| k} }
 .container
   .row
-    .col-xs-12
+    .col-12
       %h2 Location
 #map{ :style => "height:70vh; margin-bottom:10px;"}
 .container
   .row
     - if !@photos.empty? then
-      .col-xs-12
+      .col-12
         .grid{ :data => { :'featherlight-gallery' => true, :'featherlight-filter' => 'a'}}
           .grid-sizer
           - @photos.each_with_index do |photo, index|
@@ -56,7 +57,7 @@
                   %img{ :src => photo.avatar.thumb200.url }
             - else
               %a.hidden-xs-up{ :href => photo.avatar.url, :'data-caption' => photo.caption}
-    .col-xs-12
+    .col-12
       %h2 Ammenities
       .card
         .card-block

@@ -1,8 +1,8 @@
 - content_for(:head){ "Your Reservations - "}
 .container
   .row
-    .col-xs-12.col-md-12
-      .card
+    .col-12
+      .card.mb-2
         .card-header Upcomming Flights
         .card-block
           - if @futureFlights.empty? then
@@ -24,9 +24,9 @@
                     %td #{ reservation.booking_date }@#{ reservation.booking_time.strftime("%H:%M") }
                     %td #{ reservation.status }
   .row
-    .col-xs-12.col-md-12
-      .card
-        .card-header Past Flights
+    .col-12
+      .card.mb-2
+        .card-header Most Recent Flights
         .card-block
           - if @pastFlights.nil? || @pastFlights.empty? then
             %p You haven't reserved anything yet

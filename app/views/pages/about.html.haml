@@ -2,15 +2,15 @@
   .container
 .container
   .row
-    .col-xs-12
+    .col-12
       %h1.display-1 About!!
   .row
-    - (1..2).each do |num|
-      .col-xs-12.col-md-6.col-lg-4
+    - (1..10).each do |num|
+      .col-12.col-md-6.col-lg-4.mb-4
         .card
           .m-x-auto
             %img.img-responsive{ src:"images/about/person#{num}.jpeg"}
           .card-block
-            %h4.card-title.text-xs-center Person Name
+            %h4.card-title.text-center Person Name
             - (1..rand(2)+1).each do |num|
               %p.card-text Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.

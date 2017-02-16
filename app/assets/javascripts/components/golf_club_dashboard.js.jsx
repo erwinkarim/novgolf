@@ -60,11 +60,9 @@ var GolfClubDashStatistics = React.createClass({
         <h3>Stats</h3>
         <p>Duration: {this.props.days[0]} to {this.props.days[6]}</p>
         <p>Courses: {this.state.coursesBooked}/{this.state.coursesTotal} </p>
-        <progress className="progress" value={this.state.coursesBooked} max={this.state.coursesTotal}>
-          <div className="progress">
-            <span className="progress-bar" style={{width:`${this.state.coursesBooked/this.state.coursesTotal*100}%`}}></span>
-          </div>
-        </progress>
+        <div className="progress" value={this.state.coursesBooked} max={this.state.coursesTotal}>
+          <span className="progress-bar" style={{width:`${this.state.coursesBooked/this.state.coursesTotal*100}%`}}></span>
+        </div>
         <p>Revenue: {toCurrency(parseFloat(this.state.revenue))}</p>
       </div>
     );
@@ -108,7 +106,7 @@ var GolfClubDashStatus = React.createClass({
     if(this.props.loadFlight){
       disableFnBtn = false;
       var flight = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight];
-      var outstanding_value = this.props.flightTransaction == null ? toCurrency(0.0) : 
+      var outstanding_value = this.props.flightTransaction == null ? toCurrency(0.0) :
       (
         parseFloat(this.props.flightTransaction.outstanding) == 0 ?
         toCurrency(parseFloat(this.props.flightTransaction.change)) :
@@ -117,13 +115,13 @@ var GolfClubDashStatus = React.createClass({
 
       btnRow = (
         <div>
-          <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
-          <button className="btn btn-secondary" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
-          <button className="btn btn-danger" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
+          <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
+          <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
+          <button className="btn btn-danger ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
         </div>
       );
       flightInfo = (
-        <div>
+        <div class="col-12">
           <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
             selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
             updateMembersList={this.props.updateMembersList} />
@@ -138,12 +136,14 @@ var GolfClubDashStatus = React.createClass({
       <div className="card" id="dashStatus" ref="dashStatus" style={ {background:'papayawhip'} }>
         <ul className="list-group list-group-flush">
           <li className="list-group-item">
-            <h3>Flight <small>{toggleReservationPanel}</small></h3>
-            <div className="collapse in" id="reservationCollapse">
-              <p>Selected: {this.props.status}</p>
-              { flightInfo }
-              { btnRow }
-            </div>
+            <p>
+              <h3>Flight <small>{toggleReservationPanel}</small></h3>
+              <div className="collapse show" id="reservationCollapse">
+                <p>Selected: {this.props.status}</p>
+                { flightInfo }
+                { btnRow }
+              </div>
+            </p>
           </li>
           <li className="list-group-item">
             {this.props.dashStats}

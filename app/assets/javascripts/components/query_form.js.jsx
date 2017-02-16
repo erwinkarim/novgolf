@@ -51,14 +51,11 @@ var QueryForm = React.createClass({
     if (this.props.showSearchNav){
       var toggleStyle = {backgroundImage:'none', width:'100%', 'border':'none'};
       var searchNav =
-        <div className="font-special">
-          <nav className="navbar navbar-light bg-faded">
-            <button className="navbar-toggler btn-block" style={ toggleStyle } type="button" data-toggle="collapse" data-target="#search-query-form">
-              <i className="fa fa-search"></i>{ ` Refine Search ` }
-            </button>
-          </nav>
-          <br />
-        </div>
+        <nav className="navbar navbar-light bg-faded">
+          <button className="btn border-0 btn-block navbar-toggler" type="button" data-toggle="collapse" data-target="#search-query-form">
+            <i className="fa fa-search"></i> Refine Search
+          </button>
+        </nav>
       ;
     };
 
@@ -68,38 +65,36 @@ var QueryForm = React.createClass({
     return (
       <div>
         {searchNav}
-        <div className="col-xs-12 font-special">
-          <form id="search-query-form" className={"form-inline collapse" + collapseClass }  method="get" action={this.props.queryTarget} key="query1">
+        <div className="font-special">
+          <form id="search-query-form" className={"collapse" + collapseClass }  method="get" action={this.props.queryTarget} key="query1">
             <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
-            <div className="form-inline">
-              <div className="form-group">
-                <span> </span>
-                <input id="query" ref="query" id="q" name="q" className="form-control" type="text"
-                  placeholder="Golf Course" value={this.state.queryString} onChange={this.handleChange} />
+            <div className="col-12">
+              <br />
+              <div className="form-group row">
+                <div className="col-12 col-md-6">
+                  <input id="query" ref="query" id="q" name="q" className="mb-1 form-control" type="text"
+                    placeholder="Golf Course" value={this.state.queryString} onChange={this.handleChange} />
+                </div>
+                <div className="col-12 col-md-3">
+                  <input id="flight-date" name="date" className="datepicker" ref="queryDate" type="text"
+                      className="mb-1 form-control" placeholder="Date" value={this.state.queryDate} onChange={function(){}} />
+                </div>
+                <div className="col-12 col-md-3">
+                  <input id="flight-time" name="time" ref="queryTime" className="form-control" type="text"
+                    placeholder="Golf Club" value={this.state.queryTime} onChange={function(){}} />
+                </div>
               </div>
-              <span> </span>
-              <div className="form-group">
-                <span> </span>
-                <input id="flight-date" name="date" className="datepicker" ref="queryDate" type="text"
-                    className="form-control" placeholder="Date" value={this.state.queryDate} onChange={function(){}} />
-              </div>
-              <span> </span>
-              <div className="form-group">
-                <input id="flight-time" name="time" ref="queryTime" className="form-control" type="text"
-                  placeholder="Golf Club" value={this.state.queryTime} onChange={function(){}} />
-              </div>
-              <span> </span>
-              <div className="text-xs-center hidden-md-up"><button className="btn btn-primary" type="submit">Search</button></div>
+            </div>
+            <div className="col-12">
+              <div className="text-center hidden-md-up"><button className="btn btn-primary" type="submit">Search</button></div>
               <div className="hidden-sm-down"><br /><button className="btn btn-primary" type="submit">Search</button></div>
             </div>
-            <div style={ {color:'black'}}>
+            <div className="col-12 col-md-6">
               <br />
-              <div className="col-md-4 col-xs-12">
-                <div className="card">
-                  <div className="card-block">
-                    I have <select name="pax" className="form-control" defaultValue={this.props.queryPax}>{ [2,3,4,5,6,7,8].map( (e,i) =>
-                      <option key={i}>{e}</option>)}</select> balls in my game(s)
-                  </div>
+              <div className="card">
+                <div className="card-block">
+                  I have <select name="pax" className="form-control" defaultValue={this.props.queryPax}>{ [2,3,4,5,6,7,8].map( (e,i) =>
+                    <option key={i}>{e}</option>)}</select> balls in my game(s)
                 </div>
               </div>
             </div>

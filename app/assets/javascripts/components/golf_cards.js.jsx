@@ -163,20 +163,25 @@ var GolfCardTimes = React.createClass({
 var GolfCardTimesGroup = React.createClass({
   propTypes: {
     flights: React.PropTypes.array, btnGroupMode:React.PropTypes.string, arrayIndex:React.PropTypes.number, adminMode:React.PropTypes.bool,
-    options: React.PropTypes.object
+    options: React.PropTypes.object,
+    displayMode: React.PropTypes.oneOf(['warp', 'overflow'])
   },
   getDefaultProps: function(){
-      return { btnGroupMode:'checkbox', arrayIndex:0, adminMode:false, options:golfCardDefaultOptions};
+      return { btnGroupMode:'checkbox', arrayIndex:0, adminMode:false, options:golfCardDefaultOptions, displayMode:['wrap']};
   },
   componentDidMount: function(){
       //console.log(this.props)
   },
   render: function(){
     var golfCards = null;
+
+    var outerClass = this.props.displayMode == 'wrap' ? '' : 'mw-100';
+    var innerClass = this.props.displayMode == 'wrap' ? 'flex-wrap' : 'w-100 overflow-x-scroll';
+
     //console.log("golfcardTimesGroup state.teeTimes = " + this.props.teeTimes)
     if (this.props.flights.length != 0){
      golfCards = (
-      <div className="btn-group" data-toggle="buttons">{ this.props.flights.map( (flight, teeTimeIndex) =>
+      <div className={`btn-group ${innerClass}`} data-toggle="buttons">{ this.props.flights.map( (flight, teeTimeIndex) =>
         <GolfCardTimes key={teeTimeIndex} flight={flight} handleClick={this.props.handleClick}
           index={teeTimeIndex} queryDate={this.props.queryDate}
           btnGroupMode={this.props.btnGroupMode} arrayIndex={this.props.arrayIndex} adminMode={this.props.adminMode}
@@ -192,7 +197,7 @@ var GolfCardTimesGroup = React.createClass({
    };
 
     return (
-      <div>
+      <div className={`${outerClass}`}>
         {golfCards}
       </div>
     );
@@ -232,7 +237,7 @@ var GolfCoursesGroup = React.createClass({
         })}</div>
         <p className="card-text">Status: { this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text} </p>
         <p className="card-text">
-          Selected Course: {this.props.flight.course_data.courses[this.props.selectedCourse].id}; 
+          Selected Course: {this.props.flight.course_data.courses[this.props.selectedCourse].id};
           Reservation ID:{this.props.flight.course_data.courses[this.props.selectedCourse].reservation_id} </p>
       </div>
     );
@@ -278,9 +283,9 @@ var ReserveFormPage = React.createClass({
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][tee_time]"} value={this.props.flightInfo.teeTime} />
         <div className="card-header" style={ {color:'black'}}>{ this.props.flightInfo.teeTime }</div>
         { golfCourses }
-        <div className="card-block">
+        <div className="card-block text-black">
           <div className="form-group row">
-            <div className="col-xs-2">
+            <div className="col-2">
               <select name={ "flight[" + this.props.flightInfo.id + "][count][pax]"}
                 onChange={this.props.updatePrice}
                 value={this.props.flightInfo.pax} ref="paxCount" className=""
@@ -289,15 +294,15 @@ var ReserveFormPage = React.createClass({
                 <option key={i}>{e}</option>
               )}</select>
             </div>
-            <label className="col-xs-5"> x Balls </label>
-            <label className="col-xs-5">
+            <label className="col-5"> x Balls </label>
+            <label className="col-5">
               {toCurrency(this.props.flightInfo.pax * parseFloat(this.props.flight.prices.flight) )}
             </label>
             <input type="hidden" value={this.props.flightInfo.pax*parseFloat(this.props.flight.prices.flight)}
               name={"flight[" + this.props.flightInfo.id + "][price][pax]"} />
           </div>
           <div className="form-group row">
-            <div className="col-xs-2">
+            <div className="col-2">
               <select name={ "flight[" + this.props.flightInfo.id + "][count][member]"}
                 onChange={this.props.updatePrice}
                 value={this.props.flightInfo.member} ref="memberCount" className=""
@@ -306,12 +311,12 @@ var ReserveFormPage = React.createClass({
                 <option key={i}>{e}</option>
               )}</select>
             </div>
-            <label className="col-xs-5">{ membersLink }</label>
-            <label className="col-xs-5">RM 0.00 </label>
+            <label className="col-5">{ membersLink }</label>
+            <label className="col-5">RM 0.00 </label>
             <input type="hidden" value="0" name={"flight[" + this.props.flightInfo.id + "][price][member]"} />
           </div>
           <div className="form-group row">
-            <div className="col-xs-2">
+            <div className="col-2">
               <select name={ "flight[" + this.props.flightInfo.id  + "][count][buggy]"}
                 onChange={this.props.updatePrice}
                 value={this.props.flightInfo.buggy} ref="buggyCount" className=""
@@ -320,15 +325,15 @@ var ReserveFormPage = React.createClass({
                 <option key={i}>{e}</option>
               )}</select>
             </div>
-            <label className="col-xs-5"> x Buggy </label>
-            <label className="col-xs-5">
+            <label className="col-5"> x Buggy </label>
+            <label className="col-5">
               {toCurrency(this.props.flightInfo.buggy * parseFloat(this.props.flight.prices.cart) )}
             </label>
             <input type="hidden" value={this.props.flightInfo.buggy * parseFloat(this.props.flight.prices.cart) }
               name={"flight[" + this.props.flightInfo.id + "][price][cart]"} />
           </div>
           <div className="form-group row">
-            <div className="col-xs-2">
+            <div className="col-2">
               <select name={"flight[" + this.props.flightInfo.id + "][count][caddy]"} className=""
                   onChange={this.props.updatePrice}
                   value={this.props.flightInfo.caddy} ref="caddyCount"
@@ -337,15 +342,15 @@ var ReserveFormPage = React.createClass({
                   <option key={e}>{e}</option>
               )}</select>
             </div>
-            <label className="col-xs-5"> x Caddy</label>
-            <label className="col-xs-5">
+            <label className="col-5"> x Caddy</label>
+            <label className="col-5">
               {toCurrency(this.props.flightInfo.caddy * parseFloat(this.props.flight.prices.caddy) )}
             </label>
             <input type="hidden" value={this.props.flightInfo.caddy * parseFloat(this.props.flight.prices.caddy) }
               name={"flight[" + this.props.flightInfo.id + "][price][caddy]"} />
           </div>
           <div className="form-group row">
-            <div className="col-xs-2">
+            <div className="col-2">
               <select name={"flight[" + this.props.flightInfo.id + "][count][insurance]"} className=""
                 onChange={this.props.updatePrice}
                 value={this.props.flightInfo.insurance} ref="insuranceCount"
@@ -356,8 +361,8 @@ var ReserveFormPage = React.createClass({
               )}</select>
               <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][count][insurance]"} value={this.props.flightInfo.insurance} />
             </div>
-            <label className="col-xs-5"> x Insurance</label>
-            <label className="col-xs-5">
+            <label className="col-5"> x Insurance</label>
+            <label className="col-5">
               {toCurrency(this.props.flightInfo.insurance * parseFloat(this.props.flight.prices.insurance) )}
             </label>
             <input type="hidden" value={this.props.flightInfo.insurance * parseFloat(this.props.flight.prices.insurance) }
@@ -380,11 +385,13 @@ var GolfReserveForm = React.createClass({
     club: React.PropTypes.object,
     flights: React.PropTypes.array,
     insurance_modes: React.PropTypes.array,
-    options: React.PropTypes.object
+    options: React.PropTypes.object,
+    timeGroupDisplay: React.PropTypes.string
   },
   getDefaultProps: function(){
     return {
-      reserve_target:"/", options: golfCardDefaultOptions
+      reserve_target:"/", options: golfCardDefaultOptions,
+      timeGroupDisplay:'wrap'
     }
   },
   getInitialState: function(){
@@ -501,11 +508,12 @@ var GolfReserveForm = React.createClass({
         <input type="hidden" name="club[id]" value={this.props.club.id} />
         <input type="hidden" name="info[date]" value={this.props.queryData.date} />
         <li className="list-group-item">
-          <GolfCardTimesGroup flights={this.props.flights} handleClick={this.handleClick} queryDate={this.props.queryDate} options={this.props.options}/>
+          <GolfCardTimesGroup flights={this.props.flights} handleClick={this.handleClick} queryDate={this.props.queryDate}
+            options={this.props.options} displayMode={this.props.timeGroupDisplay}/>
         </li>
         <li className="list-group-item" ref="reserveBtnLi" >
           {/* time stamps */}
-          <ul className="nav nav-pills" id={ "nav-" + this.state.random_id }>{ this.state.selectedTeeTimes.map( (e,i) =>
+          <ul className="nav nav-pills mb-2 flex-wrap" id={ "nav-" + this.state.random_id }>{ this.state.selectedTeeTimes.map( (e,i) =>
             {
               var isActive = (this.state.selectedTeeTimesIndex == i) ? "active" : ""
               return (
@@ -529,7 +537,7 @@ var GolfReserveForm = React.createClass({
               )
             }
           )}</div>
-          <div>
+          <div className="col-12 text-black">
             <h5>Tax: {toCurrency(this.state.tax)}</h5>
             <h4>Grand Total: {toCurrency(this.state.totalPrice + this.state.tax)} </h4>
             <input type="hidden" name="info[total_price]" value={this.state.totalPrice} />
@@ -594,18 +602,20 @@ var GolfSchedule = React.createClass({
     return (
       <ul className="list-group list-group-flush">
         <li className="list-group-item">
-          <fieldset className="form-group">
-            <label>I have <select>{ [2,3,4,5,6,7,8].map( (e,i) => <option key={i}>{e}</option> ) } </select> balls
-            </label>
-          </fieldset>
-          <fieldset className="form-group">
-            <input type="text" className="datepicker form-control" ref="queryDate" name="dateQuery" value={this.state.queryDate}
-            style={ {zIndex:1000, position:'relative'}} onChange={this.dateChanged }/>
-          </fieldset>
+          <form>
+            <fieldset className="form-group">
+              <label>I have <select>{ [2,3,4,5,6,7,8].map( (e,i) => <option key={i}>{e}</option> ) } </select> balls
+              </label>
+            </fieldset>
+            <fieldset className="form-group">
+              <input type="text" className="datepicker form-control" ref="queryDate" name="dateQuery" value={this.state.queryDate}
+              style={ {zIndex:1000, position:'relative'}} onChange={this.dateChanged }/>
+            </fieldset>
+          </form>
         </li>
         <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
           club={this.props.club} flights={this.state.flights} queryData={this.state.queryData}
-          insurance_modes={this.props.insurance_modes} options={this.props.options }/>
+          insurance_modes={this.props.insurance_modes} options={this.props.options } timeGroupDisplay='overflow'/>
       </ul>
     );
   }

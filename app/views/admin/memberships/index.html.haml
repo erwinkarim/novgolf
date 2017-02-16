@@ -1,25 +1,28 @@
 - content_for(:head){ "Admin - #{@club.name} - Memberships - "}
 .container
   .row
-    %ol.breadcrumb
-      %li.breadcrumb-item
-        %a{ :href => admin_golf_clubs_path} Admin
-      %li.breadcrumb-item
-        %a{ :href => admin_golf_club_path(@club) } #{ @club.name }
-      %li.active.breadcrumb-item Memberships
-    %h1 Memberships for #{@club.name}
-    %table.table
-      %thead
-        %tr
-          %th Name
-          %th Expires At
-      %tbody
-        - if @memberships.empty? then
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{ :href => admin_golf_clubs_path} Admin
+        %li.breadcrumb-item
+          %a{ :href => admin_golf_club_path(@club) } #{ @club.name }
+        %li.active.breadcrumb-item Memberships
+    .col-12
+      %h1 Memberships for #{@club.name}
+    .col-12
+      %table.table
+        %thead
           %tr
-            %td{colspan:2} None members registered yet...
-        - else
-          - @memberships.each do |member|
+            %th Name
+            %th Expires At
+        %tbody
+          - if @memberships.empty? then
             %tr
-              %td
-                %a{ href:user_path(member.user_id)} #{member.user.name}
-              %td #{member.expires_at}
+              %td{colspan:2} None members registered yet...
+          - else
+            - @memberships.each do |member|
+              %tr
+                %td
+                  %a{ href:user_path(member.user_id)} #{member.user.name}
+                %td #{member.expires_at}

@@ -1,7 +1,7 @@
 - content_for(:head){"Review for something - "}
 .container
   .row
-    .col-xs-12.col-md-6
+    .col-12.col-md-6
       %h2 Your Review
       = react_component "ReviewForm", {crsfToken:form_authenticity_token, topic_id:params[:topic_id], topic_type:params[:topic_type],
         action:{path:user_reviews_path(current_user), method:"POST"}, review:@review}

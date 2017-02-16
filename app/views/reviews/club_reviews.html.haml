@@ -1,11 +1,11 @@
 - content_for(:head){ "#{@club.name} Reviews -" }
 .container
   .row
-    .col-xs-12
+    .col-12
       %ol.breadcrumb
-        %li
+        %li.breadcrumb-item
           %a{ :href => golf_club_path(@club)} #{@club.name}
-        %li.active Reviews
+        %li.breadcrumb-item.active Reviews
   .row
-    .col-xs-12.col-md-8
+    .col-12.col-md-8
       = react_component "ReviewList", {reviews_path:golf_club_reviews_path(@club), showHeader:true, linkHeader:false}

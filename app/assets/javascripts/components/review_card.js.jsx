@@ -36,19 +36,19 @@ var ReviewCard = React.createClass({
 
     return (
         <li className="list-group-item">
-          <div className="row">
-            <div className="col-xs-3 col-md-2">
-              <a href={obj_link}> <img className="img-circle" src={obj_image} width="64" height="64" /> </a>
+          <div className="row w-100">
+            <div className="col-3 col-md-2">
+              <a href={obj_link}> <img className="rounded-circle" src={obj_image} width="64" height="64" /> </a>
             </div>
-            <div className="col-xs-9 col-md-10">
+            <div className="col-9 col-md-10">
               <h4><a href={obj_link}>{obj_name}</a> ({obj_date})</h4>
               <div>{ arrayFromRange(1,this.props.review.rating).map( (e,i) =>
                 <i key={i} className="fa fa-star"></i>
               )}</div>
             </div>
           </div>
-          <div className="row card-text">
-            <div className="col-xs-12">
+          <div className="row w-100 card-text">
+            <div className="col-12">
               <FormattedText>{this.props.review.comment}</FormattedText>
               <small>Posted at {this.props.review.created_at}</small>
             </div>
@@ -120,7 +120,7 @@ var ReviewList = React.createClass({
       ""
 
     return (
-      <div className="card">
+      <div className="card mb-2">
         { header }
         <ul className="list-group list-group-flush">
           { review_list }

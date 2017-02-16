@@ -32,7 +32,7 @@ class Admin::PhotosController < ApplicationController
     #create the photos
     photo.transaction do
       photo.save
-      #Rails.logger.info "file = #{file.instance_variable_get(:@original_filename)}"
+      Rails.logger.info "file = #{file.instance_variable_get(:@original_filename)}"
     end
     #Rails.logger.info "photo = #{photo.inspect}"
 

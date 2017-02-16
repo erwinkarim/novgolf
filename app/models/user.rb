@@ -1,4 +1,5 @@
 class User < ActiveRecord::Base
+  require "assets/name_generator"
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable, :registerable,
@@ -14,13 +15,16 @@ class User < ActiveRecord::Base
 
   has_one :profile_picture, class_name:"Photo", foreign_key: :id, primary_key: :profile_picture
   validates_presence_of :role
+  validates_presence_of :image_path
 
   enum role: [:user, :admin, :superadmin ]
   after_initialize :init
 
+  DEFAULT_IMAGE_PATH = "/images/users/default.jpg"
+
   def init
     self.role ||= 0
-    self.image || "/images/users/default.jpg"
+    self.image_path ||= DEFAULT_IMAGE_PATH
   end
 
   # update the memberships sets, membership will arrive in {random_id => {membership_detail}, random_id => {membership_detail} } fashion
@@ -62,7 +66,7 @@ class User < ActiveRecord::Base
      user.email = auth.info.email
      user.password = Devise.friendly_token[0,20]
      user.name = auth.info.name   # assuming the user model has a name
-     user.image = auth.info.image # assuming the user model has an image
+     user.image_path = auth.info.image || DEFAULT_IMAGE_PATH # assuming the user model has an image
    end
   end
 
@@ -72,5 +76,23 @@ class User < ActiveRecord::Base
         user.email = data["email"] if user.email.blank?
       end
     end
+  end
+
+  # to auto generate random user
+  def self.generate_random_user
+    password = SecureRandom.hex
+    user = User.new(
+      email:NameGenerator.random_email, name:NameGenerator.random_username, password:password, password_confirmation:password
+    )
+
+    user.save!
+
+    return user
+
+  end
+
+  # return a random user
+  def self.random
+    User.order("RAND()").first
   end
 end

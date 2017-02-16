@@ -1,9 +1,9 @@
 .container
   .row
-    .col-xs-12.col-md-6
+    .col-12.col-md-6
       %h2 Resend confirmation instructions
   .row
-    .col-xs-12.col-md-6
+    .col-12.col-md-6
       .card
         .card-block
           = form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do |f|
@@ -14,5 +14,5 @@
                 value: (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email)
             = f.submit "Resend confirmation instructions", :class => 'btn btn-primary'
   .row
-    .col-xs-12
+    .col-12
       = render "devise/shared/links"
