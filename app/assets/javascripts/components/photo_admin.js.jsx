@@ -19,25 +19,25 @@ var PhotoUploader = React.createClass({
   },
   render: function(){
     return (
-      <li className="list-group-item">
-        <p>
-          <span className="btn btn-success fileinput-button">
-            <i class="fa fa-plus"></i>
-            <span>Select or Drop files...</span>
-            <input className="" ref="fileUploader" data-url={this.props.path} name="files[]" multiple={true} type="file" />
-          </span>
-        </p>
-        <p>
-          <span>
-            <ul>
-              <li>Large photos will be automatically resized to fix a 1920x1080 pixels box</li>
-              <li>Small Photo will be resized to fix a 1280x720 pixels box</li>
-              <li>If the resized photos is > 1MB it will not be uploaded</li>
-              <li>Only supported format is JPEG</li>
-            </ul>
-          </span>
-        </p>
-      </li>
+      <div className="card mb-2">
+        <div className="card-block">
+          <p className="card-text">
+            <span className="btn btn-success fileinput-button">
+              <i className="fa fa-plus mr-2"></i>
+              <span>Select or Drop files...</span>
+              <input className="" ref="fileUploader" data-url={this.props.path} name="files[]" multiple={true} type="file" />
+            </span>
+          </p>
+        </div>
+        <div className="card-block">
+          <ul>
+            <li>Large photos will be automatically resized to fix a 1920x1080 pixels box</li>
+            <li>Small Photo will be resized to fix a 1280x720 pixels box</li>
+            <li>If the resized photos is > 1MB it will not be uploaded</li>
+            <li>Only supported format is JPEG</li>
+          </ul>
+        </div>
+      </div>
     );
   }
 });
@@ -78,22 +78,30 @@ var PhotoAdminViewer =  React.createClass({
   },
   render: function(){
     var zeroPhotos = (
-      <li className="list-group-item">
-        No Photos yet...
-      </li>
+      <div className="card">
+        <div className="card-block">
+          <p className="card-text">No photos yet...</p>
+        </div>
+      </div>
     );
 
     var photoList = (
-      <li className="list-group-item"><section data-featherlight-gallery data-featherlight-filter="a">{this.props.photoList.map( (e,i) => {
-        var random_id = randomID();
+      <div className="row">{this.props.photoList.map( (e,i) => {
+        var random_id= randomID();
 
-        return (
-          <div className="card mb-2" key={i}>
-            <img className="img-responsive" src={e.thumb200} />
+        var photo_card = (
+          <div key={i} className="col-4">
+            <div className="card d-block mb-2">
+              <a href={`#photo-collapse-${random_id}`} data-toggle="collapse">
+                <img className="img-responsive" src={e.square200} />
+              </a>
+            </div>
           </div>
-        )}
-      )}</section></li>
+        );
 
+        return (photo_card);
+      })}
+      </div>
     );
 
     if(this.props.photoList.length == 0){
@@ -123,12 +131,14 @@ var PhotoAdmin = React.createClass({
   },
   render: function() {
     return (
-      <div className="card mb-2">
-        <ul className="list-group list-group-flush">
+      <div className="row">
+        <div className="col-12">
           <PhotoUploader path={this.props.paths.upload} updatePhotoList={this.updatePhotoList}/>
+        </div>
+        <div className="col-12">
           <PhotoAdminViewer path={this.props.paths.upload} photoList={this.state.photoList} updatePhotoList={this.updatePhotoList}
             crsfToken={this.props.crsfToken}/>
-        </ul>
+        </div>
       </div>
     );
   }

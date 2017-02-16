@@ -51,6 +51,10 @@ class AvatarUploader < CarrierWave::Uploader::Base
    process :resize_to_fit => [400, 400]
   end
 
+  version :square200 do
+      process :resize_to_fill => [200,200]
+  end
+
   #good for profile picture
   version :square400 do
       process :resize_to_fill => [400,400]

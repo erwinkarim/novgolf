@@ -11,7 +11,8 @@ class Photo < ActiveRecord::Base
       :name => self.caption,
       :size => self.avatar.size * 1024,
       :url => self.avatar.url,
-      :thumb200 => self.avatar.thumb200.url
+      :thumb200 => self.avatar.thumb200.url,
+      :square200 => self.avatar.square200.url
     }
   end
 
