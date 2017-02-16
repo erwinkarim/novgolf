@@ -89,30 +89,7 @@ var PhotoAdminViewer =  React.createClass({
 
         return (
           <div className="card mb-2" key={i}>
-            <a className="gallery card-img-top" href={e.url}>
-              <img className="img-responsive" src={e.url} />
-            </a>
-            <div className="card-block">
-              <form className="mb-2" action={e.delete} onSubmit={this.updatePhoto} >
-                <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
-                <fieldset className="form-group">
-                  <label>Caption</label>
-                  <input type="text" defaultValue={e.name} className="form-control" name="photo[caption]" />
-                </fieldset>
-                <button className="btn btn-primary" type="submit">Update Photo</button>
-                <button className="btn btn-link" data-toggle="collapse" data-target={`#delete-${random_id}`}>Delete Photo</button>
-              </form>
-              <div className="collapse" id={`delete-${random_id}`}>
-                <div className="card">
-                  <div className="card-block">
-                    <form action={e.delete} onSubmit={this.deletePhoto} >
-                      <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
-                      <button className="btn btn-danger" type="submit" data-confirm="Are You Sure?">Delete</button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <img className="img-responsive" src={e.thumb200} />
           </div>
         )}
       )}</section></li>
