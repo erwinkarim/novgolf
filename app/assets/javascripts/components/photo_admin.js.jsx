@@ -42,11 +42,77 @@ var PhotoUploader = React.createClass({
   }
 });
 
+var PhotoAdminModal = React.createClass({
+  propTypes: {
+    photo:React.PropTypes.object,
+    photoList:React.PropTypes.array,
+    selectedPhoto:React.PropTypes.number,
+    token: React.PropTypes.string
+  },
+  getInitialState: function(){
+    //clone the props
+    var newPhoto = Object.assign({}, this.props.photo);
+
+    return {photo:newPhoto};
+  },
+  componentWillReceiveProps: function(nextProps){
+    //clone the props
+    var newPhoto = Object.assign({}, nextProps.photo);
+
+    this.setState({photo:newPhoto});
+  },
+  updateForm:function(e){
+
+    var newPhoto = Object.assign(this.state.photo, {[e.target.dataset.name]:e.target.value} )
+    this.setState({photo:newPhoto});
+
+  },
+  render: function(){
+    return (
+      <div className="modal fade" id="photo-detail">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-body">
+              <form id="photo-form" action={this.props.photo.delete} method="PATCH">
+                <input type="hidden" name="form_authentcity_token" value={this.props.token}/>
+
+                <img src={this.props.photo.url} className="img-responsive mb-2" />
+                <div className="form-group">
+                  <label>Caption</label>
+                  <input type="text" className="form-control" name="photo[caption]" value={this.state.photo.caption} data-name="caption" onChange={this.updateForm} placeholder="Caption" />
+                </div>
+                <div className="form-group row">
+                  <label className="col-8">Order</label>
+                  <div className="col-4">
+                    <select className="form-control" value={this.props.selectedPhoto}>{ this.props.photoList.map( (e,i) => {
+                      return (
+                        <option key={i} value={i}>{i}</option>
+                      )
+                    })}</select>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" className="btn btn-primary" onClick={this.props.updatePhoto}>Update Photo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+});
+
 var PhotoAdminViewer =  React.createClass({
+  propTypes: {
+    photoList:React.PropTypes.array,
+    token: React.PropTypes.string
+  },
   getInitialState: function(){
     return {
-      photoList:[],
-      random_id:(Math.floor(Math.random()*16777215).toString(16))
+      random_id:(Math.floor(Math.random()*16777215).toString(16)),
+      selectedPhoto:0
     }
   },
   deletePhoto: function(e){
@@ -66,15 +132,19 @@ var PhotoAdminViewer =  React.createClass({
   updatePhoto: function(e){
     e.preventDefault();
     var handle = this;
-    $.ajax( $(e.target).attr("action"), {
-      data:$(e.target).serialize(),
+    $.ajax( this.props.photoList[this.state.selectedPhoto].delete, {
+      data:$('#photo-form').serialize(),
       method:"PATCH",
       success: function(data){
         $.snackbar({content:"Photo caption updated."});
         handle.props.updatePhotoList();
       }
     });
-    console.log("update photo");
+    $('#photo-detail').modal('hide');
+    console.log("update photo with", e);
+  },
+  clickModal: function(e){
+    this.setState({selectedPhoto:parseInt(e.target.dataset.index)})
   },
   render: function(){
     var zeroPhotos = (
@@ -86,14 +156,19 @@ var PhotoAdminViewer =  React.createClass({
     );
 
     var photoList = (
-      <div className="row">{this.props.photoList.map( (e,i) => {
+      <div className="row">
+        <PhotoAdminModal photo={this.props.photoList[this.state.selectedPhoto]} photoList={this.props.photoList}
+          selectedPhoto={this.state.selectedPhoto}  token={this.props.token}
+          updatePhoto={this.updatePhoto} deletePhoto={this.deletePhoto}
+          />
+        {this.props.photoList.map( (e,i) => {
         var random_id= randomID();
 
         var photo_card = (
-          <div key={i} className="col-4">
+          <div key={i} className="col-3">
             <div className="card d-block mb-2">
-              <a href={`#photo-collapse-${random_id}`} data-toggle="collapse">
-                <img className="img-responsive" src={e.square200} />
+              <a href="#photo-detail" data-toggle="modal" onClick={this.clickModal} data-index={i}>
+                <img className="img-responsive" src={e.square200} data-index={i}/>
               </a>
             </div>
           </div>
@@ -137,7 +212,7 @@ var PhotoAdmin = React.createClass({
         </div>
         <div className="col-12">
           <PhotoAdminViewer path={this.props.paths.upload} photoList={this.state.photoList} updatePhotoList={this.updatePhotoList}
-            crsfToken={this.props.crsfToken}/>
+            token={this.props.crsfToken}/>
         </div>
       </div>
     );
