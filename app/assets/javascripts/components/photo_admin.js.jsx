@@ -7,14 +7,19 @@ var PhotoUploader = React.createClass({
       dataType:'json',
       disableImageResize:false, imageMaxWidth:1920, imageMaxHeight:1080,
       imageMinWidth:1280, imageMinHeight:720,
+      submit: function(e,data){
+        //record how many files is being loaded
+        handle.props.updatePhotoWaiting(data.files.length);
+        console.log('sending file', data.files);
+      },
       done: function(){
-        $.snackbar({content:"New photo uploaded"});
+      $.snackbar({content:"New photo uploaded"});
         handle.props.updatePhotoList();
         console.log("done!!");
       },
       fail: function(e, data){
           console.log("e =", e);
-      }
+      },
     });
   },
   render: function(){
@@ -68,6 +73,10 @@ var PhotoAdminModal = React.createClass({
 
   },
   render: function(){
+    if(this.props.photo == null){
+     return <div></div>
+    };
+
     return (
       <div className="modal fade" id="photo-detail">
         <div className="modal-dialog modal-lg">
@@ -94,8 +103,9 @@ var PhotoAdminModal = React.createClass({
               </form>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-              <button type="button" className="btn btn-primary" onClick={this.props.updatePhoto}>Update Photo</button>
+              <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="button" className="btn btn-danger" onClick={this.props.deletePhoto}>Delete</button>
+              <button type="button" className="btn btn-primary" onClick={this.props.updatePhoto}>Update</button>
             </div>
           </div>
         </div>
@@ -107,7 +117,8 @@ var PhotoAdminModal = React.createClass({
 var PhotoAdminViewer =  React.createClass({
   propTypes: {
     photoList:React.PropTypes.array,
-    token: React.PropTypes.string
+    token: React.PropTypes.string,
+    photoWaiting: React.PropTypes.number
   },
   getInitialState: function(){
     return {
@@ -120,13 +131,28 @@ var PhotoAdminViewer =  React.createClass({
     var handle = this;
     console.log("delete submited");
     console.log("e.target = ", $(e.target).attr('action'));
-    $.ajax($(e.target).attr('action'), {
-        data:$(e.target).serialize(),
+
+    /*
+    $.ajax(this.props.photoList[this.state.selectedPhoto].delete, {
         method:"DELETE",
         success: function(data){
-          $.snackbar({ content:"Photo deleted"});
-          handle.props.updatePhotoList();
+
+          //at this point, the modal might be invalid because state.selectedPhoto, might be an invalid obj
+          $('#photo-detail').modal('hide');
         }
+    });
+    */
+
+    fetch(this.props.photoList[this.state.selectedPhoto].delete , {
+      credentials:'same-origin',
+      method:'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body:JSON.stringify({ authenticity_token:this.props.token})
+    }).then(function(response){
+      $.snackbar({ content:"Photo deleted"});
+      handle.setState({selectedPhoto:0});
+      $('#photo-detail').modal('hide');
+      handle.props.updatePhotoList();
     });
   },
   updatePhoto: function(e){
@@ -147,43 +173,48 @@ var PhotoAdminViewer =  React.createClass({
     this.setState({selectedPhoto:parseInt(e.target.dataset.index)})
   },
   render: function(){
-    var zeroPhotos = (
-      <div className="card">
-        <div className="card-block">
-          <p className="card-text">No photos yet...</p>
-        </div>
-      </div>
-    );
+    var handle = this;
 
-    var photoList = (
+    var gallery = this.props.photoList.length == 0 ? '' : this.props.photoList.map( (e,i) => {
+       return (
+         <div key={i} className="col-3">
+           <div className="card d-block mb-2">
+             <a href="#photo-detail" data-toggle="modal" onClick={this.clickModal} data-index={i}>
+               <img className="img-responsive" src={e.square200} data-index={i}/>
+             </a>
+           </div>
+         </div>
+       );
+    });
+
+    var loading = this.props.photoWaiting == 0 ? '' : arrayFromRange(1, this.props.photoWaiting).map( (e,i) => {
+      return (
+        <div key={i} className="col-3 mb-2">
+         <div className="card d-block" style={ {height:'100%'}} >
+           <p className="text-center">
+             <i className="fa fa-cog fa-spin fa-4x"></i>
+           </p>
+         </div>
+        </div>
+      );
+    });
+
+    var photoList = (this.props.photoList.length != 0 || this.props.photoWaiting != 0) ? (
       <div className="row">
         <PhotoAdminModal photo={this.props.photoList[this.state.selectedPhoto]} photoList={this.props.photoList}
-          selectedPhoto={this.state.selectedPhoto}  token={this.props.token}
-          updatePhoto={this.updatePhoto} deletePhoto={this.deletePhoto}
-          />
-        {this.props.photoList.map( (e,i) => {
-        var random_id= randomID();
-
-        var photo_card = (
-          <div key={i} className="col-3">
-            <div className="card d-block mb-2">
-              <a href="#photo-detail" data-toggle="modal" onClick={this.clickModal} data-index={i}>
-                <img className="img-responsive" src={e.square200} data-index={i}/>
-              </a>
-            </div>
-          </div>
-        );
-
-        return (photo_card);
-      })}
+         selectedPhoto={this.state.selectedPhoto}  token={this.props.token}
+         updatePhoto={this.updatePhoto} deletePhoto={this.deletePhoto} />
+       {loading} {gallery}
       </div>
-    );
+    ) : (
+      <div className="card">
+        <div className="card-block">
+          <p className="card-text">No Photos Yet...</p>
+        </div>
+      </div>
+    )
 
-    if(this.props.photoList.length == 0){
-      return zeroPhotos;
-    } else {
-      return photoList;
-    }
+    return photoList;
   }
 });
 
@@ -192,27 +223,30 @@ var PhotoAdmin = React.createClass({
     crsfToken: React.PropTypes.string,
     paths: React.PropTypes.object
   },
+  getInitialState: function(){
+      return { photoList:[], photoWaiting:0}
+  },
   componentDidMount: function(){
     this.updatePhotoList();
   },
   updatePhotoList: function(){
     var handle = this;
     $.getJSON(this.props.paths.upload, function(data){
-        handle.setState({ photoList:data})
+        handle.setState({ photoList:data, selectedPhoto:0, photoWaiting:0})
     })
   },
-  getInitialState: function(){
-      return { photoList:[]}
+  updatePhotoWaiting: function(photoCount){
+      this.setState({photoWaiting:photoCount})
   },
   render: function() {
     return (
       <div className="row">
         <div className="col-12">
-          <PhotoUploader path={this.props.paths.upload} updatePhotoList={this.updatePhotoList}/>
+          <PhotoUploader path={this.props.paths.upload} updatePhotoList={this.updatePhotoList} updatePhotoWaiting={this.updatePhotoWaiting}/>
         </div>
         <div className="col-12">
           <PhotoAdminViewer path={this.props.paths.upload} photoList={this.state.photoList} updatePhotoList={this.updatePhotoList}
-            token={this.props.crsfToken}/>
+            photoWaiting={this.state.photoWaiting} token={this.props.crsfToken}/>
         </div>
       </div>
     );
