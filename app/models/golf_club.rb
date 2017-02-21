@@ -431,4 +431,25 @@ class GolfClub < ActiveRecord::Base
     end
     self.course_listings
   end
+
+  #update the sequence number for the rest of the photos
+  #args:
+  # new_order photo_ids w/ new sequence number
+  def update_photo_sequence new_order
+    # if there's only 1 or 0 photos, ignore
+    if self.photos.count == 0 || self.photos.count == 1 then
+      return
+    end
+
+    self.transaction do
+      current_sequence = 0
+      new_order.each do |photo_id|
+        photo = Photo.find(photo_id)
+        if photo.sequence != current_sequence then
+          photo.update_attribute(:sequence, current_sequence)
+        end
+        current_sequence += 1
+      end
+    end
+  end
 end

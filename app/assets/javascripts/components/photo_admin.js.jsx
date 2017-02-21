@@ -9,16 +9,16 @@ var PhotoUploader = React.createClass({
       imageMinWidth:1280, imageMinHeight:720,
       submit: function(e,data){
         //record how many files is being loaded
-        handle.props.updatePhotoWaiting(data.files.length);
-        console.log('sending file', data.files);
+        handle.props.updatePhotoWaiting(+1);
       },
-      done: function(){
-      $.snackbar({content:"New photo uploaded"});
+      done: function(e,data){
+        $.snackbar({content:data.result.photo.caption + " uploaded", style:'notice'});
+        handle.props.updatePhotoWaiting(-1);
         handle.props.updatePhotoList();
-        console.log("done!!");
       },
       fail: function(e, data){
-          console.log("e =", e);
+        $.snackbar({content:"Some file failed to upload", style:'error'});
+        console.log("e =", e);
       },
     });
   },
@@ -91,13 +91,15 @@ var PhotoAdminModal = React.createClass({
                   <input type="text" className="form-control" name="photo[caption]" value={this.state.photo.caption} data-name="caption" onChange={this.updateForm} placeholder="Caption" />
                 </div>
                 <div className="form-group row">
-                  <label className="col-8">Order</label>
+                  <label className="col-8">Order (higher sequence number will be shown first)</label>
                   <div className="col-4">
-                    <select className="form-control" value={this.props.selectedPhoto}>{ this.props.photoList.map( (e,i) => {
-                      return (
-                        <option key={i} value={i}>{i}</option>
-                      )
-                    })}</select>
+                    <select className="form-control" name="photo[sequence]" value={this.state.photo.sequence} data-name="sequence" onChange={this.updateForm}>{
+                      this.props.photoList.map( (e,i) => {
+                        return (
+                          <option key={i} value={e.sequence}>{e.sequence}</option>
+                        )
+                      })}
+                    </select>
                   </div>
                 </div>
               </form>
@@ -130,18 +132,6 @@ var PhotoAdminViewer =  React.createClass({
     e.preventDefault();
     var handle = this;
     console.log("delete submited");
-    console.log("e.target = ", $(e.target).attr('action'));
-
-    /*
-    $.ajax(this.props.photoList[this.state.selectedPhoto].delete, {
-        method:"DELETE",
-        success: function(data){
-
-          //at this point, the modal might be invalid because state.selectedPhoto, might be an invalid obj
-          $('#photo-detail').modal('hide');
-        }
-    });
-    */
 
     fetch(this.props.photoList[this.state.selectedPhoto].delete , {
       credentials:'same-origin',
@@ -162,12 +152,11 @@ var PhotoAdminViewer =  React.createClass({
       data:$('#photo-form').serialize(),
       method:"PATCH",
       success: function(data){
-        $.snackbar({content:"Photo caption updated."});
+        $.snackbar({content:"Photo updated."});
         handle.props.updatePhotoList();
       }
     });
     $('#photo-detail').modal('hide');
-    console.log("update photo with", e);
   },
   clickModal: function(e){
     this.setState({selectedPhoto:parseInt(e.target.dataset.index)})
@@ -235,8 +224,9 @@ var PhotoAdmin = React.createClass({
         handle.setState({ photoList:data, selectedPhoto:0, photoWaiting:0})
     })
   },
-  updatePhotoWaiting: function(photoCount){
-      this.setState({photoWaiting:photoCount})
+  updatePhotoWaiting: function(delta){
+    var newPhotoCount = this.state.photoWaiting;
+    this.setState({photoWaiting:newPhotoCount +  delta})
   },
   render: function() {
     return (
