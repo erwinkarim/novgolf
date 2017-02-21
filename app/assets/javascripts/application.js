@@ -12,6 +12,8 @@
 //
 //= require jquery
 //= require jquery-ui/widgets/datepicker
+//= require jquery-ui/widgets/draggable
+//= require jquery.ui.touch-punch.min.js
 //= require jquery.timepicker.js
 //= require jquery_ujs
 //= require jquery.sticky.js
