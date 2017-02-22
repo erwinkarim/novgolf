@@ -13,10 +13,11 @@
 //= require jquery
 //= require jquery-ui/widgets/datepicker
 //= require jquery-ui/widgets/draggable
-//= require jquery.ui.touch-punch.min.js
+//= require jquery-ui/widgets/sortable
 //= require jquery.timepicker.js
 //= require jquery_ujs
 //= require jquery.sticky.js
+//= require jquery.ui.touch-punch.min.js
 //= require turbolinks
 //= require tether
 //= require bootstrap

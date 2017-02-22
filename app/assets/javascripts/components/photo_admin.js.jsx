@@ -116,11 +116,43 @@ var PhotoAdminModal = React.createClass({
   }
 });
 
+var PhotoCard = React.createClass({
+  propTypes: {
+    photo:React.PropTypes.object,
+    clickModal:React.PropTypes.func,
+    index:React.PropTypes.number
+  },
+  componentDidMount: function(){
+    //make this draggable
+    $(this.dragElm).draggable({
+      connectToSortable:'#sortable'
+    });
+
+    //child rendered last, so sortable after child is rendered
+    $('#sortable').sortable();
+  },
+  render: function(){
+    return(
+      <div className="col-3" ref={ (dragElm)=>{this.dragElm = dragElm; }}>
+        <div className="card d-block mb-2">
+          <a href="#photo-detail" data-toggle="modal" onClick={this.props.clickModal} data-index={this.props.index}>
+            <img className="img-responsive" src={this.props.photo.square200} data-index={this.props.index}/>
+          </a>
+        </div>
+      </div>
+    );
+  }
+})
 var PhotoAdminViewer =  React.createClass({
   propTypes: {
     photoList:React.PropTypes.array,
     token: React.PropTypes.string,
     photoWaiting: React.PropTypes.number
+  },
+  componentDidMount: function(){
+    /*
+    $(this.sortElm).sortable({revert:true});
+    */
   },
   getInitialState: function(){
     return {
@@ -166,13 +198,7 @@ var PhotoAdminViewer =  React.createClass({
 
     var gallery = this.props.photoList.length == 0 ? '' : this.props.photoList.map( (e,i) => {
        return (
-         <div key={i} className="col-3">
-           <div className="card d-block mb-2">
-             <a href="#photo-detail" data-toggle="modal" onClick={this.clickModal} data-index={i}>
-               <img className="img-responsive" src={e.square200} data-index={i}/>
-             </a>
-           </div>
-         </div>
+         <PhotoCard key={i} photo={e} clickModal={this.clickModal} index={i} sortElm={this.sortElm}/>
        );
     });
 
@@ -189,7 +215,7 @@ var PhotoAdminViewer =  React.createClass({
     });
 
     var photoList = (this.props.photoList.length != 0 || this.props.photoWaiting != 0) ? (
-      <div className="row">
+      <div className="row" id="sortable" ref={ (sortElm) => {this.sortElm=sortElm;}} >
         <PhotoAdminModal photo={this.props.photoList[this.state.selectedPhoto]} photoList={this.props.photoList}
          selectedPhoto={this.state.selectedPhoto}  token={this.props.token}
          updatePhoto={this.updatePhoto} deletePhoto={this.deletePhoto} />
@@ -236,7 +262,7 @@ var PhotoAdmin = React.createClass({
         </div>
         <div className="col-12">
           <PhotoAdminViewer path={this.props.paths.upload} photoList={this.state.photoList} updatePhotoList={this.updatePhotoList}
-            photoWaiting={this.state.photoWaiting} token={this.props.crsfToken}/>
+            photoWaiting={this.state.photoWaiting} token={this.props.crsfToken} draggable={this.refs.draggable}/>
         </div>
       </div>
     );
