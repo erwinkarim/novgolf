@@ -8,6 +8,7 @@ class Photo < ActiveRecord::Base
 
   def to_json
     return {
+      :id => self.id,
       :caption => self.caption,
       :size => self.avatar.size * 1024,
       :url => self.avatar.url,

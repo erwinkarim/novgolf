@@ -124,8 +124,11 @@ var PhotoCard = React.createClass({
   },
   componentDidMount: function(){
     //make this draggable
+    var handle = this;
+
     $(this.dragElm).draggable({
-      connectToSortable:'#sortable'
+      connectToSortable:'#sortable',
+      stop:handle.props.trackNewSequence
     });
 
     //child rendered last, so sortable after child is rendered
@@ -133,7 +136,7 @@ var PhotoCard = React.createClass({
   },
   render: function(){
     return(
-      <div className="col-3" ref={ (dragElm)=>{this.dragElm = dragElm; }}>
+      <div className="col-3 photo-card" data-id={this.props.photo.id} ref={ (dragElm)=>{this.dragElm = dragElm; }}>
         <div className="card d-block mb-2">
           <a href="#photo-detail" data-toggle="modal" onClick={this.props.clickModal} data-index={this.props.index}>
             <img className="img-responsive" src={this.props.photo.square200} data-index={this.props.index}/>
@@ -154,10 +157,22 @@ var PhotoAdminViewer =  React.createClass({
     $(this.sortElm).sortable({revert:true});
     */
   },
+  trackNewSequence: function(){
+    var newOrder = $.map( $('.photo-card'), function(obj){return parseInt(obj.dataset.id)});
+    console.log( newOrder );
+    this.setState({newSequence:newOrder});
+  },
+  revertSequence: function(){
+    this.props.updatePhotoList();
+  },
+  setNewSequence: function(){
+    //tell rails that new sequence has been set
+  },
   getInitialState: function(){
     return {
       random_id:(Math.floor(Math.random()*16777215).toString(16)),
-      selectedPhoto:0
+      selectedPhoto:0,
+      newSequence:[]
     }
   },
   deletePhoto: function(e){
@@ -198,7 +213,7 @@ var PhotoAdminViewer =  React.createClass({
 
     var gallery = this.props.photoList.length == 0 ? '' : this.props.photoList.map( (e,i) => {
        return (
-         <PhotoCard key={i} photo={e} clickModal={this.clickModal} index={i} sortElm={this.sortElm}/>
+         <PhotoCard key={i} photo={e} clickModal={this.clickModal} index={i} trackNewSequence={this.trackNewSequence}/>
        );
     });
 
@@ -214,11 +229,24 @@ var PhotoAdminViewer =  React.createClass({
       );
     });
 
+    var sequenceNav = (
+      <div className="col-12">
+        <nav className="navbar navbar-light bg-faded mb-2">
+          <span className="navbar-text">Arrangement: </span>
+          <form className="form-inline">
+            <button type="button" className="btn btn-outline-primary mr-2">Set</button>
+            <button type="button" className="btn btn-outline-danger" onClick={this.revertSequence}>Revert</button>
+          </form>
+        </nav>
+      </div>
+    );
+
     var photoList = (this.props.photoList.length != 0 || this.props.photoWaiting != 0) ? (
       <div className="row" id="sortable" ref={ (sortElm) => {this.sortElm=sortElm;}} >
         <PhotoAdminModal photo={this.props.photoList[this.state.selectedPhoto]} photoList={this.props.photoList}
          selectedPhoto={this.state.selectedPhoto}  token={this.props.token}
          updatePhoto={this.updatePhoto} deletePhoto={this.deletePhoto} />
+       { sequenceNav }
        {loading} {gallery}
       </div>
     ) : (
@@ -246,6 +274,7 @@ var PhotoAdmin = React.createClass({
   },
   updatePhotoList: function(){
     var handle = this;
+    handle.setState({photoList:[]});
     $.getJSON(this.props.paths.upload, function(data){
         handle.setState({ photoList:data, selectedPhoto:0, photoWaiting:0})
     })
