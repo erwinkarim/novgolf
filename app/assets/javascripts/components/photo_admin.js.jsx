@@ -128,11 +128,16 @@ var PhotoCard = React.createClass({
 
     $(this.dragElm).draggable({
       connectToSortable:'#sortable',
-      stop:handle.props.trackNewSequence
+      stop:handle.props.trackNewSequence,
+      start:function(){
+          $('#sequenceNav').removeClass('d-none');
+      }
     });
 
     //child rendered last, so sortable after child is rendered
-    $('#sortable').sortable();
+    $('#sortable').sortable({
+      containment:'#sortable'
+    });
   },
   render: function(){
     return(
@@ -145,12 +150,20 @@ var PhotoCard = React.createClass({
       </div>
     );
   }
-})
+});
+
 var PhotoAdminViewer =  React.createClass({
   propTypes: {
     photoList:React.PropTypes.array,
     token: React.PropTypes.string,
     photoWaiting: React.PropTypes.number
+  },
+  getInitialState: function(){
+    return {
+      random_id:(Math.floor(Math.random()*16777215).toString(16)),
+      selectedPhoto:0,
+      newSequence:[]
+    }
   },
   componentDidMount: function(){
     /*
@@ -159,7 +172,6 @@ var PhotoAdminViewer =  React.createClass({
   },
   trackNewSequence: function(){
     var newOrder = $.map( $('.photo-card'), function(obj){return parseInt(obj.dataset.id)});
-    console.log( newOrder );
     this.setState({newSequence:newOrder});
   },
   revertSequence: function(){
@@ -167,13 +179,18 @@ var PhotoAdminViewer =  React.createClass({
   },
   setNewSequence: function(){
     //tell rails that new sequence has been set
-  },
-  getInitialState: function(){
-    return {
-      random_id:(Math.floor(Math.random()*16777215).toString(16)),
-      selectedPhoto:0,
-      newSequence:[]
-    }
+    var handle = this;
+
+    $.ajax(this.props.path + '/update_sequence',{
+      method:'PATCH',
+      data: { sequence:this.state.newSequence.reverse()},
+      success: function(data){
+        handle.props.updatePhotoList();
+      },
+      error: function(jqXHR, textStatus){
+        console.log('update sequence failed', jqXHR);
+      }
+    })
   },
   deletePhoto: function(e){
     e.preventDefault();
@@ -231,10 +248,10 @@ var PhotoAdminViewer =  React.createClass({
 
     var sequenceNav = (
       <div className="col-12">
-        <nav className="navbar navbar-light bg-faded mb-2">
+        <nav className="navbar navbar-light bg-faded mb-2 d-none" id="sequenceNav">
           <span className="navbar-text">Arrangement: </span>
           <form className="form-inline">
-            <button type="button" className="btn btn-outline-primary mr-2">Set</button>
+            <button type="button" className="btn btn-outline-primary mr-2" onClick={this.setNewSequence}>Set</button>
             <button type="button" className="btn btn-outline-danger" onClick={this.revertSequence}>Revert</button>
           </form>
         </nav>
@@ -242,12 +259,16 @@ var PhotoAdminViewer =  React.createClass({
     );
 
     var photoList = (this.props.photoList.length != 0 || this.props.photoWaiting != 0) ? (
-      <div className="row" id="sortable" ref={ (sortElm) => {this.sortElm=sortElm;}} >
+      <div>
         <PhotoAdminModal photo={this.props.photoList[this.state.selectedPhoto]} photoList={this.props.photoList}
          selectedPhoto={this.state.selectedPhoto}  token={this.props.token}
          updatePhoto={this.updatePhoto} deletePhoto={this.deletePhoto} />
-       { sequenceNav }
-       {loading} {gallery}
+       <div className="row">
+        { sequenceNav }
+       </div>
+        <div className="row" id="sortable" style={ {float:'left'}} ref={ (sortElm) => {this.sortElm=sortElm;}} >
+         {loading} {gallery}
+        </div>
       </div>
     ) : (
       <div className="card">

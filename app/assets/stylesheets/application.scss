@@ -240,3 +240,8 @@ body{
 @keyframes blinker {
   50% { opacity: 0; }
 }
+
+/* don't show anything */
+.d-none{
+  display:none;
+}

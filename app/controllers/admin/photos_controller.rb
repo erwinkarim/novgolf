@@ -87,6 +87,18 @@ class Admin::PhotosController < ApplicationController
     end
   end
 
+  # PATCH    /admin/golf_clubs/:golf_club_id/photos/update_sequence(.:format)
+  # update the sequence based on new array of photo_ids
+  def update_sequence
+    if params.has_key? :sequence then
+      gc = GolfClub.find(params[:golf_club_id])
+      gc.update_photo_sequence params[:sequence]
+    else
+      head :bad_request
+      return
+    end
+  end
+
   def photo_params
     params.require(:photo).permit(:caption, :sequence)
   end
