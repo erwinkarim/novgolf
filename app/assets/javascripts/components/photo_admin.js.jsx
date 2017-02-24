@@ -1,3 +1,46 @@
+var PhotoHints = React.createClass({
+  render: function(){
+    return (
+      <span>
+        <a href="#photo-admin-hints" className="btn btn-info" data-toggle="modal">
+          <i className="fa fa-question-circle"></i>
+        </a>
+        <div className="modal fade" id="photo-admin-hints">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Hints</h5>
+                <button type="button" className="close" data-dismiss="modal">
+                  <span>&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+                <h4>Photo Upload</h4>
+                <ul>
+                  <li>Large photos will be automatically resized to fix a 1920x1080 pixels box</li>
+                  <li>Small Photo will be resized to fix a 1280x720 pixels box</li>
+                  <li>If the resized photos is > 1MB it will not be uploaded</li>
+                  <li>Only supported format is JPEG</li>
+                </ul>
+                <h4>Photo Gallery</h4>
+                <ul>
+                  <li>Click to Edit the caption or ordering</li>
+                  <li>You can drag around the photos to re-arrange the photos</li>
+                  <li>Re-arranging the photos then updating the caption will result the new arrangement to be lost</li>
+                </ul>
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-primary" data-dismiss="modal" type="button">Ok</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </span>
+    );
+  }
+});
+
 var PhotoUploader = React.createClass({
   componentDidMount: function(){
     var handle = this;
@@ -26,21 +69,12 @@ var PhotoUploader = React.createClass({
     return (
       <div className="card mb-2">
         <div className="card-block">
-          <p className="card-text">
-            <span className="btn btn-success fileinput-button">
+            <span className="btn btn-success fileinput-button mr-2">
               <i className="fa fa-plus mr-2"></i>
               <span>Select or Drop files...</span>
               <input className="" ref="fileUploader" data-url={this.props.path} name="files[]" multiple={true} type="file" />
             </span>
-          </p>
-        </div>
-        <div className="card-block">
-          <ul>
-            <li>Large photos will be automatically resized to fix a 1920x1080 pixels box</li>
-            <li>Small Photo will be resized to fix a 1280x720 pixels box</li>
-            <li>If the resized photos is > 1MB it will not be uploaded</li>
-            <li>Only supported format is JPEG</li>
-          </ul>
+            <PhotoHints />
         </div>
       </div>
     );
@@ -130,7 +164,8 @@ var PhotoCard = React.createClass({
       connectToSortable:'#sortable',
       stop:handle.props.trackNewSequence,
       start:function(){
-          $('#sequenceNav').removeClass('d-none');
+        //show sequenceNav and add stickyness
+        $('#sequenceNav').removeClass('d-none').sticky({topSpacing:10, zIndex:2000});
       }
     });
 
@@ -144,7 +179,8 @@ var PhotoCard = React.createClass({
       <div className="col-3 photo-card" data-id={this.props.photo.id} ref={ (dragElm)=>{this.dragElm = dragElm; }}>
         <div className="card d-block mb-2">
           <a href="#photo-detail" data-toggle="modal" onClick={this.props.clickModal} data-index={this.props.index}>
-            <img className="img-responsive" src={this.props.photo.square200} data-index={this.props.index}/>
+            <img className="img-responsive" src={this.props.photo.square200} data-index={this.props.index}
+              alt={this.props.photo.caption} />
           </a>
         </div>
       </div>
@@ -248,7 +284,7 @@ var PhotoAdminViewer =  React.createClass({
 
     var sequenceNav = (
       <div className="col-12">
-        <nav className="navbar navbar-light bg-faded mb-2 d-none" id="sequenceNav">
+        <nav className="navbar navbar-light bg-faded mb-2 d-none" ref={(sequenceNav)=>{this.sequenceNav=sequenceNav;}} id="sequenceNav">
           <span className="navbar-text">Arrangement: </span>
           <form className="form-inline">
             <button type="button" className="btn btn-outline-primary mr-2" onClick={this.setNewSequence}>Set</button>
@@ -263,8 +299,8 @@ var PhotoAdminViewer =  React.createClass({
         <PhotoAdminModal photo={this.props.photoList[this.state.selectedPhoto]} photoList={this.props.photoList}
          selectedPhoto={this.state.selectedPhoto}  token={this.props.token}
          updatePhoto={this.updatePhoto} deletePhoto={this.deletePhoto} />
-       <div className="row">
-        { sequenceNav }
+       <div className="row mb-2">
+         { sequenceNav }
        </div>
         <div className="row" id="sortable" style={ {float:'left'}} ref={ (sortElm) => {this.sortElm=sortElm;}} >
          {loading} {gallery}
