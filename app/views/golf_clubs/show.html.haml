@@ -51,7 +51,7 @@
               .grid-item.grid-item--width3
                 %a{ :href => photo.avatar.url, :'data-caption' => photo.caption }
                   %img{ :src => photo.avatar.thumb400.url }
-            - elsif index < 7 then
+            - elsif index < 13 then
               .grid-item{ :class => index == 0 ? "grid-item--width2" : ""}
                 %a{ :href => photo.avatar.url, :'data-caption' => photo.caption }
                   %img{ :src => photo.avatar.thumb200.url }

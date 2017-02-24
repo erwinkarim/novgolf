@@ -127,7 +127,7 @@ class GolfClub < ActiveRecord::Base
         if club.nil? then
           p << {
             :club => { :tax_schedule => GolfClub.find(n[0]).tax_schedule, :id => n[0],
-              :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:created_at => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
+              :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:sequence => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
             :flights => [ {
               :minPax => n[4], :maxPax => n[5],
               :minCart => n[12], :maxCart => n[13],

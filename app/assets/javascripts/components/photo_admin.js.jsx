@@ -24,6 +24,8 @@ var PhotoHints = React.createClass({
                 </ul>
                 <h4>Photo Gallery</h4>
                 <ul>
+                  <li>The first photo in the list will be the featured photo on your club page</li>
+                  <li>The first three photos in the list will be the featured photo on the search page</li>
                   <li>Click to Edit the caption or ordering</li>
                   <li>You can drag around the photos to re-arrange the photos</li>
                   <li>Re-arranging the photos then updating the caption will result the new arrangement to be lost</li>

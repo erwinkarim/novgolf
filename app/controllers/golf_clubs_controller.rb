@@ -24,7 +24,7 @@ class GolfClubsController < ApplicationController
     respond_to do |format|
       format.html {
         #additional stuff for normal page
-        @photos = @club.photos.reverse
+        @photos = @club.photos.order(:sequence => :desc)
         @jumboPhoto = @photos.length == 0 ?
           { :url => "/images/golf_course_#{rand(1..4)}.jpg", :caption => "none" } :
           @jumboPhoto = { :url => @photos.first.avatar.url, :caption => @photos.first.caption }
