@@ -118,6 +118,18 @@ var PhotoAdminModal = React.createClass({
         <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-body">
+              <div className="row mb-2">
+                <div className="col-6">
+                  <button type="button" className="btn btn-secondary" onClick={this.props.selectLeftPhoto}>
+                    <i className="fa fa-caret-left fa-2x"></i>
+                  </button>
+                </div>
+                <div className="col-6 text-right">
+                  <button type="button" className="btn btn-secondary" onClick={this.props.selectRightPhoto}>
+                    <i className="fa fa-caret-right fa-2x"></i>
+                  </button>
+                </div>
+              </div>
               <form id="photo-form" action={this.props.photo.delete} method="PATCH">
                 <input type="hidden" name="form_authentcity_token" value={this.props.token}/>
 
@@ -260,6 +272,25 @@ var PhotoAdminViewer =  React.createClass({
     });
     $('#photo-detail').modal('hide');
   },
+  selectLeftPhoto: function(e){
+    //TODO: switch between photoList and newSequence
+    if(this.state.selectedPhoto == 0){
+      return;
+    }
+
+    var newSelectedPhoto = this.state.selectedPhoto-1;
+    this.setState({selectedPhoto:newSelectedPhoto});
+
+  },
+  selectRightPhoto: function(e){
+    if(this.state.selectedPhoto == this.props.photoList.length-1){
+      return;
+    }
+
+    var newSelectedPhoto = this.state.selectedPhoto+1;
+    this.setState({selectedPhoto:newSelectedPhoto});
+
+  },
   clickModal: function(e){
     this.setState({selectedPhoto:parseInt(e.target.dataset.index)})
   },
@@ -300,7 +331,8 @@ var PhotoAdminViewer =  React.createClass({
       <div>
         <PhotoAdminModal photo={this.props.photoList[this.state.selectedPhoto]} photoList={this.props.photoList}
          selectedPhoto={this.state.selectedPhoto}  token={this.props.token}
-         updatePhoto={this.updatePhoto} deletePhoto={this.deletePhoto} />
+         updatePhoto={this.updatePhoto} deletePhoto={this.deletePhoto}
+         selectLeftPhoto={this.selectLeftPhoto} selectRightPhoto={this.selectRightPhoto} />
        <div className="row mb-2">
          { sequenceNav }
        </div>
