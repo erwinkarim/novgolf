@@ -120,12 +120,12 @@ var PhotoAdminModal = React.createClass({
             <div className="modal-body">
               <div className="row mb-2">
                 <div className="col-6">
-                  <button type="button" className="btn btn-secondary" onClick={this.props.selectLeftPhoto}>
+                  <button type="button" className="btn btn-secondary" onClick={() => { this.props.swipePhoto(-1)}}>
                     <i className="fa fa-caret-left fa-2x"></i>
                   </button>
                 </div>
                 <div className="col-6 text-right">
-                  <button type="button" className="btn btn-secondary" onClick={this.props.selectRightPhoto}>
+                  <button type="button" className="btn btn-secondary" onClick={() => {this.props.swipePhoto(1)}}>
                     <i className="fa fa-caret-right fa-2x"></i>
                   </button>
                 </div>
@@ -272,24 +272,39 @@ var PhotoAdminViewer =  React.createClass({
     });
     $('#photo-detail').modal('hide');
   },
-  selectLeftPhoto: function(e){
-    //TODO: switch between photoList and newSequence
-    if(this.state.selectedPhoto == 0){
+  swipePhoto: function(direction){
+    //detect movement,
+    // direction: -1 for left, 1 for right
+
+    //case if using new Sequnce (when the arrangement has been changed)
+    if(this.state.newSequence.length != 0){
+      var currentID = this.props.photoList[this.state.selectedPhoto].id;
+      var currentIndex = this.state.newSequence.indexOf(currentID);
+
+      //return if at edge
+      if( (direction == -1 && currentIndex==0) && (direction == 1 && currentIndex == this.state.newSequence.length-1)){
+        return;
+      }
+
+      //determine new position
+      var newID = this.state.newSequence[currentIndex + direction];
+      var newSelectedPhoto = this.props.photoList.indexOf(
+        this.props.photoList.find( function(e){ return e.id == newID})
+      );
+      this.setState({selectedPhoto:newSelectedPhoto});
+
+      //break from fn
       return;
     }
 
-    var newSelectedPhoto = this.state.selectedPhoto-1;
-    this.setState({selectedPhoto:newSelectedPhoto});
-
-  },
-  selectRightPhoto: function(e){
-    if(this.state.selectedPhoto == this.props.photoList.length-1){
+    //normal situation
+    //return if at edge
+    if( (direction == -1 && this.state.selectedPhoto == 0) || (direction == 1 && this.state.selectedPhoto == this.props.photoList.length-1)){
       return;
     }
 
-    var newSelectedPhoto = this.state.selectedPhoto+1;
+    var newSelectedPhoto = this.state.selectedPhoto + direction;
     this.setState({selectedPhoto:newSelectedPhoto});
-
   },
   clickModal: function(e){
     this.setState({selectedPhoto:parseInt(e.target.dataset.index)})
@@ -332,6 +347,7 @@ var PhotoAdminViewer =  React.createClass({
         <PhotoAdminModal photo={this.props.photoList[this.state.selectedPhoto]} photoList={this.props.photoList}
          selectedPhoto={this.state.selectedPhoto}  token={this.props.token}
          updatePhoto={this.updatePhoto} deletePhoto={this.deletePhoto}
+         swipePhoto={this.swipePhoto}
          selectLeftPhoto={this.selectLeftPhoto} selectRightPhoto={this.selectRightPhoto} />
        <div className="row mb-2">
          { sequenceNav }
