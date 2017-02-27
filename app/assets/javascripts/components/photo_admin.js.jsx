@@ -142,6 +142,7 @@ var PhotoAdminModal = React.createClass({
                   <label className="col-8">Order (higher sequence number will be shown first)</label>
                   <div className="col-4">
                     <select className="form-control" name="photo[sequence]" value={this.state.photo.sequence} data-name="sequence" onChange={this.updateForm}>{
+
                       this.props.photoList.map( (e,i) => {
                         return (
                           <option key={i} value={e.sequence}>{e.sequence}</option>
@@ -210,9 +211,6 @@ var PhotoAdminViewer =  React.createClass({
   },
   getInitialState: function(){
     return {
-      random_id:(Math.floor(Math.random()*16777215).toString(16)),
-      selectedPhoto:0,
-      newSequence:[]
     }
   },
   componentDidMount: function(){
@@ -220,101 +218,12 @@ var PhotoAdminViewer =  React.createClass({
     $(this.sortElm).sortable({revert:true});
     */
   },
-  trackNewSequence: function(){
-    var newOrder = $.map( $('.photo-card'), function(obj){return parseInt(obj.dataset.id)});
-    this.setState({newSequence:newOrder});
-  },
-  revertSequence: function(){
-    this.props.updatePhotoList();
-  },
-  setNewSequence: function(){
-    //tell rails that new sequence has been set
-    var handle = this;
-
-    $.ajax(this.props.path + '/update_sequence',{
-      method:'PATCH',
-      data: { sequence:this.state.newSequence.reverse()},
-      success: function(data){
-        handle.props.updatePhotoList();
-      },
-      error: function(jqXHR, textStatus){
-        console.log('update sequence failed', jqXHR);
-      }
-    })
-  },
-  deletePhoto: function(e){
-    e.preventDefault();
-    var handle = this;
-    console.log("delete submited");
-
-    fetch(this.props.photoList[this.state.selectedPhoto].delete , {
-      credentials:'same-origin',
-      method:'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body:JSON.stringify({ authenticity_token:this.props.token})
-    }).then(function(response){
-      $.snackbar({ content:"Photo deleted"});
-      handle.setState({selectedPhoto:0});
-      $('#photo-detail').modal('hide');
-      handle.props.updatePhotoList();
-    });
-  },
-  updatePhoto: function(e){
-    e.preventDefault();
-    var handle = this;
-    $.ajax( this.props.photoList[this.state.selectedPhoto].delete, {
-      data:$('#photo-form').serialize(),
-      method:"PATCH",
-      success: function(data){
-        $.snackbar({content:"Photo updated."});
-        handle.props.updatePhotoList();
-      }
-    });
-    $('#photo-detail').modal('hide');
-  },
-  swipePhoto: function(direction){
-    //detect movement,
-    // direction: -1 for left, 1 for right
-
-    //case if using new Sequnce (when the arrangement has been changed)
-    if(this.state.newSequence.length != 0){
-      var currentID = this.props.photoList[this.state.selectedPhoto].id;
-      var currentIndex = this.state.newSequence.indexOf(currentID);
-
-      //return if at edge
-      if( (direction == -1 && currentIndex==0) && (direction == 1 && currentIndex == this.state.newSequence.length-1)){
-        return;
-      }
-
-      //determine new position
-      var newID = this.state.newSequence[currentIndex + direction];
-      var newSelectedPhoto = this.props.photoList.indexOf(
-        this.props.photoList.find( function(e){ return e.id == newID})
-      );
-      this.setState({selectedPhoto:newSelectedPhoto});
-
-      //break from fn
-      return;
-    }
-
-    //normal situation
-    //return if at edge
-    if( (direction == -1 && this.state.selectedPhoto == 0) || (direction == 1 && this.state.selectedPhoto == this.props.photoList.length-1)){
-      return;
-    }
-
-    var newSelectedPhoto = this.state.selectedPhoto + direction;
-    this.setState({selectedPhoto:newSelectedPhoto});
-  },
-  clickModal: function(e){
-    this.setState({selectedPhoto:parseInt(e.target.dataset.index)})
-  },
   render: function(){
     var handle = this;
 
     var gallery = this.props.photoList.length == 0 ? '' : this.props.photoList.map( (e,i) => {
        return (
-         <PhotoCard key={i} photo={e} clickModal={this.clickModal} index={i} trackNewSequence={this.trackNewSequence}/>
+         <PhotoCard key={i} photo={e} clickModal={this.props.clickModal} index={i} trackNewSequence={this.props.trackNewSequence}/>
        );
     });
 
@@ -332,11 +241,11 @@ var PhotoAdminViewer =  React.createClass({
 
     var sequenceNav = (
       <div className="col-12">
-        <nav className="navbar navbar-light bg-faded mb-2 d-none" ref={(sequenceNav)=>{this.sequenceNav=sequenceNav;}} id="sequenceNav">
+        <nav className="navbar navbar-light bg-faded mb-2 d-none" id="sequenceNav">
           <span className="navbar-text">Arrangement: </span>
           <form className="form-inline">
-            <button type="button" className="btn btn-outline-primary mr-2" onClick={this.setNewSequence}>Set</button>
-            <button type="button" className="btn btn-outline-danger" onClick={this.revertSequence}>Revert</button>
+            <button type="button" className="btn btn-outline-primary mr-2" onClick={this.props.setNewSequence}>Set</button>
+            <button type="button" className="btn btn-outline-danger" onClick={this.props.revertSequence}>Revert</button>
           </form>
         </nav>
       </div>
@@ -344,11 +253,6 @@ var PhotoAdminViewer =  React.createClass({
 
     var photoList = (this.props.photoList.length != 0 || this.props.photoWaiting != 0) ? (
       <div>
-        <PhotoAdminModal photo={this.props.photoList[this.state.selectedPhoto]} photoList={this.props.photoList}
-         selectedPhoto={this.state.selectedPhoto}  token={this.props.token}
-         updatePhoto={this.updatePhoto} deletePhoto={this.deletePhoto}
-         swipePhoto={this.swipePhoto}
-         selectLeftPhoto={this.selectLeftPhoto} selectRightPhoto={this.selectRightPhoto} />
        <div className="row mb-2">
          { sequenceNav }
        </div>
@@ -374,31 +278,142 @@ var PhotoAdmin = React.createClass({
     paths: React.PropTypes.object
   },
   getInitialState: function(){
-      return { photoList:[], photoWaiting:0}
+    return {
+      photoList:[], photoWaiting:0,
+      selectedPhoto:0,
+      newSequence:[]
+    }
   },
   componentDidMount: function(){
     this.updatePhotoList();
   },
-  updatePhotoList: function(){
+  updatePhotoList: function(dataOnly = false){
     var handle = this;
     handle.setState({photoList:[]});
     $.getJSON(this.props.paths.upload, function(data){
+      if(dataOnly){
+        handle.setState({photoList:data});
+      } else {
         handle.setState({ photoList:data, selectedPhoto:0, photoWaiting:0})
+      }
     })
   },
   updatePhotoWaiting: function(delta){
     var newPhotoCount = this.state.photoWaiting;
     this.setState({photoWaiting:newPhotoCount +  delta})
   },
+  trackNewSequence: function(){
+    var newOrder = $.map( $('.photo-card'), function(obj){return parseInt(obj.dataset.id)});
+    this.setState({newSequence:newOrder});
+  },
+  revertSequence: function(){
+    this.props.updatePhotoList();
+  },
+  setNewSequence: function(){
+    //tell rails that new sequence has been set
+    var handle = this;
+
+    $.ajax(this.props.paths.upload + '/update_sequence',{
+      method:'PATCH',
+      data: { sequence:this.state.newSequence.reverse()},
+      success: function(data){
+        handle.updatePhotoList();
+      },
+      error: function(jqXHR, textStatus){
+        console.log('update sequence failed', jqXHR);
+      }
+    })
+  },
+  deletePhoto: function(e){
+    e.preventDefault();
+    var handle = this;
+    console.log("delete submited");
+
+    fetch(this.props.photoList[this.state.selectedPhoto].delete , {
+      credentials:'same-origin',
+      method:'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body:JSON.stringify({ authenticity_token:this.props.token})
+    }).then(function(response){
+      $.snackbar({ content:"Photo deleted"});
+      handle.setState({selectedPhoto:0});
+      $('#photo-detail').modal('hide');
+      handle.props.updatePhotoList();
+    });
+  },
+  swipePhoto: function(direction){
+    //detect movement,
+    // direction: -1 for left, 1 for right
+
+    //save changes
+    //this.updatePhoto();
+
+    //case if using new Sequnce (when the arrangement has been changed)
+    if(this.state.newSequence.length != 0){
+      var currentID = this.state.photoList[this.state.selectedPhoto].id;
+      var currentIndex = this.state.newSequence.indexOf(currentID);
+
+      //return if at edge
+      if( (direction == -1 && currentIndex==0) && (direction == 1 && currentIndex == this.state.newSequence.length-1)){
+        return;
+      }
+
+      //determine new position
+      var newID = this.state.newSequence[currentIndex + direction];
+      var newSelectedPhoto = this.state.photoList.indexOf(
+        this.state.photoList.find( function(e){ return e.id == newID})
+      );
+      this.setState({selectedPhoto:newSelectedPhoto});
+
+      //break from fn
+      return;
+    }
+
+    //normal situation
+    //return if at edge
+    if( (direction == -1 && this.state.selectedPhoto == 0) || (direction == 1 && this.state.selectedPhoto == this.state.photoList.length-1)){
+      return;
+    }
+
+    var newSelectedPhoto = this.state.selectedPhoto + direction;
+    this.setState({selectedPhoto:newSelectedPhoto});
+  },
+  clickModal: function(e){
+    this.setState({selectedPhoto:parseInt(e.target.dataset.index)})
+  },
+  updatePhoto: function(e){
+    //e.preventDefault();
+    var handle = this;
+    $.ajax( this.state.photoList[this.state.selectedPhoto].delete, {
+      data:$('#photo-form').serialize(),
+      method:"PATCH",
+      success: function(data){
+        $.snackbar({content:"Photo updated."});
+        var newPhotoList = handle.state.photoList;
+        Object.assign(newPhotoList.find(function(e){return e.sequence == data.photo.sequence}), data.photo)
+        handle.setState({photoList:newPhotoList});
+
+        //handle.updatePhotoList(true);
+      }
+    });
+    //$('#photo-detail').modal('hide');
+  },
   render: function() {
     return (
       <div className="row">
+        <PhotoAdminModal photo={this.state.photoList[this.state.selectedPhoto]} photoList={this.state.photoList}
+         selectedPhoto={this.state.selectedPhoto}  token={this.props.token}
+         updatePhoto={this.updatePhoto} deletePhoto={this.deletePhoto}
+         swipePhoto={this.swipePhoto} />
         <div className="col-12">
           <PhotoUploader path={this.props.paths.upload} updatePhotoList={this.updatePhotoList} updatePhotoWaiting={this.updatePhotoWaiting}/>
         </div>
         <div className="col-12">
           <PhotoAdminViewer path={this.props.paths.upload} photoList={this.state.photoList} updatePhotoList={this.updatePhotoList}
-            photoWaiting={this.state.photoWaiting} token={this.props.crsfToken} draggable={this.refs.draggable}/>
+            photoWaiting={this.state.photoWaiting} token={this.props.crsfToken} draggable={this.refs.draggable}
+            trackNewSequence={this.trackNewSequence} revertSequence={this.revertSequence} setNewSequence={this.setNewSequence}
+            clickModal={this.clickModal}
+            />
         </div>
       </div>
     );

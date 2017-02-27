@@ -81,7 +81,7 @@ class Admin::PhotosController < ApplicationController
       #update the photo
       photo.update_attributes(photo_params)
 
-      head :ok
+      render json: {photo:photo}, status: :ok
     else
       head :unauthorized
     end
