@@ -205,9 +205,11 @@ var PhotoCard = React.createClass({
 
 var PhotoAdminViewer =  React.createClass({
   propTypes: {
+    path: React.PropTypes.string,
     photoList:React.PropTypes.array,
     token: React.PropTypes.string,
-    photoWaiting: React.PropTypes.number
+    photoWaiting: React.PropTypes.number,
+    updatePhotoList: React.PropTypes.func
   },
   getInitialState: function(){
     return {
@@ -218,12 +220,34 @@ var PhotoAdminViewer =  React.createClass({
     $(this.sortElm).sortable({revert:true});
     */
   },
+  trackNewSequence: function(){
+    var newOrder = $.map( $('.photo-card'), function(obj){return parseInt(obj.dataset.id)});
+    this.setState({newSequence:newOrder});
+  },
+  revertSequence: function(){
+    this.props.updatePhotoList();
+  },
+  setNewSequence: function(){
+    //tell rails that new sequence has been set
+    var handle = this;
+
+    $.ajax(this.props.path + '/update_sequence',{
+      method:'PATCH',
+      data: { sequence:this.state.newSequence.reverse()},
+      success: function(data){
+        handle.props.updatePhotoList();
+      },
+      error: function(jqXHR, textStatus){
+        console.log('update sequence failed', jqXHR);
+      }
+    })
+  },
   render: function(){
     var handle = this;
 
     var gallery = this.props.photoList.length == 0 ? '' : this.props.photoList.map( (e,i) => {
        return (
-         <PhotoCard key={i} photo={e} clickModal={this.props.clickModal} index={i} trackNewSequence={this.props.trackNewSequence}/>
+         <PhotoCard key={i} photo={e} clickModal={this.props.clickModal} index={i} trackNewSequence={this.trackNewSequence}/>
        );
     });
 
@@ -244,8 +268,8 @@ var PhotoAdminViewer =  React.createClass({
         <nav className="navbar navbar-light bg-faded mb-2 d-none" id="sequenceNav">
           <span className="navbar-text">Arrangement: </span>
           <form className="form-inline">
-            <button type="button" className="btn btn-outline-primary mr-2" onClick={this.props.setNewSequence}>Set</button>
-            <button type="button" className="btn btn-outline-danger" onClick={this.props.revertSequence}>Revert</button>
+            <button type="button" className="btn btn-outline-primary mr-2" onClick={this.setNewSequence}>Set</button>
+            <button type="button" className="btn btn-outline-danger" onClick={this.revertSequence}>Revert</button>
           </form>
         </nav>
       </div>
@@ -301,28 +325,6 @@ var PhotoAdmin = React.createClass({
   updatePhotoWaiting: function(delta){
     var newPhotoCount = this.state.photoWaiting;
     this.setState({photoWaiting:newPhotoCount +  delta})
-  },
-  trackNewSequence: function(){
-    var newOrder = $.map( $('.photo-card'), function(obj){return parseInt(obj.dataset.id)});
-    this.setState({newSequence:newOrder});
-  },
-  revertSequence: function(){
-    this.props.updatePhotoList();
-  },
-  setNewSequence: function(){
-    //tell rails that new sequence has been set
-    var handle = this;
-
-    $.ajax(this.props.paths.upload + '/update_sequence',{
-      method:'PATCH',
-      data: { sequence:this.state.newSequence.reverse()},
-      success: function(data){
-        handle.updatePhotoList();
-      },
-      error: function(jqXHR, textStatus){
-        console.log('update sequence failed', jqXHR);
-      }
-    })
   },
   deletePhoto: function(e){
     e.preventDefault();
