@@ -41,7 +41,11 @@ Rails.application.routes.draw do
        get 'dashboard'
        get 'tax_schedule'
        get 'flights'
-       resources :photos, :only => [:index, :create, :update, :destroy]
+       resources :photos, :only => [:index, :create, :update, :destroy] do
+         collection do
+           patch 'update_sequence'
+         end
+       end
        #this is for MVP + 1
        #resources :charge_schedules, :only => [:index]
        resources :memberships, :only => [:index, :show, :destroy]

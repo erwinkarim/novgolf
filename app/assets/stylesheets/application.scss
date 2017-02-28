@@ -11,6 +11,8 @@
  * file per style scope.
  *
  *= require jquery-ui/datepicker
+ *= require jquery-ui/draggable
+ *= require jquery-ui/sortable
  *= require jquery.timepicker.css
  *= require font-awesome
  *= require jquery.fileupload
@@ -63,6 +65,10 @@ body{
   @include media-breakpoint-up(md) {
     column-count: 2;
   }
+}
+
+.card-columns-3{
+    column-count: 3;
 }
 
 // handle cases where tab-content are inside card-columns
@@ -233,4 +239,9 @@ body{
 
 @keyframes blinker {
   50% { opacity: 0; }
+}
+
+/* don't show anything */
+.d-none{
+  display:none;
 }

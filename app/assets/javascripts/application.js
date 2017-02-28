@@ -12,9 +12,13 @@
 //
 //= require jquery
 //= require jquery-ui/widgets/datepicker
+//= require jquery-ui/widgets/draggable
+//= require jquery-ui/widgets/sortable
+//= require jquery-ui/effects/effect-shake
 //= require jquery.timepicker.js
 //= require jquery_ujs
 //= require jquery.sticky.js
+//= require jquery.ui.touch-punch.min.js
 //= require turbolinks
 //= require tether
 //= require bootstrap
@@ -27,6 +31,7 @@
 //= require featherlight-gallery
 //= require jquery-fileupload/basic-plus
 //= require utilities
+//= require fetch.js
 //= require react
 //= require formatted-text
 //= require react_ujs

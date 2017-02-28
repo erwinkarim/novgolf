@@ -19,6 +19,7 @@ var QueryForm = React.createClass({
     $(this.refs.queryDate).datepicker({ minDate:0, dateFormat:'dd/mm/yy' });
     $(this.refs.queryTime).timepicker({ disableTextInput:'true', minTime:'6:00am', maxTime:'7:00pm', timeFormat:'H:i'});
 
+    /* what's this for?? */
     var countries = [
       { value: 'Andorra', data: 'AD' },
       { value: 'Singapore', data: 'SG' },

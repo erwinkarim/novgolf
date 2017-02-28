@@ -127,7 +127,7 @@ class GolfClub < ActiveRecord::Base
         if club.nil? then
           p << {
             :club => { :tax_schedule => GolfClub.find(n[0]).tax_schedule, :id => n[0],
-              :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:created_at => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
+              :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:sequence => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
             :flights => [ {
               :minPax => n[4], :maxPax => n[5],
               :minCart => n[12], :maxCart => n[13],
@@ -430,5 +430,26 @@ class GolfClub < ActiveRecord::Base
       end
     end
     self.course_listings
+  end
+
+  #update the sequence number for the rest of the photos
+  #args:
+  # new_order photo_ids w/ new sequence number
+  def update_photo_sequence new_order
+    # if there's only 1 or 0 photos, ignore
+    if self.photos.count == 0 || self.photos.count == 1 then
+      return
+    end
+
+    self.transaction do
+      current_sequence = 0
+      new_order.each do |photo_id|
+        photo = Photo.find(photo_id)
+        if photo.sequence != current_sequence then
+          photo.update_attribute(:sequence, current_sequence)
+        end
+        current_sequence += 1
+      end
+    end
   end
 end

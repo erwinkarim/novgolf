@@ -10,11 +10,5 @@
         %li.active.breadcrumb-item Photos
     .col-12
       %h1 #{@golf_club.name} Photos
-    .col-12.col-md-8
-      = react_component( "PhotoAdmin", { crsfToken: form_authenticity_token,
-        paths: { upload:admin_golf_club_photos_path(@golf_club) } } );
-    .col-12.col-md-4
-      .card
-        .card-header Tools
-        .card-block
-          %a.card-text{ :href => "#" } Update Photos!
+  = react_component( "PhotoAdmin", { crsfToken: form_authenticity_token,
+    paths: { upload:admin_golf_club_photos_path(@golf_club) } } );
