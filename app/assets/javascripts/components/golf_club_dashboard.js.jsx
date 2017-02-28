@@ -80,7 +80,7 @@ var GolfClubDashStatus = React.createClass({
       return {status:'Nothing Selected'};
   },
   componentDidMount:function(){
-    $(this.refs.dashStatus).sticky({topSpacing:10});
+    $(this.dashStatus).sticky({topSpacing:10});
   },
   toggleChevron: function(){
     $(this.refs.chevron).toggleClass('fa-angle-double-up');
@@ -121,7 +121,7 @@ var GolfClubDashStatus = React.createClass({
         </div>
       );
       flightInfo = (
-        <div class="col-12">
+        <div className="col-12">
           <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
             selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
             updateMembersList={this.props.updateMembersList} />
@@ -133,17 +133,15 @@ var GolfClubDashStatus = React.createClass({
     };
 
     return(
-      <div className="card" id="dashStatus" ref="dashStatus" style={ {background:'papayawhip'} }>
+      <div className="card" id="dashStatus" ref={ (dashStatus) => {this.dashStatus=dashStatus;}} style={ {background:'papayawhip'} }>
         <ul className="list-group list-group-flush">
           <li className="list-group-item">
-            <p>
-              <h3>Flight <small>{toggleReservationPanel}</small></h3>
-              <div className="collapse show" id="reservationCollapse">
-                <p>Selected: {this.props.status}</p>
-                { flightInfo }
-                { btnRow }
-              </div>
-            </p>
+            <h3>Flight <small>{toggleReservationPanel}</small></h3>
+            <div className="collapse show" id="reservationCollapse">
+              <p>Selected: {this.props.status}</p>
+              { flightInfo }
+              { btnRow }
+            </div>
           </li>
           <li className="list-group-item">
             {this.props.dashStats}
@@ -761,10 +759,12 @@ var GolfClubDashboard = React.createClass({
     var handle = this;
 
     //setup the datepicker
-    $(this.refs.datepicker).datepicker({
+    $(this.datepicker).datepicker({
       dateFormat:'dd/M/yy',
-      altFormat:'mm/dd/yy',
-      onClose:function(dateText){ handle.dateChanged(dateText); }
+      onClose:function(dateText, obj){
+        var newDate = Date.parse(`${obj.selectedMonth+1}/${obj.selectedDay}/${obj.selectedYear}`);
+        handle.dateChanged(newDate);
+      }
     });
 
     //update every refreshEvery seconds
@@ -791,7 +791,8 @@ var GolfClubDashboard = React.createClass({
           reservationPay={this.reservationPay} updateCashValue={this.updateCashValue} processing={this.state.processing}/>
         <div className="col-lg-8">
           <p>
-            <input className="datepicker form-control" ref="datepicker"
+            <input type="hidden" id="actual-date" />
+            <input className="datepicker form-control" ref={ (datepicker)=>{this.datepicker=datepicker; }}
               type="text" defaultValue={this.state.queryDate} style={ {zIndex:100, position:'relative'}}/>
             Updates in {Date(Date.now + this.props.refreshEvery*1000)} ... <a href="#" onClick={this.refreshNow}>Refresh Now</a>
           </p>
