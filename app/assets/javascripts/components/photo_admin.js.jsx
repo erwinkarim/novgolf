@@ -50,6 +50,7 @@ var PhotoUploader = React.createClass({
       acceptFileTypes:/(\.|\/)(jpe?g)$/i,
       maxFileSize: 1073741824,
       dataType:'json',
+      imageOrientation:true,
       disableImageResize:false, imageMaxWidth:1920, imageMaxHeight:1080,
       imageMinWidth:1280, imageMinHeight:720,
       submit: function(e,data){
@@ -114,7 +115,7 @@ var PhotoAdminModal = React.createClass({
     };
 
     return (
-      <div className="modal fade" id="photo-detail">
+      <div className="modal fade" id="photo-detail" style={ {zIndex:1500}}>
         <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-body">
@@ -132,6 +133,7 @@ var PhotoAdminModal = React.createClass({
               </div>
               <form id="photo-form" action={this.props.photo.delete} method="PATCH">
                 <input type="hidden" name="form_authentcity_token" value={this.props.token}/>
+                <input type="text" defaultValue="test" className="d-none"/>
 
                 <img src={this.props.photo.url} className="img-responsive mb-2" />
                 <div className="form-group">
@@ -180,7 +182,7 @@ var PhotoCard = React.createClass({
       stop:handle.props.trackNewSequence,
       start:function(){
         //show sequenceNav and add stickyness
-        $('#sequenceNav').removeClass('d-none').sticky({topSpacing:10, zIndex:2000});
+        $('#sequenceNav').removeClass('d-none').sticky({topSpacing:10, zIndex:1100});
       }
     });
 
@@ -213,41 +215,18 @@ var PhotoAdminViewer =  React.createClass({
   },
   getInitialState: function(){
     return {
+      newSequence:[]
     }
   },
-  componentDidMount: function(){
-    /*
-    $(this.sortElm).sortable({revert:true});
-    */
-  },
-  trackNewSequence: function(){
-    var newOrder = $.map( $('.photo-card'), function(obj){return parseInt(obj.dataset.id)});
-    this.setState({newSequence:newOrder});
-  },
   revertSequence: function(){
-    this.props.updatePhotoList();
-  },
-  setNewSequence: function(){
-    //tell rails that new sequence has been set
-    var handle = this;
-
-    $.ajax(this.props.path + '/update_sequence',{
-      method:'PATCH',
-      data: { sequence:this.state.newSequence.reverse()},
-      success: function(data){
-        handle.props.updatePhotoList();
-      },
-      error: function(jqXHR, textStatus){
-        console.log('update sequence failed', jqXHR);
-      }
-    })
+    this.props.updatePhotoList(false,true);
   },
   render: function(){
     var handle = this;
 
     var gallery = this.props.photoList.length == 0 ? '' : this.props.photoList.map( (e,i) => {
        return (
-         <PhotoCard key={i} photo={e} clickModal={this.props.clickModal} index={i} trackNewSequence={this.trackNewSequence}/>
+         <PhotoCard key={i} photo={e} clickModal={this.props.clickModal} index={i} trackNewSequence={this.props.trackNewSequence}/>
        );
     });
 
@@ -268,7 +247,7 @@ var PhotoAdminViewer =  React.createClass({
         <nav className="navbar navbar-light bg-faded mb-2 d-none" id="sequenceNav">
           <span className="navbar-text">Arrangement: </span>
           <form className="form-inline">
-            <button type="button" className="btn btn-outline-primary mr-2" onClick={this.setNewSequence}>Set</button>
+            <button type="button" className="btn btn-outline-primary mr-2" onClick={this.props.setNewSequence}>Set</button>
             <button type="button" className="btn btn-outline-danger" onClick={this.revertSequence}>Revert</button>
           </form>
         </nav>
@@ -280,7 +259,7 @@ var PhotoAdminViewer =  React.createClass({
        <div className="row mb-2">
          { sequenceNav }
        </div>
-        <div className="row" id="sortable" style={ {float:'left'}} ref={ (sortElm) => {this.sortElm=sortElm;}} >
+        <div className="row" id="sortable" ref={ (sortElm) => {this.sortElm=sortElm;}} >
          {loading} {gallery}
         </div>
       </div>
@@ -304,16 +283,18 @@ var PhotoAdmin = React.createClass({
   getInitialState: function(){
     return {
       photoList:[], photoWaiting:0,
-      selectedPhoto:0,
-      newSequence:[]
+      selectedPhoto:0, newSequence:[]
     }
   },
   componentDidMount: function(){
     this.updatePhotoList();
   },
-  updatePhotoList: function(dataOnly = false){
+  updatePhotoList: function(dataOnly = false, resetPhotoList = false){
     var handle = this;
-    handle.setState({photoList:[]});
+    //handle.setState({photoList:[]});
+    if(resetPhotoList){
+      handle.setState({photoList:[]});
+    }
     $.getJSON(this.props.paths.upload, function(data){
       if(dataOnly){
         handle.setState({photoList:data});
@@ -329,19 +310,40 @@ var PhotoAdmin = React.createClass({
   deletePhoto: function(e){
     e.preventDefault();
     var handle = this;
-    console.log("delete submited");
 
-    fetch(this.props.photoList[this.state.selectedPhoto].delete , {
+    fetch(this.state.photoList[this.state.selectedPhoto].delete , {
       credentials:'same-origin',
       method:'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body:JSON.stringify({ authenticity_token:this.props.token})
+      body:JSON.stringify({ authenticity_token:this.props.crsfToken})
     }).then(function(response){
       $.snackbar({ content:"Photo deleted"});
       handle.setState({selectedPhoto:0});
       $('#photo-detail').modal('hide');
-      handle.props.updatePhotoList();
+      handle.updatePhotoList();
     });
+  },
+  trackNewSequence: function(){
+    var newOrder = $.map( $('.photo-card'), function(obj){return parseInt(obj.dataset.id)});
+    this.setState({newSequence:newOrder});
+  },
+  setNewSequence: function(){
+    //tell rails that new sequence has been set
+    var handle = this;
+
+    $.ajax(this.props.paths.upload + '/update_sequence',{
+      method:'PATCH',
+      data: { sequence:this.state.newSequence.reverse()},
+      success: function(data){
+        handle.updatePhotoList(false,true);
+        handle.setState({newSequence:[]});
+        $('#sequenceNav').unstick().addClass('d-none');
+      },
+      error: function(jqXHR, textStatus){
+        $.snackbar({content:'Failed to update sequence', style:'error'});
+        console.log('update sequence failed', jqXHR);
+      }
+    })
   },
   swipePhoto: function(direction){
     //detect movement,
@@ -356,7 +358,9 @@ var PhotoAdmin = React.createClass({
       var currentIndex = this.state.newSequence.indexOf(currentID);
 
       //return if at edge
-      if( (direction == -1 && currentIndex==0) && (direction == 1 && currentIndex == this.state.newSequence.length-1)){
+      if( (direction == -1 && currentIndex==0) || (direction == 1 && currentIndex == this.state.newSequence.length-1)){
+        console.log('should shake');
+        $('#photo-detail').effect('shake');
         return;
       }
 
@@ -374,6 +378,7 @@ var PhotoAdmin = React.createClass({
     //normal situation
     //return if at edge
     if( (direction == -1 && this.state.selectedPhoto == 0) || (direction == 1 && this.state.selectedPhoto == this.state.photoList.length-1)){
+      $('#photo-detail').effect('shake');
       return;
     }
 
@@ -385,17 +390,19 @@ var PhotoAdmin = React.createClass({
   },
   updatePhoto: function(e){
     //e.preventDefault();
+    console.log("e", e);
     var handle = this;
     $.ajax( this.state.photoList[this.state.selectedPhoto].delete, {
       data:$('#photo-form').serialize(),
       method:"PATCH",
       success: function(data){
-        $.snackbar({content:"Photo updated."});
+        $.snackbar({content:"Photo updated.", style:'notice'});
+        /*
         var newPhotoList = handle.state.photoList;
-        Object.assign(newPhotoList.find(function(e){return e.sequence == data.photo.sequence}), data.photo)
+        Object.assign(newPhotoList.find(function(e){return e.id == data.photo.id}), data.photo)
         handle.setState({photoList:newPhotoList});
-
-        //handle.updatePhotoList(true);
+        */
+        handle.updatePhotoList(true);
       }
     });
     //$('#photo-detail').modal('hide');

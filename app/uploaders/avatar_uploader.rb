@@ -40,15 +40,15 @@ class AvatarUploader < CarrierWave::Uploader::Base
   #   process :resize_to_fit => [50, 50]
   # end
   version :thumb50 do
-   process :resize_to_fit => [50, 50]
+    process :resize_and_pad => [50,50, "#78797B"]
   end
 
   version :thumb200 do
-   process :resize_to_fit => [200, 200]
+    process :resize_and_pad => [200,200, "#78797B"]
   end
 
   version :thumb400 do
-   process :resize_to_fit => [400, 400]
+    process :resize_and_pad => [400,400, "#78797B"]
   end
 
   version :square200 do
@@ -62,7 +62,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
 
   #good for banner
   version :banner400 do
-    process :resize_to_fill => [400,200]
+    process :resize_to_fill => [460,230]
   end
 
   # Add a white list of extensions which are allowed to be uploaded.

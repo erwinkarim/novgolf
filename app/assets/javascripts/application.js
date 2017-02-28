@@ -14,6 +14,7 @@
 //= require jquery-ui/widgets/datepicker
 //= require jquery-ui/widgets/draggable
 //= require jquery-ui/widgets/sortable
+//= require jquery-ui/effects/effect-shake
 //= require jquery.timepicker.js
 //= require jquery_ujs
 //= require jquery.sticky.js
