@@ -80,6 +80,8 @@ var GolfClubDashStatus = React.createClass({
       return {status:'Nothing Selected'};
   },
   componentDidMount:function(){
+    //console.log("this.dashStatus", $(this.dashStatus) );
+    $(this.dashStatus).find('#status');
     $(this.dashStatus).sticky({topSpacing:10});
   },
   toggleChevron: function(){
@@ -136,7 +138,7 @@ var GolfClubDashStatus = React.createClass({
       <div className="card" id="dashStatus" ref={ (dashStatus) => {this.dashStatus=dashStatus;}} style={ {background:'papayawhip'} }>
         <ul className="list-group list-group-flush">
           <li className="list-group-item">
-            <h3>Flight <small>{toggleReservationPanel}</small></h3>
+            <h3 className="w-100">Flight <small>{toggleReservationPanel}</small></h3>
             <div className="collapse show" id="reservationCollapse">
               <p>Selected: {this.props.status}</p>
               { flightInfo }
@@ -793,6 +795,7 @@ var GolfClubDashboard = React.createClass({
           <p>
             <input type="hidden" id="actual-date" />
             <input className="datepicker form-control" ref={ (datepicker)=>{this.datepicker=datepicker; }}
+              id="datepicker"
               type="text" defaultValue={this.state.queryDate} style={ {zIndex:100, position:'relative'}}/>
             Updates in {Date(Date.now + this.props.refreshEvery*1000)} ... <a href="#" onClick={this.refreshNow}>Refresh Now</a>
           </p>

@@ -46,7 +46,7 @@ var PhotoHints = React.createClass({
 var PhotoUploader = React.createClass({
   componentDidMount: function(){
     var handle = this;
-    $(this.refs.fileUploader).fileupload({
+    $(this.fileUploader).fileupload({
       acceptFileTypes:/(\.|\/)(jpe?g)$/i,
       maxFileSize: 1073741824,
       dataType:'json',
@@ -75,7 +75,7 @@ var PhotoUploader = React.createClass({
             <span className="btn btn-success fileinput-button mr-2">
               <i className="fa fa-plus mr-2"></i>
               <span>Select or Drop files...</span>
-              <input className="" ref="fileUploader" data-url={this.props.path} name="files[]" multiple={true} type="file" />
+              <input id="file-uploader" ref={ (fileUploader) => { this.fileUploader=fileUploader;}} data-url={this.props.path} name="files[]" multiple={true} type="file" />
             </span>
             <PhotoHints />
         </div>
@@ -193,7 +193,7 @@ var PhotoCard = React.createClass({
   },
   render: function(){
     return(
-      <div className="col-3 photo-card" data-id={this.props.photo.id} ref={ (dragElm)=>{this.dragElm = dragElm; }}>
+      <div className="col-3 photo-card" data-id={this.props.photo.id} ref={(dragElm)=>{this.dragElm=dragElm;}}>
         <div className="card d-block mb-2">
           <a href="#photo-detail" data-toggle="modal" onClick={this.props.clickModal} data-index={this.props.index}>
             <img className="img-responsive" src={this.props.photo.square200} data-index={this.props.index}
