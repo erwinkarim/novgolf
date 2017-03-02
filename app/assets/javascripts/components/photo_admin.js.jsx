@@ -218,9 +218,6 @@ var PhotoAdminViewer =  React.createClass({
       newSequence:[]
     }
   },
-  revertSequence: function(){
-    this.props.updatePhotoList(false,true);
-  },
   render: function(){
     var handle = this;
 
@@ -248,7 +245,7 @@ var PhotoAdminViewer =  React.createClass({
           <span className="navbar-text">Arrangement: </span>
           <form className="form-inline">
             <button type="button" className="btn btn-outline-primary mr-2" onClick={this.props.setNewSequence}>Set</button>
-            <button type="button" className="btn btn-outline-danger" onClick={this.revertSequence}>Revert</button>
+            <button type="button" className="btn btn-outline-danger" onClick={this.props.revertSequence}>Revert</button>
           </form>
         </nav>
       </div>
@@ -321,6 +318,16 @@ var PhotoAdmin = React.createClass({
       handle.setState({selectedPhoto:0});
       $('#photo-detail').modal('hide');
       handle.updatePhotoList();
+    });
+  },
+  revertSequence: function(){
+    var origSequence = this.state.photoList;
+    var handle = this;
+    var emptyPromise = new Promise( function(resolve, reject){
+      handle.setState({photoList:[]});
+      resolve("sequence emptied");
+    }).then(function(){
+      handle.setState({photoList:origSequence});
     });
   },
   trackNewSequence: function(){
