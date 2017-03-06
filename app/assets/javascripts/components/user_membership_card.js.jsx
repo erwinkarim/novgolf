@@ -110,7 +110,8 @@ var UserMembershipModal = React.createClass({
   propTypes: {memberships:React.PropTypes.array, csrfToken:React.PropTypes.string },
   getInitialState: function(){
     //clone the array
-    var newMemberships = JSON.parse( JSON.stringify(this.props.memberships) )
+    var newMemberships = this.props.memberships.slice(0);
+
     return {memberships:newMemberships};
   },
   componentWillReceiveProps: function(nextProps){
@@ -129,8 +130,8 @@ var UserMembershipModal = React.createClass({
     }).then( function(json){
       //send updates to the mothership
       //handle.props.updateMembership(handle.state.memberships);
-      $(handle.refs.membershipModal).modal('hide');
       handle.props.updateMembership(json.memberships);
+      $(handle.refs.membershipModal).modal('hide');
     });
   },
   newMembership: function(e){
@@ -155,7 +156,7 @@ var UserMembershipModal = React.createClass({
     this.setState( (prevState) => ( {memberships:newMemberships}));
   },
   deleteMembership: function(e){
-    var newMemberships = this.state.memberships;
+    var newMemberships = this.state.memberships.slice(0);
     newMemberships.splice(e.target.dataset.index, 1);
     this.setState({memberships:newMemberships});
   },
@@ -171,7 +172,7 @@ var UserMembershipModal = React.createClass({
         <div className="modal-dialog modal-lg" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <button type="button" className="close" data-dismiss="modal" onClick={this.resetForm}><span>&times;</span></button>
+              <button type="button" className="close" onClick={this.resetForm}><span>&times;</span></button>
               <h4 className="modal-title">Memberships Details</h4>
             </div>
             <div className="modal-body">
@@ -211,8 +212,8 @@ var UserMembershipModal = React.createClass({
               </form>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={this.resetForm}>Cancel</button>
-              <button style={ {marginLeft:"5px"}} type="button" className="btn btn-primary" data-dismiss="modal"
+              <button type="button" className="btn btn-secondary" onClick={this.resetForm}>Cancel</button>
+              <button style={ {marginLeft:"5px"}} type="button" className="btn btn-primary"
                 onClick={this.sendUpdates} disabled={disableUpdateBtn}>Update Membership
               </button>
             </div>
