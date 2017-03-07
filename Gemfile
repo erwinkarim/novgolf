@@ -72,10 +72,11 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 gem 'shoryuken'
 #end
 
+#to load .env file
 gem 'dotenv-rails'
 
+#template system
 gem 'haml'
-gem 'paloma'
 
 #authentication
 gem 'devise'
@@ -90,8 +91,6 @@ gem 'bootstrap', '= 4.0.0.alpha6'
 gem 'react-rails'
 
 #database
-#no longer supported in 5
-#gem 'squeel'
 gem 'baby_squeel'
 gem 'mysql2'
 
@@ -106,6 +105,7 @@ gem 'seed-fu', '~> 2.3'
 
 #amazon aws
 gem 'aws-sdk-rails'
+
 #file upload handle
 gem 'carrierwave-aws'
 gem 'jquery-fileupload-rails'
@@ -120,8 +120,8 @@ gem 'featherlight'
 gem 'snackbarjs-rails'
 
 #premailer, auto-include css for emails
-gem 'premailer-rails'
-gem 'nokogiri'
+#gem 'premailer-rails'
+#gem 'nokogiri'
 #mjml
 gem 'mjml-rails'
 

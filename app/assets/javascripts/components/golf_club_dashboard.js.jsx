@@ -80,8 +80,6 @@ var GolfClubDashStatus = React.createClass({
       return {status:'Nothing Selected'};
   },
   componentDidMount:function(){
-    //console.log("this.dashStatus", $(this.dashStatus) );
-    $(this.dashStatus).find('#status');
     $(this.dashStatus).sticky({topSpacing:10});
   },
   toggleChevron: function(){
@@ -793,7 +791,6 @@ var GolfClubDashboard = React.createClass({
           reservationPay={this.reservationPay} updateCashValue={this.updateCashValue} processing={this.state.processing}/>
         <div className="col-lg-8">
           <p>
-            <input type="hidden" id="actual-date" />
             <input className="datepicker form-control" ref={ (datepicker)=>{this.datepicker=datepicker; }}
               id="datepicker"
               type="text" defaultValue={this.state.queryDate} style={ {zIndex:100, position:'relative'}}/>

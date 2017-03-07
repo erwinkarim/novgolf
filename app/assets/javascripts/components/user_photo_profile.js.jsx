@@ -19,12 +19,10 @@ var UserPhotoProfile = React.createClass({
       done: function(e,data){
         var newUser = Object.assign({}, data.result);
         handle.setState({user:newUser});
-        $.snackbar({content:"Update Profile Picture"});
-
-        console.log("done!!");
+        $.snackbar({content:"Profile picture updated"});
       },
       fail: function(e){
-        console.log("e = ", e);
+        console.log("failure to update photo profile, e= ", e);
       }
     });
   },

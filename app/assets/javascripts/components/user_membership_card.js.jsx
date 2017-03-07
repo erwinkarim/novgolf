@@ -129,7 +129,6 @@ var UserMembershipModal = React.createClass({
       return response.json();
     }).then( function(json){
       //send updates to the mothership
-      //handle.props.updateMembership(handle.state.memberships);
       handle.props.updateMembership(json.memberships);
       $(handle.refs.membershipModal).modal('hide');
     });
