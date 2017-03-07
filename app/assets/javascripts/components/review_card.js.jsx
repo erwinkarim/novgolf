@@ -8,7 +8,7 @@ var ReviewCard = React.createClass({
     var obj_name = null;
     var obj_date = null;
     var obj_link = '#';
-    var obj_image = 'http://placehold.it/400x400';
+    var obj_image = 'https://placehold.it/400x400';
 
     //setup the obj_name / obj_date
     //need to find a cleaner way to set things up
@@ -17,7 +17,7 @@ var ReviewCard = React.createClass({
         obj_name = this.props.review.topic.golf_club.name;
         obj_date = this.props.review.topic.booking_datetime;
         obj_link = this.props.review.topic.link;
-        obj_image = this.props.review.topic.image == null ? 'http://placehold.it/64x64' : this.props.review.topic.image;
+        obj_image = this.props.review.topic.image == null ? 'https://placehold.it/64x64' : this.props.review.topic.image;
       } else {
         obj_name = this.props.review.topic_type + "#" + this.props.review.topic_id;
         obj_date = this.props.review.topic.created_at;

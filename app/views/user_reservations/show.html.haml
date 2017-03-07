@@ -27,7 +27,7 @@
             %p.mb-0
               %strong Location:
               #{ @reservation.golf_club.address }
-              #{ link_to "link", "http://google.com.my/maps?q=#{@reservation.golf_club.lat.html_safe},#{@reservation.golf_club.lng.html_safe}", :target => "_blank"}
+              #{ link_to "link", "https://google.com.my/maps?q=#{@reservation.golf_club.lat.html_safe},#{@reservation.golf_club.lng.html_safe}", :target => "_blank"}
           - if @reservation.payment_attempted? then
             %li.list-group-item
               %strong Note:
