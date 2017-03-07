@@ -46,7 +46,7 @@ var PhotoHints = React.createClass({
 var PhotoUploader = React.createClass({
   componentDidMount: function(){
     var handle = this;
-    $(this.refs.fileUploader).fileupload({
+    $(this.fileUploader).fileupload({
       acceptFileTypes:/(\.|\/)(jpe?g)$/i,
       maxFileSize: 1073741824,
       dataType:'json',
@@ -75,7 +75,7 @@ var PhotoUploader = React.createClass({
             <span className="btn btn-success fileinput-button mr-2">
               <i className="fa fa-plus mr-2"></i>
               <span>Select or Drop files...</span>
-              <input className="" ref="fileUploader" data-url={this.props.path} name="files[]" multiple={true} type="file" />
+              <input id="file-uploader" ref={ (fileUploader) => { this.fileUploader=fileUploader;}} data-url={this.props.path} name="files[]" multiple={true} type="file" />
             </span>
             <PhotoHints />
         </div>
@@ -193,7 +193,7 @@ var PhotoCard = React.createClass({
   },
   render: function(){
     return(
-      <div className="col-3 photo-card" data-id={this.props.photo.id} ref={ (dragElm)=>{this.dragElm = dragElm; }}>
+      <div className="col-3 photo-card" data-id={this.props.photo.id} ref={(dragElm)=>{this.dragElm=dragElm;}}>
         <div className="card d-block mb-2">
           <a href="#photo-detail" data-toggle="modal" onClick={this.props.clickModal} data-index={this.props.index}>
             <img className="img-responsive" src={this.props.photo.square200} data-index={this.props.index}
@@ -217,9 +217,6 @@ var PhotoAdminViewer =  React.createClass({
     return {
       newSequence:[]
     }
-  },
-  revertSequence: function(){
-    this.props.updatePhotoList(false,true);
   },
   render: function(){
     var handle = this;
@@ -248,7 +245,7 @@ var PhotoAdminViewer =  React.createClass({
           <span className="navbar-text">Arrangement: </span>
           <form className="form-inline">
             <button type="button" className="btn btn-outline-primary mr-2" onClick={this.props.setNewSequence}>Set</button>
-            <button type="button" className="btn btn-outline-danger" onClick={this.revertSequence}>Revert</button>
+            <button type="button" className="btn btn-outline-danger" onClick={this.props.revertSequence}>Revert</button>
           </form>
         </nav>
       </div>
@@ -321,6 +318,16 @@ var PhotoAdmin = React.createClass({
       handle.setState({selectedPhoto:0});
       $('#photo-detail').modal('hide');
       handle.updatePhotoList();
+    });
+  },
+  revertSequence: function(){
+    var origSequence = this.state.photoList;
+    var handle = this;
+    var emptyPromise = new Promise( function(resolve, reject){
+      handle.setState({photoList:[]});
+      resolve("sequence emptied");
+    }).then(function(){
+      handle.setState({photoList:origSequence});
     });
   },
   trackNewSequence: function(){

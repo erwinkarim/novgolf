@@ -54,7 +54,7 @@ class UsersController < ApplicationController
       photo = @user.photos.new({ :avatar => file, :user_id => current_user.id, :caption => file.instance_variable_get(:@original_filename) })
 
       if photo.save! then
-        @user.update_attributes({ :image => photo.avatar.square400.url, :profile_picture_id => photo.id})
+        @user.update_attributes({ :image_path => photo.avatar.square400.url, :profile_picture_id => photo.id})
       end
     end
 

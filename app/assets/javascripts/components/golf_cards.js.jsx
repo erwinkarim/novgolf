@@ -164,10 +164,10 @@ var GolfCardTimesGroup = React.createClass({
   propTypes: {
     flights: React.PropTypes.array, btnGroupMode:React.PropTypes.string, arrayIndex:React.PropTypes.number, adminMode:React.PropTypes.bool,
     options: React.PropTypes.object,
-    displayMode: React.PropTypes.oneOf(['warp', 'overflow'])
+    displayMode: React.PropTypes.oneOf(['wrap', 'overflow'])
   },
   getDefaultProps: function(){
-      return { btnGroupMode:'checkbox', arrayIndex:0, adminMode:false, options:golfCardDefaultOptions, displayMode:['wrap']};
+      return { btnGroupMode:'checkbox', arrayIndex:0, adminMode:false, options:golfCardDefaultOptions, displayMode:'wrap'};
   },
   componentDidMount: function(){
       //console.log(this.props)

@@ -19,7 +19,6 @@
 //= require jquery_ujs
 //= require jquery.sticky.js
 //= require jquery.ui.touch-punch.min.js
-//= require turbolinks
 //= require tether
 //= require bootstrap
 //= require snackbar

@@ -99,7 +99,7 @@ var AutoCompleteInputField = React.createClass({
     var includesDanger = this.props.value == "" ? "form-control-danger" : "";
     return (
       <input ref="autocomplete" className={`form-control ${includesDanger}`} type="text"
-        name={this.props.name} value={this.props.value} onChange={this.props.changeFn}
+        name={this.props.name} defaultValue={this.props.value}
         placeholder={this.props.placeholder}
         data-value="club_name" data-index={this.props.indexValue} />
     );
@@ -110,7 +110,8 @@ var UserMembershipModal = React.createClass({
   propTypes: {memberships:React.PropTypes.array, csrfToken:React.PropTypes.string },
   getInitialState: function(){
     //clone the array
-    var newMemberships = JSON.parse( JSON.stringify(this.props.memberships) )
+    var newMemberships = this.props.memberships.slice(0);
+
     return {memberships:newMemberships};
   },
   componentWillReceiveProps: function(nextProps){
@@ -128,9 +129,8 @@ var UserMembershipModal = React.createClass({
       return response.json();
     }).then( function(json){
       //send updates to the mothership
-      //handle.props.updateMembership(handle.state.memberships);
-      $(handle.refs.membershipModal).modal('hide');
       handle.props.updateMembership(json.memberships);
+      $(handle.refs.membershipModal).modal('hide');
     });
   },
   newMembership: function(e){
@@ -155,14 +155,34 @@ var UserMembershipModal = React.createClass({
     this.setState( (prevState) => ( {memberships:newMemberships}));
   },
   deleteMembership: function(e){
-    var newMemberships = this.state.memberships;
-    newMemberships.splice(e.target.dataset.index, 1);
-    this.setState({memberships:newMemberships});
+
+    var handle = this;
+    var target = e.target;
+    var newMemberships = null;
+    var clearPromise = new Promise(function(resolve,reject){
+      newMemberships = handle.state.memberships.slice(0);
+      handle.setState({memberships:[]});
+      resolve("membership cleared");
+    });
+
+    clearPromise.then(function(success){
+      newMemberships.splice(target.dataset.index, 1);
+      handle.setState({memberships:newMemberships});
+    });
+
   },
   resetForm: function(){
-    var newMemberships = this.props.memberships.slice(0);
-    this.setState({memberships:newMemberships});
-    $(this.refs.membershipModal).modal('hide');
+    var handle = this;
+    var clearPromise = new Promise(function(resolve,reject){
+      handle.setState({memberships:[]});
+      resolve("memberhsip cleared!");
+    });
+    clearPromise.then(function(success){
+      var newMemberships = handle.props.memberships.slice(0);
+      handle.setState({memberships:newMemberships});
+      $(handle.refs.membershipModal).modal('hide');
+
+    })
   },
   render: function(){
     var disableUpdateBtn = Math.min(... this.state.memberships.map( (e,i) => e.club_name == ""));
@@ -171,7 +191,7 @@ var UserMembershipModal = React.createClass({
         <div className="modal-dialog modal-lg" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <button type="button" className="close" data-dismiss="modal" onClick={this.resetForm}><span>&times;</span></button>
+              <button type="button" className="close" onClick={this.resetForm}><span>&times;</span></button>
               <h4 className="modal-title">Memberships Details</h4>
             </div>
             <div className="modal-body">
@@ -183,8 +203,8 @@ var UserMembershipModal = React.createClass({
                     var includesDanger = e.club_name == "" ? "has-danger" : "";
                     return (
                       <div key={i} className="form-group row">
-                        <input type="hidden" value={e.golf_club_id} name={`memberships[${random_id}][golf_club_id]`} />
-                        <input type="hidden" value={e.id} name={`memberships[${random_id}][id]`} />
+                        <input type="hidden" defaultValue={e.golf_club_id} name={`memberships[${random_id}][golf_club_id]`} />
+                        <input type="hidden" defaultValue={e.id} name={`memberships[${random_id}][id]`} />
                         <div className={`col-md-7 col-12 mb-2 mb-sm-0 ${includesDanger}`}>
                           <AutoCompleteInputField name={`memberships[${random_id}][club_name]`}
                             changeFn={this.updateMembership} value={e.club_name}
@@ -192,7 +212,7 @@ var UserMembershipModal = React.createClass({
                           />
                         </div>
                         <div className="col-md-3 col-12 mb-2 mb-sm-0">
-                          <input type="date" value={e.expires_at} onChange={this.updateMembership}
+                          <input type="date" defaultValue={e.expires_at}
                             name={`memberships[${random_id}][expires_at]`}
                             placeholder="Expires" data-index={i} data-value="expires_at" className="form-control expires_date_field" />
                         </div>
@@ -211,8 +231,8 @@ var UserMembershipModal = React.createClass({
               </form>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={this.resetForm}>Cancel</button>
-              <button style={ {marginLeft:"5px"}} type="button" className="btn btn-primary" data-dismiss="modal"
+              <button type="button" className="btn btn-secondary" onClick={this.resetForm}>Cancel</button>
+              <button style={ {marginLeft:"5px"}} type="button" className="btn btn-primary"
                 onClick={this.sendUpdates} disabled={disableUpdateBtn}>Update Membership
               </button>
             </div>

@@ -17,15 +17,12 @@ var UserPhotoProfile = React.createClass({
       dataType:'json',
       disableImageResize:false, imageMaxWidth:500, imageMaxHeight:500,
       done: function(e,data){
-        var newUser = handle.state.user;
-        newUser.image = data.result.image;
+        var newUser = Object.assign({}, data.result);
         handle.setState({user:newUser});
-
-        $.snackbar({content:"Update Profile Picture"});
-        console.log("done!!");
+        $.snackbar({content:"Profile picture updated"});
       },
       fail: function(e){
-        console.log("e = ", e);
+        console.log("failure to update photo profile, e= ", e);
       }
     });
   },
@@ -47,8 +44,8 @@ var UserPhotoProfile = React.createClass({
           </li>
           <li className="list-group-item">
             <span className="btn btn-success fileinput-button">
-              <i class="fa fa-plus"></i>
-              <span>Select or Drop files...</span>
+              <i className="fa fa-plus"></i>
+              <span> Select or Drop files...</span>
               <input className="" ref="fileUploader" data-url={this.props.path} name="files[]" type="file" />
             </span>
           </li>
