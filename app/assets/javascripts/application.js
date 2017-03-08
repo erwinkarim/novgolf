@@ -30,6 +30,7 @@
 //= require featherlight-gallery
 //= require jquery-fileupload/basic-plus
 //= require utilities
+//= require es6-promise.auto.js
 //= require fetch.js
 //= require react
 //= require formatted-text

@@ -15,7 +15,7 @@ environment ENV.fetch("RAILS_ENV") { "development" }
 #
 #port        ENV.fetch("PORT") { 5000 }
 if ENV.fetch("RAILS_ENV") == 'development'
-  ssl_bind '127.0.0.1', '5000', {
+  ssl_bind '0.0.0.0', '5000', {
     key: ENV.fetch("SSL_KEY_PATH"),
     cert: ENV.fetch("SSL_CERT_PATH"),
     verify_mode: 'none'
