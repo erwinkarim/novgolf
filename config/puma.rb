@@ -7,15 +7,23 @@
 threads_count = ENV.fetch("RAILS_MAX_THREADS") { 5 }.to_i
 threads threads_count, threads_count
 
-# Specifies the `port` that Puma will listen on to receive requests, default is 3000.
-#
-#port        ENV.fetch("PORT") { 3000 }
-bind "unix:////Users/erwinkarim/novgolf/tmp/sockets/puma.sock"
-
-
 # Specifies the `environment` that Puma will run in.
 #
 environment ENV.fetch("RAILS_ENV") { "development" }
+
+# Specifies the `port` that Puma will listen on to receive requests, default is 3000.
+#
+#port        ENV.fetch("PORT") { 5000 }
+if ENV.fetch("RAILS_ENV") == 'development'
+  ssl_bind '127.0.0.1', '5000', {
+    key: ENV.fetch("SSL_KEY_PATH"),
+    cert: ENV.fetch("SSL_CERT_PATH"),
+    verify_mode: 'none'
+  }
+end
+#bind "unix:////Users/erwinkarim/novgolf/tmp/sockets/puma.sock"
+
+
 
 # Specifies the number of `workers` to boot in clustered mode.
 # Workers are forked webserver processes. If using threads and workers together

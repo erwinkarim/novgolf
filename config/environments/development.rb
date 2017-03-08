@@ -64,4 +64,7 @@ Rails.application.configure do
   #mailer settings
   config.action_mailer.perform_deliveries = false
   config.action_mailer.default_url_options = { host: 'localhost.localdomain', port: 5000}
+
+  #force ssl
+  config.force_ssl = true
 end

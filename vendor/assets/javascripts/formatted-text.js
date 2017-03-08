@@ -27,7 +27,7 @@
 
   var LINK = /(?:\S+)(\w+:\/\/)\S*|([^\s.]+)(\.[a-z-]{2,63})+\S*/gi;
 
-  var DEFAULT_PROTOCOL = 'http://';
+  var DEFAULT_PROTOCOL = 'https://';
 
   var TERMINATORS = '.,;:?!';
 
