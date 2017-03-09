@@ -175,7 +175,7 @@ var GolfCardTimesGroup = React.createClass({
   render: function(){
     var golfCards = null;
 
-    var outerClass = this.props.displayMode == 'wrap' ? '' : 'mw-100';
+    var outerClass = this.props.displayMode == 'wrap' ? '' : 'w-100 mw-100';
     var innerClass = this.props.displayMode == 'wrap' ? 'flex-wrap' : 'w-100 overflow-x-scroll';
 
     //console.log("golfcardTimesGroup state.teeTimes = " + this.props.teeTimes)
