@@ -517,20 +517,21 @@ var GolfClubDashboard = React.createClass({
   },
   handleClick: function(e){
     //happens when i click on a flight time
-
     var handle = this;
-    //console.log('button clicked', e.target.dataset);
+
+    //parseInt for IE
+    var selectedArray = parseInt(e.target.dataset.arrayIndex);
+    var selectedIndex = parseInt(e.target.dataset.value);
 
     //if array changed, reset active class on the previous array
-    if(parseInt(e.target.dataset.arrayindex) != this.state.selectedArray){
+    if(selectedArray != this.state.selectedArray){
       $($('.btn-group')[this.state.selectedArray]).find('.active').toggleClass('active');
     };
 
     //setup the dashboard status
-    var newDashText = this.state.days[e.target.dataset.arrayindex] + ", "
-      + this.state.flightsArray[e.target.dataset.arrayindex][e.target.dataset.value].tee_time;
+    var newDashText = this.state.days[selectedArray] + ", " + this.state.flightsArray[selectedArray][selectedIndex].tee_time;
 
-    var flight = this.state.flightsArray[e.target.dataset.arrayindex][e.target.dataset.value];
+    var flight = this.state.flightsArray[selectedArray][selectedIndex];
     var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, members:[], tax:0.00, totalPrice:0.00};
     newFlightInfo = this.updatePrice(newFlightInfo, flight);
 
@@ -546,7 +547,7 @@ var GolfClubDashboard = React.createClass({
     //setup the state
     this.setState({
       dashBoardStatusText:newDashText,
-      selectedArray:parseInt(e.target.dataset.arrayindex),
+      selectedArray:parseInt(e.target.dataset.arrayIndex),
       selectedFlight: parseInt(e.target.dataset.value), selectedCourse:0, loadFlight:true,
       flightInfo:newFlightInfo
     });
