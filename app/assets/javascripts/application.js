@@ -31,6 +31,7 @@
 //= require jquery-fileupload/basic-plus
 //= require utilities
 //= require es6-promise.auto.js
+//= require object-polyfill.js
 //= require fetch.js
 //= require react
 //= require formatted-text
