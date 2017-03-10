@@ -513,7 +513,7 @@ var GolfReserveForm = React.createClass({
         </li>
         <li className="list-group-item" ref="reserveBtnLi" >
           {/* time stamps */}
-          <ul className="nav nav-pills mb-2 flex-wrap" id={ "nav-" + this.state.random_id }>{ this.state.selectedTeeTimes.map( (e,i) =>
+          <ul className="nav nav-pills mb-2 flex-wrap w-100" id={ "nav-" + this.state.random_id }>{ this.state.selectedTeeTimes.map( (e,i) =>
             {
               var isActive = (this.state.selectedTeeTimesIndex == i) ? "active" : ""
               return (

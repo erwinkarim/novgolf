@@ -121,7 +121,7 @@ var GolfClubDashStatus = React.createClass({
         </div>
       );
       flightInfo = (
-        <div className="col-12">
+        <div className="">
           <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
             selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
             updateMembersList={this.props.updateMembersList} />

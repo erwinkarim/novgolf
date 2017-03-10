@@ -1,6 +1,8 @@
-//copied from http://codepen.io/souporserious/pen/Boavdv
 /*
   rebuild object.assign for browsers that doesn't have it (like IE 11)
+  copied from http://codepen.io/souporserious/pen/Boavdv
+  MDN has a code sample, but doesn't support symbols
+    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Polyfill
 */
 if (!Object.assign) {
   Object.defineProperty(Object, 'assign', {
