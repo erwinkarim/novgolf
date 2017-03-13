@@ -250,7 +250,8 @@ var ReserveFormPage = React.createClass({
     flightInfo:React.PropTypes.object,
     flight:React.PropTypes.object,
     isActive: React.PropTypes.bool,
-    options: React.PropTypes.object
+    options: React.PropTypes.object,
+    displayAs: React.PropTypes.oneOf(['card', 'flushed-list'])
   },
   getInitialState: function(){
     return {
@@ -258,7 +259,7 @@ var ReserveFormPage = React.createClass({
     };
   },
   getDefaultProps: function(){
-    return { options: golfCardDefaultOptions};
+    return { options: golfCardDefaultOptions, displayAs:'card'};
   },
   rawNote: function(){
     md = new Remarkable();
@@ -267,111 +268,143 @@ var ReserveFormPage = React.createClass({
   },
   render: function(){
     var activeClass = (this.props.isActive) ? "active" : "";
-    var golfCourses = (this.props.options.displayCourseGroup) ? (
-      <div className="card-block">
-        <GolfCoursesGroup flight={this.props.flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}/>
-      </div>
-    ) : null;
+    if(this.props.options.displayCourseGroup){
+      golfCourses = (this.props.displayAs == "card") ? (
+        <div className="card-block">
+          <GolfCoursesGroup flight={this.props.flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}/>
+        </div>
+      ) : (
+        <li className="list-group-item">
+          <GolfCoursesGroup flight={this.props.flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}/>
+        </li>
+      );
+    } else {
+      golfCourses = null;
+    }
 
     var membersLink = (this.props.options.displayMembersModal) ? (
       <a href="#membersModal" data-toggle="modal"> x Members </a>
     ) : " x Members";
 
-    return (
-      <div className={`tab-pane card ${activeClass}`} id={`flight-tab-${this.props.flightInfo.id}`} >
+    var notesContent = (
+      <div>
+        <h4>Notes</h4>
+        <div dangerouslySetInnerHTML={ this.rawNote()}></div>
+        <p>Number of balls in this flight must between {this.props.flight.minPax} and  {this.props.flight.maxPax}. Club T&C applies</p>
+      </div>
+
+    );
+
+    var formContent = (
+      <div className="w-100">
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][matrix_id]"} value={this.props.flight.matrix_id} />
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][tee_time]"} value={this.props.flightInfo.teeTime} />
+        <div className="form-group row">
+          <div className="col-2">
+            <select name={ "flight[" + this.props.flightInfo.id + "][count][pax]"}
+              onChange={this.props.updatePrice}
+              value={this.props.flightInfo.pax} ref="paxCount" className=""
+              data-index={this.props.flightInfo.index} data-target="pax">
+            { arrayFromRange(0, this.props.flight.maxPax).map( (e,i) =>
+              <option key={i}>{e}</option>
+            )}</select>
+          </div>
+          <label className="col-5"> x Balls </label>
+          <label className="col-5">
+            {toCurrency(this.props.flightInfo.pax * parseFloat(this.props.flight.prices.flight) )}
+          </label>
+          <input type="hidden" value={this.props.flightInfo.pax*parseFloat(this.props.flight.prices.flight)}
+            name={"flight[" + this.props.flightInfo.id + "][price][pax]"} />
+        </div>
+        <div className="form-group row">
+          <div className="col-2">
+            <select name={ "flight[" + this.props.flightInfo.id + "][count][member]"}
+              onChange={this.props.updatePrice}
+              value={this.props.flightInfo.member} ref="memberCount" className=""
+              data-index={this.props.flightInfo.index} data-target="member">
+            { arrayFromRange(0, this.props.flight.maxPax).map( (e,i) =>
+              <option key={i}>{e}</option>
+            )}</select>
+          </div>
+          <label className="col-5">{ membersLink }</label>
+          <label className="col-5">RM 0.00 </label>
+          <input type="hidden" value="0" name={"flight[" + this.props.flightInfo.id + "][price][member]"} />
+        </div>
+        <div className="form-group row">
+          <div className="col-2">
+            <select name={ "flight[" + this.props.flightInfo.id  + "][count][buggy]"}
+              onChange={this.props.updatePrice}
+              value={this.props.flightInfo.buggy} ref="buggyCount" className=""
+              data-index={this.props.flightInfo.index} data-target="buggy">
+            { arrayFromRange(this.props.flight.minCart, this.props.flight.maxCart).map( (e,i) =>
+              <option key={i}>{e}</option>
+            )}</select>
+          </div>
+          <label className="col-5"> x Buggy </label>
+          <label className="col-5">
+            {toCurrency(this.props.flightInfo.buggy * parseFloat(this.props.flight.prices.cart) )}
+          </label>
+          <input type="hidden" value={this.props.flightInfo.buggy * parseFloat(this.props.flight.prices.cart) }
+            name={"flight[" + this.props.flightInfo.id + "][price][cart]"} />
+        </div>
+        <div className="form-group row">
+          <div className="col-2">
+            <select name={"flight[" + this.props.flightInfo.id + "][count][caddy]"} className=""
+                onChange={this.props.updatePrice}
+                value={this.props.flightInfo.caddy} ref="caddyCount"
+                data-index={this.props.flightInfo.index} data-target="caddy">
+              { arrayFromRange(this.props.flight.minCaddy, this.props.flight.maxCaddy).map( (e,i) =>
+                <option key={e}>{e}</option>
+            )}</select>
+          </div>
+          <label className="col-5"> x Caddy</label>
+          <label className="col-5">
+            {toCurrency(this.props.flightInfo.caddy * parseFloat(this.props.flight.prices.caddy) )}
+          </label>
+          <input type="hidden" value={this.props.flightInfo.caddy * parseFloat(this.props.flight.prices.caddy) }
+            name={"flight[" + this.props.flightInfo.id + "][price][caddy]"} />
+        </div>
+        <div className="form-group row">
+          <div className="col-2">
+            <select name={"flight[" + this.props.flightInfo.id + "][count][insurance]"} className=""
+              onChange={this.props.updatePrice}
+              value={this.props.flightInfo.insurance} ref="insuranceCount"
+              disabled={ this.props.flight.prices.insurance_mode == 0 ? false : true }
+              data-index={this.props.flightInfo.index} data-target="insurance">
+            { arrayFromRange($.inArray(this.props.flight.prices.insurance_mode, [1,2]) != -1 ? this.props.flight.minPax : 0, this.props.flight.maxPax ).map( (e,i) =>
+                <option key={e}>{e}</option>
+            )}</select>
+            <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][count][insurance]"} value={this.props.flightInfo.insurance} />
+          </div>
+          <label className="col-5"> x Insurance</label>
+          <label className="col-5">
+            {toCurrency(this.props.flightInfo.insurance * parseFloat(this.props.flight.prices.insurance) )}
+          </label>
+          <input type="hidden" value={this.props.flightInfo.insurance * parseFloat(this.props.flight.prices.insurance) }
+            name={"flight[" + this.props.flightInfo.id + "][price][insurance]"} />
+        </div>
+
+      </div>
+    );
+
+    return this.props.displayAs == 'card' ? (
+      <div className={`tab-pane card ${activeClass}`} id={`flight-tab-${this.props.flightInfo.id}`} >
         <div className="card-header" style={ {color:'black'}}>{ this.props.flightInfo.teeTime }</div>
         { golfCourses }
         <div className="card-block text-black">
-          <div className="form-group row">
-            <div className="col-2">
-              <select name={ "flight[" + this.props.flightInfo.id + "][count][pax]"}
-                onChange={this.props.updatePrice}
-                value={this.props.flightInfo.pax} ref="paxCount" className=""
-                data-index={this.props.flightInfo.index} data-target="pax">
-              { arrayFromRange(0, this.props.flight.maxPax).map( (e,i) =>
-                <option key={i}>{e}</option>
-              )}</select>
-            </div>
-            <label className="col-5"> x Balls </label>
-            <label className="col-5">
-              {toCurrency(this.props.flightInfo.pax * parseFloat(this.props.flight.prices.flight) )}
-            </label>
-            <input type="hidden" value={this.props.flightInfo.pax*parseFloat(this.props.flight.prices.flight)}
-              name={"flight[" + this.props.flightInfo.id + "][price][pax]"} />
-          </div>
-          <div className="form-group row">
-            <div className="col-2">
-              <select name={ "flight[" + this.props.flightInfo.id + "][count][member]"}
-                onChange={this.props.updatePrice}
-                value={this.props.flightInfo.member} ref="memberCount" className=""
-                data-index={this.props.flightInfo.index} data-target="member">
-              { arrayFromRange(0, this.props.flight.maxPax).map( (e,i) =>
-                <option key={i}>{e}</option>
-              )}</select>
-            </div>
-            <label className="col-5">{ membersLink }</label>
-            <label className="col-5">RM 0.00 </label>
-            <input type="hidden" value="0" name={"flight[" + this.props.flightInfo.id + "][price][member]"} />
-          </div>
-          <div className="form-group row">
-            <div className="col-2">
-              <select name={ "flight[" + this.props.flightInfo.id  + "][count][buggy]"}
-                onChange={this.props.updatePrice}
-                value={this.props.flightInfo.buggy} ref="buggyCount" className=""
-                data-index={this.props.flightInfo.index} data-target="buggy">
-              { arrayFromRange(this.props.flight.minCart, this.props.flight.maxCart).map( (e,i) =>
-                <option key={i}>{e}</option>
-              )}</select>
-            </div>
-            <label className="col-5"> x Buggy </label>
-            <label className="col-5">
-              {toCurrency(this.props.flightInfo.buggy * parseFloat(this.props.flight.prices.cart) )}
-            </label>
-            <input type="hidden" value={this.props.flightInfo.buggy * parseFloat(this.props.flight.prices.cart) }
-              name={"flight[" + this.props.flightInfo.id + "][price][cart]"} />
-          </div>
-          <div className="form-group row">
-            <div className="col-2">
-              <select name={"flight[" + this.props.flightInfo.id + "][count][caddy]"} className=""
-                  onChange={this.props.updatePrice}
-                  value={this.props.flightInfo.caddy} ref="caddyCount"
-                  data-index={this.props.flightInfo.index} data-target="caddy">
-                { arrayFromRange(this.props.flight.minCaddy, this.props.flight.maxCaddy).map( (e,i) =>
-                  <option key={e}>{e}</option>
-              )}</select>
-            </div>
-            <label className="col-5"> x Caddy</label>
-            <label className="col-5">
-              {toCurrency(this.props.flightInfo.caddy * parseFloat(this.props.flight.prices.caddy) )}
-            </label>
-            <input type="hidden" value={this.props.flightInfo.caddy * parseFloat(this.props.flight.prices.caddy) }
-              name={"flight[" + this.props.flightInfo.id + "][price][caddy]"} />
-          </div>
-          <div className="form-group row">
-            <div className="col-2">
-              <select name={"flight[" + this.props.flightInfo.id + "][count][insurance]"} className=""
-                onChange={this.props.updatePrice}
-                value={this.props.flightInfo.insurance} ref="insuranceCount"
-                disabled={ this.props.flight.prices.insurance_mode == 0 ? false : true }
-                data-index={this.props.flightInfo.index} data-target="insurance">
-              { arrayFromRange($.inArray(this.props.flight.prices.insurance_mode, [1,2]) != -1 ? this.props.flight.minPax : 0, this.props.flight.maxPax ).map( (e,i) =>
-                  <option key={e}>{e}</option>
-              )}</select>
-              <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][count][insurance]"} value={this.props.flightInfo.insurance} />
-            </div>
-            <label className="col-5"> x Insurance</label>
-            <label className="col-5">
-              {toCurrency(this.props.flightInfo.insurance * parseFloat(this.props.flight.prices.insurance) )}
-            </label>
-            <input type="hidden" value={this.props.flightInfo.insurance * parseFloat(this.props.flight.prices.insurance) }
-              name={"flight[" + this.props.flightInfo.id + "][price][insurance]"} />
-          </div>
-          <h4>Notes</h4>
-          <div dangerouslySetInnerHTML={ this.rawNote()}></div>
-          <p>Number of balls in this flight must between {this.props.flight.minPax} and  {this.props.flight.maxPax}. Club T&C applies</p>
+          { formContent }
+          { notesContent }
         </div>
+      </div>
+    ) : (
+      <div className="w-100">
+        { golfCourses}
+        <li className="list-group-item">
+          { formContent}
+        </li>
+        <li className="list-group-item">
+          {notesContent}
+        </li>
       </div>
     )
   }
