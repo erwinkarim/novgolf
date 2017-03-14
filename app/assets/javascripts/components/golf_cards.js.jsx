@@ -176,12 +176,12 @@ var GolfCardTimesGroup = React.createClass({
     var golfCards = null;
 
     var outerClass = this.props.displayMode == 'wrap' ? '' : 'w-100 mw-100';
-    var innerClass = this.props.displayMode == 'wrap' ? 'flex-wrap' : 'w-100 overflow-x-scroll';
+    var innerClass = this.props.displayMode == 'wrap' ? 'flex-wrap' : 'overflow-x-scroll';
 
     //console.log("golfcardTimesGroup state.teeTimes = " + this.props.teeTimes)
     if (this.props.flights.length != 0){
      golfCards = (
-      <div className={`btn-group ${innerClass}`} data-toggle="buttons">{ this.props.flights.map( (flight, teeTimeIndex) =>
+      <div className={`btn-group w-100 ${innerClass}`} data-toggle="buttons">{ this.props.flights.map( (flight, teeTimeIndex) =>
         <GolfCardTimes key={teeTimeIndex} flight={flight} handleClick={this.props.handleClick}
           index={teeTimeIndex} queryDate={this.props.queryDate}
           btnGroupMode={this.props.btnGroupMode} arrayIndex={this.props.arrayIndex} adminMode={this.props.adminMode}
@@ -235,10 +235,10 @@ var GolfCoursesGroup = React.createClass({
             </label>
           );
         })}</div>
-        <p className="card-text">Status: { this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text} </p>
         <p className="card-text">
           Selected Course: {this.props.flight.course_data.courses[this.props.selectedCourse].id};
           Reservation ID:{this.props.flight.course_data.courses[this.props.selectedCourse].reservation_id} </p>
+        <p className="card-text">Reservation Status: { this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text} </p>
       </div>
     );
   }
@@ -398,6 +398,7 @@ var ReserveFormPage = React.createClass({
       </div>
     ) : (
       <div className="w-100">
+        <li className="list-group-item p-0"></li>
         { golfCourses}
         <li className="list-group-item">
           { formContent}

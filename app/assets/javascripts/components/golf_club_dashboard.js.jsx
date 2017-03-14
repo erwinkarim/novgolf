@@ -57,8 +57,10 @@ var GolfClubDashStatistics = React.createClass({
 
     return (
       <div className="card">
-        <div className="card-block">
+        <diuv className="card-header">
           <h3>Stats</h3>
+        </diuv>
+        <div className="card-block">
           <p>Duration: {this.props.days[0]} to {this.props.days[6]}</p>
           <p>Courses: {this.state.coursesBooked}/{this.state.coursesTotal} </p>
           <div className="progress" value={this.state.coursesBooked} max={this.state.coursesTotal}>
@@ -124,11 +126,9 @@ var GolfClubDashStatus = React.createClass({
       );
 
       flightInfo = (
-        <div>
-          <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
-            selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
-            updateMembersList={this.props.updateMembersList} displayAs="flushed-list" />
-        </div>
+        <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
+          selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
+          updateMembersList={this.props.updateMembersList} displayAs="flushed-list" />
       )
 
       moneyInfo = (
@@ -148,7 +148,7 @@ var GolfClubDashStatus = React.createClass({
         <div className="collapse show" id="reservationCollapse">
           <ul className="list-group list-group-flush">
             <li className="list-group-item">
-              Selected: {this.props.status}
+              Selected Flight: {this.props.status}
             </li>
             { flightInfo }
             { moneyInfo }
