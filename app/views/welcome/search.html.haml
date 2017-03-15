@@ -14,7 +14,7 @@
       .col-12
         %p.lead Sorry, nothing found!
     - else
-      .card-columns
+      .card-columns.w-100
         - @clubs.each do |club|
           = react_component "GolfCards", { crsfToken: form_authenticity_token,
             club: club[:club],

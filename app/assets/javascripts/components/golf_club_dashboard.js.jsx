@@ -56,14 +56,18 @@ var GolfClubDashStatistics = React.createClass({
     //calculate couses booked / availabled course
 
     return (
-      <div>
-        <h3>Stats</h3>
-        <p>Duration: {this.props.days[0]} to {this.props.days[6]}</p>
-        <p>Courses: {this.state.coursesBooked}/{this.state.coursesTotal} </p>
-        <div className="progress" value={this.state.coursesBooked} max={this.state.coursesTotal}>
-          <span className="progress-bar" style={{width:`${this.state.coursesBooked/this.state.coursesTotal*100}%`}}></span>
+      <div className="card">
+        <diuv className="card-header">
+          <h3>Stats</h3>
+        </diuv>
+        <div className="card-block">
+          <p>Duration: {this.props.days[0]} to {this.props.days[6]}</p>
+          <p>Courses: {this.state.coursesBooked}/{this.state.coursesTotal} </p>
+          <div className="progress" value={this.state.coursesBooked} max={this.state.coursesTotal}>
+            <span className="progress-bar" style={{width:`${this.state.coursesBooked/this.state.coursesTotal*100}%`}}></span>
+          </div>
+          <p>Revenue: {toCurrency(parseFloat(this.state.revenue))}</p>
         </div>
-        <p>Revenue: {toCurrency(parseFloat(this.state.revenue))}</p>
       </div>
     );
   }
@@ -80,7 +84,6 @@ var GolfClubDashStatus = React.createClass({
       return {status:'Nothing Selected'};
   },
   componentDidMount:function(){
-    $(this.dashStatus).sticky({topSpacing:10});
   },
   toggleChevron: function(){
     $(this.refs.chevron).toggleClass('fa-angle-double-up');
@@ -90,6 +93,7 @@ var GolfClubDashStatus = React.createClass({
     //load the flight info if booked, default is null
     var flightInfo = null;
     var btnRow = null;
+    var moneyInfo = null;
     var toggleReservationPanel = this.props.status == null ? null : (
       <a onClick={this.toggleChevron} data-toggle="collapse" href="#reservationCollapse"><i ref="chevron" className="fa fa-angle-double-up"></i></a>
     );
@@ -114,39 +118,43 @@ var GolfClubDashStatus = React.createClass({
       );
 
       btnRow = (
-        <div>
+        <li className="list-group-item">
           <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
           <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
           <button className="btn btn-danger ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
-        </div>
+        </li>
       );
+
       flightInfo = (
-        <div className="col-12">
-          <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
-            selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
-            updateMembersList={this.props.updateMembersList} />
+        <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
+          selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
+          updateMembersList={this.props.updateMembersList} displayAs="flushed-list" />
+      )
+
+      moneyInfo = (
+        <li className="list-group-item">
           <h4>Tax: {toCurrency(parseFloat(this.props.flightInfo.tax))}</h4>
           <h3>Total: {toCurrency(parseFloat(this.props.flightInfo.totalPrice))} </h3>
           <h4>{outstandingModalLink}: {outstanding_value}</h4>
-        </div>
-      )
+        </li>
+      );
     };
 
     return(
-      <div className="card" id="dashStatus" ref={ (dashStatus) => {this.dashStatus=dashStatus;}} style={ {background:'papayawhip'} }>
-        <ul className="list-group list-group-flush">
-          <li className="list-group-item">
+      <div className="card mb-2" ref={ (dashStatus) => {this.dashStatus=dashStatus;}} style={ {background:'papayawhip'} }>
+        <div className="card-header">
             <h3 className="w-100">Flight <small>{toggleReservationPanel}</small></h3>
-            <div className="collapse show" id="reservationCollapse">
-              <p>Selected: {this.props.status}</p>
-              { flightInfo }
-              { btnRow }
-            </div>
-          </li>
-          <li className="list-group-item">
-            {this.props.dashStats}
-          </li>
-        </ul>
+        </div>
+        <div className="collapse show" id="reservationCollapse">
+          <ul className="list-group list-group-flush">
+            <li className="list-group-item">
+              Selected Flight: {this.props.status}
+            </li>
+            { flightInfo }
+            { moneyInfo }
+            { btnRow }
+          </ul>
+        </div>
       </div>
     );
   }
@@ -517,20 +525,21 @@ var GolfClubDashboard = React.createClass({
   },
   handleClick: function(e){
     //happens when i click on a flight time
-
     var handle = this;
-    //console.log('button clicked', e.target.dataset);
+
+    //parseInt for IE
+    var selectedArray = parseInt(e.target.dataset.arrayIndex);
+    var selectedIndex = parseInt(e.target.dataset.value);
 
     //if array changed, reset active class on the previous array
-    if(parseInt(e.target.dataset.arrayindex) != this.state.selectedArray){
+    if(selectedArray != this.state.selectedArray){
       $($('.btn-group')[this.state.selectedArray]).find('.active').toggleClass('active');
     };
 
     //setup the dashboard status
-    var newDashText = this.state.days[e.target.dataset.arrayindex] + ", "
-      + this.state.flightsArray[e.target.dataset.arrayindex][e.target.dataset.value].tee_time;
+    var newDashText = this.state.days[selectedArray] + ", " + this.state.flightsArray[selectedArray][selectedIndex].tee_time;
 
-    var flight = this.state.flightsArray[e.target.dataset.arrayindex][e.target.dataset.value];
+    var flight = this.state.flightsArray[selectedArray][selectedIndex];
     var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, members:[], tax:0.00, totalPrice:0.00};
     newFlightInfo = this.updatePrice(newFlightInfo, flight);
 
@@ -546,7 +555,7 @@ var GolfClubDashboard = React.createClass({
     //setup the state
     this.setState({
       dashBoardStatusText:newDashText,
-      selectedArray:parseInt(e.target.dataset.arrayindex),
+      selectedArray:parseInt(e.target.dataset.arrayIndex),
       selectedFlight: parseInt(e.target.dataset.value), selectedCourse:0, loadFlight:true,
       flightInfo:newFlightInfo
     });
@@ -756,6 +765,8 @@ var GolfClubDashboard = React.createClass({
     this.loadSchedule();
   },
   componentDidMount:function(){
+    $(this.dashStatus).sticky({topSpacing:10});
+
     var handle = this;
 
     //setup the datepicker
@@ -809,16 +820,18 @@ var GolfClubDashboard = React.createClass({
           })}
         </div>
         <div className="col-lg-4">
-          <GolfClubDashStatus status={this.state.dashBoardStatusText} loadFlight={this.state.loadFlight}
-            flightsArray={this.state.flightsArray}
-            selectedArray={this.state.selectedArray} selectedFlight={this.state.selectedFlight} selectedCourse={this.state.selectedCourse}
-            selectCourse={this.selectCourse}
-            flightTransaction={this.state.flightTransaction}
-            days={this.state.days} updatePax={this.updatePax} flightInfo={this.state.flightInfo} options={this.props.options}
-            reservationUpdate={this.reservationUpdate} reservationCancel={this.reservationCancel} reservationNew={this.reservationNew}
-            updateMembersList={this.updateMembersList}
-            dashStats={dashStats}
-            />
+          <div ref={(dashStatus) => {this.dashStatus = dashStatus;}}>
+            <GolfClubDashStatus status={this.state.dashBoardStatusText} loadFlight={this.state.loadFlight}
+              flightsArray={this.state.flightsArray}
+              selectedArray={this.state.selectedArray} selectedFlight={this.state.selectedFlight} selectedCourse={this.state.selectedCourse}
+              selectCourse={this.selectCourse}
+              flightTransaction={this.state.flightTransaction}
+              days={this.state.days} updatePax={this.updatePax} flightInfo={this.state.flightInfo} options={this.props.options}
+              reservationUpdate={this.reservationUpdate} reservationCancel={this.reservationCancel} reservationNew={this.reservationNew}
+              updateMembersList={this.updateMembersList}
+              />
+            {dashStats}
+          </div>
         </div>
       </div>
     )
