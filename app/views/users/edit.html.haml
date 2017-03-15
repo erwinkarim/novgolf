@@ -1,6 +1,6 @@
 -# only owner can visit this page
 .container
-  .row
+  .row.justify-content-center
     .col-12
       %ol.breadcrumb
         %li.breadcrumb-item
@@ -9,7 +9,7 @@
           %a{ :href => user_path(@user)} #{ @user.name || @user.email }
         %li.breadcrumb-item.active
           %a Edit Profile
-  .row
+  .row.justify-content-center
     .col-md-6.col-12
       .card
         %ul.list-group.list-group-flush
@@ -18,7 +18,7 @@
               %img.center-block.rounded-circle.img-responsive{ :src => @user.image_path }
           %li.list-group-item
             Click Picture to Update Profile Picture
-  .row
+  .row.justify-content-center
     .col-md-6.col-12
       = form_for @user do |f|
         .form-group

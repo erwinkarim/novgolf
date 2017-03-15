@@ -9,7 +9,7 @@
         %li.breadcrumb-item
           %a{ :href => user_path(@user)} #{ @user.name || @user.email}
         %li.active.breadcrumb-item Profile Picture
-  .row
+  .row.justify-content-center
     .col-12.col-md-6
       = react_component("UserPhotoProfile", { crsfToken: form_authenticity_token,
-        user:@user.attributes, upload_path: user_profile_picture_path(@user)})
+        user:@user.attributes, upload_path: user_profile_picture_path(@user), user_path:user_path(@user)})
