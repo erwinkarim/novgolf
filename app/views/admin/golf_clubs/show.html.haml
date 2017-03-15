@@ -39,13 +39,22 @@
         %ul.list-group.list-group-flush
           %li.list-group-item
             %p.mb-0
-              %a.mb-2.btn.btn-primary{ :href => admin_golf_club_dashboard_path(@golf_club) } Dashboard
-              %a.mb-2.btn.btn-primary{ :href => admin_golf_club_memberships_path(@golf_club) } Memberships
+              %a.mb-2.btn.btn-primary{ :href => admin_golf_club_dashboard_path(@golf_club) }
+                %i.fa.fa-dashboard
+                Dashboard
+              %a.mb-2.btn.btn-primary{ :href => admin_golf_club_memberships_path(@golf_club) }
+                %i.fa.fa-users
+                Memberships
+              %a.mb-2.btn.btn-primary{ :href => admin_golf_club_photos_path(@golf_club) }
+                %i.fa.fa-photo
+                Photos
           %li.list-group-item
-            %a.card-link.btn.btn-secondary.mr-1{ :href => edit_admin_golf_club_path(@golf_club) } Edit
-            %button.btn.btn-danger{ type:'button', data:{toggle:'modal', target:'#deleteClubModal'}} Delete
-          %li.list-group-item
-            %a.card-link.btn.btn-secondary{ :href => admin_golf_club_photos_path(@golf_club) } Photos
+            %a.card-link.btn.btn-secondary.mr-1{ :href => edit_admin_golf_club_path(@golf_club) }
+              %i.fa.fa-pencil
+              Edit
+            %button.btn.btn-danger{ type:'button', data:{toggle:'modal', target:'#deleteClubModal'}}
+              %i.fa.fa-ban
+              Delete
       .card.mb-2
         .card-header Meta-Info
         %ul.list-group.list-group-flush
