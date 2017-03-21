@@ -39,4 +39,6 @@
 //= require components
 //= require ready
 //= require jquery.autocomplete.min.js
+//= require jquery.slick/slick.min.js
+//= require slick-modal.js
 //= require_tree .

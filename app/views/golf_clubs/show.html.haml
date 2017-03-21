@@ -1,13 +1,13 @@
 - content_for(:head){ "#{@club.name} -" }
 
-%section{ :data => { :'featherlight-gallery' => true, :'featherlight-filter' => 'a'}}
-  %a{ :href => @jumboPhoto[:url], :'data-caption' => @jumboPhoto[:caption] }
+%section
+  - if @photos.empty? then
     .jumbotron.jumbotron-fluid{ :style => "background: url(#{@jumboPhoto[:url]}); height:70vh; background-size:cover"}
       .container
-  .hidden-xs-up
-    - if !@photos.empty? then
-      - @photos[1..-1].each do |photo|
-        %a{ :href => photo.avatar.url, :'data-caption' => photo.caption}
+  - else
+    %a{ href:'#slick-modal', 'data-toggle':'modal'}
+      .jumbotron.jumbotron-fluid{ :style => "background: url(#{@jumboPhoto[:url]}); height:70vh; background-size:cover"}
+        .container
 .container
   .row
     .col-12.col-md-8
@@ -44,19 +44,17 @@
   .row
     - if !@photos.empty? then
       .col-12
-        .grid{ :data => { :'featherlight-gallery' => true, :'featherlight-filter' => 'a'}}
+        .grid
           .grid-sizer
           - @photos.each_with_index do |photo, index|
             - if index == 0 then
               .grid-item.grid-item--width3
-                %a{ :href => photo.avatar.url, :'data-caption' => photo.caption }
+                %a{ href:'#slick-modal', data:{toggle:'modal'}}
                   %img{ :src => photo.avatar.thumb400.url }
             - elsif index < 13 then
               .grid-item{ :class => index == 0 ? "grid-item--width2" : ""}
-                %a{ :href => photo.avatar.url, :'data-caption' => photo.caption }
+                %a{ :href => '#slick-modal',:'data-toggle' => 'modal', :'data-caption' => photo.caption }
                   %img{ :src => photo.avatar.thumb200.url }
-            - else
-              %a.hidden-xs-up{ :href => photo.avatar.url, :'data-caption' => photo.caption}
     .col-12
       %h2 Ammenities
       .card
@@ -65,6 +63,11 @@
           %ul
             - @club.amenity_listings.each do |amenity|
               %ul{ :class => amenity[:available] ? "" : "text-muted"} #{amenity[:label]}
+#slick-modal.modal{data:{type:'slick'}}
+  .modal-dialog.min-w-90.m-0.mx-auto
+    .modal-body.p-0#slick-modal-content
+      - @photos.each do |photo|
+        %img{src: photo.avatar.url, data:{dismiss:'modal'}, style:'max-height:100vh;'}
 :javascript
   var map;
   var initMap = function(){
