@@ -49,11 +49,11 @@
           - @photos.each_with_index do |photo, index|
             - if index == 0 then
               .grid-item.grid-item--width3
-                %a{ href:'#slick-modal', data:{toggle:'modal'}}
+                %a{ href:'#slick-modal', data:{toggle:'modal', index:index}}
                   %img{ :src => photo.avatar.thumb400.url }
             - elsif index < 13 then
               .grid-item{ :class => index == 0 ? "grid-item--width2" : ""}
-                %a{ :href => '#slick-modal',:'data-toggle' => 'modal', :'data-caption' => photo.caption }
+                %a{href:'#slick-modal', data:{toggle:'modal', index:index}}
                   %img{ :src => photo.avatar.thumb200.url }
     .col-12
       %h2 Ammenities

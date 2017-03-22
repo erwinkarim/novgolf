@@ -11,8 +11,9 @@
 
 $(document).ready(function(){
   $('.modal[data-type="slick"]').on('shown.bs.modal', function(e){
-    console.log('slick activated');
     $('#slick-modal-content').slick();
+    var slideIndex = parseInt(e.relatedTarget.dataset.index) || 0;
+    $('#slick-modal-content').slick('slickGoTo', slideIndex);
   }).on('hide.bs.modal', function(e){
     $('#slick-modal-content').slick('unslick');
   })
