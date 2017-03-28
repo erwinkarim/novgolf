@@ -24,10 +24,29 @@
     .col-12
       %a.btn.btn-primary{href:'#slick-modal',data:{toggle:'modal'}} Click Modal
       #slick-modal.modal{data:{type:'slick'}}
+        .modal-dialog
+          .modal-body#slick-modal-content
+            - photos.each do |photo|
+              %img.mh-100{src: photo.avatar.url, data:{dismiss:'modal'}}
+      #slick-modal-original.modal{data:{type:'slick'}}
         .modal-dialog.min-w-90.m-0.mx-auto
           .modal-body.p-0#slick-modal-content
             - photos.each do |photo|
               %img{src: photo.avatar.url, data:{dismiss:'modal'}, style:'max-height:100vh;'}
+      %button#startPhotoSwipe.btn.btn-primary{type:'button'} Start PhotoSwipe
+= render :file => "layouts/photoswipe.template"
+- require 'fastimage'
+.container
+  .row
+    .col-12
+      %h3 photoswipe
+    .col-12
+      .card-columns-3.photo-swipe-gallery
+        - photos.each_with_index do |photo, index|
+          .card{style:'display:inline-block;'}
+            %a{href:photo.avatar.url, data:{index:index, title:photo.caption,size:FastImage.size("https://localhost.localdomain:5000#{photo.avatar.url}").join("x")}}
+              %img.w-100{src:photo.avatar.thumb400.url, data:{index:index}}
+      %button.btn.btn-primary#start-photoswipe{type:'button'} Start Photoswipe
 :javascript
   $('.slick').slick({
     centerMode:true
@@ -37,4 +56,28 @@
     $('#slick-modal-content').slick();
   }).on('hide.bs.modal', function(e){
     $('#slick-modal-content').slick('unslick');
-  })
+  });
+
+
+  // try to do photo swipe stuff
+  var openPhotoSwipe = function(){
+    var pswpElement = document.querySelectorAll('.pswp')[0];
+    var items = $('#gallery-1').find('a').map( (i,e) => {
+      var obj = Object.assign({});
+      var size = e.dataset.size.split('x');
+      obj.w = size[0];
+      obj.h = size[1];
+      obj.src = e.getAttribute('href');
+      obj.title=e.dataset.title;
+
+      return obj;
+    });
+
+    console.log('items', items);
+    var options = {index:0};
+
+    var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);
+    gallery.init();
+  }
+
+  $('#start-photoswipe').on('click', openPhotoSwipe);

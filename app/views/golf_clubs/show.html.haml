@@ -1,11 +1,11 @@
 - content_for(:head){ "#{@club.name} -" }
-
+= render :file => "layouts/photoswipe.template"
 %section
   - if @photos.empty? then
     .jumbotron.jumbotron-fluid{ :style => "background: url(#{@jumboPhoto[:url]}); height:70vh; background-size:cover"}
       .container
   - else
-    %a{ href:'#slick-modal', 'data-toggle':'modal'}
+    %a{ href:'#gallery-1', 'data-toggle':'photo-swipe-gallery'}
       .jumbotron.jumbotron-fluid{ :style => "background: url(#{@jumboPhoto[:url]}); height:70vh; background-size:cover"}
         .container
 .container
@@ -44,17 +44,20 @@
   .row
     - if !@photos.empty? then
       .col-12
-        .grid
+        .grid#gallery-1.photo-swipe-gallery
           .grid-sizer
           - @photos.each_with_index do |photo, index|
             - if index == 0 then
               .grid-item.grid-item--width3
-                %a{ href:'#slick-modal', data:{toggle:'modal', index:index}}
-                  %img{ :src => photo.avatar.thumb400.url }
+                %a{ href: photo.avatar.url, data:{index:index, size:photo.size, title:photo.caption}}
+                  %img{ :src => photo.avatar.thumb400.url, data:{index:index} }
             - elsif index < 13 then
               .grid-item{ :class => index == 0 ? "grid-item--width2" : ""}
-                %a{href:'#slick-modal', data:{toggle:'modal', index:index}}
-                  %img{ :src => photo.avatar.thumb200.url }
+                %a{ href: photo.avatar.url, data:{index:index, size:photo.size, title:photo.caption}}
+                  %img{ :src => photo.avatar.thumb200.url , data:{index:index}}
+            - else
+              %a.d-none{ href: photo.avatar.url, data:{index:index, size:photo.size, title:photo.caption}}
+
     .col-12
       %h2 Ammenities
       .card
@@ -63,11 +66,6 @@
           %ul
             - @club.amenity_listings.each do |amenity|
               %ul{ :class => amenity[:available] ? "" : "text-muted"} #{amenity[:label]}
-#slick-modal.modal{data:{type:'slick'}}
-  .modal-dialog.min-w-90.m-0.mx-auto
-    .modal-body.p-0#slick-modal-content
-      - @photos.each do |photo|
-        %img{src: photo.avatar.url, data:{dismiss:'modal'}, style:'max-height:100vh;'}
 :javascript
   var map;
   var initMap = function(){

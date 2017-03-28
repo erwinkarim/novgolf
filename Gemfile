@@ -110,11 +110,13 @@ gem 'aws-sdk-rails'
 gem 'carrierwave-aws'
 gem 'jquery-fileupload-rails'
 gem 'mini_magick'
+gem 'fastimage'
 # AWS S3 integration
 gem 'fog'
 
 #photoviewer
-gem 'featherlight'
+#gem 'featherlight'
+gem 'photoswipe-rails'
 
 #notification
 gem 'snackbarjs-rails'

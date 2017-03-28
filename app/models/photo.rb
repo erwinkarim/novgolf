@@ -26,4 +26,13 @@ class Photo < ActiveRecord::Base
       photo.save!
     end
   end
+
+
+  def size
+    if Rails.env.development? then
+      return FastImage.size(self.avatar.file.file).join("x")
+    else
+      return FastImage.size(self.avatar.url).join("x")
+    end
+  end
 end

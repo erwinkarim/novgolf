@@ -26,8 +26,6 @@
 //= require imagesloaded.pkgd.min.js
 //= require masonry.pkgd.min.js
 //= require hammer
-//= require featherlight
-//= require featherlight-gallery
 //= require jquery-fileupload/basic-plus
 //= require utilities
 //= require es6-promise.auto.js
@@ -39,6 +37,5 @@
 //= require components
 //= require ready
 //= require jquery.autocomplete.min.js
-//= require jquery.slick/slick.min.js
-//= require slick-modal.js
+//= require photoswipe
 //= require_tree .
