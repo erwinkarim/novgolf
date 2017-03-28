@@ -48,17 +48,6 @@
               %img.w-100{src:photo.avatar.thumb400.url, data:{index:index}}
       %button.btn.btn-primary#start-photoswipe{type:'button'} Start Photoswipe
 :javascript
-  $('.slick').slick({
-    centerMode:true
-  });
-
-  $('.modal[data-type="slick"]').on('shown.bs.modal', function(e){
-    $('#slick-modal-content').slick();
-  }).on('hide.bs.modal', function(e){
-    $('#slick-modal-content').slick('unslick');
-  });
-
-
   // try to do photo swipe stuff
   var openPhotoSwipe = function(){
     var pswpElement = document.querySelectorAll('.pswp')[0];
