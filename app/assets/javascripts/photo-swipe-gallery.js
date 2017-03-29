@@ -3,35 +3,6 @@
 
 $(document).ready(function(){
   var initPhotoSwipeFromDOM = function(gallerySelector){
-    /*
-    var onThumbnailsClick = function(e){
-
-      //reconstruct the array of object and open photoswipe on that item
-      var object_array = gallery.find('a').map((i,e) => {
-        var obj = Object.assign({});
-        var size = e.dataset.size.split('x');
-        obj.w = size[0];
-        obj.h = size[1];
-        obj.src = e.getAttribute('href');
-        obj.title = e.dataset.title;
-
-        return obj;
-      });
-
-      initPS(object_array,e.target.dataset.index );
-
-    };
-
-    var initPS = function(object_array, selected_index){
-      var pswpElement = document.querySelectorAll('.pswp')[0];
-      var options = {index:parseInt(selected_index)};
-
-      var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, object_array, options);
-      gallery.init();
-
-    };
-    */
-
     // loop through all gallery elements and bind events
     var onThumbnailsClick = function(e){
       e = e || window.event;
@@ -91,5 +62,7 @@ $(document).ready(function(){
     e.preventDefault();
 
     //find the target the click the first link ther
+    console.log('e', e);
+    $(e.currentTarget.dataset.target).find('a:first').click();
   })
 });
