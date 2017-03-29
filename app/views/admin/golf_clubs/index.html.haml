@@ -1,7 +1,15 @@
 - content_for(:head){ "Admin - "}
 .container
-  %h1 Admin Page
   .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:admin_path} Admin Console
+        %li.breadcrumb-item.active Golf Clubs
+
+  .row
+    .col-12
+      %h2 Golf Clubs
     .col-12
       %p Show golf clubs that you manage here
       %table.table
