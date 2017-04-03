@@ -5,7 +5,8 @@ class UrTransaction < ActiveRecord::Base
     :cash_payment, :cc_payment,
     :cash_change,
     :tax_payment, :provider_share, :excess_payment,
-    :tax_refund, :provider_share_refund
+    :tax_refund, :provider_share_refund,
+    :general_charges, :general_payment                      # for simplified_tranx
   ]
 
   after_initialize :init

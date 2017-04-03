@@ -16,10 +16,9 @@
  *= require jquery.timepicker.css
  *= require font-awesome
  *= require jquery.fileupload
- *= require featherlight
- *= require featherlight-gallery
  *= require snackbar
  *= require snackbar-material
+ *= require photoswipe
  *= require_tree .
  *= require_self
  */
@@ -244,4 +243,9 @@ body{
 /* don't show anything */
 .d-none{
   display:none;
+}
+
+/* min width around 90wv */
+.min-w-90{
+  min-width: 90vw;
 }

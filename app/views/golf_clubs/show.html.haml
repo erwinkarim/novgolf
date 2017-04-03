@@ -1,13 +1,13 @@
 - content_for(:head){ "#{@club.name} -" }
-
-%section{ :data => { :'featherlight-gallery' => true, :'featherlight-filter' => 'a'}}
-  %a{ :href => @jumboPhoto[:url], :'data-caption' => @jumboPhoto[:caption] }
+= render :file => "layouts/photoswipe.template"
+%section
+  - if @photos.empty? then
     .jumbotron.jumbotron-fluid{ :style => "background: url(#{@jumboPhoto[:url]}); height:70vh; background-size:cover"}
       .container
-  .hidden-xs-up
-    - if !@photos.empty? then
-      - @photos[1..-1].each do |photo|
-        %a{ :href => photo.avatar.url, :'data-caption' => photo.caption}
+  - else
+    %a{ href:'#gallery-1', 'data-toggle':'photo-swipe-gallery'}
+      .jumbotron.jumbotron-fluid{ :style => "background: url(#{@jumboPhoto[:url]}); height:70vh; background-size:cover"}
+        .container
 .container
   .row
     .col-12.col-md-8
@@ -44,19 +44,20 @@
   .row
     - if !@photos.empty? then
       .col-12
-        .grid{ :data => { :'featherlight-gallery' => true, :'featherlight-filter' => 'a'}}
+        .grid#gallery-1.photo-swipe-gallery
           .grid-sizer
           - @photos.each_with_index do |photo, index|
             - if index == 0 then
               .grid-item.grid-item--width3
-                %a{ :href => photo.avatar.url, :'data-caption' => photo.caption }
-                  %img{ :src => photo.avatar.thumb400.url }
+                %a{ href: photo.avatar.url, data:{index:index, size:photo.size, title:photo.caption}}
+                  %img{ :src => photo.avatar.thumb400.url, data:{index:index} }
             - elsif index < 13 then
               .grid-item{ :class => index == 0 ? "grid-item--width2" : ""}
-                %a{ :href => photo.avatar.url, :'data-caption' => photo.caption }
-                  %img{ :src => photo.avatar.thumb200.url }
+                %a{ href: photo.avatar.url, data:{index:index, size:photo.size, title:photo.caption}}
+                  %img{ :src => photo.avatar.thumb200.url , data:{index:index}}
             - else
-              %a.hidden-xs-up{ :href => photo.avatar.url, :'data-caption' => photo.caption}
+              %a.d-none{ href: photo.avatar.url, data:{index:index, size:photo.size, title:photo.caption}}
+
     .col-12
       %h2 Ammenities
       .card

@@ -2,11 +2,12 @@ var UserPhotoProfile = React.createClass({
   propTypes:{
     crsfToken: React.PropTypes.string,
     user: React.PropTypes.object,
-    upload_path: React.PropTypes.string
+    upload_path: React.PropTypes.string,
+    user_path: React.PropTypes.string
   },
   getInitialState: function(){
     return {
-      user:this.props.user
+      user:this.props.user, mode:'ready'
     }
   },
   componentDidMount: function(){
@@ -16,17 +17,41 @@ var UserPhotoProfile = React.createClass({
       maxFileSize: 1073741824,
       dataType:'json',
       disableImageResize:false, imageMaxWidth:500, imageMaxHeight:500,
+      start: function(e){
+        console.log(e);
+        handle.setState({mode:'loading'});
+        $.snackbar({content:'Uploading new profile picture'});
+      },
+      progress: function(e, data){
+        var progress = parseInt(data.loaded / data.total * 100, 10);
+        console.log("progress", progress);
+      },
       done: function(e,data){
         var newUser = Object.assign({}, data.result);
-        handle.setState({user:newUser});
-        $.snackbar({content:"Profile picture updated"});
+        handle.setState({user:newUser, mode:'ready'});
+        $.snackbar({content:"Profile picture updated", style:'notice'});
       },
       fail: function(e){
+        $.snackbar({content:'Failed to upload profile picture', style:'error'});
+        handle.setState({mode:'ready'});
         console.log("failure to update photo profile, e= ", e);
       }
     });
   },
   render: function() {
+    var loadingBtn = this.state.mode == 'ready' ? (
+      <span className="btn btn-success fileinput-button mr-2">
+        <i className="fa fa-plus"></i>
+        <span> Select or Drop files...</span>
+        <input className="" ref="fileUploader" data-url={this.props.path} name="files[]" type="file" />
+      </span>
+    ) : (
+      <span className="btn btn-success mr-2">
+        <i className="fa fa-cog fa-spin"></i>
+        <span> Updating profile picture...</span>
+      </span>
+    );
+
     return (
       <div className="card">
         <ul className="list-group list-group-flush">
@@ -43,11 +68,8 @@ var UserPhotoProfile = React.createClass({
             </span>
           </li>
           <li className="list-group-item">
-            <span className="btn btn-success fileinput-button">
-              <i className="fa fa-plus"></i>
-              <span> Select or Drop files...</span>
-              <input className="" ref="fileUploader" data-url={this.props.path} name="files[]" type="file" />
-            </span>
+            {loadingBtn}
+            <a href={this.props.user_path} className="btn btn-secondary">Cancel</a>
           </li>
         </ul>
       </div>
