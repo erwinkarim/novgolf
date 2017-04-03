@@ -12,6 +12,6 @@ class Admin::UrTransactionsController < ApplicationController
     end
 
     #returns outstanding balance and list of transactions on this reservation
-    render json: {outstanding: ur.check_outstanding, change:ur.check_change ,transactions:ur.ur_transactions}
+    render json: {outstanding: ur.check_outstanding, change:ur.check_change ,transactions:ur.simplified_tranxs}
   end
 end

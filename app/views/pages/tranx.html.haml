@@ -1,0 +1,16 @@
+.container
+  .row
+    .col-12
+      %h2 Simplified transactions test
+    .col-12
+      - ur = UserReservation.last
+      %p UserReservation id = #{ur.id}
+      %table.table
+        %thead
+          %tr
+            %th Original
+            %th Simplified
+        %tbody
+          %tr
+            %td #{ur.ur_transactions.inspect}
+            %td #{ur.simplified_tranxs.inspect}

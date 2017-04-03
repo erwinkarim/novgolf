@@ -1,4 +1,5 @@
 class UserReservation < ActiveRecord::Base
+  # TODO: prevent changes after the ur is locked / complete for billing
   require "assets/name_generator"
 
   belongs_to :user
@@ -344,5 +345,49 @@ class UserReservation < ActiveRecord::Base
     end
 
     return { count:reservation_ids.count, totalRevenue:total_revenue}
+  end
+
+  #simplified transactions for the dashboard
+  def simplified_tranxs
+    #go through the ur_tranx and just put into charges + payments
+    tranxs = self.ur_transactions
+    if tranxs.empty? then
+      return []
+    end
+
+    final_tranxs = []
+    tranxs.each do |tranx|
+      if ["initial_charge"].include? tranx.detail_type then
+        final_tranxs << UrTransaction.new(
+          created_at:tranx.created_at,
+          user_reservation_id:tranx.user_reservation_id,
+          trans_amount:tranx.trans_amount,
+          detail_type:UrTransaction.detail_types[:general_charges])
+      elsif ["cash_payment", "cc_payment", "tax_payment", "provider_share", "excess_payment"].include? tranx.detail_type then
+        if final_tranxs.last.detail_type == "general_payment" then
+          final_tranxs.last.trans_amount += tranx.trans_amount
+        else
+          final_tranxs << UrTransaction.new(
+            created_at:tranx.created_at,
+            user_reservation_id:tranx.user_reservation_id,
+            trans_amount:tranx.trans_amount,
+            detail_type:UrTransaction.detail_types[:general_payment])
+        end
+      elsif ["delta_charge"].include? tranx.detail_type then
+        if final_tranxs.last.detail_type == "general_charges" then
+          final_tranxs.last.trans_amount += tranx.trans_amount
+        else
+          final_tranxs << UrTransaction.new(
+            created_at:tranx.created_at,
+            user_reservation_id:tranx.user_reservation_id,
+            trans_amount:tranx.trans_amount,
+            detail_type:UrTransaction.detail_types[:general_charges])
+        end
+      else
+        final_tranxs << tranx
+      end
+    end
+
+    final_tranxs
   end
 end
