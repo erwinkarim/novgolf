@@ -365,7 +365,7 @@ var FlightSchedulePriceCard = React.createClass({
                   <select className="col-4 form-control" defaultValue={this.props.flightSchedule.max_cart}
                     data-index={this.props.scheduleIndex} data-target="max_cart"
                     onChange={this.props.updateFlightInfo}
-                    name={ `flight[${this.state.random_id}][max_cart]`}>{ [2,3,4].map ( (e,i) =>
+                    name={ `flight[${this.state.random_id}][max_cart]`}>{ [0,1,2,3,4].map ( (e,i) =>
                       <option key={i} value={e}>{e}</option>
                   )}</select>
                 </div>
@@ -383,7 +383,7 @@ var FlightSchedulePriceCard = React.createClass({
                   <select className="col-4 form-control" defaultValue={this.props.flightSchedule.max_caddy}
                     data-index={this.props.scheduleIndex} data-target="max_caddy"
                     onChange={this.props.updateFlightInfo}
-                    name={ `flight[${this.state.random_id}][max_caddy]`}>{ [2,3,4].map ( (e,i) =>
+                    name={ `flight[${this.state.random_id}][max_caddy]`}>{ [0,1,2,3,4].map ( (e,i) =>
                       <option key={i} value={e}>{e}</option>
                   )}</select>
                 </div>

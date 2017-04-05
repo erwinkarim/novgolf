@@ -8,14 +8,43 @@ class FlightSchedule < ActiveRecord::Base
 
   after_initialize :init
 
+  validates :min_caddy, numericality:{only_integer:true, greater_than_or_equal_to:0}
+  validates :max_caddy, numericality:{only_integer:true, greater_than_or_equal_to:0}
+
+  validates :min_cart, numericality:{only_integer:true, greater_than_or_equal_to:0}
+  validates :max_cart, numericality:{only_integer:true, greater_than_or_equal_to:0}
+
+  validates :min_pax, numericality:{only_integer:true, greater_than_or_equal_to:2}
+  validates :max_pax, numericality:{only_integer:true, greater_than_or_equal_to:2}
+
+  validate :min_caddy_must_less_eq_max_caddy
+  validate :min_cart_must_less_eq_max_cart
+  validate :min_pax_must_less_eq_max_pax
+
   def init
     self.min_pax ||= 2
-    self.max_pax ||= 2
+    self.max_pax ||= 4
 
     self.min_cart ||= 0
-    self.min_cart ||= 2
+    self.max_cart ||= 2
 
     self.min_caddy ||= 0
     self.max_caddy ||= 2
+  end
+
+  private
+  def min_caddy_must_less_eq_max_caddy
+    errors.add(:min_caddy, "must less or equal max_caddy") unless
+      min_caddy <= max_caddy
+  end
+
+  def min_cart_must_less_eq_max_cart
+    errors.add(:min_cart, "must less or equal max_caddy") unless
+      min_cart <= max_cart
+  end
+
+  def min_pax_must_less_eq_max_pax
+    errors.add(:min_pax, "must less or equal max_pax") unless
+      min_pax <= max_pax
   end
 end
