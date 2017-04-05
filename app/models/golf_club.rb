@@ -171,7 +171,8 @@ class GolfClub < ActiveRecord::Base
             (id.in options[:club_id])
           }.limit(options[:limit]
           ).selecting{ [id,
-              flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'), 'tr.id as ur_id', 'tr.status as tr_status'
+              flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'),
+              'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name')
           ]}.to_sql
           course_results = ActiveRecord::Base.connection.execute(course_query_statement).inject(results){ |p,n|
             flight_handle = p.select{|x| x[:club][:id] == n[0]}.first[:flights].select{|x| x[:matrix_id] == n[1]}.first
@@ -179,7 +180,7 @@ class GolfClub < ActiveRecord::Base
               flight_handle[:course_data][:courses] = []
             end
             flight_handle[:course_data][:courses] << {
-              id:n[2], reservation_id:n[3], reservation_status:n[4],
+              id:n[2], name:n[5], reservation_id:n[3], reservation_status:n[4],
                 reservation_status_text: UserReservation.statuses.select{ |k,v| v == n[4]}.keys.first
             }
             p

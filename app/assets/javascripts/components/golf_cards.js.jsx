@@ -111,7 +111,7 @@ var GolfCardTimes = React.createClass({
         case 1: reserve_status = "warning"; break;
         case 2: reserve_status = "danger"; break;
         case 3: reserve_status = "danger"; break;
-        case 8: reserve_status = "warning blink"; break;
+        case 8: reserve_status = "warning"; break;
         default: true;
       }
       clickFn = this.props.handleClick;
@@ -141,7 +141,7 @@ var GolfCardTimes = React.createClass({
           case 1: indicatorClass = "warning"; break;
           case 2: indicatorClass = "danger"; break;
           case 3: indicatorClass = "danger"; break;
-          case 8: indicatorClass = "warning blink"; break;
+          case 8: indicatorClass = "warning"; break;
           default: indicatorClass = null;
         }
         return (indicatorClass == null ? null : <i key={i} className={`text-${indicatorClass} fa fa-circle`}></i>)
@@ -217,11 +217,11 @@ var GolfCoursesGroup = React.createClass({
     return (
       <div>
         <p>Courses:</p>
-        <div className="btn-group" data-toggle="buttons">{ this.props.flight.course_data.courses.map( (e,i) => {
+        <div className="btn-group w-100 flex-wrap" data-toggle="buttons">{ this.props.flight.course_data.courses.map( (e,i) => {
           var reserve_status = "secondary"
           switch (e.reservation_status) {
             case 1: reserve_status = "warning"; break;
-            case 8: reserve_status = "warning blink"; break;
+            case 8: reserve_status = "warning"; break;
             case 2: reserve_status = "danger"; break;
             case 3: reserve_status = "danger"; break;
             default: reserve_status = "secondary";
@@ -231,14 +231,14 @@ var GolfCoursesGroup = React.createClass({
             <label className={`btn btn-${reserve_status} ${activeState}`} key={i} onClick={this.props.selectCourse}
               data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}>
               <input type="radio" name="courses" value={`course-${e.id}`}  />
-              {e.id}
+              {e.name}
             </label>
           );
         })}</div>
         <p className="card-text">
-          Selected Course: {this.props.flight.course_data.courses[this.props.selectedCourse].id};
-          Reservation ID:{this.props.flight.course_data.courses[this.props.selectedCourse].reservation_id} </p>
-        <p className="card-text">Reservation Status: { this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text} </p>
+          Selected Course: {this.props.flight.course_data.courses[this.props.selectedCourse].name};
+          Reservation ID:{this.props.flight.course_data.courses[this.props.selectedCourse].reservation_id || 'Nil'} </p>
+        <p className="card-text">Reservation Status: { this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text || 'Nil'} </p>
       </div>
     );
   }
