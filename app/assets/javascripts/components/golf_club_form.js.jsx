@@ -291,16 +291,18 @@ var FlightSchedulePriceCard = React.createClass({
             <li className="list-group-item">
               <h4 className="w-100">Name: </h4>
               <div className="w-100 form-group row">
-                <label className="col-4">Schedule Name</label>
-                <input className="form-control col-8" name={`flight[${this.state.random_id}][name]`}
-                  data-index={this.props.scheduleIndex} data-target="name" onChange={this.props.updateFlightInfo} value={this.props.flightSchedule.name} />
+                <label className="col-4 col-form-label">Schedule Name</label>
+                <div className="col-8">
+                  <input className="form-control" name={`flight[${this.state.random_id}][name]`}
+                    data-index={this.props.scheduleIndex} data-target="name" onChange={this.props.updateFlightInfo} value={this.props.flightSchedule.name} />
+                </div>
               </div>
             </li>
             <li className="list-group-item">
               <h4>Price:</h4>
               <div className="w-100 mb-0">
                 <div className="form-group row">
-                  <label className="col-6">Green / Player Fee</label>
+                  <label className="col-6 col-form-label">Green / Player Fee</label>
                   <div className="col-6 input-group">
                     <span  className="input-group-addon">MYR</span>
                     <input className="form-control" type="number" name={"flight[" + this.state.random_id + "][session_price]"}
@@ -311,7 +313,7 @@ var FlightSchedulePriceCard = React.createClass({
                   </div>
                 </div>
                 <div className="form-group row">
-                  <label className="col-6">Buggy Fee</label>
+                  <label className="col-6 col-form-label">Buggy Fee</label>
                   <div className="col-6 input-group">
                     <span  className="input-group-addon">MYR</span>
                     <input className="form-control" type="number" name={"flight["+ this.state.random_id + "][buggy]"}
@@ -322,7 +324,7 @@ var FlightSchedulePriceCard = React.createClass({
                   </div>
                 </div>
                 <div className="form-group row">
-                  <label className="col-6">Caddy Fee</label>
+                  <label className="col-6 col-form-label">Caddy Fee</label>
                   <div className="col-6 input-group">
                     <span  className="input-group-addon">MYR</span>
                     <input className="form-control" type="number" name={"flight[" + this.state.random_id + "][caddy]"}
@@ -333,7 +335,7 @@ var FlightSchedulePriceCard = React.createClass({
                   </div>
                 </div>
                 <div className="form-group row">
-                  <label className="col-6">Insurance Fee</label>
+                  <label className="col-6 col-form-label">Insurance Fee</label>
                   <div className="col-6 input-group">
                     <span  className="input-group-addon">MYR</span>
                     <input className="form-control" type="number" name={"flight["+ this.state.random_id + "][insurance]"}
@@ -346,7 +348,9 @@ var FlightSchedulePriceCard = React.createClass({
                   </div>
                 </div>
                 <div className="form-group row">
-                  <label className="col-6">Insurance Mode</label>
+                  <label className="col-6 col-form-label">
+                    Insurance Mode <a href={`#insurance-note-${this.state.random_id}`} data-toggle="collapse">?</a>
+                  </label>
                   <div className="col-6">
                     <select className="form-control"
                       value={this.props.flightSchedule.charge_schedule.insurance_mode } onChange={this.props.updateFlightInfo}
@@ -356,75 +360,87 @@ var FlightSchedulePriceCard = React.createClass({
                     )}</select>
 
                   </div>
-                  <div className="col-12">
-                    <p>Explaination:-</p>
-                    <ul>
-                      <li>Insurance Optional - User can select how many balls will be insured</li>
-                      <li>Insurance Mandatory - Number of balls determined number of insurance will be taken</li>
-                      <li>Insurance Inclusive - Insurance Fees will be zeroized and users can't choose how many balls to be insured. It assumed that
-                        the green / player fee includes insurance
-                      </li>
-                    </ul>
+                  <div id={`insurance-note-${this.state.random_id}`} className="collapse in">
+                    <div className="col-12">
+                      <p>Explaination:-</p>
+                      <ul>
+                        <li>Insurance Optional - User can select how many balls will be insured</li>
+                        <li>Insurance Mandatory - Number of balls determined number of insurance will be taken</li>
+                        <li>Insurance Inclusive - Insurance Fees will be zeroized and users can't choose how many balls to be insured. It assumed that
+                          the green / player fee includes insurance
+                        </li>
+                      </ul>
+                    </div>
+
                   </div>
                 </div>
               </div>
             </li>
             <li className="list-group-item">
               <div className="w-100 mb-0">
-                <h4>Settings:</h4>
+                <h4>Flight Settings:</h4>
                 <div className="form-group row">
-                  <label className="col-8">Minimum balls per flight:</label>
-                  <select className="col-4 form-control" value={this.props.flightSchedule.min_pax}
-                    data-index={this.props.scheduleIndex} data-target="min_pax"
-                    onChange={this.props.updateFlightInfo}
-                    name={"flight[" + this.state.random_id + "][min_pax]"}>{ [2,3,4].map ( (e,i) =>
-                      <option key={i} value={e}>{e}</option>
-                  )}</select>
+                  <div className="col-4"></div>
+                  <label className="col-4 col-form-label">Min</label>
+                  <label className="col-4 col-form-label">Max</label>
                 </div>
                 <div className="form-group row">
-                  <label className="col-8">Maximum balls per flight:</label>
-                  <select className="col-4 form-control" value={this.props.flightSchedule.max_pax}
-                    data-index={this.props.scheduleIndex} data-target="max_pax"
-                    onChange={this.props.updateFlightInfo}
-                    name={ "flight[" + this.state.random_id + "][max_pax]"}>{ [4,5,6].map ( (e,i) =>
-                      <option key={i} value={e}>{e}</option>
-                  )}</select>
+                  <label className="col-4 col-form-label">Balls:</label>
+                  <div className="col-4">
+                    <select className="form-control" value={this.props.flightSchedule.min_pax}
+                      data-index={this.props.scheduleIndex} data-target="min_pax"
+                      onChange={this.props.updateFlightInfo}
+                      name={"flight[" + this.state.random_id + "][min_pax]"}>{ [2,3,4].map ( (e,i) =>
+                        <option key={i} value={e}>{e}</option>
+                    )}</select>
+                  </div>
+                  <div className="col-4">
+                    <select className="form-control" value={this.props.flightSchedule.max_pax}
+                      data-index={this.props.scheduleIndex} data-target="max_pax"
+                      onChange={this.props.updateFlightInfo}
+                      name={ "flight[" + this.state.random_id + "][max_pax]"}>{ [4,5,6].map ( (e,i) =>
+                        <option key={i} value={e}>{e}</option>
+                    )}</select>
+
+                  </div>
                 </div>
                 <div className="form-group row">
-                  <label className="col-8">Minimum buggies per flight:</label>
-                  <select className="col-4 form-control" value={this.props.flightSchedule.min_cart}
-                    data-index={this.props.scheduleIndex} data-target="min_cart"
-                    onChange={this.props.updateFlightInfo}
-                    name={ `flight[${this.state.random_id}][min_cart]`}>{ [0,1,2].map ( (e,i) =>
-                      <option key={i} value={e}>{e}</option>
-                  )}</select>
+                  <label className="col-4 col-form-label">Buggies:</label>
+                  <div className="col-4">
+                    <select className="form-control" value={this.props.flightSchedule.min_cart}
+                      data-index={this.props.scheduleIndex} data-target="min_cart"
+                      onChange={this.props.updateFlightInfo}
+                      name={ `flight[${this.state.random_id}][min_cart]`}>{ [0,1,2].map ( (e,i) =>
+                        <option key={i} value={e}>{e}</option>
+                    )}</select>
+                  </div>
+                  <div className="col-4">
+                    <select className="form-control" defaultValue={this.props.flightSchedule.max_cart}
+                      data-index={this.props.scheduleIndex} data-target="max_cart"
+                      onChange={this.props.updateFlightInfo}
+                      name={ `flight[${this.state.random_id}][max_cart]`}>{ [0,1,2,3,4].map ( (e,i) =>
+                        <option key={i} value={e}>{e}</option>
+                    )}</select>
+                  </div>
                 </div>
                 <div className="form-group row">
-                  <label className="col-8">Maximum buggies per flight:</label>
-                  <select className="col-4 form-control" defaultValue={this.props.flightSchedule.max_cart}
-                    data-index={this.props.scheduleIndex} data-target="max_cart"
-                    onChange={this.props.updateFlightInfo}
-                    name={ `flight[${this.state.random_id}][max_cart]`}>{ [0,1,2,3,4].map ( (e,i) =>
-                      <option key={i} value={e}>{e}</option>
-                  )}</select>
-                </div>
-                <div className="form-group row">
-                  <label className="col-8">Minimum caddies per flight:</label>
-                  <select className="col-4 form-control" defaultValue={this.props.flightSchedule.min_caddy}
-                    data-index={this.props.scheduleIndex} data-target="min_caddy"
-                    onChange={this.props.updateFlightInfo}
-                    name={ `flight[${this.state.random_id}][min_caddy]`}>{ [0,1,2].map ( (e,i) =>
-                      <option key={i} value={e}>{e}</option>
-                  )}</select>
-                </div>
-                <div className="form-group row">
-                  <label className="col-8">Maximum caddies per flight:</label>
-                  <select className="col-4 form-control" defaultValue={this.props.flightSchedule.max_caddy}
-                    data-index={this.props.scheduleIndex} data-target="max_caddy"
-                    onChange={this.props.updateFlightInfo}
-                    name={ `flight[${this.state.random_id}][max_caddy]`}>{ [0,1,2,3,4].map ( (e,i) =>
-                      <option key={i} value={e}>{e}</option>
-                  )}</select>
+                  <label className="col-4 col-form-label">Caddies:</label>
+                  <div className="col-4">
+                    <select className="form-control" defaultValue={this.props.flightSchedule.min_caddy}
+                      data-index={this.props.scheduleIndex} data-target="min_caddy"
+                      onChange={this.props.updateFlightInfo}
+                      name={ `flight[${this.state.random_id}][min_caddy]`}>{ [0,1,2].map ( (e,i) =>
+                        <option key={i} value={e}>{e}</option>
+                    )}</select>
+                  </div>
+                  <div className="col-4">
+                    <select className="form-control" defaultValue={this.props.flightSchedule.max_caddy}
+                      data-index={this.props.scheduleIndex} data-target="max_caddy"
+                      onChange={this.props.updateFlightInfo}
+                      name={ `flight[${this.state.random_id}][max_caddy]`}>{ [0,1,2,3,4].map ( (e,i) =>
+                        <option key={i} value={e}>{e}</option>
+                    )}</select>
+                  </div>
                 </div>
               </div>
             </li>
