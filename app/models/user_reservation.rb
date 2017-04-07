@@ -29,6 +29,7 @@ class UserReservation < ActiveRecord::Base
   validates_presence_of :booking_date, :booking_time, :course_listing_id
   validates_presence_of :status
   validate :validates_booking_datetime, on: :create
+  validate :count_insurance_must_less_eq_count_pax
 
   has_secure_token
 
@@ -389,5 +390,12 @@ class UserReservation < ActiveRecord::Base
     end
 
     final_tranxs
+  end
+
+  private
+  def count_insurance_must_less_eq_count_pax
+    errors.add(:count_insurance, "must less or equal count_pax + count_member") unless
+      count_insurance <= count_pax + count_member
+
   end
 end

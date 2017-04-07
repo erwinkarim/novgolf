@@ -65,6 +65,10 @@ class flightFunctions {
       };
     }
 
+    //sanity check, ensure that insurance <= member+pax
+    if(flightInfo.insurance > flightInfo.member + flightInfo.pax){
+      flightInfo.insurance = flightInfo.member + flightInfo.pax;
+    }
     //update the insurance count automatically if insurance mode is madatory
     if(($.inArray(flight.prices.insurance_mode,[1,2]) != -1) &&
       (e.target.dataset.target == 'pax' || e.target.dataset.target == 'member') ){

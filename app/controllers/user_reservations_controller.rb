@@ -74,6 +74,12 @@ class UserReservationsController < ApplicationController
 
     #check payment status in 11 minutes
     CheckPaymentStatusJob.set(wait: 11.minutes).perform_later(UserReservation.find(session[:reservation_ids]))
+  rescue
+    flash[:error] = "Failure in booking"
+
+    #TODO: better to redirect back to root search page w/ stored search parameters 
+    redirect_to root_path
+
   end
 
   def confirmation
