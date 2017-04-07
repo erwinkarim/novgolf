@@ -161,7 +161,7 @@ var FlightScheduleControl = React.createClass({
       flightTimes: React.PropTypes.array
   },
   getInitialState: function(){
-      return {flightTime:""}
+      return {flightTime:"", startTime:"07:00", endTime:"09:00", interval:8}
   },
   componentDidMount: function(){
     $(this.refs.teeTimeInput).timepicker({ minTime:"05:00", maxTime:"23:00", timeFormat:"h:ia"});
@@ -169,6 +169,15 @@ var FlightScheduleControl = React.createClass({
   },
   updateFlightTime: function(e){
     this.setState({flightTime:e.target.value});
+  },
+  updateStartTime: function(e){
+    this.setState({startTime:e.target.value});
+  },
+  updateEndTime: function(e){
+    this.setState({endTime:e.target.value});
+  },
+  updateInterval: function(e){
+    this.setState({interval:parseInt(e.target.value)});
   },
   render: function(){
     return (
@@ -178,19 +187,46 @@ var FlightScheduleControl = React.createClass({
             <div className="btn-group mb-2 mr-2" key={i}>
               <input type="hidden" name={"flight[" + this.props.random_id + "][times][]"} value={e} />
               <div className="btn btn-secondary">{e}</div>
-              <div className="btn btn-secondary" onClick={this.props.deleteTeeTime} data-index-schedule={this.props.scheduleIndex} data-index-time={i} >
+              <button className="btn btn-secondary"
+                type="button"
+                onClick={this.props.deleteTeeTime} data-index-schedule={this.props.scheduleIndex} data-index-time={i}
+                disabled={this.props.flightTimes.length == 1}
+              >
                 <i className="fa fa-close" data-index-schedule={this.props.scheduleIndex} data-index-time={i}></i>
-              </div>
+              </button>
             </div>
           ) }</div>
         </div>
-        <div className="form-group">
-          <input type="text" className="form-control mb-2" ref="teeTimeInput" value={this.state.flightTime} onChange={this.updateFlightTime} />
-          <button className="btn btn-secondary" type="button" onClick={this.props.addTeeTime}
-            data-index-schedule={this.props.scheduleIndex} data-value={this.state.flightTime}>
-            <i className="fa fa-plus"></i>
-          </button>
+        <div className="form-group row">
+          <label className="col-4 col-form-label">Start Time:</label>
+          <label className="col-4 col-form-label">End Time:</label>
+          <label className="col-4 col-form-label">Interval (Minutes)</label>
         </div>
+        <div className="form-group row">
+          <div className="col-4">
+            <input type="time" className="form-control" value={this.state.startTime} onChange={this.updateStartTime}
+              placeholder="HH:mm AM/PM" />
+          </div>
+          <div className="col-4">
+            <input type="time" className="form-control" value={this.state.endTime} onChange={this.updateEndTime}
+              placeholder="HH:mm AM/PM"/>
+          </div>
+          <div className="col-4">
+            <select className="form-control" value={this.state.interval} onChange={this.updateInterval}>{
+              arrayFromRange(4,20).map( (e,i) => {
+                return (<option key={i} value={e}>{e}</option>)
+              })
+            }</select>
+          </div>
+        </div>
+        <div className="form-group">
+        </div>
+        <button type="button" className="btn btn-success" onClick={this.props.generateTeeTime}
+          disabled={this.state.startTime == "" || this.state.endTime == ""}
+          data-index-schedule={this.props.scheduleIndex} data-start-time={this.state.startTime} data-end-time={this.state.endTime}
+          data-interval={this.state.interval}>
+          Generate!
+        </button>
       </div>
 
     );
@@ -311,12 +347,15 @@ var FlightSchedulePriceCard = React.createClass({
                 </div>
                 <div className="form-group row">
                   <label className="col-6">Insurance Mode</label>
-                  <select className="col-6 form-control"
-                    value={this.props.flightSchedule.charge_schedule.insurance_mode } onChange={this.props.updateFlightInfo}
-                    data-index={this.props.scheduleIndex} data-target="charge_schedule" data-charge="insurance_mode"
-                    name={`flight[${this.state.random_id}][insurance_mode]`}>{ this.props.insurance_modes.map( (e,i) =>
-                      <option key={i} value={i} >{e}</option>
-                  )}</select>
+                  <div className="col-6">
+                    <select className="form-control"
+                      value={this.props.flightSchedule.charge_schedule.insurance_mode } onChange={this.props.updateFlightInfo}
+                      data-index={this.props.scheduleIndex} data-target="charge_schedule" data-charge="insurance_mode"
+                      name={`flight[${this.state.random_id}][insurance_mode]`}>{ this.props.insurance_modes.map( (e,i) =>
+                        <option key={i} value={i} >{e}</option>
+                    )}</select>
+
+                  </div>
                   <div className="col-12">
                     <p>Explaination:-</p>
                     <ul>
@@ -426,7 +465,7 @@ var FlightSchedulePriceCard = React.createClass({
                 <h4>Flight Times</h4>
                 <FlightScheduleControl
                   flightTimes={this.props.teeTimes} scheduleIndex={this.props.scheduleIndex} random_id={this.state.random_id}
-                  addTeeTime={this.props.addTeeTime} deleteTeeTime={this.props.deleteTeeTime}/>
+                  addTeeTime={this.props.addTeeTime} deleteTeeTime={this.props.deleteTeeTime} generateTeeTime={this.props.generateTeeTime}/>
               </div>
             </li>
           </ul>
@@ -543,6 +582,38 @@ var FlightBox = React.createClass({
       this.setState({teeTimes:newTeeTimes});
     }
   },
+  generateTeeTime: function(e){
+    /*
+      sanity checks:
+        value must be valid between 0500 and 2300
+        startTime must be before endTime
+    */
+    var newTeeTimes = this.state.teeTimes;
+    var newTeeTimesArray = [];
+
+    //inset the first one
+    var currentTime = new Date();
+    var endTime = new Date();
+
+    currentTime.setHours(e.target.dataset.startTime.split(":")[0]);
+    currentTime.setMinutes(e.target.dataset.startTime.split(":")[1]);
+    endTime.setHours(e.target.dataset.endTime.split(":")[0]);
+    endTime.setMinutes(e.target.dataset.endTime.split(":")[1]);
+
+    if(currentTime.getTime() > endTime.getTime()){
+      $.snackbar({content:'Start Time must be earlier than End Time', style:'error'});
+      return;
+    }
+
+    while(currentTime.getTime() <= endTime.getTime()){
+      newTeeTimesArray.push(currentTime.toTimeString().substring(0,5));
+      currentTime = new Date(currentTime.getTime() + 1000*60*parseInt(e.target.dataset.interval));
+      console.log("newTeeTimesArray", newTeeTimesArray);
+    }
+    newTeeTimes[e.target.dataset.indexSchedule] = newTeeTimesArray;
+    this.setState({teeTimes:newTeeTimes});
+
+  },
   render: function(){
     return (
         <div className="mb-2" id="flight" role="tabpanel" >
@@ -559,6 +630,7 @@ var FlightBox = React.createClass({
                   <FlightSchedulePriceCard key={i} scheduleIndex={i}
                     flightSchedule={e}
                     teeTimes={this.state.teeTimes[i]} deleteTeeTime={this.deleteTeeTime} addTeeTime={this.addTeeTime}
+                    generateTeeTime={this.generateTeeTime}
                     handleClose={this.handleClose} updateFlightInfo={this.updateFlightInfo} insurance_modes={this.props.insurance_modes}
                     deleteSchedule={this.deleteSchedule}
                      />
