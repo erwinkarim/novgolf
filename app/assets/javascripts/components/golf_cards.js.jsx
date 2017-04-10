@@ -270,7 +270,8 @@ var ReserveFormPage = React.createClass({
     flight:React.PropTypes.object,
     isActive: React.PropTypes.bool,
     options: React.PropTypes.object,
-    displayAs: React.PropTypes.oneOf(['card', 'flushed-list'])
+    displayAs: React.PropTypes.oneOf(['card', 'flushed-list']),
+    taxSchedule: React.PropTypes.object
   },
   getInitialState: function(){
     return {
@@ -278,12 +279,21 @@ var ReserveFormPage = React.createClass({
     };
   },
   getDefaultProps: function(){
-    return { options: golfCardDefaultOptions, displayAs:'card'};
+    return { options: golfCardDefaultOptions, displayAs:'card', taxSchedule:{rate:0.06}};
   },
   rawNote: function(){
     md = new Remarkable();
     //return null;
     return { __html: md.render(this.props.flight.prices.note) };
+  },
+  tax_amount: function(){
+    var pax_amount = parseFloat(this.props.flight.prices.flight) * this.props.flightInfo.pax;
+    var caddy_amount = parseFloat(this.props.flight.prices.caddy) * this.props.flightInfo.caddy;
+    var buggy_amount = parseFloat(this.props.flight.prices.cart) * this.props.flightInfo.buggy;
+    var insurance_amount = parseFloat(this.props.flight.prices.insurance) * this.props.flightInfo.insurance;
+
+    var taxation  = (pax_amount + caddy_amount + buggy_amount + insurance_amount) * parseFloat(this.props.taxSchedule.rate);
+    return taxation;
   },
   render: function(){
     var activeClass = (this.props.isActive) ? "active" : "";
@@ -402,7 +412,12 @@ var ReserveFormPage = React.createClass({
           <input type="hidden" value={this.props.flightInfo.insurance * parseFloat(this.props.flight.prices.insurance) }
             name={"flight[" + this.props.flightInfo.id + "][price][insurance]"} />
         </div>
-
+        <div className="form-group row">
+          <label className="col-5 offset-2">Tax</label>
+          <label className="col-5">
+            {toCurrency(this.tax_amount())}
+          </label>
+        </div>
       </div>
     );
 
@@ -603,7 +618,8 @@ var GolfReserveForm = React.createClass({
               return (
                 <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} isActive={isActive}
                   flightIndex={e.flightIndex} deleteFlight={this.deleteFlight}
-                  insurance_modes={this.props.insurance_modes} options={this.props.options} />
+                  insurance_modes={this.props.insurance_modes} options={this.props.options}
+                  taxSchedule = {this.props.club.tax_schedule} />
               )
             }
           )}</div>
