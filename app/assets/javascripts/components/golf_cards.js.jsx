@@ -99,7 +99,14 @@ class flightFunctions {
 };
 
 var GolfCardTimes = React.createClass({
-  propTypes: {btnGroupMode:React.PropTypes.string, arrayIndex:React.PropTypes.number, adminMode:React.PropTypes.bool },
+  propTypes: {
+    btnGroupMode:React.PropTypes.string, arrayIndex:React.PropTypes.number, adminMode:React.PropTypes.bool ,
+    randomID:React.PropTypes.string
+
+  },
+  getDefaultProps: function(){
+    return {randomID:randomID()};
+  },
   componentWillReceiveProps: function(nextProps){
       if(this.props.queryDate != nextProps.queryDate){
           //console.log("should disable active");
@@ -155,10 +162,12 @@ var GolfCardTimes = React.createClass({
 
     return (
       <label ref="teeTimeLabel" className={"btn btn-"+reserve_status} onClick={clickFn} data-tee-time={this.props.flight.tee_time}
+        id={`btn-group-${this.props.randomID}-${this.props.index}`}
         value={this.props.index} data-value={this.props.index} data-array-index={this.props.arrayIndex}>
         <input type={this.props.btnGroupMode} name="teeTimes[]" value={this.props.flight.tee_time} />
         { prices }
-        {courseIndicator} {this.props.flight.tee_time}
+        {courseIndicator}
+        {this.props.flight.tee_time}
       </label>
     );
   }
@@ -168,10 +177,15 @@ var GolfCardTimesGroup = React.createClass({
   propTypes: {
     flights: React.PropTypes.array, btnGroupMode:React.PropTypes.string, arrayIndex:React.PropTypes.number, adminMode:React.PropTypes.bool,
     options: React.PropTypes.object,
-    displayMode: React.PropTypes.oneOf(['wrap', 'overflow'])
+    displayMode: React.PropTypes.oneOf(['wrap', 'overflow']),
+    randomID:React.PropTypes.string
   },
   getDefaultProps: function(){
-      return { btnGroupMode:'checkbox', arrayIndex:0, adminMode:false, options:golfCardDefaultOptions, displayMode:'wrap'};
+      return {
+        btnGroupMode:'checkbox', arrayIndex:0, adminMode:false,
+        options:golfCardDefaultOptions, displayMode:'wrap',
+        randomID:randomID()
+      };
   },
   componentDidMount: function(){
       //console.log(this.props)
@@ -185,10 +199,11 @@ var GolfCardTimesGroup = React.createClass({
     //console.log("golfcardTimesGroup state.teeTimes = " + this.props.teeTimes)
     if (this.props.flights.length != 0){
      golfCards = (
-      <div className={`btn-group w-100 ${innerClass}`} data-toggle="buttons">{ this.props.flights.map( (flight, teeTimeIndex) =>
+      <div id={`btn-group-${this.props.randomID}`} className={`btn-group w-100 ${innerClass}`} data-toggle="buttons">{ this.props.flights.map( (flight, teeTimeIndex) =>
         <GolfCardTimes key={teeTimeIndex} flight={flight} handleClick={this.props.handleClick}
           index={teeTimeIndex} queryDate={this.props.queryDate}
           btnGroupMode={this.props.btnGroupMode} arrayIndex={this.props.arrayIndex} adminMode={this.props.adminMode}
+          randomID={this.props.randomID}
           options={this.props.options} />
       )}</div>
      );
@@ -393,7 +408,13 @@ var ReserveFormPage = React.createClass({
 
     return this.props.displayAs == 'card' ? (
       <div className={`tab-pane card ${activeClass}`} id={`flight-tab-${this.props.flightInfo.id}`} >
-        <div className="card-header" style={ {color:'black'}}>{ this.props.flightInfo.teeTime }</div>
+        <div className="card-header text-right" style={ {color:'black'}}>
+          { this.props.flightInfo.teeTime } |
+          <span> </span>
+          <a href="#" data-filght-index={this.props.flightIndex} onClick={this.props.deleteFlight}>
+            <i className="fa fa-close" data-flight-index={this.props.flightIndex}></i>
+          </a>
+        </div>
         { golfCourses }
         <div className="card-block text-black">
           { formContent }
@@ -456,21 +477,6 @@ var GolfReserveForm = React.createClass({
       })
     };
   },
-  /*
-  updateTotalPrice: function(){
-      //calculate the new total price
-      var newTotalPrice = 0;
-      this.state.flightInfo.map( (e,i) => {
-          newTotalPrice += (
-            e.pax * parseFloat(this.props.flights[e.flightIndex].prices.flight) +
-            e.buggy * parseFloat(this.props.flights[e.flightIndex].prices.cart) +
-            e.caddy * parseFloat(this.props.flights[e.flightIndex].prices.caddy) +
-            e.insurance * parseFloat(this.props.flights[e.flightIndex].prices.insurance)
-          )
-      });
-      return newTotalPrice;
-  },
-  */
   updatePrice: function(e){
     var newFlightInfo = this.state.flightInfo;
     var flightIndex = newFlightInfo[e.target.dataset.index].flightIndex;
@@ -531,6 +537,29 @@ var GolfReserveForm = React.createClass({
 
     }
   },
+  deleteFlight: function(e){
+    e.preventDefault();
+
+    var newSelectedTeeTimes = this.state.selectedTeeTimes;
+    var newFlightInfo = this.state.flightInfo;
+    var targetFlightIndex = e.target.dataset.flightIndex;
+
+    //find the index inside array with matching flightIndex
+    //splice from array selectedTeeTimes and flightInfo
+    var targetIndex = newSelectedTeeTimes.indexOf(targetFlightIndex);
+    newSelectedTeeTimes.splice(targetIndex,1);
+    newFlightInfo.splice(targetIndex,1);
+
+    //set selectedTeeTimesIndex to 0
+    this.setState({selectedTeeTimes:newSelectedTeeTimes, selectedTeeTimesIndex:0});
+
+    //set the associate button in the button group to untoggle to not active
+    $(`#btn-group-${this.state.random_id}-${targetFlightIndex}`).removeClass('active');
+  },
+  updateSelectedTeeTimesIndex: function(e){
+    var newFlightIndex = parseInt(e.target.dataset.flightIndex);
+    this.setState({selectedTeeTimesIndex:newFlightIndex});
+  },
   render: function(){
     //handle slide up and down function here
     //if(this.state.selectedTeeTimes.length >= Math.ceil(this.props.flight.selectedPax/this.props.flight.maxPax)){
@@ -546,7 +575,7 @@ var GolfReserveForm = React.createClass({
         <input type="hidden" name="club[id]" value={this.props.club.id} />
         <input type="hidden" name="info[date]" value={this.props.queryData.date} />
         <li className="list-group-item">
-          <GolfCardTimesGroup flights={this.props.flights} handleClick={this.handleClick} queryDate={this.props.queryDate}
+          <GolfCardTimesGroup randomID={this.state.random_id} flights={this.props.flights} handleClick={this.handleClick} queryDate={this.props.queryDate}
             options={this.props.options} displayMode={this.props.timeGroupDisplay}/>
         </li>
         <li className="list-group-item" ref="reserveBtnLi" >
@@ -556,7 +585,9 @@ var GolfReserveForm = React.createClass({
               var isActive = (this.state.selectedTeeTimesIndex == i) ? "active" : ""
               return (
                 <li key={i} className="nav-item">
-                  <a href={ `#flight-tab-${this.state.flightInfo[i].id}` } className={`nav-link ${isActive}`} data-toggle="pill">
+                  <a href={ `#flight-tab-${this.state.flightInfo[i].id}` } className={`nav-link ${isActive}`} data-toggle="pill"
+                    data-flight-index={i}
+                    onClick={this.updateSelectedTeeTimesIndex}>
                     {this.props.flights[e].tee_time}
                   </a>
                 </li>
@@ -571,12 +602,12 @@ var GolfReserveForm = React.createClass({
               var isActive = (this.state.selectedTeeTimesIndex == i) ? true : false;
               return (
                 <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} isActive={isActive}
+                  flightIndex={e.flightIndex} deleteFlight={this.deleteFlight}
                   insurance_modes={this.props.insurance_modes} options={this.props.options} />
               )
             }
           )}</div>
           <div className="col-12 text-black">
-            <h5>Tax: {toCurrency(this.state.tax)}</h5>
             <h4>Grand Total: {toCurrency(this.state.totalPrice + this.state.tax)} </h4>
             <input type="hidden" name="info[total_price]" value={this.state.totalPrice} />
           </div>
