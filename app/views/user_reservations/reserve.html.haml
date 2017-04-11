@@ -49,23 +49,7 @@
                     %td #{ number_to_currency(v[:price][:insurance], { :unit => "RM"}) }
             - if v[:count][:member].to_i > 0 then
               .card-block
-                %p.card-text Please key in each member's name and ID number
-                %table.table
-                  %thead
-                    %tr
-                      %th Name
-                      %td ID
-                  - (1..(v[:count][:member].to_i)).each do |x|
-                    - random_id = SecureRandom::hex(6)
-                    %tr
-                      - has_name = session.has_key?(:members) ? session[:members].select{|x| x == k}.map{ |k,v| v[:name]}.empty? : false
-                      %td{ class: !has_name ? 'has-danger' : ''}
-                        %input.form-control{type:'text', name:"members[#{k}][#{random_id}][name]", placeholder:'Name',
-                          class: !has_name ? 'form-control-danger' : '' }
-                      - has_id = session.has_key?(:members) ? session[:members].select{|x| x == k}.map{ |k,v| v[:id]}.empty? : false
-                      %td{ class: !has_id ? 'has-danger' : ''}
-                        %input.form-control{type:'text', name:"members[#{k}][#{random_id}][id]", placeholder:'ID Number',
-                          class: !has_name ? 'form-control-danger' : ''}
+                %p.card-text Members Name and ID will be verified at the Club House during registration.
     .row
       .col-12.col-md-8.col-md-offset-2
         %table.table
