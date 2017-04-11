@@ -255,7 +255,8 @@ class UserReservation < ActiveRecord::Base
       taxation = (flight_info[:pax].to_i * cs.session_price + flight_info[:caddy].to_i * cs.caddy +
           flight_info[:buggy].to_i * cs.cart + flight_info[:insurance].to_i * cs.insurance) * club.tax_schedule.rate
       ur = UserReservation.new(
-        user_id:user_id, golf_club_id: cs.golf_club_id, flight_matrix_id:fm.id,
+        user_id:user_id, golf_club_id: cs.golf_club_id,
+        flight_matrix_id:fm.id, charge_schedule_id:cs.id,
         booking_date: booking_date_clause, booking_time: booking_time_clause,
         count_pax:flight_info[:pax], count_caddy:flight_info[:caddy], count_buggy: flight_info[:buggy] , count_insurance:flight_info[:insurance],
           count_member:flight_info[:member],

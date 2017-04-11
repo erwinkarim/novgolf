@@ -127,6 +127,7 @@ class UserReservationsController < ApplicationController
     @user = User.find(params[:user_id])
     @reservation = UserReservation.includes(:review).find(params[:id])
     @review = @reservation.review.nil? ? nil : @reservation.review.to_json
+    @note = @reservation.charge_schedule.nil? ? nil : @reservation.charge_schedule.note
 
     #only show review form if it's 12 hours after tee time and date
     flight_is_12hours_old= DateTime.parse("#{@reservation.booking_date} #{@reservation.booking_time.to_datetime.strftime('%H:%M')} +0000") <

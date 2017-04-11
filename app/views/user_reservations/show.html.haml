@@ -72,6 +72,11 @@
                   %h4 Total Price:
                 %td
                   %h4 #{ number_to_currency(@reservation.total_price, { :unit => "RM "} )}
+              %tr
+                %td{colspan:3}
+                  %p Note
+                  %p
+                    = @note.nil? || @note.empty? || @note.blank? ? "No note given" : @note
       - if @reservation.count_member > 0 then
         .card
           .card-header Members
