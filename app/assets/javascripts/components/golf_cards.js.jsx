@@ -432,11 +432,13 @@ var ReserveFormPage = React.createClass({
     return this.props.displayAs == 'card' ? (
       <div className={`tab-pane card ${activeClass}`} id={`flight-tab-${this.props.flightInfo.id}`} >
         <div className="card-header text-right" style={ {color:'black'}}>
-          { this.props.flightInfo.teeTime } |
-          <span> </span>
-          <a href="#" data-filght-index={this.props.flightIndex} onClick={this.props.deleteFlight}>
-            <i className="fa fa-close" data-flight-index={this.props.flightIndex}></i>
-          </a>
+          <h5 className="mb-0">
+            { this.props.flightInfo.teeTime }
+            <span> | </span>
+            <a href="#" data-filght-index={this.props.flightIndex} onClick={this.props.deleteFlight}>
+              <i className="fa fa-close" data-flight-index={this.props.flightIndex}></i>
+            </a>
+          </h5>
         </div>
         { golfCourses }
         <div className="card-block text-black pt-2 pb-2">
@@ -762,12 +764,12 @@ var GolfCards = React.createClass({
     );
 
     return (
-      <div className="card card-inverse d-inline-block">
+      <div className="card d-inline-block">
         { hasCarousel ? (carouselDiv) : (<img className="img-responsive card-img-top" src={photoPath} />) }
         <a href={this.props.paths.club} target="_blank">
           <div className="card-img-overlay">
-              <h4 className="card-title text-shadow">{ toCurrency(Math.min.apply(null, this.props.flights.map( (e,i) => parseFloat(e.prices.flight))) )}</h4>
-              <h4 className="card-title text-shadow">{this.props.club.name}</h4>
+              <h4 className="text-white card-title text-shadow">{ toCurrency(Math.min.apply(null, this.props.flights.map( (e,i) => parseFloat(e.prices.flight))) )}</h4>
+              <h4 className="text-white card-title text-shadow">{this.props.club.name}</h4>
           </div>
         </a>
         <ul className="list-group-flush list-group">
