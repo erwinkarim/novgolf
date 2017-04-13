@@ -11,6 +11,7 @@ var GeneralBox = React.createClass({
   },
   componentDidMount:function(){
     var map;
+    //var placeService;
     var handle = this;
 
     //disable this if there's no internet
@@ -19,6 +20,7 @@ var GeneralBox = React.createClass({
           center: {lat: parseFloat(handle.props.club.lat), lng: parseFloat(handle.props.club.lng) },
           zoom: 16
         });
+
 
         $('<div/>').addClass('centerMarker').appendTo(map.getDiv());
 
@@ -58,6 +60,37 @@ var GeneralBox = React.createClass({
     newClub.address = e.target.value;
     this.setState({ club:newClub});
   },
+  updateMap: function(){
+    //console.log("show update the map here", map);
+    /* plan:
+      * make a new search service
+      * make a text based request to google based on the search query
+      * zoom in to the first result, otherwise, just do nothing
+    */
+
+    //center at klcc first
+    console.log(this.clubName.value);
+    var handle = this;
+    var klcc = new google.maps.LatLng(handle.props.club.lat, handle.props.club.lng);
+    var placeService = new google.maps.places.PlacesService(map);
+
+    var request = {
+      location: klcc, radius: '30000',
+      query: this.clubName.value
+    };
+
+    console.log("klcc", klcc, "this.placeService",this.placeService);
+    placeService.textSearch(request, callback);
+
+    function callback(results, status){
+      if(status == google.maps.places.PlacesServiceStatus.OK){
+        console.log("first result", results[0].geometry.location);
+        //attempt to recenter map
+        //map.setCenter(results[0].geometry.location);
+      }
+    };
+
+  },
   render: function(){
     //sanity check, ensure that all required items are filled up
     //var openHourObj = new Date(this.props.club.open_hour);
@@ -74,6 +107,8 @@ var GeneralBox = React.createClass({
               <div className="form-group">
                 <label>Name</label>
                 <input type="text" className="form-control" placeholder="Club Name" name="golf_club[name]"
+                  ref={(input)=>{this.clubName=input;}}
+                  onBlur={this.updateMap}
                   defaultValue={this.props.club.name} />
               </div>
               <div className="form-group">
