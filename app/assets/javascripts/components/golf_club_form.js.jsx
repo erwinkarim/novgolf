@@ -89,12 +89,13 @@ var GeneralBox = React.createClass({
 
     function callback(results, status){
       if(status == google.maps.places.PlacesServiceStatus.OK){
-        console.log("first result", results[0]);
         var result = results[0];
         //attempt to recenter map
         handle.state.map.setCenter(result.geometry.location);
         handle.clubAddress.value = result.formatted_address;
         handle.props.updateLocation(result.geometry.location.lat(), result.geometry.location.lng());
+      }else{
+        console.log('No results for', handle.clubName.value)
       }
     };
 
