@@ -10,32 +10,38 @@ var GeneralBox = React.createClass({
     club:React.PropTypes.object
   },
   componentDidMount:function(){
-    var map;
+    var newMap = this.state.map;
+    var newPlaceService = this.state.placeService;
     //var placeService;
     var handle = this;
 
     //disable this if there's no internet
     var initMap = function(){
-        map = new google.maps.Map(document.getElementById('map'), {
+        newMap = new google.maps.Map(document.getElementById('map'), {
           center: {lat: parseFloat(handle.props.club.lat), lng: parseFloat(handle.props.club.lng) },
           zoom: 16
         });
 
 
-        $('<div/>').addClass('centerMarker').appendTo(map.getDiv());
+        $('<div/>').addClass('centerMarker').appendTo(newMap.getDiv());
 
         //why it can't reused function?
-        map.addListener('dragend', function(){
-          var coor = map.getCenter()
+        newMap.addListener('dragend', function(){
+          var coor = newMap.getCenter()
           handle.props.updateLocation(coor.lat(), coor.lng());
         });
 
-        map.addListener('zoom_changed', function(){
-          var coor = map.getCenter()
+        newMap.addListener('zoom_changed', function(){
+          var coor = newMap.getCenter()
           handle.props.updateLocation(coor.lat(), coor.lng());
         });
     };
     initMap();
+
+    //setup placeService
+    newPlaceService = new google.maps.places.PlacesService(newMap);
+
+    this.setState({map:newMap, placeService:newPlaceService});
 
     $(this.refs.openHour).timepicker({disableTextInput:true, minTime:"05:00", maxTime:"23:00"});
     $(this.refs.closeHour).timepicker({disableTextInput:true, minTime:"05:00", maxTime:"23:00"});
@@ -51,7 +57,7 @@ var GeneralBox = React.createClass({
     newClub.close_hour = (newClub.close_hour == null) ? "22:00am" : newClub.close_hour;
 
     return {
-      club:newClub, lat:3.15785, lng:101.71165
+      club:newClub, lat:3.15785, lng:101.71165, map:"", placeService:""
     };
   },
   updateGolf: function(e){
@@ -66,27 +72,29 @@ var GeneralBox = React.createClass({
       * make a new search service
       * make a text based request to google based on the search query
       * zoom in to the first result, otherwise, just do nothing
+      * update address and location info
     */
 
     //center at klcc first
     console.log(this.clubName.value);
     var handle = this;
     var klcc = new google.maps.LatLng(handle.props.club.lat, handle.props.club.lng);
-    var placeService = new google.maps.places.PlacesService(map);
 
     var request = {
       location: klcc, radius: '30000',
       query: this.clubName.value
     };
 
-    console.log("klcc", klcc, "this.placeService",this.placeService);
-    placeService.textSearch(request, callback);
+    this.state.placeService.textSearch(request, callback);
 
     function callback(results, status){
       if(status == google.maps.places.PlacesServiceStatus.OK){
-        console.log("first result", results[0].geometry.location);
+        console.log("first result", results[0]);
+        var result = results[0];
         //attempt to recenter map
-        //map.setCenter(results[0].geometry.location);
+        handle.state.map.setCenter(result.geometry.location);
+        handle.clubAddress.value = result.formatted_address;
+        handle.props.updateLocation(result.geometry.location.lat(), result.geometry.location.lng());
       }
     };
 
@@ -119,6 +127,7 @@ var GeneralBox = React.createClass({
               <div className="form-group">
                 <label>Address</label>
                 <textarea className="form-control" name="address" rows="5" placeholder="The club address" name="golf_club[address]"
+                  ref={(input)=>{this.clubAddress=input;}}
                   defaultValue={this.state.club.address}></textarea>
               </div>
               <div className="form-group">
