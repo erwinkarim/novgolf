@@ -19,9 +19,9 @@ var GeneralBox = React.createClass({
     var initMap = function(){
         newMap = new google.maps.Map(document.getElementById('map'), {
           center: {lat: parseFloat(handle.props.club.lat), lng: parseFloat(handle.props.club.lng) },
-          zoom: 16
+          zoom: 16,
+          fullscreenControl:true
         });
-
 
         $('<div/>').addClass('centerMarker').appendTo(newMap.getDiv());
 
@@ -76,7 +76,6 @@ var GeneralBox = React.createClass({
     */
 
     //center at klcc first
-    console.log(this.clubName.value);
     var handle = this;
     var klcc = new google.maps.LatLng(handle.props.club.lat, handle.props.club.lng);
 
@@ -94,6 +93,7 @@ var GeneralBox = React.createClass({
         handle.state.map.setCenter(result.geometry.location);
         handle.clubAddress.value = result.formatted_address;
         handle.props.updateLocation(result.geometry.location.lat(), result.geometry.location.lng());
+        $.snackbar({content:`Updated Map to ${result.name}`, style:'notice'});
       }else{
         console.log('No results for', handle.clubName.value)
       }
@@ -141,7 +141,7 @@ var GeneralBox = React.createClass({
               </div>
               <div className="form-group">
                 <label>Location</label>
-                <div className="googlemaps" id="map" ref="map" style={ {height:'25vh'}} ></div>
+                <div className="googlemaps" id="map" ref="map" style={ {height:'50vh'}} ></div>
               </div>
               <div className="form-group">
                 <label>Lat</label>

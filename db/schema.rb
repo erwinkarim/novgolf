@@ -12,7 +12,7 @@
 
 ActiveRecord::Schema.define(version: 20170214025356) do
 
-  create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name"
     t.string   "label"
     t.string   "icon"
@@ -20,7 +20,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "amenity_lists", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "amenity_lists", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "golf_club_id"
     t.integer  "amenity_id"
     t.datetime "created_at",   null: false
@@ -29,7 +29,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["golf_club_id"], name: "index_amenity_lists_on_golf_club_id", using: :btree
   end
 
-  create_table "charge_schedules", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "charge_schedules", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "golf_club_id"
     t.decimal  "caddy",                            precision: 8, scale: 2
     t.decimal  "cart",                             precision: 8, scale: 2
@@ -51,7 +51,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["golf_club_id"], name: "index_charge_schedules_on_golf_club_id", using: :btree
   end
 
-  create_table "course_listings", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "course_listings", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "golf_club_id"
     t.text     "name",             limit: 255
     t.integer  "course_status_id"
@@ -61,14 +61,14 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["golf_club_id"], name: "index_course_listings_on_golf_club_id", using: :btree
   end
 
-  create_table "course_statuses", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "course_statuses", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.text     "desc",       limit: 255
     t.boolean  "available"
     t.datetime "created_at",             null: false
     t.datetime "updated_at",             null: false
   end
 
-  create_table "flight_matrices", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "flight_matrices", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "flight_schedule_id"
     t.integer  "timeslot"
     t.integer  "day0"
@@ -85,7 +85,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["flight_schedule_id"], name: "index_flight_matrices_on_flight_schedule_id", using: :btree
   end
 
-  create_table "flight_schedules", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "flight_schedules", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "flight_times"
     t.integer  "min_pax"
     t.integer  "max_pax"
@@ -100,7 +100,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["golf_club_id"], name: "index_flight_schedules_on_golf_club_id", using: :btree
   end
 
-  create_table "golf_clubs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "golf_clubs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.datetime "created_at",                    null: false
     t.datetime "updated_at",                    null: false
     t.string   "name"
@@ -116,7 +116,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["user_id"], name: "index_golf_clubs_on_user_id", using: :btree
   end
 
-  create_table "line_item_listings", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "line_item_listings", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.decimal  "rate",               precision: 10, scale: 2
     t.boolean  "taxed"
     t.integer  "charge_schedule_id"
@@ -127,7 +127,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["line_item_id"], name: "index_line_item_listings_on_line_item_id", using: :btree
   end
 
-  create_table "line_items", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "line_items", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.text     "name",        limit: 255
     t.string   "description"
     t.boolean  "mandatory"
@@ -137,7 +137,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["user_id"], name: "index_line_items_on_user_id", using: :btree
   end
 
-  create_table "memberships", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "memberships", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "user_id"
     t.integer  "golf_club_id"
     t.date     "expires_at"
@@ -148,11 +148,11 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["user_id"], name: "index_memberships_on_user_id", using: :btree
   end
 
-  create_table "photos", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "photos", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "sequence"
     t.integer  "user_id"
-    t.string   "imageable_type"
     t.integer  "imageable_id"
+    t.string   "imageable_type"
     t.string   "avatar"
     t.text     "caption",        limit: 255
     t.datetime "created_at",                 null: false
@@ -161,10 +161,10 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["user_id"], name: "index_photos_on_user_id", using: :btree
   end
 
-  create_table "reviews", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "reviews", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "user_id"
-    t.string   "topic_type"
     t.integer  "topic_id"
+    t.string   "topic_type"
     t.integer  "rating"
     t.text     "comment",    limit: 65535
     t.datetime "created_at",               null: false
@@ -173,14 +173,14 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["user_id"], name: "index_reviews_on_user_id", using: :btree
   end
 
-  create_table "tax_schedules", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "tax_schedules", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.text     "country",    limit: 255
     t.decimal  "rate",                   precision: 6, scale: 5
     t.datetime "created_at",                                     null: false
     t.datetime "updated_at",                                     null: false
   end
 
-  create_table "ur_member_details", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "ur_member_details", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name"
     t.string   "member_id"
     t.integer  "user_reservation_id"
@@ -189,7 +189,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["user_reservation_id"], name: "index_ur_member_details_on_user_reservation_id", using: :btree
   end
 
-  create_table "ur_transactions", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "ur_transactions", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.datetime "created_at",                                  null: false
     t.datetime "updated_at",                                  null: false
     t.integer  "user_reservation_id"
@@ -199,7 +199,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["user_reservation_id"], name: "index_ur_transactions_on_user_reservation_id", using: :btree
   end
 
-  create_table "user_reservations", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "user_reservations", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "user_id"
     t.integer  "charge_schedule_id"
     t.integer  "actual_caddy"
@@ -230,7 +230,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.index ["user_id"], name: "index_user_reservations_on_user_id", using: :btree
   end
 
-  create_table "users", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "users", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.datetime "created_at",                          null: false
     t.datetime "updated_at",                          null: false
     t.string   "email",                  default: "", null: false
