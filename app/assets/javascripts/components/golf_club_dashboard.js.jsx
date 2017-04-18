@@ -216,6 +216,10 @@ var ReservationTransactionModal = React.createClass({
       </div>
     );
 
+    var loadingBody = (this.props.processing) ? (
+      <tr><td colspan="3">Loading... </td></tr>
+    ) : null;
+
     var urTransactionModal = this.props.flightTransaction == null ? null : (
       <div className="modal fade" id="ur-transaction-modal">
         <div className="modal-dialog modal-lg">
@@ -244,6 +248,7 @@ var ReservationTransactionModal = React.createClass({
                       </tr>
                     );
                   })}
+                  { loadingBody }
                   <tr>
                     <td colSpan="2"><h4>Outstanding</h4></td>
                     <td><h4>{toCurrency(parseFloat(this.props.flightTransaction.outstanding))}</h4></td>
@@ -380,8 +385,7 @@ var GolfClubDashboard = React.createClass({
       days: this.updateDays(today), queryDate:queryDate,
       loadFlight: false, selectedArray:null, selectedFlight:null, selectedCourse:null,
       flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[]},flightTransaction:null,
-      cashValue:0.0,
-      processing:false
+      cashValue:0.0, processing:false
     }
   },
   tick: function(){
