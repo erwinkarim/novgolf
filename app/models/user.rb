@@ -27,6 +27,11 @@ class User < ActiveRecord::Base
     self.image_path ||= DEFAULT_IMAGE_PATH
   end
 
+  #by default, send emails in the background
+  def send_devise_notification(notification, *args)
+    devise_mailer.send(notification, self, *args).deliver_later
+  end
+
   # update the memberships sets, membership will arrive in {random_id => {membership_detail}, random_id => {membership_detail} } fashion
   def set_memberships new_memberships={}
     #current_memberships = self.memberships
