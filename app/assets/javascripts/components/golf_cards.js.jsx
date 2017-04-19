@@ -210,7 +210,7 @@ var GolfCardTimesGroup = React.createClass({
    } else {
      golfCards = (
       <div>
-        No schedule detected 
+        No schedule detected
       </div>
      );
    };
@@ -495,12 +495,22 @@ var GolfReserveForm = React.createClass({
     $(this.refs.reserveBtnLi).hide();
   },
   componentWillReceiveProps: function(nextProps){
-    if(nextProps.queryDate != this.props.queryDate){
+    var resetState = ()=>{
       this.setState({
         selectedTeeTimes:[], selectedTeeTimesIndex:0,
         flightInfo:[], totalPrice:0
-      })
+      });
     };
+
+    if(nextProps.queryDate != this.props.queryDate){
+      resetState();
+    };
+
+    if(nextProps.flights.length == 0){
+      resetState();
+    }
+
+
   },
   updatePrice: function(e){
     var newFlightInfo = this.state.flightInfo;
@@ -682,6 +692,10 @@ var GolfSchedule = React.createClass({
     //handle when the date changed
     //get updated teeTimes
     var handle = this;
+
+    //should clear out all flights before selecting dates
+    this.setState({flights:[]});
+
     $.getJSON(this.props.paths.golfClub, { date:e },  function(data){
       var newFlights = (data == null) ? [] : data.flights;
       var newQueryData = handle.state.queryData;
@@ -697,15 +711,11 @@ var GolfSchedule = React.createClass({
     return (
       <ul className="list-group list-group-flush">
         <li className="list-group-item">
-          <form>
-            <fieldset className="form-group">
-              <label>I have <select>{ [2,3,4,5,6,7,8].map( (e,i) => <option key={i}>{e}</option> ) } </select> balls
-              </label>
-            </fieldset>
-            <fieldset className="form-group">
-              <input type="text" className="datepicker form-control" ref="queryDate" name="dateQuery" value={this.state.queryDate}
+          <form className="w-100">
+            <div className="form-group mb-0 w-100">
+              <input type="text" className="datepicker form-control border-0" ref="queryDate" name="dateQuery" value={this.state.queryDate}
               style={ {zIndex:1000, position:'relative'}} onChange={this.dateChanged }/>
-            </fieldset>
+            </div>
           </form>
         </li>
         <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
