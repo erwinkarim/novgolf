@@ -14,13 +14,14 @@ var GeneralBox = React.createClass({
     var newPlaceService = this.state.placeService;
     //var placeService;
     var handle = this;
+    var clubCoor = {lat:parseFloat(handle.props.club.lat), lng:parseFloat(handle.props.club.lng)};
 
     //disable this if there's no internet
     var initMap = function(){
         newMap = new google.maps.Map(document.getElementById('map'), {
-          center: {lat: parseFloat(handle.props.club.lat), lng: parseFloat(handle.props.club.lng) },
+          center: clubCoor,
           zoom: 16,
-          fullscreenControl:true
+          fullscreenControl:false
         });
 
         $('<div/>').addClass('centerMarker').appendTo(newMap.getDiv());
@@ -80,7 +81,7 @@ var GeneralBox = React.createClass({
     var klcc = new google.maps.LatLng(handle.props.club.lat, handle.props.club.lng);
 
     var request = {
-      location: klcc, radius: '30000',
+      location: klcc, radius: '50000',
       query: this.clubName.value
     };
 
@@ -107,7 +108,6 @@ var GeneralBox = React.createClass({
 
     //var closeHourObj = new Date(this.props.club.close_hour);
     //var closeHourStr = closeHourObj.getUTCHours() + ":" + closeHourObj.getUTCMinutes();
-
     return (
         <div className="mb-2" id="general" role="tabpanel">
           <div className="card mb-2">
@@ -139,9 +139,9 @@ var GeneralBox = React.createClass({
                 <label>Close Hour</label>
                 <input type="text" className="form-control" placeholder="22:00" id="closeHour" ref="closeHour" name="golf_club[close_hour]" defaultValue={this.props.club.close_hour}/>
               </div>
-              <div className="form-group">
+              <div className="form-group" id="map-container">
                 <label>Location</label>
-                <div className="googlemaps" id="map" ref="map" style={ {height:'50vh'}} ></div>
+                <div className="googlemaps" id="map" ref="map"></div>
               </div>
               <div className="form-group">
                 <label>Lat</label>
