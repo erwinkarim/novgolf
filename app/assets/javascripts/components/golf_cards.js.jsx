@@ -210,7 +210,7 @@ var GolfCardTimesGroup = React.createClass({
    } else {
      golfCards = (
       <div>
-        <i className="fa fa-cog fa-spin"></i> No schedules detected or getting a new one...
+        No schedule detected 
       </div>
      );
    };

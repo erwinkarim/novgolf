@@ -85,6 +85,9 @@ class Admin::GolfClubsController < ApplicationController
       golf_club.save!
       golf_club.setFlightSchedule(params[:flight])
 
+      #course listings
+      golf_club.setCourseListing(params[:courses])
+
       #amenities
       new_am = params.has_key?(:amenities) ? params[:amenities].map{ |x,y| x.to_i } : []
       new_am.each{ |x| golf_club.amenity_lists.new(:amenity_id => x).save!}
