@@ -78,7 +78,10 @@ class Admin::GolfClubsController < ApplicationController
   # TODO: rescue from transactio
   def create
     #create all the prototypes
-    #golf_club = GolfClub.new(golf_club_params)
+
+    #titleize the name
+    params[:golf_club][:name] = params[:golf_club][:name].titleize
+
     golf_club = current_user.golf_clubs.new(golf_club_params)
 
     golf_club.transaction do
@@ -150,6 +153,9 @@ class Admin::GolfClubsController < ApplicationController
     gc = GolfClub.find(params[:id])
 
     gc.transaction do
+      #titleize the name
+      params[:golf_club][:name] = params[:golf_club][:name].titleize
+
       gc.update_attributes(golf_club_params)
 
       # course listings

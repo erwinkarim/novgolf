@@ -85,6 +85,9 @@ var GeneralBox = React.createClass({
       query: this.clubName.value
     };
 
+    //update the club name into title case
+    this.clubName.value = toTitleCase(this.clubName.value);
+
     this.state.placeService.textSearch(request, callback);
 
     function callback(results, status){

@@ -21,3 +21,7 @@ var arrayFromRange = function(startNumber, endNumber){
 
   return test;
 }
+
+var toTitleCase = (inputStr)=>{
+  return inputStr.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+};
