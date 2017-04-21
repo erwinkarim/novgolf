@@ -38,16 +38,19 @@ class FlightSchedule < ActiveRecord::Base
 
   private
   def min_caddy_must_less_eq_max_caddy
+    self.init
     errors.add(:min_caddy, "must less or equal max_caddy") unless
       min_caddy <= max_caddy
   end
 
   def min_cart_must_less_eq_max_cart
+    self.init
     errors.add(:min_cart, "must less or equal max_caddy") unless
       min_cart <= max_cart
   end
 
   def min_pax_must_less_eq_max_pax
+    self.init
     errors.add(:min_pax, "must less or equal max_pax") unless
       self.min_pax <= self.max_pax
   end

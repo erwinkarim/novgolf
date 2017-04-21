@@ -398,7 +398,7 @@ class UserReservation < ActiveRecord::Base
 
   private
   def count_insurance_must_less_eq_count_pax
-    puts "count_insurance = #{count_insurance}, count_pax = #{count_pax}, count_member = #{count_member}"
+    self.init
     errors.add(:count_insurance, "must less or equal count_pax + count_member") unless
       count_insurance <= count_pax + count_member
   end
