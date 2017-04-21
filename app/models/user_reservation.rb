@@ -52,10 +52,13 @@ class UserReservation < ActiveRecord::Base
       self.actual_insurance ||= 0.00
       self.actual_tax ||= 0.00
 
-      self.status ||= 0
+      self.count_pax ||= 0
       self.count_member ||= 0
-    rescue ActiveModel::MissingAttributeError
-      Rails.logger.info "some stuff are not found"
+      self.count_buggy ||= 0
+      self.count_caddy ||= 0
+      self.count_insurance ||= 0
+
+      self.status ||= 0
     end
   end
 
@@ -395,8 +398,8 @@ class UserReservation < ActiveRecord::Base
 
   private
   def count_insurance_must_less_eq_count_pax
+    puts "count_insurance = #{count_insurance}, count_pax = #{count_pax}, count_member = #{count_member}"
     errors.add(:count_insurance, "must less or equal count_pax + count_member") unless
       count_insurance <= count_pax + count_member
-
   end
 end

@@ -43,4 +43,6 @@ Rails.application.configure do
   #setup job queue
   config.active_job.queue_adapter = :async
   #config.active_job.queue_adapter = :shoryuken_later
+
+  config.active_record.time_zone_aware_types = [:datetime, :time]
 end

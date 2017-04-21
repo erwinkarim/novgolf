@@ -8,6 +8,8 @@ class FlightScheduleTest < ActiveSupport::TestCase
   should validate_presence_of(:max_pax)
   should validate_presence_of(:max_cart)
   should validate_presence_of(:max_caddy)
+  should validate_presence_of(:start_active_at)
+  should validate_presence_of(:end_active_at)
 
   should have_many(:flight_matrices)
   should have_one(:charge_schedule)

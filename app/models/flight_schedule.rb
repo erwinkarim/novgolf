@@ -5,6 +5,7 @@ class FlightSchedule < ActiveRecord::Base
   has_one :charge_schedule, :dependent => :destroy
 
   validates_presence_of :golf_club_id, :min_pax, :max_pax, :min_cart, :max_cart, :min_caddy, :max_caddy
+  validates_presence_of :start_active_at, :end_active_at
 
   after_initialize :init
 
@@ -30,6 +31,9 @@ class FlightSchedule < ActiveRecord::Base
 
     self.min_caddy ||= 0
     self.max_caddy ||= 2
+
+    self.start_active_at ||= DateTime.parse("01-01-2017")
+    self.end_active_at ||= DateTime.parse("01-01-3017")
   end
 
   private
@@ -45,6 +49,6 @@ class FlightSchedule < ActiveRecord::Base
 
   def min_pax_must_less_eq_max_pax
     errors.add(:min_pax, "must less or equal max_pax") unless
-      min_pax <= max_pax
+      self.min_pax <= self.max_pax
   end
 end
