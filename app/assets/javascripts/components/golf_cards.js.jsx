@@ -199,7 +199,9 @@ var GolfCardTimesGroup = React.createClass({
     //console.log("golfcardTimesGroup state.teeTimes = " + this.props.teeTimes)
     if (this.props.flights.length != 0){
      golfCards = (
-      <div id={`btn-group-${this.props.randomID}`} className={`btn-group w-100 ${innerClass}`} data-toggle="buttons">{ this.props.flights.map( (flight, teeTimeIndex) =>
+      <div id={`btn-group-${this.props.randomID}`} className={`btn-group w-100 ${innerClass}`} data-toggle="buttons">{ this.props.flights.sort( function(a,b){
+          return a.tee_time < b.tee_time ? -1 : 1;
+        }).map( (flight, teeTimeIndex) =>
         <GolfCardTimes key={teeTimeIndex} flight={flight} handleClick={this.props.handleClick}
           index={teeTimeIndex} queryDate={this.props.queryDate}
           btnGroupMode={this.props.btnGroupMode} arrayIndex={this.props.arrayIndex} adminMode={this.props.adminMode}

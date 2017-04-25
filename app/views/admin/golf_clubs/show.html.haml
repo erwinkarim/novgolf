@@ -102,7 +102,7 @@
         .card-block
           %p.card-text Taxation Country: #{ @golf_club.tax_schedule.country} (#{number_to_percentage(@golf_club.tax_schedule.rate*100)})
     .col-12.col-md-8
-      - @golf_club.flight_schedules.each do |flight_schedule|
+      - @golf_club.active_flight_schedules.each do |flight_schedule|
         - prices = flight_schedule.charge_schedule
         - random_id = SecureRandom.hex(6)
         .card.mb-2

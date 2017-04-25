@@ -36,6 +36,11 @@ class FlightSchedule < ActiveRecord::Base
     self.end_active_at ||= DateTime.parse("01-01-3017")
   end
 
+  # set the schedule as inactive (kinda of delete it)
+  def setInactive
+    self.update_attribute(:end_active_at, DateTime.now - 1.minute)
+  end
+  
   private
   def min_caddy_must_less_eq_max_caddy
     self.init
@@ -54,4 +59,5 @@ class FlightSchedule < ActiveRecord::Base
     errors.add(:min_pax, "must less or equal max_pax") unless
       self.min_pax <= self.max_pax
   end
+
 end

@@ -541,7 +541,7 @@ var FlightSchedulePriceCard = React.createClass({
             <span>{ toCurrency(this.props.flightSchedule.charge_schedule.session_price)} / </span>
             <span>{ toCurrency(this.props.flightSchedule.charge_schedule.cart)} / </span>
             <span>{ toCurrency(this.props.flightSchedule.charge_schedule.caddy)} / </span>
-            <span>{ toCurrency(this.props.flightSchedule.charge_schedule.insurance)} ({this.props.insurance_modes[this.props.flightSchedule.charge_schedule.insurance_mode]}) </span>
+            <span>{ toCurrency(this.props.flightSchedule.charge_schedule.insurance)} ({this.props.flightSchedule.charge_schedule.insurance_mode}) </span>
           </p>
         </div>
       </div>

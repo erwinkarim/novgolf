@@ -109,7 +109,7 @@ class Admin::GolfClubsController < ApplicationController
   # GET      /admin/golf_clubs/:id/edit(.:format)
   def edit
     @golf_club = GolfClub.find(params[:id])
-    @flight_schedules = @golf_club.flight_schedules.map do |fs|
+    @flight_schedules = @golf_club.active_flight_schedules.map do |fs|
       (
         fs.attributes.merge("charge_schedule" => fs.charge_schedule.attributes)
       ).
