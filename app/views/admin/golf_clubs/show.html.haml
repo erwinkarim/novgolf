@@ -118,25 +118,20 @@
                   %thead
                     %tr
                       %th Item
-                      %th Value
+                      %th Min
+                      %th Max
                   %tbody
                     %tr
-                      %td Min Balls per Flight
+                      %td Pax
                       %td #{ flight_schedule.min_pax }
+                      %td #{ flight_schedule.max_pax}
                     %tr
-                      %td Max Balls per Flight
+                      %td Buggy
+                      %td #{ flight_schedule.min_cart }
                       %td #{ flight_schedule.max_pax }
                     %tr
-                      %td Min Buggy per Flight
-                      %td #{ flight_schedule.min_cart }
-                    %tr
-                      %td Max Buggy per Flight
-                      %td #{ flight_schedule.max_cart }
-                    %tr
-                      %td Min Caddy per Flight
+                      %td Caddy
                       %td #{ flight_schedule.min_caddy }
-                    %tr
-                      %td Max Caddy per Flight
                       %td #{ flight_schedule.max_caddy }
               %li.list-group-item
                 %h4.w-100 Notes

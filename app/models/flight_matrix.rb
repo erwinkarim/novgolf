@@ -35,6 +35,14 @@ class FlightMatrix < ActiveRecord::Base
     end
   end
 
+  def setInactive
+    self.update_attribute(:end_active_at, DateTime.now)
+  end
+
+  def active?
+    self.end_active_at > DateTime.now
+  end
+
   #ensure that this schedule does not conflict w/ other schedules in the same golf club
   # this function is done in GolfClub.setFlightSchedule
   def non_conflict?

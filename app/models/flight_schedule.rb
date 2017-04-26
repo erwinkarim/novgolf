@@ -45,6 +45,10 @@ class FlightSchedule < ActiveRecord::Base
     self.flight_matrices.where.has{ end_active_at >= DateTime.now }
   end
 
+  def active?
+    self.end_active_at > DateTime.now
+  end
+
   private
   def min_caddy_must_less_eq_max_caddy
     self.init

@@ -114,7 +114,7 @@ class Admin::GolfClubsController < ApplicationController
         fs.attributes.merge("charge_schedule" => fs.charge_schedule.attributes)
       ).
       merge(
-        "flight_matrices" => fs.flight_matrices.map{
+        "flight_matrices" => fs.active_flight_matrices.map{
           |x| x.attributes.merge({"tee_time" => x.tee_time.strftime("%I:%M%P")} )
         }
       )

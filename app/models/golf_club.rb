@@ -343,7 +343,6 @@ class GolfClub < ActiveRecord::Base
         flight_schedules.map{ |k,v| v["flight_id"].to_i }.select{ |x| !x.zero? }) ).each{|y| y.setInactive }
 
       flight_schedules.each_pair do |idx, elm|
-        #puts "updating the flight schedules"
         if(elm["flight_id"].empty? ) then
           #create new flight_schedule
           fs = self.flight_schedules.new(:name => elm["name"],
@@ -361,7 +360,6 @@ class GolfClub < ActiveRecord::Base
             :cart => elm[:cart], :insurance_mode => elm[:insurance_mode].to_i)
           cs.save!
 
-          #TODO: set start_active_at dates as now
           #create new flight_matrices
           elm["times"].each do |flight_time|
             fm = fs.flight_matrices.new(
@@ -390,7 +388,7 @@ class GolfClub < ActiveRecord::Base
 
           #remove flight matrices that does not exists anymore
           new_times = elm["times"].map{|x| Time.parse("2000-01-01 #{x} +0000")}
-          current_flight.flight_matrices.where.not(:tee_time => new_times).each{ |x| x.update_attribute(:end_active_at, DateTime.now) }
+          current_flight.flight_matrices.where.not(:tee_time => new_times).each{ |x| x.setInactive }
 
           #handle the flight matrices
           elm["times"].each do |flight_time|
@@ -409,6 +407,11 @@ class GolfClub < ActiveRecord::Base
                   elm["days"].inject({:tee_time => flight_time}){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
                 )
               )
+
+              #update end_active_at if reusing previously deleted flight_matrices
+              if fm.end_active_at < DateTime.now then
+                fm.update_attribute(:end_active_at, DateTime.parse("01-01-3017"))
+              end
             end
 
           end #elm["times"].each ....
