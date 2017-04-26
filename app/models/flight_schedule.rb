@@ -40,7 +40,11 @@ class FlightSchedule < ActiveRecord::Base
   def setInactive
     self.update_attribute(:end_active_at, DateTime.now - 1.minute)
   end
-  
+
+  def active_flight_matrices
+    self.flight_matrices.where.has{ end_active_at >= DateTime.now }
+  end
+
   private
   def min_caddy_must_less_eq_max_caddy
     self.init
