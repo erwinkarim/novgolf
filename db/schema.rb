@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170421024144) do
+ActiveRecord::Schema.define(version: 20170426025742) do
 
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -79,9 +79,11 @@ ActiveRecord::Schema.define(version: 20170421024144) do
     t.integer  "day5"
     t.integer  "day6"
     t.integer  "day7"
-    t.datetime "created_at",         null: false
-    t.datetime "updated_at",         null: false
+    t.datetime "created_at",                                         null: false
+    t.datetime "updated_at",                                         null: false
     t.time     "tee_time"
+    t.datetime "start_active_at",    default: '2017-01-01 00:00:00'
+    t.datetime "end_active_at",      default: '3017-01-01 00:00:00'
     t.index ["flight_schedule_id"], name: "index_flight_matrices_on_flight_schedule_id", using: :btree
   end
 

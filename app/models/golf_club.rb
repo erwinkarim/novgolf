@@ -357,7 +357,7 @@ class GolfClub < ActiveRecord::Base
             :cart => elm[:cart], :insurance_mode => elm[:insurance_mode].to_i)
           cs.save!
 
-          #need to fix this later <- why?
+          #TODO: set start_active_at dates as now
           #create new flight_matrices
           elm["times"].each do |flight_time|
             fm = fs.flight_matrices.new(
@@ -390,23 +390,26 @@ class GolfClub < ActiveRecord::Base
           current_flight.flight_matrices.where.not(:tee_time => new_times).each{ |x| x.destroy }
 
           #handle the flight matrices
+          #TODO: handle flight matrices that aren't there anymore
           elm["times"].each do |flight_time|
             #check if this exists or not
             fm = current_flight.flight_matrices.where(:tee_time => Time.parse("2000-01-01 #{flight_time} +0000")).first
             if fm.nil? then
-              #create new
+              #fm not found in the current list, create new
               fm = current_flight.flight_matrices.new(
                 elm["days"].inject({:tee_time => flight_time}){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
               )
               fm.save!
             else
-              #update the days / what not
+              #fm found in current list, update the days
               fm.update_attributes(
                 (1..7).inject({}){|p,n| p.merge({"day#{n}".to_sym => 0})}.merge(
                   elm["days"].inject({:tee_time => flight_time}){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
                 )
               )
             end
+
+            #clean up, delete (set end_active_at) for flight matrices that is not in the current list
           end
         end
 

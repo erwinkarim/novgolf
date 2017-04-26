@@ -17,7 +17,14 @@ class FlightMatrix < ActiveRecord::Base
 
   def init
     self.day1 ||= 1
+    self.day2 ||= 1
+    self.day3 ||= 1
+    self.day4 ||= 1
+    self.day5 ||= 1
     self.tee_time ||= "07:00am"
+
+    self.start_active_at ||= DateTime.parse("01-01-2017")
+    self.end_active_at ||= DateTime.parse("01-01-3017")
   end
 
   #validates that at least one of the dayX fields is populated
