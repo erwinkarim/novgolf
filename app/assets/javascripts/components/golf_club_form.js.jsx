@@ -1,9 +1,4 @@
 var daysNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-/*
-  issues:
-    * need to update state when forms are being update. find a better way to manage this
-      think about flux
-*/
 
 var GeneralBox = React.createClass({
   propTypes:{
@@ -69,12 +64,6 @@ var GeneralBox = React.createClass({
   },
   updateMap: function(){
     //console.log("show update the map here", map);
-    /* plan:
-      * make a new search service
-      * make a text based request to google based on the search query
-      * zoom in to the first result, otherwise, just do nothing
-      * update address and location info
-    */
 
     //center at klcc first
     var handle = this;
@@ -238,8 +227,7 @@ var FlightScheduleControl = React.createClass({
               <button className="btn btn-secondary"
                 type="button"
                 onClick={this.props.deleteTeeTime} data-index-schedule={this.props.scheduleIndex} data-index-time={i}
-                disabled={this.props.flightTimes.length == 1}
-              >
+                disabled={this.props.flightTimes.length == 1} >
                 <i className="fa fa-close" data-index-schedule={this.props.scheduleIndex} data-index-time={i}></i>
               </button>
             </div>
@@ -406,7 +394,6 @@ var FlightSchedulePriceCard = React.createClass({
                       name={`flight[${this.state.random_id}][insurance_mode]`}>{ this.props.insurance_modes.map( (e,i) =>
                         <option key={i} value={i} >{e}</option>
                     )}</select>
-
                   </div>
                   <div id={`insurance-note-${this.state.random_id}`} className="collapse in">
                     <div className="col-12">
@@ -419,7 +406,6 @@ var FlightSchedulePriceCard = React.createClass({
                         </li>
                       </ul>
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -449,7 +435,6 @@ var FlightSchedulePriceCard = React.createClass({
                       name={ "flight[" + this.state.random_id + "][max_pax]"}>{ [4,5,6].map ( (e,i) =>
                         <option key={i} value={e}>{e}</option>
                     )}</select>
-
                   </div>
                 </div>
                 <div className="form-group row">
@@ -508,19 +493,17 @@ var FlightSchedulePriceCard = React.createClass({
               <div className="mb-0 w-100">
                 <h4>Days Active</h4>
                 <div className="btn-group flex-wrap" data-toggle="buttons">{
-                  daysNames.slice(1).map( (e,i) =>
-                  {
+                  daysNames.slice(1).map( (e,i) => {
                     var isActive = (this.props.flightSchedule.flight_matrices[0]["day" + (i + 1)] == 1) ? "active" : ""
                     var isChecked = (this.props.flightSchedule.flight_matrices[0]["day" + (i + 1)] == 1) ? true : false
                     return (
                       <label className={"btn btn-secondary " + isActive} key={i+1}
                         data-index={this.props.scheduleIndex} data-target="flight_matrices" data-flight={i+1}
-                        onClick={this.props.updateFlightInfo} value={i+1} >
+                        onClick={this.props.updateFlightInfo} value={i+1}>
                         <input key={i+1} type="checkbox" autoComplete="off"
                           name={ "flight[" + this.state.random_id + "][days][]"} defaultValue={i+1} defaultChecked={isChecked} />{ e }
                       </label>
-                    )
-                  }
+                    )}
                 )}</div>
               </div>
             </li>
@@ -565,8 +548,6 @@ var FlightBox = React.createClass({
 
       return e;
     });
-    /*
-    */
 
     return {
         flightSchedules:this.props.flightSchedules,
@@ -591,10 +572,6 @@ var FlightBox = React.createClass({
       return;
     }
 
-    /*
-    console.log('e.target', e.target);
-    console.log('delete schedule index', parseInt(e.target.dataset.value,10));
-    */
     //figure out why this doesn't work
     var arrayIndex = parseInt(e.target.dataset.value, 10);
     var newFlightSchedules = this.state.flightSchedules;
@@ -606,13 +583,7 @@ var FlightBox = React.createClass({
     this.setState({flightSchedules:newFlightSchedules, teeTimes:newTeeTimes});
   },
   updateFlightInfo: function(e){
-    /*update target
-      * flight_schedule and
-      * associated charge_schedule and
-      * flight_matrices days selection
-    */
     var newFlightSchedules = this.state.flightSchedules;
-    //better way to set this
     if( e.target.dataset.target == "charge_schedule"){
       newFlightSchedules[e.target.dataset.index]["charge_schedule"][`${e.target.dataset.charge}`] = e.target.value;
     } else if (e.target.dataset.target == "flight_matrices") {
@@ -647,11 +618,6 @@ var FlightBox = React.createClass({
     }
   },
   generateTeeTime: function(e){
-    /*
-      sanity checks:
-        value must be valid between 0500 and 2300
-        startTime must be before endTime
-    */
     var newTeeTimes = this.state.teeTimes;
     var newTeeTimesArray = [];
 
@@ -664,10 +630,12 @@ var FlightBox = React.createClass({
     endTime.setHours(e.target.dataset.endTime.split(":")[0]);
     endTime.setMinutes(e.target.dataset.endTime.split(":")[1]);
 
+    //startTime must be before endTime
     if(currentTime.getTime() > endTime.getTime()){
       $.snackbar({content:'Start Time must be earlier than End Time', style:'error'});
       return;
     }
+    //TODO: value must be valid between 0500 and 2300
 
     while(currentTime.getTime() <= endTime.getTime()){
       newTeeTimesArray.push(currentTime.toTimeString().substring(0,5));
@@ -676,6 +644,8 @@ var FlightBox = React.createClass({
     }
     newTeeTimes[e.target.dataset.indexSchedule] = newTeeTimesArray;
     this.setState({teeTimes:newTeeTimes});
+
+
 
   },
   render: function(){
@@ -804,9 +774,7 @@ var GolfClubForm = React.createClass({
     this.setState({club:newClub});
   },
   submitForm: function(){
-    /*
-      TODO: give out notifications on error, redirect on success
-    */
+    //TODO: give out notifications on error, redirect on success
     $.ajax(this.props.form.action_path, {
         data:$('#golf_form').serialize(),
         method:this.props.form.method,
