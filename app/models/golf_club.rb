@@ -340,7 +340,13 @@ class GolfClub < ActiveRecord::Base
     self.transaction do
       #delete flight schedules that don't exists anymore
       FlightSchedule.where(:id => (self.flight_schedules.map{|x| x.id } -
-        flight_schedules.map{ |k,v| v["flight_id"].to_i }.select{ |x| !x.zero? }) ).each{|y| y.setInactive }
+        flight_schedules.map{ |k,v| v["flight_id"].to_i }.select{ |x| !x.zero? }) ).each do |y|
+          y.setInactive
+          #clean out if the fs is created and destroyed within 24 hours
+          if(y.end_active_at - y.start_active_at < 24.hours) then
+            DeleteFlightScheduleJob.perform_later(4)
+          end
+        end
 
       flight_schedules.each_pair do |idx, elm|
         if(elm["flight_id"].empty? ) then

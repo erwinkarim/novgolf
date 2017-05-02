@@ -59,7 +59,7 @@ Rails.application.configure do
 
   #testing queue adapter
   #config.active_job.queue_adapter = :shoryuken_later
-  config.active_job.queue_adapter = :shoryuken
+  config.active_job.queue_adapter = :async
 
   #mailer settings
   config.action_mailer.perform_deliveries = false
