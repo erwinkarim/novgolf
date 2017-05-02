@@ -44,7 +44,7 @@
             %tbody
               %tr
                 %td #{ @reservation.count_pax }
-                %td Balls
+                %td Non-Member
                 %td #{ number_to_currency(@reservation.actual_pax, { :unit => "RM "} )}
               - if @reservation.count_member > 0 then
                 %tr
