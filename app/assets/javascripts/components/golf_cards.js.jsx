@@ -328,7 +328,7 @@ var ReserveFormPage = React.createClass({
         </p>
         <div className="collapse" id={`notes-${this.state.random_id}`}>
           <div dangerouslySetInnerHTML={ this.rawNote()}></div>
-          <p>Number of balls in this flight must between {this.props.flight.minPax} and  {this.props.flight.maxPax}. Club T&C applies</p>
+          <p>Club T&C applies</p>
         </div>
       </div>
 
@@ -348,7 +348,7 @@ var ReserveFormPage = React.createClass({
               <option key={i}>{e}</option>
             )}</select>
           </div>
-          <label className="col-5"> x Balls </label>
+          <label className="col-5"> x Non-Member </label>
           <label className="col-5">
             {toCurrency(this.props.flightInfo.pax * parseFloat(this.props.flight.prices.flight) )}
           </label>
