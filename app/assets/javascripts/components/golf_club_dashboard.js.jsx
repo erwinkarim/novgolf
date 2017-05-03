@@ -289,6 +289,7 @@ var ReservationMembersModal = React.createClass({
         modalMaxMember = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight].maxPax;
     };
 
+    //should only enable if there's a reservation ID
     var enableVerifyMemberLink = this.props.selectedArray == null ? false : (
       this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight]
       .course_data.courses[this.props.selectedCourse].reservation_status == 8
@@ -344,18 +345,9 @@ var ReservationMembersModal = React.createClass({
               </form>
             </div>
             <div className="modal-footer">
-              <div className="btn-group">
-                <button type="button" className="btn btn-primary" onClick={this.props.updateMembersList}>Update Members</button>
-                <button type="button" className="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown">
-                  <span className="sr-only">Toggle Dropdown</span>
-                </button>
-                <div className="dropdown-menu">
-                  <a href="#" className={`dropdown-item ${enableVerifyMemberLink ? "" : "disabled"}`}
-                    onClick={this.props.reservationConfirmMembers} data-dismiss-modal="false">
-                    Update and Verify Member(s)
-                  </a>
-                </div>
-              </div>
+              <button type="button" className="btn btn-primary" onClick={this.props.reservationConfirmMembers}>
+                Update & Verify Members
+              </button>
             </div>
           </div>
         </div>
@@ -754,7 +746,7 @@ var GolfClubDashboard = React.createClass({
 
     }).catch(
       function(reason){
-        $.snackbar({content:'Unable to verify member list'});
+        $.snackbar({content:'Unable to verify member list', class:'error'});
       }
     );
 
