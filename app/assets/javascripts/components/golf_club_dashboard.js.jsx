@@ -364,6 +364,28 @@ var ReservationMembersModal = React.createClass({
   }
 });
 
+var ReservationContactInfoModal = React.createClass({
+  propTypes:{
+    reservation:React.PropTypes.object
+  },
+  render: function(){
+    return (
+      <div id="flight-contact-info-modal" className="modal fade">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">Reservation Info</div>
+            <div className="modal-body">Edit/Update Reservation Contact Info here</div>
+            <div className="modal-footer">
+              <button data-dismiss="modal" type="button" className="btn btn-secondary">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+});
+
 //should which courses are occupied
 //should show statuses
 var GolfCoursesGroup = React.createClass({
@@ -383,7 +405,7 @@ var GolfCoursesGroup = React.createClass({
 
     var reservation_id = this.props.flight.course_data.courses[this.props.selectedCourse].reservation_id || null;
     console.log("reservation_id", reservation_id);
-    var reservation_text = this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text;
+    var reservation_text = this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text || "Nil";
 
     var reservation_link = reservation_id == null ? "Nil" : (
       <a href={`#course-detail-${this.state.random_id}`} data-toggle="collapse">{reservation_id}</a>
@@ -410,14 +432,15 @@ var GolfCoursesGroup = React.createClass({
             </label>
           );
         })}</div>
-        <p className="card-text">
-          Selected Course: {this.props.flight.course_data.courses[this.props.selectedCourse].name};
-          Reservation ID:{reservation_link};
-          Reservation Status: {reservation_text }
-        </p>
+        <ul className="list-unstyled">
+          <li> Selected Course: {this.props.flight.course_data.courses[this.props.selectedCourse].name}; </li>
+          <li> Reservation ID:{reservation_link}; </li>
+          <li> Reservation Status: {reservation_text } </li>
+        </ul>
         <div className="collapse in" id={`course-detail-${this.state.random_id}`}>
           <hr />
           <p className="card-text">reservation info/action here</p>
+          <button type="button" className="btn btn-secondary" data-target="#flight-contact-info-modal" data-toggle="modal">Edit Info</button>
         </div>
       </div>
     );
@@ -862,6 +885,7 @@ var GolfClubDashboard = React.createClass({
         />
         <ReservationTransactionModal flightTransaction={this.state.flightTransaction} cashValue={this.state.cashValue}
           reservationPay={this.reservationPay} updateCashValue={this.updateCashValue} processing={this.state.processing}/>
+        <ReservationContactInfoModal />
         <div className="col-lg-8">
           <p>
             <input className="datepicker form-control" ref={ (datepicker)=>{this.datepicker=datepicker; }}
