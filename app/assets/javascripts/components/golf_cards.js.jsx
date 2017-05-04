@@ -155,7 +155,13 @@ var GolfCardTimes = React.createClass({
           case 8: indicatorClass = "info"; break;
           default: indicatorClass = null;
         }
-        return (indicatorClass == null ? null : <i key={i} className={`text-${indicatorClass} fa fa-circle`}></i>)
+        var result = indicatorClass == null ? null : (
+          <i key={i} className={`text-${indicatorClass} fa fa-circle`}
+            data-value={this.props.index} data-tee-time={this.props.flight.tee_time} data-array-index={this.props.arrayIndex}>
+          </i>
+        );
+
+        return result;
       })
     )
     : null;
@@ -225,46 +231,6 @@ var GolfCardTimesGroup = React.createClass({
   }
 });
 
-//should which courses are occupied
-//should show statuses
-var GolfCoursesGroup = React.createClass({
-  propTypes:{
-      flight: React.PropTypes.object, selectedCourse: React.PropTypes.number
-  },
-  getDefaultProps: function(){
-      return {selectedCourse:0};
-  },
-  render: function(){
-    return (
-      <div>
-        <p>Courses:</p>
-        <div className="btn-group w-100 flex-wrap" data-toggle="buttons">{ this.props.flight.course_data.courses.map( (e,i) => {
-          var reserve_status = "secondary"
-          switch (e.reservation_status) {
-            case 1: reserve_status = "warning"; break;
-            case 8: reserve_status = "info"; break;
-            case 2: reserve_status = "danger"; break;
-            case 3: reserve_status = "danger"; break;
-            default: reserve_status = "secondary";
-          };
-          var activeState = (i == this.props.selectedCourse) ? "active" : null;
-          return (
-            <label className={`btn btn-${reserve_status} ${activeState}`} key={i} onClick={this.props.selectCourse}
-              data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}>
-              <input type="radio" name="courses" value={`course-${e.id}`}  />
-              {e.name}
-            </label>
-          );
-        })}</div>
-        <p className="card-text">
-          Selected Course: {this.props.flight.course_data.courses[this.props.selectedCourse].name};
-          Reservation ID:{this.props.flight.course_data.courses[this.props.selectedCourse].reservation_id || 'Nil'} </p>
-        <p className="card-text">Reservation Status: { this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text || 'Nil'} </p>
-      </div>
-    );
-  }
-});
-
 //content of each tab to show how many balls, insurance, etc being choosen for each flight
 var ReserveFormPage = React.createClass({
   propTypes: {
@@ -299,19 +265,6 @@ var ReserveFormPage = React.createClass({
   },
   render: function(){
     var activeClass = (this.props.isActive) ? "active" : "";
-    if(this.props.options.displayCourseGroup){
-      golfCourses = (this.props.displayAs == "card") ? (
-        <div className="card-block">
-          <GolfCoursesGroup flight={this.props.flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}/>
-        </div>
-      ) : (
-        <li className="list-group-item">
-          <GolfCoursesGroup flight={this.props.flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}/>
-        </li>
-      );
-    } else {
-      golfCourses = null;
-    }
 
     var membersLink = (this.props.options.displayMembersModal) ? (
       <a href="#membersModal" data-toggle="modal"> x Members </a>
@@ -442,7 +395,6 @@ var ReserveFormPage = React.createClass({
             </a>
           </h5>
         </div>
-        { golfCourses }
         <div className="card-block text-black pt-2 pb-2">
           { formContent }
           { notesContent }
@@ -451,7 +403,6 @@ var ReserveFormPage = React.createClass({
     ) : (
       <div className="w-100">
         <li className="list-group-item p-0"></li>
-        { golfCourses}
         <li className="list-group-item">
           { formContent}
         </li>

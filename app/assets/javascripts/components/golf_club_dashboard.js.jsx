@@ -83,8 +83,6 @@ var GolfClubDashStatus = React.createClass({
   getDefaultProps: function(){
       return {status:'Nothing Selected'};
   },
-  componentDidMount:function(){
-  },
   toggleChevron: function(){
     $(this.refs.chevron).toggleClass('fa-angle-double-up');
     $(this.refs.chevron).toggleClass('fa-angle-double-down');
@@ -94,6 +92,7 @@ var GolfClubDashStatus = React.createClass({
     var flightInfo = null;
     var btnRow = null;
     var moneyInfo = null;
+    var courseInfo = null;
     var toggleReservationPanel = this.props.status == null ? null : (
       <a onClick={this.toggleChevron} data-toggle="collapse" href="#reservationCollapse"><i ref="chevron" className="fa fa-angle-double-up"></i></a>
     );
@@ -125,6 +124,12 @@ var GolfClubDashStatus = React.createClass({
         </li>
       );
 
+      courseInfo = (
+        <li className="list-group-item">
+          <GolfCoursesGroup flight={flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}/>
+        </li>
+      )
+
       flightInfo = (
         <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
           selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
@@ -150,6 +155,7 @@ var GolfClubDashStatus = React.createClass({
             <li className="list-group-item">
               Selected Flight: {this.props.status}
             </li>
+            { courseInfo}
             { flightInfo }
             { moneyInfo }
             { btnRow }
@@ -217,7 +223,7 @@ var ReservationTransactionModal = React.createClass({
     );
 
     var loadingBody = (this.props.processing) ? (
-      <tr><td colspan="3">Loading... </td></tr>
+      <tr><td colSpan="3">Loading... </td></tr>
     ) : null;
 
     var urTransactionModal = this.props.flightTransaction == null ? null : (
@@ -358,6 +364,66 @@ var ReservationMembersModal = React.createClass({
   }
 });
 
+//should which courses are occupied
+//should show statuses
+var GolfCoursesGroup = React.createClass({
+  propTypes:{
+      flight: React.PropTypes.object, selectedCourse: React.PropTypes.number
+  },
+  getDefaultProps: function(){
+    return {selectedCourse:0};
+  },
+  getInitialState: function(){
+    return {random_id:randomID()};
+  },
+  render: function(){
+    var reservation_id = null;
+    var reservation_text = null;
+    var reservation_link = null;
+
+    var reservation_id = this.props.flight.course_data.courses[this.props.selectedCourse].reservation_id || null;
+    console.log("reservation_id", reservation_id);
+    var reservation_text = this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text;
+
+    var reservation_link = reservation_id == null ? "Nil" : (
+      <a href={`#course-detail-${this.state.random_id}`} data-toggle="collapse">{reservation_id}</a>
+    );
+
+    return (
+      <div>
+        <p>Courses:</p>
+        <div className="btn-group w-100 flex-wrap" data-toggle="buttons">{ this.props.flight.course_data.courses.map( (e,i) => {
+          var reserve_status = "secondary"
+          switch (e.reservation_status) {
+            case 1: reserve_status = "warning"; break;
+            case 8: reserve_status = "info"; break;
+            case 2: reserve_status = "danger"; break;
+            case 3: reserve_status = "danger"; break;
+            default: reserve_status = "secondary";
+          };
+          var activeState = (i == this.props.selectedCourse) ? "active" : null;
+          return (
+            <label className={`btn btn-${reserve_status} ${activeState}`} key={i} onClick={this.props.selectCourse}
+              data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}>
+              <input type="radio" name="courses" value={`course-${e.id}`}  />
+              {e.name}
+            </label>
+          );
+        })}</div>
+        <p className="card-text">
+          Selected Course: {this.props.flight.course_data.courses[this.props.selectedCourse].name};
+          Reservation ID:{reservation_link};
+          Reservation Status: {reservation_text }
+        </p>
+        <div className="collapse in" id={`course-detail-${this.state.random_id}`}>
+          <hr />
+          <p className="card-text">reservation info/action here</p>
+        </div>
+      </div>
+    );
+  }
+});
+
 var GolfClubDashboard = React.createClass({
   propTypes: {
       club:React.PropTypes.object,
@@ -366,7 +432,7 @@ var GolfClubDashboard = React.createClass({
       refreshEvery:React.PropTypes.number
   },
   getDefaultProps: function(){
-      return { options: {displayCourseGroup:true, GolfClubTimesShowPrices:false, displayMembersModal:true}, refreshEvery:60};
+      return { options: {displayCourseGroup:false, GolfClubTimesShowPrices:false, displayMembersModal:true}, refreshEvery:60};
   },
   getInitialState: function(){
     var today = new Date();
