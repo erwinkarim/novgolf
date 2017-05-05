@@ -1,3 +1,7 @@
+let FLIGHT_INFO_DEFAULTS = {
+      pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[], reserved_by:null
+};
+
 var GolfClubDashStatistics = React.createClass({
   propTypes:{
     flightsArray:React.PropTypes.array, days:React.PropTypes.array
@@ -126,7 +130,9 @@ var GolfClubDashStatus = React.createClass({
 
       courseInfo = (
         <li className="list-group-item">
-          <GolfCoursesGroup flight={flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}/>
+          <GolfCoursesGroup
+            flight={flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}
+            reservation={this.props.flightInfo}/>
         </li>
       )
 
@@ -390,7 +396,9 @@ var ReservationContactInfoModal = React.createClass({
 //should show statuses
 var GolfCoursesGroup = React.createClass({
   propTypes:{
-      flight: React.PropTypes.object, selectedCourse: React.PropTypes.number
+    flight: React.PropTypes.object,
+    selectedCourse: React.PropTypes.number,
+    reservation:React.PropTypes.object
   },
   getDefaultProps: function(){
     return {selectedCourse:0};
@@ -404,13 +412,13 @@ var GolfCoursesGroup = React.createClass({
     var reservation_link = null;
 
     var reservation_id = this.props.flight.course_data.courses[this.props.selectedCourse].reservation_id || null;
-    console.log("reservation_id", reservation_id);
     var reservation_text = this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text || "Nil";
 
     var reservation_link = reservation_id == null ? "Nil" : (
-      <a href={`#course-detail-${this.state.random_id}`} data-toggle="collapse">{reservation_id}</a>
+      <a href={`#reservation-detail`} data-toggle="collapse">{reservation_id}</a>
     );
 
+    var reserved_by_text = this.props.reservation.reserved_by == null ? "Nil" : this.props.reservation.reserved_by.name;
     return (
       <div>
         <p>Courses:</p>
@@ -437,9 +445,17 @@ var GolfCoursesGroup = React.createClass({
           <li> Reservation ID:{reservation_link}; </li>
           <li> Reservation Status: {reservation_text } </li>
         </ul>
-        <div className="collapse in" id={`course-detail-${this.state.random_id}`}>
+        <div className="collapse in" id={`reservation-detail`}>
           <hr />
-          <p className="card-text">reservation info/action here</p>
+          <ul className="list-unstyled">
+            <li>Reserved By: {reserved_by_text} </li>
+            <li>Reserved For:
+              <ul>
+                <li>Email: </li>
+                <li>Telephone: </li>
+              </ul>
+            </li>
+          </ul>
           <button type="button" className="btn btn-secondary" data-target="#flight-contact-info-modal" data-toggle="modal">Edit Info</button>
         </div>
       </div>
@@ -465,7 +481,8 @@ var GolfClubDashboard = React.createClass({
       flightsArray:[], dashBoardStatusText:'None Selected',
       days: this.updateDays(today), queryDate:queryDate,
       loadFlight: false, selectedArray:null, selectedFlight:null, selectedCourse:null,
-      flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[]},flightTransaction:null,
+      flightInfo:FLIGHT_INFO_DEFAULTS,
+      flightTransaction:null,
       cashValue:0.0, processing:false
     }
   },
@@ -537,8 +554,11 @@ var GolfClubDashboard = React.createClass({
       }).then(function(data){
         var reserve = data.user_reservation;
         var newFlightInfo = Object.assign(currentFlightInfo,
-          {pax:reserve.count_pax, member:reserve.count_member, buggy:reserve.count_buggy, caddy:reserve.count_caddy,
-            insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price, members:reserve.ur_member_details});
+          {
+            pax:reserve.count_pax, member:reserve.count_member, buggy:reserve.count_buggy, caddy:reserve.count_caddy,
+            insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price, members:reserve.ur_member_details,
+            reserved_by:reserve.reserved_by
+          });
         handle.setState({flightInfo:newFlightInfo});
       });
 
@@ -621,11 +641,15 @@ var GolfClubDashboard = React.createClass({
       $($('.btn-group')[this.state.selectedArray]).find('.active').toggleClass('active');
     };
 
+    //hide the reservation detail
+    $('#reservation-detail').collapse('hide');
+    
     //setup the dashboard status
     var newDashText = this.state.days[selectedArray] + ", " + this.state.flightsArray[selectedArray][selectedIndex].tee_time;
 
     var flight = this.state.flightsArray[selectedArray][selectedIndex];
-    var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, members:[], tax:0.00, totalPrice:0.00};
+    //var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, members:[], tax:0.00, totalPrice:0.00};
+    var newFlightInfo = Object.assign(FLIGHT_INFO_DEFAULTS, {pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy});
     newFlightInfo = this.updatePrice(newFlightInfo, flight);
 
     //load the user_reservation_id for the first course
@@ -842,6 +866,10 @@ var GolfClubDashboard = React.createClass({
     $(handle.refs.membersModal.refs.membersModal).modal('hide');
 
   },
+  reservationUpdateContactInfo: function(e){
+    //update reservation info
+    return null;
+  },
   updateCashValue: function(e){
     this.setState({cashValue:parseFloat(e.target.value)});
   },
@@ -885,7 +913,7 @@ var GolfClubDashboard = React.createClass({
         />
         <ReservationTransactionModal flightTransaction={this.state.flightTransaction} cashValue={this.state.cashValue}
           reservationPay={this.reservationPay} updateCashValue={this.updateCashValue} processing={this.state.processing}/>
-        <ReservationContactInfoModal />
+        <ReservationContactInfoModal reservation={this.state.flightInfo}/>
         <div className="col-lg-8">
           <p>
             <input className="datepicker form-control" ref={ (datepicker)=>{this.datepicker=datepicker; }}

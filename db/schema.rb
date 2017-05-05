@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170426025742) do
+ActiveRecord::Schema.define(version: 20170505082752) do
 
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -184,6 +184,18 @@ ActiveRecord::Schema.define(version: 20170426025742) do
     t.datetime "updated_at",                                     null: false
   end
 
+  create_table "ur_contacts", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.integer  "user_id"
+    t.integer  "user_reservation_id"
+    t.string   "name"
+    t.string   "email"
+    t.string   "telephone"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+    t.index ["user_id"], name: "index_ur_contacts_on_user_id", using: :btree
+    t.index ["user_reservation_id"], name: "index_ur_contacts_on_user_reservation_id", using: :btree
+  end
+
   create_table "ur_member_details", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
     t.string   "member_id"
@@ -290,6 +302,8 @@ ActiveRecord::Schema.define(version: 20170426025742) do
   add_foreign_key "memberships", "users"
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"
+  add_foreign_key "ur_contacts", "user_reservations"
+  add_foreign_key "ur_contacts", "users"
   add_foreign_key "ur_member_details", "user_reservations"
   add_foreign_key "ur_transactions", "user_reservations"
   add_foreign_key "user_reservations", "charge_schedules"

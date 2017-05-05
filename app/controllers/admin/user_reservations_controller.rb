@@ -2,12 +2,19 @@ class Admin::UserReservationsController < ApplicationController
   before_action :admins_only
 
   # GET      /admin/user_reservations/:id(.:format)
+  #TODO: allow golf admin to view the admin, especially when it'd made by other members
   def show
     user_reservation = UserReservation.find(params[:id])
 
     if user_reservation.golf_club.user == current_user then
-      render json: { :user_reservation => user_reservation.attributes.merge({total_price:user_reservation.total_price,
-        ur_member_details:user_reservation.ur_member_details.to_a, status_text:user_reservation.status}) }
+      render json: {
+        :user_reservation => user_reservation.attributes.merge({
+          reserved_by: user_reservation.user,
+          total_price:user_reservation.total_price,
+          ur_member_details:user_reservation.ur_member_details.to_a,
+          status_text:user_reservation.status}
+        )
+      }
     else
       render :file => "public/404", status: :unauthorized
     end
