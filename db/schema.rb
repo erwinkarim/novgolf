@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170505082752) do
+ActiveRecord::Schema.define(version: 20170506060025) do
 
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -239,6 +239,7 @@ ActiveRecord::Schema.define(version: 20170505082752) do
     t.integer  "course_listing_id"
     t.integer  "count_member",                                 default: 0
     t.integer  "last_paper_trail_id"
+    t.integer  "reserve_method",                               default: 0
     t.index ["charge_schedule_id"], name: "index_user_reservations_on_charge_schedule_id", using: :btree
     t.index ["course_listing_id"], name: "index_user_reservations_on_course_listing_id", using: :btree
     t.index ["flight_matrix_id"], name: "index_user_reservations_on_flight_matrix_id", using: :btree

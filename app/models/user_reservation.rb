@@ -9,6 +9,7 @@ class UserReservation < ActiveRecord::Base
   belongs_to :course_listing
 
   has_one :review, as: :topic
+  has_one :ur_contact
   has_many :ur_member_details, dependent: :destroy
   has_many :ur_transactions, dependent: :destroy
 
@@ -27,7 +28,7 @@ class UserReservation < ActiveRecord::Base
   validates_presence_of :actual_pax, :actual_buggy, :actual_caddy, :actual_insurance, :actual_tax
   validates_presence_of :count_pax, :count_buggy, :count_caddy, :count_insurance, :count_member
   validates_presence_of :booking_date, :booking_time, :course_listing_id
-  validates_presence_of :status
+  validates_presence_of :status, :reserve_method
   validate :validates_booking_datetime, on: :create
   validate :count_insurance_must_less_eq_count_pax
 
@@ -35,6 +36,7 @@ class UserReservation < ActiveRecord::Base
 
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,
     :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed, :reservation_failed, :requires_members_verification]
+  enum reserve_method: [:online, :dashboard]
 
   after_initialize :init
 
@@ -59,6 +61,7 @@ class UserReservation < ActiveRecord::Base
       self.count_insurance ||= 0
 
       self.status ||= 0
+      self.reserve_method ||= 0
     end
   end
 

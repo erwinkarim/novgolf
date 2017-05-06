@@ -16,6 +16,7 @@ class UserReservationTest < ActiveSupport::TestCase
   should validate_presence_of(:course_listing_id)
   should validate_presence_of(:status)
   should validate_presence_of(:actual_tax)
+  should validate_presence_of(:reserve_method)
 
 
   should belong_to(:user)
@@ -24,6 +25,7 @@ class UserReservationTest < ActiveSupport::TestCase
   should belong_to(:course_listing)
 
   should have_one(:review)
+  should have_one(:ur_contact)
 
   should have_many(:ur_member_details).dependent(:destroy)
   should have_many(:ur_transactions).dependent(:destroy)
