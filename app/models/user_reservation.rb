@@ -239,7 +239,11 @@ class UserReservation < ActiveRecord::Base
   #streamline method to generate user reservation
   #includes the sanity checks, etc...
   # flight_info must be format {:pax, :caddy, :buggy, :insurance}, ie- count, everything else will be calculated
-  def self.create_reservation flight_matrix_id, user_id, booked_date = Date.today, flight_info = {}
+  def self.create_reservation flight_matrix_id, user_id, booked_date = Date.today, flight_info = {}, options = {}
+    default_options = { reserve_method:UserReservation.reserve_methods[:online] }
+
+    options = default_options.merge(options)
+
     #sanity checks, expects that flight_info has all the necessary keys and values
     flight_info = flight_info.symbolize_keys
 
@@ -269,10 +273,11 @@ class UserReservation < ActiveRecord::Base
         actual_pax:flight_info[:pax].to_i * cs.session_price, actual_caddy: flight_info[:caddy].to_i * cs.caddy,
           actual_buggy:flight_info[:buggy].to_i * cs.cart, actual_insurance: flight_info[:insurance].to_i * cs.insurance,
           actual_tax: taxation,
-        status:0
+        status:UserReservation.statuses[:reservation_created], reserve_method:options[:reserve_method]
       )
 
       #find the free coursetime
+      #TODO, automatically use the first free course or set the course
       first_course_id = (club.course_listings.map{ |x| x.id } -
         UserReservation.where.has{
           (golf_club_id == club_id) &

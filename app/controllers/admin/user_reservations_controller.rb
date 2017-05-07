@@ -7,9 +7,13 @@ class Admin::UserReservationsController < ApplicationController
     user_reservation = UserReservation.find(params[:id])
 
     if user_reservation.golf_club.user == current_user then
+      contact_info = (user_reservation.reserve_method == "online") ?
+        user_reservation.user :
+        user_reservation.ur_contact
       render json: {
         :user_reservation => user_reservation.attributes.merge({
           reserved_by: user_reservation.user,
+          ur_contact: contact_info,
           total_price:user_reservation.total_price,
           ur_member_details:user_reservation.ur_member_details.to_a,
           status_text:user_reservation.status}
@@ -48,7 +52,8 @@ class Admin::UserReservationsController < ApplicationController
     ur = UserReservation.new
     UserReservation.transaction do
       #create the reservation
-      ur = UserReservation.create_reservation params[:flight_matrix_id], current_user.id, params[:booking_date], params[:flight_info]
+      ur = UserReservation.create_reservation params[:flight_matrix_id], current_user.id, params[:booking_date], params[:flight_info],
+        {reserve_method:UserReservation.reserve_methods[:dashboard]}
       unless params.has_key?(:flight_info) then
         flight_info["members"].each_pair do |index, member|
           ur_member_details = UrMemberDetail.new({name:member["name"], member_id:member["id"], user_reservation_id:ur.id})
