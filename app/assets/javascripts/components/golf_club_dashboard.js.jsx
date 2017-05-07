@@ -398,7 +398,7 @@ var ReservationContactInfoModal = React.createClass({
     $(this.contactModal).on('hide.bs.modal', function(){
       //reset the state.ur_contact
       var newUrContact = (handle.props.reservation.ur_contact === null) ?
-        Object.assign({}, UR_CONTACT_DEFAULTS) : this.props.reservation.ur_contact;
+        Object.assign({}, UR_CONTACT_DEFAULTS) : handle.props.reservation.ur_contact;
       handle.setState({ur_contact:newUrContact});
     });
   },
@@ -425,14 +425,13 @@ var ReservationContactInfoModal = React.createClass({
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
-              <h3>Reservation Contact Info</h3>
-              <div className="pull-right">
-                <button type="button" className="close" data-dismiss="modal">&times;</button>
-              </div>
+              <h3 className="modal-title">Reservation Contact Info</h3>
+              <button type="button" className="close" data-dismiss="modal">
+                <span>&times;</span>
+              </button>
             </div>
             <div className="modal-body">
               {online_notice}
-              <p>Contact Name: {contact_name}</p>
               <form action="/">
                 <div className="row form-group">
                   <label className="col-4 col-form-label">Name:</label>
@@ -462,7 +461,7 @@ var ReservationContactInfoModal = React.createClass({
             </div>
             <div className="modal-footer">
               <button data-dismiss="modal" type="button" className="btn btn-secondary">Close</button>
-              <button type="button" className="btn btn-primary" onClick={this.sendContactUpdate}>Update Contacts</button>
+              <button type="button" className="btn btn-primary" onClick={this.sendContactUpdate} disabled={disableForm}>Update Contacts</button>
             </div>
           </div>
         </div>
@@ -753,7 +752,6 @@ var GolfClubDashboard = React.createClass({
     clickDashPromise.then(function(data){
       //load the user_reservation_id for the first course
       //var user_reservation_id = Math.min.apply(null, flight.course_data.courses.map((e,i) => e.reservation_id) );
-      console.log("data", data);
       var user_reservation_id = data.flight.course_data.courses[0].reservation_id;
       if(user_reservation_id){
         var newFlightInfo = data.newFlightInfo;
