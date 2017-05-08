@@ -68,7 +68,11 @@ Rails.application.routes.draw do
          end
        end
      end
-     resources :ur_contacts
+     resources :ur_contacts do
+       collection do
+         get 'suggest'
+       end
+     end
    end
 
    resources :golf_clubs, :only => [:index, :show] do

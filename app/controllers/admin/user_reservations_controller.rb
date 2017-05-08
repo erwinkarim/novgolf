@@ -7,13 +7,12 @@ class Admin::UserReservationsController < ApplicationController
     user_reservation = UserReservation.find(params[:id])
 
     if user_reservation.golf_club.user == current_user then
-      contact_info = (user_reservation.reserve_method == "online") ?
-        user_reservation.user :
-        user_reservation.ur_contact
       render json: {
         :user_reservation => user_reservation.attributes.merge({
           reserved_by: user_reservation.user,
-          ur_contact: contact_info,
+          ur_contact: user_reservation.contact.attributes.merge({
+            contact_type:user_reservation.contact_type
+            }),
           total_price:user_reservation.total_price,
           ur_member_details:user_reservation.ur_member_details.to_a,
           status_text:user_reservation.status}

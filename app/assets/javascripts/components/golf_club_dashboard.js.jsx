@@ -3,7 +3,7 @@ let FLIGHT_INFO_DEFAULTS = {
       ur_contact:null, reserve_method:0, reservation_id:null
 };
 let UR_CONTACT_DEFAULTS = {
-  id:null, name:"", email:"", telephone:""
+  id:"", contact_type:"UrContact", name:"", email:"", telephone:""
 };
 
 var GolfClubDashStatistics = React.createClass({
@@ -415,6 +415,17 @@ var ReservationContactInfoModal = React.createClass({
       method:'POST',
       body:new FormData(handle.contactForm),
       credentials: 'same-origin'
+    }).then(function(response){
+      //all done, should update the user_reservation
+      if(response.status >= 200 && response.status < 300){
+        $.snackbar({content:'Contact Info Updated', style:'notice'});
+        //should update the reservation props
+        handle.props.loadSchedule();
+      } else {
+        $.snackbar({content:'There are some errors updating the contact info', style:'error'});
+        $.snackbar({content:response.text(), style:'error'});
+        throw new Error(response.statusText);
+      };
     });
 
     //update the reservation
@@ -424,6 +435,8 @@ var ReservationContactInfoModal = React.createClass({
     disableForm = this.props.reservation.reserve_method == "online";
     var contact_id = (this.state.ur_contact === null) ? "" :
       this.state.ur_contact.id;
+    var contact_type = (this.state.ur_contact === null) ? "" :
+      this.state.ur_contact.contact_type;
     var contact_name = (this.state.ur_contact === null) ? "" :
       this.state.ur_contact.name;
     var contact_email = (this.state.ur_contact === null) ? "" :
@@ -451,6 +464,7 @@ var ReservationContactInfoModal = React.createClass({
                 method="POST" ref={(form)=>this.contactForm=form}>
                 <input type="hidden" value={this.props.token} name="authenticity_token" />
                 <input type="hidden" name="ur_contact[id]" value={contact_id} />
+                <inpyt type="hidden" name="ur_contact[type]" value={contact_type} />
                 <div className="row form-group">
                   <label className="col-4 col-form-label">Name:</label>
                   <div className="col-8">
@@ -479,7 +493,10 @@ var ReservationContactInfoModal = React.createClass({
             </div>
             <div className="modal-footer">
               <button data-dismiss="modal" type="button" className="btn btn-secondary">Close</button>
-              <button type="button" className="btn btn-primary" onClick={this.sendContactUpdate} disabled={disableForm}>Update Contacts</button>
+              <button type="button" className="btn btn-primary" onClick={this.sendContactUpdate} disabled={disableForm}
+                data-value="" data-array-index="">
+                Update Contacts
+              </button>
             </div>
           </div>
         </div>
@@ -557,7 +574,8 @@ var GolfCoursesGroup = React.createClass({
             </li>
           </ul>
           <hr />
-          <button type="button" className="btn btn-secondary" data-target="#flight-contact-info-modal" data-toggle="modal">Edit Info</button>
+          <button type="button" className="btn btn-info mr-2" data-target="#flight-contact-info-modal" data-toggle="modal">Edit Info</button>
+          <button type="button" className="btn btn-secondary" data-toggle="collapse" data-target="#reservation-detail">Close</button>
         </div>
       </div>
     );
@@ -903,9 +921,14 @@ var GolfClubDashboard = React.createClass({
       return response.json();
     }).then(function(data){
       $.snackbar({content:data.message});
+      //update the current flightInfo to include reservation id
+      var newFlightInfo = handle.state.flightInfo;
+      newFlightInfo.reservation_id = data.reservation.id;
+      handle.setState({flightInfo:newFlightInfo});
+
       handle.loadSchedule();
     }).catch(function(ex){
-      $.snackbar({content:'Failed to reserve Flight'});
+      $.snackbar({content:'Failed to reserve Flight', style:'error'});
       //console.log("exception", ex);
     });
   },
@@ -1026,7 +1049,9 @@ var GolfClubDashboard = React.createClass({
         />
         <ReservationTransactionModal flightTransaction={this.state.flightTransaction} cashValue={this.state.cashValue}
           reservationPay={this.reservationPay} updateCashValue={this.updateCashValue} processing={this.state.processing}/>
-        <ReservationContactInfoModal reservation={this.state.flightInfo} paths={this.props.paths} token={this.props.token}/>
+        <ReservationContactInfoModal reservation={this.state.flightInfo} paths={this.props.paths} token={this.props.token}
+          loadSchedule={this.loadSchedule}
+          />
         <div className="col-lg-8">
           <p>
             <input className="datepicker form-control" ref={ (datepicker)=>{this.datepicker=datepicker; }}

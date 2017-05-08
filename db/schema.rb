@@ -238,12 +238,13 @@ ActiveRecord::Schema.define(version: 20170508020548) do
     t.integer  "count_member",                                 default: 0
     t.integer  "last_paper_trail_id"
     t.integer  "reserve_method",                               default: 0
-    t.integer  "ur_contact_id"
+    t.string   "contact_type"
+    t.integer  "contact_id"
     t.index ["charge_schedule_id"], name: "index_user_reservations_on_charge_schedule_id", using: :btree
+    t.index ["contact_type", "contact_id"], name: "index_user_reservations_on_contact_type_and_contact_id", using: :btree
     t.index ["course_listing_id"], name: "index_user_reservations_on_course_listing_id", using: :btree
     t.index ["flight_matrix_id"], name: "index_user_reservations_on_flight_matrix_id", using: :btree
     t.index ["golf_club_id"], name: "index_user_reservations_on_golf_club_id", using: :btree
-    t.index ["ur_contact_id"], name: "index_user_reservations_on_ur_contact_id", using: :btree
     t.index ["user_id"], name: "index_user_reservations_on_user_id", using: :btree
   end
 
@@ -310,6 +311,5 @@ ActiveRecord::Schema.define(version: 20170508020548) do
   add_foreign_key "user_reservations", "course_listings"
   add_foreign_key "user_reservations", "flight_matrices"
   add_foreign_key "user_reservations", "golf_clubs"
-  add_foreign_key "user_reservations", "ur_contacts"
   add_foreign_key "user_reservations", "users"
 end
