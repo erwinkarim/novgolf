@@ -61,7 +61,14 @@ Rails.application.routes.draw do
          post 'stats'
        end
        resources :ur_transactions, :only => [:index]
+       resources :ur_contacts, :only => [] do
+         collection do
+           post '/' => 'ur_contacts#ur_contact_update'
+           patch '/' => 'ur_contacts#ur_contact_update'
+         end
+       end
      end
+     resources :ur_contacts
    end
 
    resources :golf_clubs, :only => [:index, :show] do
