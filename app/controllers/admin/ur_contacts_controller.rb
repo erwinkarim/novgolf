@@ -9,6 +9,11 @@ class Admin::UrContactsController < ApplicationController
       return
     end
 
+    #skip if there's no name
+    if params[:ur_contact][:name].blank? then
+      Rails.logger.info "Name field is blank. Skipping..."
+    end
+
     #load the user reservation
     ur = UserReservation.find(params[:user_reservation_id])
 
@@ -29,6 +34,18 @@ class Admin::UrContactsController < ApplicationController
 
     #screnario #2: new ur_contact. create a new ur_contact, then link to current reservation
     Rails.logger.info "Creating new contact for reservation #{params[:user_reservation_id]}..."
+    UrContact.transaction do
+      #create the ur contact
+      urContact = current_user.ur_contacts.new({name:params[:ur_contact][:name],
+        email:params[:ur_contact][:email], telephone:params[:ur_contact][:telephone]})
+      if urContact.save! then
+        ur.update_attribute(:ur_contact_id, urContact.id)
+        head :ok
+        return
+      else
+        render json: {errors:urContact.errors.messages}, status: :internal_server_error
+      end
+    end
 
   end
 end

@@ -9,7 +9,7 @@ class UserReservation < ActiveRecord::Base
   belongs_to :course_listing
 
   has_one :review, as: :topic
-  has_one :ur_contact
+  belongs_to :ur_contact
   has_many :ur_member_details, dependent: :destroy
   has_many :ur_transactions, dependent: :destroy
 

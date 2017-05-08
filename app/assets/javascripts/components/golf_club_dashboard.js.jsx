@@ -390,6 +390,9 @@ var ReservationContactInfoModal = React.createClass({
     //update the ur_contact state
     var newUrContact = (this.state.ur_contact===null) ?
       Object.assign({}, UR_CONTACT_DEFAULTS) : this.state.ur_contact;
+
+    //reset id to null
+    newUrContact.id = "";
     newUrContact = Object.assign(newUrContact, {[e.target.dataset.target]:e.target.value});
     this.setState({ur_contact:newUrContact});
   },

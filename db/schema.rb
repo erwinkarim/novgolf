@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170506060025) do
+ActiveRecord::Schema.define(version: 20170508020548) do
 
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -186,14 +186,12 @@ ActiveRecord::Schema.define(version: 20170506060025) do
 
   create_table "ur_contacts", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer  "user_id"
-    t.integer  "user_reservation_id"
     t.string   "name"
     t.string   "email"
     t.string   "telephone"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_ur_contacts_on_user_id", using: :btree
-    t.index ["user_reservation_id"], name: "index_ur_contacts_on_user_reservation_id", using: :btree
   end
 
   create_table "ur_member_details", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -240,10 +238,12 @@ ActiveRecord::Schema.define(version: 20170506060025) do
     t.integer  "count_member",                                 default: 0
     t.integer  "last_paper_trail_id"
     t.integer  "reserve_method",                               default: 0
+    t.integer  "ur_contact_id"
     t.index ["charge_schedule_id"], name: "index_user_reservations_on_charge_schedule_id", using: :btree
     t.index ["course_listing_id"], name: "index_user_reservations_on_course_listing_id", using: :btree
     t.index ["flight_matrix_id"], name: "index_user_reservations_on_flight_matrix_id", using: :btree
     t.index ["golf_club_id"], name: "index_user_reservations_on_golf_club_id", using: :btree
+    t.index ["ur_contact_id"], name: "index_user_reservations_on_ur_contact_id", using: :btree
     t.index ["user_id"], name: "index_user_reservations_on_user_id", using: :btree
   end
 
@@ -303,7 +303,6 @@ ActiveRecord::Schema.define(version: 20170506060025) do
   add_foreign_key "memberships", "users"
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"
-  add_foreign_key "ur_contacts", "user_reservations"
   add_foreign_key "ur_contacts", "users"
   add_foreign_key "ur_member_details", "user_reservations"
   add_foreign_key "ur_transactions", "user_reservations"
@@ -311,5 +310,6 @@ ActiveRecord::Schema.define(version: 20170506060025) do
   add_foreign_key "user_reservations", "course_listings"
   add_foreign_key "user_reservations", "flight_matrices"
   add_foreign_key "user_reservations", "golf_clubs"
+  add_foreign_key "user_reservations", "ur_contacts"
   add_foreign_key "user_reservations", "users"
 end

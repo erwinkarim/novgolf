@@ -2,14 +2,12 @@
 
 one:
   user: one
-  user_reservation: one
   name: MyString
   email: MyString
   telephone: MyString
 
 two:
   user: two
-  user_reservation: two
   name: MyString
   email: MyString
   telephone: MyString

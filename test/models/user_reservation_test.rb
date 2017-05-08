@@ -23,9 +23,9 @@ class UserReservationTest < ActiveSupport::TestCase
   should belong_to(:golf_club)
   should belong_to(:charge_schedule)
   should belong_to(:course_listing)
+  should belong_to(:ur_contact)
 
   should have_one(:review)
-  should have_one(:ur_contact)
 
   should have_many(:ur_member_details).dependent(:destroy)
   should have_many(:ur_transactions).dependent(:destroy)

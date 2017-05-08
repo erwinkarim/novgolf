@@ -7,6 +7,7 @@ class User < ActiveRecord::Base
     :omniauthable, :omniauth_providers => [:facebook]
 
   has_many :user_reservations
+  has_many :ur_contacts
   has_many :golf_clubs
   has_many :memberships
 
