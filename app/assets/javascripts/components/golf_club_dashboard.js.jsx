@@ -405,6 +405,16 @@ var ReservationContactInfoModal = React.createClass({
         Object.assign({}, UR_CONTACT_DEFAULTS) : handle.props.reservation.ur_contact;
       handle.setState({ur_contact:newUrContact});
     });
+
+    $(this.contactNameInput).autocomplete({
+      serviceUrl:'/admin/ur_contacts/suggest',
+      dataType:'json',
+      deferRequestBy:100,
+      paramName:'q',
+      formatResult:function(suggestion,currentValue){
+        return `${suggestion.data.name} (e:${suggestion.data.email} / t:${suggestion.data.telephone})`.replace(currentValue, `<strong>${currentValue}</strong>`);
+      }
+    });
   },
   sendContactUpdate:function(e){
     var handle = this;
@@ -470,6 +480,7 @@ var ReservationContactInfoModal = React.createClass({
                   <div className="col-8">
                     <input type="text" className="form-control" name="ur_contact[name]"
                       data-target="name" value={contact_name} onChange={this.handleChangeContact}
+                      ref={(input)=>{this.contactNameInput=input;}}
                       placeholder="Name" disabled={disableForm}/>
                   </div>
                 </div>

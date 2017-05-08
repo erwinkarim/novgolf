@@ -73,11 +73,19 @@ class Admin::UrContactsController < ApplicationController
   # GET      /admin/ur_contacts/suggest(.:format)
   #
   def suggest
-    if params.has_key? :q then
-      #do the suggestive stuff
-    else
+    if !params.has_key? :q then
       head :ok
       return
     end
+
+    search_stmt = params[:q].upcase
+
+    results = UrContact.where.has{
+      (upper(name).like "%#{search_stmt}%") ||
+      (upper(email).like "%#{search_stmt}%") ||
+      (upper(telephone).like "%#{search_stmt}%")
+    }.map{ |x| {value:x.name, data:x} }
+
+    render json: {query:params[:q], suggestions:results}
   end
 end
