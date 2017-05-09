@@ -70,6 +70,18 @@ body{
     column-count: 3;
 }
 
+.card-columns-4{
+  @include media-breakpoint-only(sm){
+    column-count: 1;
+  }
+  @include media-breakpoint-up(md) {
+    column-count: 2;
+  }
+  @include media-breakpoint-up(lg) {
+    column-count: 4;
+  }
+}
+
 // handle cases where tab-content are inside card-columns
 .card-columns .card .tab-content > .tab-pane{ display:none; }
 .card-columns .card .tab-content > .active { display:block; }

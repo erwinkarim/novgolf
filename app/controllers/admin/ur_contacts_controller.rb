@@ -95,4 +95,15 @@ class Admin::UrContactsController < ApplicationController
 
     render json: {query:params[:q], suggestions:results}
   end
+
+  #
+  def load
+    offset = params.has_key?(:offset) ? params[:offset].to_i : 0
+
+    Rails.logger.info "Loading with offset #{offset}"
+
+    results = UrContact.where({user_id:current_user.id}).limit(30).offset(offset)
+
+    render json: results
+  end
 end

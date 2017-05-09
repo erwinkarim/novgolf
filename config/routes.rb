@@ -71,6 +71,7 @@ Rails.application.routes.draw do
      resources :contacts, controller:'ur_contacts' do
        collection do
          get 'suggest'
+         get 'load'
        end
      end
    end
