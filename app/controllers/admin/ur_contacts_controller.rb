@@ -1,4 +1,6 @@
 class Admin::UrContactsController < ApplicationController
+  before_action :admins_only
+
   # PATCH|POST    /admin/user_reservations/:user_reservation_id/ur_contacts(.:format)
   # create and link the user_reservation to the contact info
   def ur_contact_update
@@ -79,8 +81,10 @@ class Admin::UrContactsController < ApplicationController
     end
 
     search_stmt = params[:q].upcase
+    current_user_id = current_user.id
 
     results = UrContact.where.has{
+      user_id == current_user_id &&
       (upper(name).like "%#{search_stmt}%") ||
       (upper(email).like "%#{search_stmt}%") ||
       (upper(telephone).like "%#{search_stmt}%")

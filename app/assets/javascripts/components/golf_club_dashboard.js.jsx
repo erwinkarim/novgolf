@@ -413,6 +413,14 @@ var ReservationContactInfoModal = React.createClass({
       paramName:'q',
       formatResult:function(suggestion,currentValue){
         return `${suggestion.data.name} (e:${suggestion.data.email} / t:${suggestion.data.telephone})`.replace(currentValue, `<strong>${currentValue}</strong>`);
+      },
+      onSelect:function(suggestion){
+        //update the ur_contact state
+        var newUrContact = Object.assign(UR_CONTACT_DEFAULTS,
+          {id:suggestion.data.id, name:suggestion.data.name, email:suggestion.data.email, telephone:suggestion.data.telephone}
+        );
+
+        handle.setState({ur_contact:newUrContact});
       }
     });
   },
@@ -429,8 +437,8 @@ var ReservationContactInfoModal = React.createClass({
       //all done, should update the user_reservation
       if(response.status >= 200 && response.status < 300){
         $.snackbar({content:'Contact Info Updated', style:'notice'});
-        //should update the reservation props
-        handle.props.loadSchedule();
+        //reload the current reservation
+        handle.props.reservationReload();
       } else {
         $.snackbar({content:'There are some errors updating the contact info', style:'error'});
         $.snackbar({content:response.text(), style:'error'});
@@ -474,7 +482,7 @@ var ReservationContactInfoModal = React.createClass({
                 method="POST" ref={(form)=>this.contactForm=form}>
                 <input type="hidden" value={this.props.token} name="authenticity_token" />
                 <input type="hidden" name="ur_contact[id]" value={contact_id} />
-                <inpyt type="hidden" name="ur_contact[type]" value={contact_type} />
+                <input type="hidden" name="ur_contact[type]" value={contact_type} />
                 <div className="row form-group">
                   <label className="col-4 col-form-label">Name:</label>
                   <div className="col-8">
@@ -1017,6 +1025,20 @@ var GolfClubDashboard = React.createClass({
     //update reservation info
     return null;
   },
+  reservationReload:function(){
+    if(this.state.flightInfo === null){
+      return;
+    }
+
+    if(this.state.flightInfo.reservation_id == null){
+      console.log("current reservation_id is null");
+      return;
+    }
+
+    //reload current reservation
+    var currentFlightInfo = this.state.flightInfo;
+    this.loadReservationJSON(this.state.flightInfo.reservation_id, currentFlightInfo);
+  },
   updateCashValue: function(e){
     this.setState({cashValue:parseFloat(e.target.value)});
   },
@@ -1061,7 +1083,7 @@ var GolfClubDashboard = React.createClass({
         <ReservationTransactionModal flightTransaction={this.state.flightTransaction} cashValue={this.state.cashValue}
           reservationPay={this.reservationPay} updateCashValue={this.updateCashValue} processing={this.state.processing}/>
         <ReservationContactInfoModal reservation={this.state.flightInfo} paths={this.props.paths} token={this.props.token}
-          loadSchedule={this.loadSchedule}
+          reservationReload={this.reservationReload}
           />
         <div className="col-lg-8">
           <p>

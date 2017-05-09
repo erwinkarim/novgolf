@@ -5,14 +5,15 @@ class Admin::UserReservationsController < ApplicationController
   #TODO: allow golf admin to view the admin, especially when it'd made by other members
   def show
     user_reservation = UserReservation.find(params[:id])
+    contact = user_reservation.contact.nil? ? nil : (
+      user_reservation.contact.attributes.merge({contact_type:user_reservation.contact_type})
+    )
 
     if user_reservation.golf_club.user == current_user then
       render json: {
         :user_reservation => user_reservation.attributes.merge({
           reserved_by: user_reservation.user,
-          ur_contact: user_reservation.contact.attributes.merge({
-            contact_type:user_reservation.contact_type
-            }),
+          ur_contact: contact,
           total_price:user_reservation.total_price,
           ur_member_details:user_reservation.ur_member_details.to_a,
           status_text:user_reservation.status}
