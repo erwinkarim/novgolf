@@ -84,9 +84,9 @@ class Admin::UrContactsController < ApplicationController
     current_user_id = current_user.id
 
     results = UrContact.where.has{
-      user_id == current_user_id &&
-      (upper(name).like "%#{search_stmt}%") ||
-      (upper(email).like "%#{search_stmt}%") ||
+      (user_id == current_user_id) &
+      (upper(name).like "%#{search_stmt}%") |
+      (upper(email).like "%#{search_stmt}%") |
       (upper(telephone).like "%#{search_stmt}%")
     }.map{ |x| {value:x.name, data:x} }
 
