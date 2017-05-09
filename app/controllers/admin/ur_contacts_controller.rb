@@ -1,6 +1,9 @@
 class Admin::UrContactsController < ApplicationController
   before_action :admins_only
 
+  def index
+  end
+
   # PATCH|POST    /admin/user_reservations/:user_reservation_id/ur_contacts(.:format)
   # create and link the user_reservation to the contact info
   def ur_contact_update

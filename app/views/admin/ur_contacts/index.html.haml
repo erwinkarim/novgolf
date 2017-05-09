@@ -1,0 +1,11 @@
+- content_for(:head){ "Admin - Contacts "}
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:admin_path} Admin Console
+        %li.breadcrumb-item.active Contacts
+  .row
+    .col-12
+      = react_component("ContactsAdmin", {})

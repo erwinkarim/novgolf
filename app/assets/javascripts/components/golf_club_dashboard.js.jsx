@@ -407,10 +407,11 @@ var ReservationContactInfoModal = React.createClass({
     });
 
     var autocompleteOptions = {
-      serviceUrl:'/admin/ur_contacts/suggest',
+      serviceUrl:'/admin/contacts/suggest',
       dataType:'json',
       deferRequestBy:100,
       paramName:'q',
+      minChars:3,
       formatResult:function(suggestion,currentValue){
         return `${suggestion.data.name} (e:${suggestion.data.email} / t:${suggestion.data.telephone})`.replace(currentValue, `<strong>${currentValue}</strong>`);
       },

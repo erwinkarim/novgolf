@@ -68,7 +68,7 @@ Rails.application.routes.draw do
          end
        end
      end
-     resources :ur_contacts do
+     resources :contacts, controller:'ur_contacts' do
        collection do
          get 'suggest'
        end
