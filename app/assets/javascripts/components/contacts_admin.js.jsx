@@ -11,7 +11,9 @@ var ContactsModal = React.createClass({
     var handle = this;
 
     $(this.contactModal).on('show.bs.modal', (e)=>{
-      var newContact = handle.props.contacts[e.relatedTarget.dataset.index];
+      var newContact = e.relatedTarget.dataset.index == -1 ?
+        UR_CONTACT_DEFAULTS :
+        handle.props.contacts[e.relatedTarget.dataset.index];
       handle.setState({contact:newContact, selectedContact:e.relatedTarget.dataset.index});
     });
   },
@@ -27,7 +29,13 @@ var ContactsModal = React.createClass({
     this.props.updateContact(Object.assign({},this.state.contact), new FormData(this.contactForm), this.state.selectedContact);
     $(this.contactModal).modal('hide');
   },
+  handleCreateContact:function(e){
+    this.props.createContact(new FormData(this.contactForm));
+    $(this.contactModal).modal('hide');
+
+  },
   render:function(){
+    var formMode = this.state.selectedContact == -1 ? "create" : "edit";
     var contactId = this.state.contact === null ? "" : this.state.contact.id;
     var contactName = this.state.contact === null ? "" : this.state.contact.name;
     var contactEmail = this.state.contact === null ? "" : this.state.contact.email;
@@ -38,7 +46,7 @@ var ContactsModal = React.createClass({
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">New/Edit Contact</h5>
+              <h5 className="modal-title">{toTitleCase(formMode)} Contact</h5>
               <button type="button" className="close" data-dismiss="modal">
                 <span>&times;</span>
               </button>
@@ -60,7 +68,7 @@ var ContactsModal = React.createClass({
                   <div className="col-8">
                     <input type="text" name="ur_contact[email]" placeholder="Email"
                       className="form-control"
-                      data-target="name" value={contactEmail} onChange={this.handleChangeContact} />
+                      data-target="email" value={contactEmail} onChange={this.handleChangeContact} />
                   </div>
                 </div>
                 <div className="row form-group">
@@ -75,7 +83,10 @@ var ContactsModal = React.createClass({
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
-              <button className="btn btn-primary" type="button" onClick={this.handleUpdateContact}>Update Contact</button>
+              <button className="btn btn-primary" type="button"
+                onClick={formMode == "edit" ? this.handleUpdateContact : this.handleCreateContact}>
+                {toTitleCase(formMode)} Contact
+              </button>
             </div>
           </div>
         </div>
@@ -127,6 +138,32 @@ var ContactsAdmin = React.createClass({
       handle.loadContacts(handle.state.contacts.length)
     });
   },
+  createContact:function(form_data){
+    //creat the contact
+    console.log("create contact with", form_data);
+    var handle = this;
+
+    fetch('/admin/contacts', {
+      method:'POST',
+      body:form_data,
+      credentials:'same-origin'
+    }).then(function(response){
+      //error handling
+      if(response.status>=400){
+        $.snackbar({content:'There are some errors creating the contact', style:'error'});
+        throw new Error(response.statusText);
+        return;
+      }
+
+      return response.json();
+    }).then(function(json){
+      var newContacts = handle.state.contacts;
+      newContacts.push(json);
+      handle.setState({contacts:newContacts});
+
+      $.snackbar({content:'Contact created', style:'notice'});
+    });
+  },
   updateContact:function(contact, form_data, contact_index){
     console.log("update contacts with id", contact.id, " and form data", form_data);
     var handle = this;
@@ -167,7 +204,17 @@ var ContactsAdmin = React.createClass({
 
     return (
       <div>
-        <ContactsModal contacts={this.state.contacts} token={this.props.token} updateContact={this.updateContact}/>
+        <ContactsModal contacts={this.state.contacts} token={this.props.token}
+          updateContact={this.updateContact} createContact={this.createContact}/>
+        <div className="w-100">
+          <input type="text" className="form-control" ref={(input)=>{this.searchInput=input;}} />
+          <a href="#contacts-modal" data-index="-1" data-toggle="modal">
+            <span className="fa-stack fa-lg">
+              <i className="fa fa-circle fa-stack-2x"></i>
+              <i className="fa fa-plus fa-inverse fa-stack-1x"></i>
+            </span>
+          </a>
+        </div>
         <div className="card-columns-4">{ this.state.contacts.map((e,i) => {
             return (
               <div className="card d-inline-block w-100 mb-2" key={i}>

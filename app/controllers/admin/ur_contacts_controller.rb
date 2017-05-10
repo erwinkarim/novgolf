@@ -4,6 +4,25 @@ class Admin::UrContactsController < ApplicationController
   def index
   end
 
+  # POST     /admin/contacts(.:format)
+  #create the contact
+  def create
+    if !params.has_key?(:ur_contact) then
+      head :internal_server_error
+    end
+
+    params[:ur_contact].delete(:id)
+    newContact = current_user.ur_contacts.new(contact_params)
+
+    if newContact.save then
+      render json: newContact
+    else
+      Rails.logger.info "Error when creating contacts #{newContact.errors.messages}"
+      head :internal_server_error
+      return
+    end
+  end
+
   # PATCH|PUT    /admin/contacts/:id
   # generally update the contact info
   def update
