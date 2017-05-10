@@ -1,6 +1,7 @@
 class Admin::UrContactsController < ApplicationController
   before_action :admins_only
 
+  # GET /admin/contacts(.:format)
   def index
   end
 
@@ -23,6 +24,27 @@ class Admin::UrContactsController < ApplicationController
     end
   end
 
+
+  # DELETE   /admin/contacts/:id(.:format)#
+  #delete the contact
+  def destroy
+
+    ur_contact = UrContact.find(params[:id])
+
+    #you can delete contacts you don't own
+    if ur_contact.user_id != current_user.id then
+      Rails.logger.error "Attempt to delete contact you don't own"
+      head :internal_server_error
+      return
+    end
+
+    if ur_contact.destroy then
+      render json: {message:'Content Deleted'}
+    else
+      head :internal_server_error
+    end
+  end
+
   # PATCH|PUT    /admin/contacts/:id
   # generally update the contact info
   def update
@@ -33,6 +55,14 @@ class Admin::UrContactsController < ApplicationController
 
     #really update the contacts
     contact = UrContact.find(params[:id])
+
+    #can't dlete contact you don't own
+    if contact.user_id != current_user.id then
+      Rails.logger.error "Attempt to update contact you don't own"
+      head :internal_server_error
+      return
+    end
+
     if contact.update_attributes(contact_params) then
       render json: contact
     else

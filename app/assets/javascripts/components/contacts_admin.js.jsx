@@ -12,7 +12,7 @@ var ContactsModal = React.createClass({
 
     $(this.contactModal).on('show.bs.modal', (e)=>{
       var newContact = e.relatedTarget.dataset.index == -1 ?
-        UR_CONTACT_DEFAULTS :
+        Object.assign({}, UR_CONTACT_DEFAULTS) :
         handle.props.contacts[e.relatedTarget.dataset.index];
       handle.setState({contact:newContact, selectedContact:e.relatedTarget.dataset.index});
     });
@@ -95,6 +95,39 @@ var ContactsModal = React.createClass({
   }
 });
 
+var ConfirmDeleteContactModal = React.createClass({
+  getInitialState:()=>{
+    return {contact_index:null}
+  },
+  componentDidMount:function(){
+    var handle = this;
+    $(this.contactModal).on('show.bs.modal', function(e){
+      handle.setState({contact_index:e.relatedTarget.dataset.index})
+    })
+  },
+  handleDeleteContact:function(e){
+    this.props.deleteContact(this.state.contact_index);
+    $(this.contactModal).modal('hide');
+  },
+  render:function(){
+    return (
+      <div className="modal" id="contact-delete-confirm-dialog" ref={(modal)=>{this.contactModal=modal;}}>
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-body">
+              Really Delete the contact?
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="button" className="btn btn-danger" onClick={this.handleDeleteContact}>Confirm</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+});
+
 var ContactsAdmin = React.createClass({
   propTypes:{
     token:React.PropTypes.string
@@ -164,6 +197,32 @@ var ContactsAdmin = React.createClass({
       $.snackbar({content:'Contact created', style:'notice'});
     });
   },
+  deleteContact:function(contact_index){
+    var handle = this;
+    var contact_id = this.state.contacts[contact_index].id;
+    //done after confirm deleting the contact
+    fetch(`/admin/contacts/${contact_id}`,{
+      method:'DELETE',
+      credentials:'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ authenticity_token:handle.props.token })
+    }).then(function(response){
+      if(response.status>=400){
+        $.snackbar({content:'Error deleting the contact', style:'error'});
+        throw new Error(response.statusText);
+        return
+      };
+
+      return response.json();
+    }).then(function(json){
+      var newContacts = handle.state.contacts;
+      newContacts.splice(contact_index,1);
+      handle.setState({contacts:newContacts});
+
+      $.snackbar({content:'Contact deleted', style:'notice'});
+    });
+
+  },
   updateContact:function(contact, form_data, contact_index){
     console.log("update contacts with id", contact.id, " and form data", form_data);
     var handle = this;
@@ -206,6 +265,7 @@ var ContactsAdmin = React.createClass({
       <div>
         <ContactsModal contacts={this.state.contacts} token={this.props.token}
           updateContact={this.updateContact} createContact={this.createContact}/>
+        <ConfirmDeleteContactModal deleteContact={this.deleteContact} />
         <div className="w-100">
           <input type="text" className="form-control" ref={(input)=>{this.searchInput=input;}} />
           <a href="#contacts-modal" data-index="-1" data-toggle="modal">
@@ -232,7 +292,7 @@ var ContactsAdmin = React.createClass({
                       </span>
                     </a>
                     <span> </span>
-                    <a href="" className="">
+                    <a href="#contact-delete-confirm-dialog" data-toggle="modal" data-index={i}>
                       <span className="fa-stack fa-lg">
                         <i className="text-danger fa fa-circle fa-stack-2x"></i>
                         <i className="fa fa-times fa-inverse fa-stack-1x"></i>
