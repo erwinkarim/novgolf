@@ -439,7 +439,7 @@ var ReservationContactInfoModal = React.createClass({
       credentials: 'same-origin'
     }).then(function(response){
       //all done, should update the user_reservation
-      if(response.status >= 200 && response.status < 300){
+      if(response.status >= 200 && response.status < 400){
         $.snackbar({content:'Contact Info Updated', style:'notice'});
         //reload the current reservation
         handle.props.reservationReload();

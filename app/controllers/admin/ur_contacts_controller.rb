@@ -4,6 +4,23 @@ class Admin::UrContactsController < ApplicationController
   def index
   end
 
+  # PATCH|PUT    /admin/contacts/:id
+  # generally update the contact info
+  def update
+    if !params.has_key?(:ur_contact) then
+      head :internal_server_error
+      return
+    end
+
+    #really update the contacts
+    contact = UrContact.find(params[:id])
+    if contact.update_attributes(contact_params) then
+      render json: contact
+    else
+      head :internal_server_error
+    end
+  end
+
   # PATCH|POST    /admin/user_reservations/:user_reservation_id/ur_contacts(.:format)
   # create and link the user_reservation to the contact info
   def ur_contact_update
@@ -76,7 +93,7 @@ class Admin::UrContactsController < ApplicationController
   end
 
   # GET      /admin/ur_contacts/suggest(.:format)
-  #
+  # for autocomplete
   def suggest
     if !params.has_key? :q then
       head :ok
@@ -96,14 +113,17 @@ class Admin::UrContactsController < ApplicationController
     render json: {query:params[:q], suggestions:results}
   end
 
-  #
+  #GET      /admin/contacts/load(.:format)
+  #giving list of contacts, 30 contacts at a time
   def load
     offset = params.has_key?(:offset) ? params[:offset].to_i : 0
-
-    Rails.logger.info "Loading with offset #{offset}"
 
     results = UrContact.where({user_id:current_user.id}).limit(30).offset(offset)
 
     render json: results
+  end
+
+  def contact_params
+    params.require(:ur_contact).permit(:name, :email, :telephone)
   end
 end

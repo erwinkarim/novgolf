@@ -5,14 +5,14 @@ var ContactsModal = React.createClass({
     token:React.PropTypes.string
   },
   getInitialState:()=>{
-    return {contact:null};
+    return {contact:null, selectedContact:null};
   },
   componentDidMount:function(){
     var handle = this;
 
     $(this.contactModal).on('show.bs.modal', (e)=>{
       var newContact = handle.props.contacts[e.relatedTarget.dataset.index];
-      handle.setState({contact:newContact});
+      handle.setState({contact:newContact, selectedContact:e.relatedTarget.dataset.index});
     });
   },
   handleChangeContact:function(e){
@@ -20,10 +20,12 @@ var ContactsModal = React.createClass({
     var newUrContact = (this.state.contact===null) ?
       Object.assign({}, UR_CONTACT_DEFAULTS) : this.state.contact;
 
-    //reset id to null
-    newUrContact.id = "";
     newUrContact = Object.assign(newUrContact, {[e.target.dataset.target]:e.target.value});
     this.setState({contact:newUrContact});
+  },
+  handleUpdateContact:function(e){
+    this.props.updateContact(Object.assign({},this.state.contact), new FormData(this.contactForm), this.state.selectedContact);
+    $(this.contactModal).modal('hide');
   },
   render:function(){
     var contactId = this.state.contact === null ? "" : this.state.contact.id;
@@ -42,9 +44,9 @@ var ContactsModal = React.createClass({
               </button>
             </div>
             <div className="modal-body">
-              <form action="/">
+              <form action="/" ref={(form)=>{this.contactForm=form;}}>
                 <input type="hidden" value={this.props.token} name="authenticity_token" />
-                <input type="hidden" value={contactId} />
+                <input type="hidden" value={contactId}  name="ur_contact[id]"/>
                 <div className="row form-group">
                   <label className="col-4 col-form-label">Name:</label>
                   <div className="col-8">
@@ -66,13 +68,14 @@ var ContactsModal = React.createClass({
                   <div className="col-8">
                     <input type="text" name="ur_contact[telephone]" placeholder="Telephone"
                       className="form-control"
-                      data-target="name" value={contactTelephone} onChange={this.handleChangeContact} />
+                      data-target="telephone" value={contactTelephone} onChange={this.handleChangeContact} />
                   </div>
                 </div>
               </form>
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+              <button className="btn btn-primary" type="button" onClick={this.handleUpdateContact}>Update Contact</button>
             </div>
           </div>
         </div>
@@ -124,7 +127,31 @@ var ContactsAdmin = React.createClass({
       handle.loadContacts(handle.state.contacts.length)
     });
   },
-  updateContact:function(newContact){
+  updateContact:function(contact, form_data, contact_index){
+    console.log("update contacts with id", contact.id, " and form data", form_data);
+    var handle = this;
+
+    fetch(`/admin/contacts/${contact.id}`, {
+      method:'PATCH',
+      body:form_data,
+      credentials:'same-origin'
+    }).then(function(response){
+      //error handling
+      if(response.status>=400){
+        $.snackbar({content:'There some errors updating the contact', style:'error'});
+        throw new Error(response.statusText);
+        return;
+      }
+
+      return response.json();
+    }).then(function(json){
+      //update the current contact state
+      var newContacts = handle.state.contacts;
+      newContacts[contact_index] = contact;
+      handle.setState({contacts:newContacts});
+
+      $.snackbar({content:'Contact Updated', style:'notice' });
+    });
 
   },
   componentDidMount:function(){
