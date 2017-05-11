@@ -157,9 +157,16 @@ class Admin::UrContactsController < ApplicationController
       (upper(name).like "%#{search_stmt}%") |
       (upper(email).like "%#{search_stmt}%") |
       (upper(telephone).like "%#{search_stmt}%")
-    }.map{ |x| {value:x.name, data:x} }
+    }
 
-    render json: {query:params[:q], suggestions:results}
+    if params[:format] == "search" then
+      formattedResults = results
+    else
+      formattedResults = {query:params[:q], suggestions:results.map{|x| {value:x.name, data:x}} }
+    end
+
+    #render json: {query:params[:q], suggestions:results}
+    render json: formattedResults
   end
 
   #GET      /admin/contacts/load(.:format)

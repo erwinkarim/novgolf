@@ -133,10 +133,7 @@ var ContactsAdmin = React.createClass({
     token:React.PropTypes.string
   },
   getInitialState:()=>{
-    return {contacts:null};
-  },
-  componentDidMount:function(){
-    //setup autocomplete on the
+    return {contacts:null, interface:'default'};
   },
   loadContacts:function(offset){
     var handle=this;
@@ -254,19 +251,104 @@ var ContactsAdmin = React.createClass({
 
   },
   searchContact:function(query){
+    console.log("looking for " + query);
+    var handle = this;
+
     //fetch search results
-    //update state.contacts list
+    fetch('/admin/contacts/suggest?' + $.param({q:query, format:'search'}), {
+      method:'GET',
+      credentials: 'same-origin'
+    }).then((response)=>{
+      if(response.status >= 400){
+        $.snackbar({content:'Error in searching', style:'error'});
+        throw new Error(response.statusText);
+        return;
+      };
+
+      return response.json();
+    }).then((json)=>{
+      //update state.contacts list
+      //set the interface into search-mode
+      handle.setState({contacts:json, interface:'search-results'})
+    });
+
+  },
+  resetComponent(e){
+    e.preventDefault();
+
+    var newState = this.getInitialState();
+    this.searchInput.value="";
+    this.setState(newState);
+    this.componentDidMount();
+  },
+  invokeSearch(e){
+    e.preventDefault();
+    this.searchContact(this.searchInput.value);
   },
   componentDidMount:function(){
+    var handle = this;
+    //setup autocomplete on search
+    $(this.searchInput).autocomplete({
+      serviceUrl:'/admin/contacts/suggest',
+      dataType:'json',
+      deferRequestBy:100,
+      paramName:'q',
+      minChars:3,
+      formatResult:function(suggestion,currentValue){
+        return `${suggestion.data.name} (e:${suggestion.data.email} / t:${suggestion.data.telephone})`.replace(currentValue, `<strong>${currentValue}</strong>`);
+      },
+      onSelect:function(suggestion){
+        //when selected, load the page as
+        handle.searchContact(suggestion.data.name);
+      }
+    })
+
     //start loading from offset
     this.loadContacts(0);
   },
   render:function(){
-    if(this.state.contacts === null){
-      return (
-        <div>No contacts found...</div>
-      )
-    };
+    var contactBody = (this.state.contacts === null) ? (
+      <div>No contacts found...</div>
+    ) : (
+      <div className="card-columns-4">{ this.state.contacts.map((e,i) => {
+        return (
+          <div className="card d-inline-block w-100 mb-2" key={i}>
+            <div className="card-block">
+              <h4 className="card-title">{e.name}</h4>
+              <ul className="list-unstyled">
+                <li>{e.email}</li>
+                <li>{e.telephone}</li>
+              </ul>
+              <p className="card-text text-right">
+                <a href="#contacts-modal" data-toggle="modal" data-index={i}>
+                  <span className="fa-stack fa-lg">
+                    <i className="fa fa-circle fa-stack-2x"></i>
+                    <i className="fa fa-pencil fa-inverse fa-stack-1x"></i>
+                  </span>
+                </a>
+                <span> </span>
+                <a href="#contact-delete-confirm-dialog" data-toggle="modal" data-index={i}>
+                  <span className="fa-stack fa-lg">
+                    <i className="text-danger fa fa-circle fa-stack-2x"></i>
+                    <i className="fa fa-times fa-inverse fa-stack-1x"></i>
+                  </span>
+                </a>
+              </p>
+            </div>
+          </div>
+          );
+        })
+      }</div>
+    );
+
+    var resetPageBtn = (this.state.interface == "default") ? (null) : (
+      <a href="#" onClick={this.resetComponent}>
+        <span className="fa-stack fa-lg">
+          <i className="fa fa-circle fa-stack-2x"></i>
+          <i className="fa fa-arrow-left fa-inverse fa-stack-1x"></i>
+        </span>
+      </a>
+    )
 
     return (
       <div>
@@ -274,7 +356,10 @@ var ContactsAdmin = React.createClass({
           updateContact={this.updateContact} createContact={this.createContact}/>
         <ConfirmDeleteContactModal deleteContact={this.deleteContact} />
         <div className="w-100">
-          <input type="text" className="form-control" ref={(input)=>{this.searchInput=input;}} />
+          {resetPageBtn}
+          <form onSubmit={this.invokeSearch}>
+            <input type="search" className="form-control" ref={(input)=>{this.searchInput=input;}} />
+          </form>
           <a href="#contacts-modal" data-index="-1" data-toggle="modal">
             <span className="fa-stack fa-lg">
               <i className="fa fa-circle fa-stack-2x"></i>
@@ -282,35 +367,7 @@ var ContactsAdmin = React.createClass({
             </span>
           </a>
         </div>
-        <div className="card-columns-4">{ this.state.contacts.map((e,i) => {
-            return (
-              <div className="card d-inline-block w-100 mb-2" key={i}>
-                <div className="card-block">
-                  <h4 className="card-title">{e.name}</h4>
-                  <ul className="list-unstyled">
-                    <li>{e.email}</li>
-                    <li>{e.telephone}</li>
-                  </ul>
-                  <p className="card-text text-right">
-                    <a href="#contacts-modal" data-toggle="modal" data-index={i}>
-                      <span className="fa-stack fa-lg">
-                        <i className="fa fa-circle fa-stack-2x"></i>
-                        <i className="fa fa-pencil fa-inverse fa-stack-1x"></i>
-                      </span>
-                    </a>
-                    <span> </span>
-                    <a href="#contact-delete-confirm-dialog" data-toggle="modal" data-index={i}>
-                      <span className="fa-stack fa-lg">
-                        <i className="text-danger fa fa-circle fa-stack-2x"></i>
-                        <i className="fa fa-times fa-inverse fa-stack-1x"></i>
-                      </span>
-                    </a>
-                  </p>
-                </div>
-              </div>
-            );
-          })
-        }</div>
+        { contactBody }
       </div>
     );
   }
