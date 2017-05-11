@@ -110,22 +110,31 @@ class UserReservationsController < ApplicationController
   # GET      /users/:user_id/reservations(.:format)
   def user_index
     #ensure that you are authorized to see this
-    if current_user.id == params[:user_id].to_i then
-      @reservations = current_user.user_reservations.includes(:golf_club).order(:booking_date => :desc, :booking_time => :desc).limit(40)
-
-      #cutoff time between past and future is yesterday
-      cutoffDate = 1.day.ago
-      @futureFlights = @reservations.select{ |x| x.booking_date > cutoffDate }
-      @pastFlights = @reservations.select{ |x| x.booking_date < cutoffDate }
-    else
+    if current_user.id != params[:user_id].to_i then
       render :file => "public/500.html", :status => :unauthorized
+      return
     end
+
+    @reservations = current_user.user_reservations.includes(:golf_club).order(:booking_date => :desc, :booking_time => :desc).limit(40)
+
+    #cutoff time between past and future is yesterday
+    cutoffDate = 1.day.ago
+    @futureFlights = @reservations.select{ |x| x.booking_date > cutoffDate }
+    @pastFlights = @reservations.select{ |x| x.booking_date < cutoffDate }
   end
 
   #  GET      /users/:user_id/reservations/:id(.:format)
   def show
     @user = User.find(params[:user_id])
     @reservation = UserReservation.includes(:review).find(params[:id])
+
+    #you can only see it if you own the reservation or the club
+    allowed_to_see = @reservation.user_id == current_user.id || @reservation.golf_club.user.id == current_user.id
+    if !allowed_to_see then
+      render file: "public/401.html", status: :unauthorized
+      return
+    end
+
     @review = @reservation.review.nil? ? nil : @reservation.review.to_json
     @note = @reservation.charge_schedule.nil? ? nil : @reservation.charge_schedule.note
 
@@ -133,7 +142,9 @@ class UserReservationsController < ApplicationController
     flight_is_12hours_old= DateTime.parse("#{@reservation.booking_date} #{@reservation.booking_time.to_datetime.strftime('%H:%M')} +0000") <
       DateTime.now + 12.hours
     @allow_to_review = @reservation.payment_confirmed? || @reservation.reservation_confirmed?
-    @show_review_form = flight_is_12hours_old && @reservation.payment_confirmed? && @reservation.review.nil?
+    @show_review_form = flight_is_12hours_old &&
+      (@reservation.payment_confirmed? || @reservation.reservation_confirmed?) &&
+      @reservation.review.nil?
 
     respond_to do |format|
       format.html

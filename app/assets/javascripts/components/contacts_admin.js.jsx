@@ -97,12 +97,12 @@ var ContactsModal = React.createClass({
 
 var ConfirmDeleteContactModal = React.createClass({
   getInitialState:()=>{
-    return {contact_index:null}
+    return {contact_index:null, name:null}
   },
   componentDidMount:function(){
     var handle = this;
     $(this.contactModal).on('show.bs.modal', function(e){
-      handle.setState({contact_index:e.relatedTarget.dataset.index})
+      handle.setState({contact_index:e.relatedTarget.dataset.index, name:e.relatedTarget.dataset.name})
     })
   },
   handleDeleteContact:function(e){
@@ -115,7 +115,7 @@ var ConfirmDeleteContactModal = React.createClass({
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-body">
-              Really Delete the contact?
+              {`Really delete contact '${this.state.name}'?`}
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -307,7 +307,7 @@ var ContactsAdmin = React.createClass({
     this.loadContacts(0);
   },
   render:function(){
-    var contactBody = (this.state.contacts === null) ? (
+    var contactBody = (this.state.contacts === null || this.state.contacts.length==0) ? (
       <div>No contacts found...</div>
     ) : (
       <div className="card-columns-4">{ this.state.contacts.map((e,i) => {
@@ -327,7 +327,7 @@ var ContactsAdmin = React.createClass({
                   </span>
                 </a>
                 <span> </span>
-                <a href="#contact-delete-confirm-dialog" data-toggle="modal" data-index={i}>
+                <a href="#contact-delete-confirm-dialog" data-toggle="modal" data-name={e.name} data-index={i}>
                   <span className="fa-stack fa-lg">
                     <i className="text-danger fa fa-circle fa-stack-2x"></i>
                     <i className="fa fa-times fa-inverse fa-stack-1x"></i>
@@ -355,17 +355,23 @@ var ContactsAdmin = React.createClass({
         <ContactsModal contacts={this.state.contacts} token={this.props.token}
           updateContact={this.updateContact} createContact={this.createContact}/>
         <ConfirmDeleteContactModal deleteContact={this.deleteContact} />
-        <div className="w-100">
-          {resetPageBtn}
-          <form onSubmit={this.invokeSearch}>
-            <input type="search" className="form-control" ref={(input)=>{this.searchInput=input;}} />
-          </form>
-          <a href="#contacts-modal" data-index="-1" data-toggle="modal">
-            <span className="fa-stack fa-lg">
-              <i className="fa fa-circle fa-stack-2x"></i>
-              <i className="fa fa-plus fa-inverse fa-stack-1x"></i>
-            </span>
-          </a>
+        <div className="row mb-2">
+          <div className="col-1">
+            {resetPageBtn}
+          </div>
+          <div className="col-10">
+            <form onSubmit={this.invokeSearch}>
+              <input type="search" className="form-control" ref={(input)=>{this.searchInput=input;}} />
+            </form>
+          </div>
+          <div className="col-1">
+            <a href="#contacts-modal" data-index="-1" data-toggle="modal">
+              <span className="fa-stack fa-lg">
+                <i className="fa fa-circle fa-stack-2x"></i>
+                <i className="fa fa-plus fa-inverse fa-stack-1x"></i>
+              </span>
+            </a>
+          </div>
         </div>
         { contactBody }
       </div>
