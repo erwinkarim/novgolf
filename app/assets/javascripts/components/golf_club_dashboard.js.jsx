@@ -544,11 +544,24 @@ var GolfCoursesGroup = React.createClass({
   getInitialState: function(){
     return {random_id:randomID()};
   },
+  componentDidUpdate:function(prevProps, prevState){
+    //close the collapse if the selectedCourse changes
+    if(this.props.selectedCourse != prevProps.selectedCourse){
+      console.log("should hide the collapse");
+      $(this.reservationDetailCollapse).collapse('hide');
+    }
+
+  },
   render: function(){
     var reservation_id = this.props.flight.course_data.courses[this.props.selectedCourse].reservation_id || null;
+    var reservation_user_id = this.props.reservation.reserved_by == null ? null :
+      this.props.reservation.reserved_by.id;
     var reservation_text = this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text || "Nil";
     var reservation_link = reservation_id == null ? "Nil" : (
       <a href={`#reservation-detail`} data-toggle="collapse">{reservation_id}</a>
+    );
+    var reservation_detail_link = reservation_id == null ? null : (
+      <a href={`/users/${reservation_user_id}/reservations/${reservation_id}`} className="btn btn-info mr-2" target="_blank">View</a>
     );
 
     var ur_contact_name = this.props.reservation.ur_contact == null ? "No Info" :
@@ -585,7 +598,7 @@ var GolfCoursesGroup = React.createClass({
           <li> Reservation ID:{reservation_link}; </li>
           <li> Reservation Status: {reservation_text } </li>
         </ul>
-        <div className="collapse in" id={`reservation-detail`}>
+        <div className="collapse in" id={`reservation-detail`} ref={(collapse)=>{this.reservationDetailCollapse = collapse;}}>
           <hr />
           <ul className="list-unstyled">
             <li>Reserved By: {reserved_by_text} </li>
@@ -598,6 +611,7 @@ var GolfCoursesGroup = React.createClass({
             </li>
           </ul>
           <hr />
+          {reservation_detail_link}
           <button type="button" className="btn btn-info mr-2" data-target="#flight-contact-info-modal" data-toggle="modal">Edit Info</button>
           <button type="button" className="btn btn-secondary" data-toggle="collapse" data-target="#reservation-detail">Close</button>
         </div>

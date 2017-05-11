@@ -135,6 +135,9 @@ var ContactsAdmin = React.createClass({
   getInitialState:()=>{
     return {contacts:null};
   },
+  componentDidMount:function(){
+    //setup autocomplete on the
+  },
   loadContacts:function(offset){
     var handle=this;
 
@@ -249,6 +252,10 @@ var ContactsAdmin = React.createClass({
       $.snackbar({content:'Contact Updated', style:'notice' });
     });
 
+  },
+  searchContact:function(query){
+    //fetch search results
+    //update state.contacts list
   },
   componentDidMount:function(){
     //start loading from offset
