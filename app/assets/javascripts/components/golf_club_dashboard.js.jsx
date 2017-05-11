@@ -384,7 +384,9 @@ var ReservationContactInfoModal = React.createClass({
     return {ur_contact:this.props.reservation.ur_contact}
   },
   componentWillReceiveProps:function(nextProps){
-    this.setState({ur_contact:this.props.reservation.ur_contact});
+    var newContact = this.props.reservation.ur_contact == null ?
+      UR_CONTACT_DEFAULTS : this.props.reservation.ur_contact;
+    this.setState({ur_contact:newContact});
   },
   handleChangeContact: function(e){
     //update the ur_contact state
@@ -547,7 +549,6 @@ var GolfCoursesGroup = React.createClass({
   componentDidUpdate:function(prevProps, prevState){
     //close the collapse if the selectedCourse changes
     if(this.props.selectedCourse != prevProps.selectedCourse){
-      console.log("should hide the collapse");
       $(this.reservationDetailCollapse).collapse('hide');
     }
 
@@ -612,7 +613,7 @@ var GolfCoursesGroup = React.createClass({
           </ul>
           <hr />
           {reservation_detail_link}
-          <button type="button" className="btn btn-info mr-2" data-target="#flight-contact-info-modal" data-toggle="modal">Edit Info</button>
+          <button type="button" className="btn btn-info mr-2" data-target="#flight-contact-info-modal" data-toggle="modal">Edit Contact</button>
           <button type="button" className="btn btn-secondary" data-toggle="collapse" data-target="#reservation-detail">Close</button>
         </div>
       </div>
