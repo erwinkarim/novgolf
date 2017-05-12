@@ -546,6 +546,41 @@ var GolfCoursesGroup = React.createClass({
   getInitialState: function(){
     return {random_id:randomID()};
   },
+  notifyContact: function(){
+    var handle = this;
+
+    //check if there's a reservation
+    if(this.props.reservation.reservation_id === null){
+      $.snackbar({content:'No reservation detected', style:'error'});
+      return;
+    }
+
+    //check if contact  is there
+    if(this.props.reservation.ur_contact === null){
+      $.snackbar({content:'No contact info detected', style:'error'});
+      return;
+    }
+
+    //check if contact has email
+    if(this.props.reservation.ur_contact.email === null || this.props.reservation.ur_contact.email == ''){
+      $.snackbar({content:'Contact has no email', style:'error'});
+      return;
+    }
+
+    //request server to send notification
+    fetch(`/admin/user_reservations/${this.props.reservation.reservation_id}/notify`, {
+      method:'GET',
+      credentials:'same-origin'
+    }).then(function(response){
+      if(response.status >= 400){
+        $.snackbar({content:'Error when trying to send email', style:'error'});
+        return;
+      }
+
+      //everything ok
+      $.snackbar({content:'Email notification sent', style:'notice'});
+    })
+  },
   componentDidUpdate:function(prevProps, prevState){
     //close the collapse if the selectedCourse changes
     if(this.props.selectedCourse != prevProps.selectedCourse){
@@ -562,8 +597,11 @@ var GolfCoursesGroup = React.createClass({
       <a href={`#reservation-detail`} data-toggle="collapse">{reservation_id}</a>
     );
     var reservation_detail_link = reservation_id == null ? null : (
-      <a href={`/users/${reservation_user_id}/reservations/${reservation_id}`} className="btn btn-info mr-2" target="_blank">View</a>
+      <a href={`/users/${reservation_user_id}/reservations/${reservation_id}`} className="btn btn-info mb-2 mr-2" target="_blank">View</a>
     );
+    var reservation_notify_link = reservation_id == null ? null : (
+      <button type="button" className="btn btn-info mb-2 mr-2" onClick={this.notifyContact}>Send Notification</button>
+    )
 
     var ur_contact_name = this.props.reservation.ur_contact == null ? "No Info" :
       this.props.reservation.ur_contact.name;
@@ -613,8 +651,9 @@ var GolfCoursesGroup = React.createClass({
           </ul>
           <hr />
           {reservation_detail_link}
-          <button type="button" className="btn btn-info mr-2" data-target="#flight-contact-info-modal" data-toggle="modal">Edit Contact</button>
-          <button type="button" className="btn btn-secondary" data-toggle="collapse" data-target="#reservation-detail">Close</button>
+          {reservation_notify_link}
+          <button type="button" className="btn btn-info mb-2 mr-2" data-target="#flight-contact-info-modal" data-toggle="modal">Edit Contact</button>
+          <button type="button" className="btn btn-secondary mb-2 mr-2" data-toggle="collapse" data-target="#reservation-detail">Close</button>
         </div>
       </div>
     );

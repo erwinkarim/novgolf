@@ -188,4 +188,27 @@ class Admin::UserReservationsController < ApplicationController
     render json: {message:"Members Verified for #{ur.id}", user_reservation:ur}
 
   end
+
+  # GET      /admin/user_reservations/:user_reservation_id/notify(.:format)
+  # send notification through email (and phone in the future)
+  def notify
+    #ensure that you own the reservation or club
+    #send notifcation in the background
+    reservation = UserReservation.find(params[:user_reservation_id])
+
+    if(reservation.contact.nil?) then
+      Rails.logger.error "No Contact email"
+      render json: {message:'No contact info'}, status: :expectation_failed
+      return
+    end
+
+    if(reservation.contact.email.nil?) then
+      Rails.logger.error "Contact has no email"
+      render json: {message:'Contact has no email'}, status: :expectation_failed
+    end
+
+    #contact has email, deliver the email
+    UserReservationMailer.notify(reservation).deliver_later
+    head :ok
+  end
 end
