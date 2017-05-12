@@ -32,6 +32,10 @@ Rails.application.routes.draw do
     resources :memberships
   end
 
+  #public view for reservation
+  resources :reservations, :only => [], :controller => "user_reservations" do
+    get '/' => 'user_reservations#public_view'
+  end
   #to manage golf clubs
   namespace :admin do
     get '/' => "admin#index"

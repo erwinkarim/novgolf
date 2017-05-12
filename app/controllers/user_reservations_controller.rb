@@ -164,4 +164,24 @@ class UserReservationsController < ApplicationController
 
     render
   end
+
+  # GET      /reservations/:reservation_id(.:format)
+  # allow to publicly view the reservation w/ special token
+  def public_view
+    if !params.has_key?(:t) then
+      head :unauthorized
+      return
+    end
+
+    @reservation = UserReservation.find(params[:reservation_id])
+
+    if @reservation.token != params[:t] then
+      head :unauthorized
+      return
+    end
+
+    respond_to do |format|
+      format.html
+    end
+  end
 end
