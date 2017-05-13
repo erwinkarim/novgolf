@@ -67,6 +67,15 @@ class User < ActiveRecord::Base
     end
   end
 
+  #get usual hangouts
+  def hangouts
+    id = self.id
+    hangouts_sql = UserReservation.where.has{ (created_at > 6.months.ago) & (user_id == id)}.
+      select("golf_club_id, count(*) as golf_club_count, 0 as status, 0 as count_member").
+      group(:golf_club_id).order("golf_club_count desc").limit(3).to_sql
+    results = ActiveRecord::Base.connection.execute(hangouts_sql).map{|x| GolfClub.find(x[0]) }
+  end
+
   def self.from_omniauth(auth)
    where(provider: auth.provider, uid: auth.uid).first_or_create do |user|
      user.email = auth.info.email
