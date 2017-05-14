@@ -191,6 +191,10 @@ var ContactsAdmin = React.createClass({
       return response.json();
     }).then(function(json){
       var newContacts = handle.state.contacts;
+      if(newContacts==null){
+        newContacts=[];
+      };
+
       newContacts.push(json);
       handle.setState({contacts:newContacts});
 
