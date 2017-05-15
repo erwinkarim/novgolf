@@ -9,7 +9,7 @@ class FlightMatrixTest < ActiveSupport::TestCase
 
   test "must at least 1 of days populated raise an error if do" do
       fm = FlightSchedule.last.flight_matrices.new
-      fm.assign_attributes({:day1 => nil})
+      fm.assign_attributes({day1:nil, day2:nil, day3:nil, day4:nil, day5:nil})
       assert_raise(ActiveRecord::RecordInvalid){ fm.save! }
 
       fm = FlightSchedule.last.flight_matrices.new( {:day0 => 1})

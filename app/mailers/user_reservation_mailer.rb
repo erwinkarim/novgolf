@@ -12,4 +12,21 @@ class UserReservationMailer < ApplicationMailer
       end
     end
   end
+
+  #send reminder about
+  def notify user_reservation
+    @reservation = user_reservation
+    if @reservation.contact.nil? then
+      Rails.logger.info "UserReservationMailer/notify: No email detected"
+      return
+    end
+
+    @user = @reservation.user
+    @contact = @reservation.contact
+
+    mail(to:@contact.email, subject:"Reminder about your reservation") do |format|
+      format.text
+      format.mjml
+    end
+  end
 end

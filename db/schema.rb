@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170214025356) do
+ActiveRecord::Schema.define(version: 20170515002643) do
 
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -79,9 +79,11 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.integer  "day5"
     t.integer  "day6"
     t.integer  "day7"
-    t.datetime "created_at",         null: false
-    t.datetime "updated_at",         null: false
+    t.datetime "created_at",                                         null: false
+    t.datetime "updated_at",                                         null: false
     t.time     "tee_time"
+    t.datetime "start_active_at",    default: '2017-01-01 00:00:00'
+    t.datetime "end_active_at",      default: '3017-01-01 00:00:00'
     t.index ["flight_schedule_id"], name: "index_flight_matrices_on_flight_schedule_id", using: :btree
   end
 
@@ -89,14 +91,16 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.string   "flight_times"
     t.integer  "min_pax"
     t.integer  "max_pax"
-    t.datetime "created_at",               null: false
-    t.datetime "updated_at",               null: false
+    t.datetime "created_at",                                      null: false
+    t.datetime "updated_at",                                      null: false
     t.integer  "golf_club_id"
     t.string   "name"
-    t.integer  "min_cart",     default: 0
-    t.integer  "max_cart",     default: 2
-    t.integer  "min_caddy",    default: 0
-    t.integer  "max_caddy",    default: 2
+    t.integer  "min_cart",        default: 0
+    t.integer  "max_cart",        default: 2
+    t.integer  "min_caddy",       default: 0
+    t.integer  "max_caddy",       default: 2
+    t.datetime "start_active_at", default: '2017-01-01 00:00:00'
+    t.datetime "end_active_at",   default: '3017-01-01 00:00:00'
     t.index ["golf_club_id"], name: "index_flight_schedules_on_golf_club_id", using: :btree
   end
 
@@ -180,6 +184,16 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.datetime "updated_at",                                     null: false
   end
 
+  create_table "ur_contacts", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.integer  "user_id"
+    t.string   "name"
+    t.string   "email"
+    t.string   "telephone"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_ur_contacts_on_user_id", using: :btree
+  end
+
   create_table "ur_member_details", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
     t.string   "member_id"
@@ -223,7 +237,11 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.integer  "course_listing_id"
     t.integer  "count_member",                                 default: 0
     t.integer  "last_paper_trail_id"
+    t.integer  "reserve_method",                               default: 0
+    t.string   "contact_type"
+    t.integer  "contact_id"
     t.index ["charge_schedule_id"], name: "index_user_reservations_on_charge_schedule_id", using: :btree
+    t.index ["contact_type", "contact_id"], name: "index_user_reservations_on_contact_type_and_contact_id", using: :btree
     t.index ["course_listing_id"], name: "index_user_reservations_on_course_listing_id", using: :btree
     t.index ["flight_matrix_id"], name: "index_user_reservations_on_flight_matrix_id", using: :btree
     t.index ["golf_club_id"], name: "index_user_reservations_on_golf_club_id", using: :btree
@@ -231,14 +249,14 @@ ActiveRecord::Schema.define(version: 20170214025356) do
   end
 
   create_table "users", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
-    t.datetime "created_at",                          null: false
-    t.datetime "updated_at",                          null: false
-    t.string   "email",                  default: "", null: false
-    t.string   "encrypted_password",     default: "", null: false
+    t.datetime "created_at",                                     null: false
+    t.datetime "updated_at",                                     null: false
+    t.string   "email",                             default: "", null: false
+    t.string   "encrypted_password",                default: "", null: false
     t.string   "reset_password_token"
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
-    t.integer  "sign_in_count",          default: 0,  null: false
+    t.integer  "sign_in_count",                     default: 0,  null: false
     t.datetime "current_sign_in_at"
     t.datetime "last_sign_in_at"
     t.string   "current_sign_in_ip"
@@ -254,6 +272,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
     t.string   "confirmation_token"
     t.datetime "confirmed_at"
     t.datetime "confirmation_sent_at"
+    t.string   "telephone",              limit: 12
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true, using: :btree
     t.index ["email"], name: "index_users_on_email", unique: true, using: :btree
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
@@ -286,6 +305,7 @@ ActiveRecord::Schema.define(version: 20170214025356) do
   add_foreign_key "memberships", "users"
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"
+  add_foreign_key "ur_contacts", "users"
   add_foreign_key "ur_member_details", "user_reservations"
   add_foreign_key "ur_transactions", "user_reservations"
   add_foreign_key "user_reservations", "charge_schedules"

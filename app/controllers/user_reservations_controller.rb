@@ -1,5 +1,5 @@
 class UserReservationsController < ApplicationController
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: [:public_view]
 
   # POST/GET     /golf_clubs/:golf_club_id/user_reservations/reserve(.:format)
   def reserve
@@ -14,28 +14,10 @@ class UserReservationsController < ApplicationController
     session[:info] = params[:info]
     session[:teeTimes] = params[:teeTimes]
     session[:golf_club_id] = params[:golf_club_id]
-
-    #delete members keys
-    session.delete(:members)
   end
 
   # POST /golf_clubs/:golf_club_id/user_reservations/processing
   def processing
-    session[:members] = params[:members]
-
-    # need to check all members ids + name has been fullfilled, otherwise go black
-    if params.has_key? :members then
-      session[:members].each_pair do |k,members_for_flight|
-        members_for_flight.each_pair do |k_flight, member|
-          if member[:name].empty? || member[:id].empty? then
-            flash[:error] = "Some Members Id/Name is incomplete"
-            redirect_to reserve_golf_club_user_reservations_path(session[:golf_club_id],
-              {info:session[:info], flight:session[:flight], teeTimes:params[:teeTimes]})
-            return
-          end
-        end
-      end
-    end
 
     #set that you need to complete this transaction (get reservation confirmation token) within 10 minutes
     @club = GolfClub.find(params[:golf_club_id])
@@ -56,13 +38,14 @@ class UserReservationsController < ApplicationController
           session[:reservation_ids] << ur.id
 
           #generate the appropiate member id/name to be linked with this
+          #autofill by system, need to verified by dashboard operator
           if ur.count_member > 0 then
-            session[:members][k].each_pair do |flight_key,member|
-              Rails.logger.info "member is #{member}"
-              ur_member_detail = UrMemberDetail.new(name:member[:name], member_id:member[:id], user_reservation_id:ur.id)
+            (1..ur.count_member).each do |member|
+              ur_member_detail = UrMemberDetail.new(name:"AutoName", member_id:"AutoID", user_reservation_id:ur.id)
               ur_member_detail.save!
             end
           end
+
         else
           ur.reservation_failed!
         end
@@ -74,6 +57,11 @@ class UserReservationsController < ApplicationController
 
     #check payment status in 11 minutes
     CheckPaymentStatusJob.set(wait: 11.minutes).perform_later(UserReservation.find(session[:reservation_ids]))
+  rescue
+    flash[:error] = "Failure in booking"
+
+    #TODO: better to redirect back to root search page w/ stored search parameters
+    redirect_to root_path
   end
 
   def confirmation
@@ -98,7 +86,6 @@ class UserReservationsController < ApplicationController
           end
 
           #destroy the sessions that is not being used anymore
-          session.delete(:members)
           session.delete(:info)
           session.delete(:flight)
           session.delete(:golf_club_id)
@@ -123,29 +110,41 @@ class UserReservationsController < ApplicationController
   # GET      /users/:user_id/reservations(.:format)
   def user_index
     #ensure that you are authorized to see this
-    if current_user.id == params[:user_id].to_i then
-      @reservations = current_user.user_reservations.includes(:golf_club).order(:booking_date => :desc, :booking_time => :desc).limit(40)
-
-      #cutoff time between past and future is yesterday
-      cutoffDate = 1.day.ago
-      @futureFlights = @reservations.select{ |x| x.booking_date > cutoffDate }
-      @pastFlights = @reservations.select{ |x| x.booking_date < cutoffDate }
-    else
+    if current_user.id != params[:user_id].to_i then
       render :file => "public/500.html", :status => :unauthorized
+      return
     end
+
+    @reservations = current_user.user_reservations.includes(:golf_club).order(:booking_date => :desc, :booking_time => :desc).limit(40)
+
+    #cutoff time between past and future is yesterday
+    cutoffDate = 1.day.ago
+    @futureFlights = @reservations.select{ |x| x.booking_date > cutoffDate }
+    @pastFlights = @reservations.select{ |x| x.booking_date < cutoffDate }
   end
 
   #  GET      /users/:user_id/reservations/:id(.:format)
   def show
     @user = User.find(params[:user_id])
     @reservation = UserReservation.includes(:review).find(params[:id])
+
+    #you can only see it if you own the reservation or the club
+    allowed_to_see = @reservation.user_id == current_user.id || @reservation.golf_club.user.id == current_user.id
+    if !allowed_to_see then
+      render file: "public/401.html", status: :unauthorized
+      return
+    end
+
     @review = @reservation.review.nil? ? nil : @reservation.review.to_json
+    @note = @reservation.charge_schedule.nil? ? nil : @reservation.charge_schedule.note
 
     #only show review form if it's 12 hours after tee time and date
     flight_is_12hours_old= DateTime.parse("#{@reservation.booking_date} #{@reservation.booking_time.to_datetime.strftime('%H:%M')} +0000") <
       DateTime.now + 12.hours
     @allow_to_review = @reservation.payment_confirmed? || @reservation.reservation_confirmed?
-    @show_review_form = flight_is_12hours_old && @reservation.payment_confirmed? && @reservation.review.nil?
+    @show_review_form = flight_is_12hours_old &&
+      (@reservation.payment_confirmed? || @reservation.reservation_confirmed?) &&
+      @reservation.review.nil?
 
     respond_to do |format|
       format.html
@@ -164,5 +163,27 @@ class UserReservationsController < ApplicationController
     end
 
     render
+  end
+
+  # GET      /reservations/:reservation_id(.:format)
+  # allow to publicly view the reservation w/ special token
+  def public_view
+    if !params.has_key?(:t) then
+      Rails.logger.error "No token to view reservation"
+      render file: "public/401.html", status: :unauthorized
+      return
+    end
+
+    @reservation = UserReservation.find(params[:reservation_id])
+
+    if @reservation.token != params[:t] then
+      Rails.logger.error "Incorrect token to view reservation"
+      render file:"public/401.html", status: :unauthorized
+      return
+    end
+
+    respond_to do |format|
+      format.html
+    end
   end
 end

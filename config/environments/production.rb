@@ -16,7 +16,7 @@ Rails.application.configure do
 
   # Disable serving static files from the `/public` folder by default since
   # Apache or NGINX already handles this.
-  config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
+  #config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
 
   # Compress JavaScripts and CSS.
   config.assets.js_compressor = :uglifier
@@ -86,7 +86,7 @@ Rails.application.configure do
 
   #user amazon ses
   #config.action_mailer.delivery_method = :aws_sdk
-  config.action_mailer.default_url_options = { host: 'beta.jomgolf.com.my', port: 80}
+  config.action_mailer.default_url_options = { host: 'beta.jomgolf.com.my' }
 
   #config.active_job.queue_adapter = :shoryuken_later
   config.active_job.queue_adapter = :shoryuken

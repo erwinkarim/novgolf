@@ -2,12 +2,23 @@ class Admin::UserReservationsController < ApplicationController
   before_action :admins_only
 
   # GET      /admin/user_reservations/:id(.:format)
+  #TODO: allow golf admin to view the admin, especially when it'd made by other members
   def show
     user_reservation = UserReservation.find(params[:id])
+    contact = user_reservation.contact.nil? ? nil : (
+      user_reservation.contact.attributes.merge({contact_type:user_reservation.contact_type})
+    )
 
     if user_reservation.golf_club.user == current_user then
-      render json: { :user_reservation => user_reservation.attributes.merge({total_price:user_reservation.total_price,
-        ur_member_details:user_reservation.ur_member_details.to_a, status_text:user_reservation.status}) }
+      render json: {
+        :user_reservation => user_reservation.attributes.merge({
+          reserved_by: user_reservation.user,
+          ur_contact: contact,
+          total_price:user_reservation.total_price,
+          ur_member_details:user_reservation.ur_member_details.to_a,
+          status_text:user_reservation.status}
+        )
+      }
     else
       render :file => "public/404", status: :unauthorized
     end
@@ -41,7 +52,8 @@ class Admin::UserReservationsController < ApplicationController
     ur = UserReservation.new
     UserReservation.transaction do
       #create the reservation
-      ur = UserReservation.create_reservation params[:flight_matrix_id], current_user.id, params[:booking_date], params[:flight_info]
+      ur = UserReservation.create_reservation params[:flight_matrix_id], current_user.id, params[:booking_date], params[:flight_info],
+        {reserve_method:UserReservation.reserve_methods[:dashboard]}
       unless params.has_key?(:flight_info) then
         flight_info["members"].each_pair do |index, member|
           ur_member_details = UrMemberDetail.new({name:member["name"], member_id:member["id"], user_reservation_id:ur.id})
@@ -175,5 +187,28 @@ class Admin::UserReservationsController < ApplicationController
 
     render json: {message:"Members Verified for #{ur.id}", user_reservation:ur}
 
+  end
+
+  # GET      /admin/user_reservations/:user_reservation_id/notify(.:format)
+  # send notification through email (and phone in the future)
+  def notify
+    #ensure that you own the reservation or club
+    #send notifcation in the background
+    reservation = UserReservation.find(params[:user_reservation_id])
+
+    if(reservation.contact.nil?) then
+      Rails.logger.error "No Contact email"
+      render json: {message:'No contact info'}, status: :expectation_failed
+      return
+    end
+
+    if(reservation.contact.email.nil?) then
+      Rails.logger.error "Contact has no email"
+      render json: {message:'Contact has no email'}, status: :expectation_failed
+    end
+
+    #contact has email, deliver the email
+    UserReservationMailer.notify(reservation).deliver_later
+    head :ok
   end
 end

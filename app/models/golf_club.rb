@@ -82,6 +82,7 @@ class GolfClub < ActiveRecord::Base
     else
       queryDay = options[:dateTimeQuery].cwday
     end
+
     #if looking from the past, skip
     if options[:dateTimeQuery] < DateTime.now && options[:adminMode] == false then
       return []
@@ -92,8 +93,12 @@ class GolfClub < ActiveRecord::Base
     endHour = (options[:dateTimeQuery] + options[:spread]).strftime("%H:%M")
     timeRange = startHour..endHour
 
+    currentTime = DateTime.now
+
     # todo: remove clubs that is fully booked in the time period
     #get current reservations, excluding failed/canceled attempts
+    Rails.logger.info "queryDateTime = #{options[:dateTimeQuery]}"
+
     tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).where(:status => [0,1,2,3,8]).to_sql
     sql_statement = self.joining{
         flight_schedules.flight_matrices
@@ -105,6 +110,10 @@ class GolfClub < ActiveRecord::Base
         (flight_schedules.flight_matrices.tee_time.in timeRange ) &
         (flight_schedules.min_pax <= options[:pax]) &
         (flight_schedules.flight_matrices.send("day#{queryDay}") == 1) &
+        (flight_schedules.start_active_at <= options[:dateTimeQuery]) &
+        (flight_schedules.end_active_at >= options[:dateTimeQuery]) &
+        (flight_schedules.flight_matrices.start_active_at <= options[:dateTimeQuery]) &
+        (flight_schedules.flight_matrices.end_active_at >= options[:dateTimeQuery]) &
         (id.in options[:club_id])
       }.limit(options[:limit]
       ).group( " golf_clubs.id,
@@ -168,10 +177,15 @@ class GolfClub < ActiveRecord::Base
             (flight_schedules.flight_matrices.tee_time.in timeRange ) &
             (flight_schedules.min_pax <= options[:pax]) &
             (flight_schedules.flight_matrices.send("day#{queryDay}") == 1) &
+            (flight_schedules.start_active_at <= options[:dateTimeQuery]) &
+            (flight_schedules.end_active_at >= options[:dateTimeQuery]) &
+            (flight_schedules.flight_matrices.start_active_at <= options[:dateTimeQuery]) &
+            (flight_schedules.flight_matrices.end_active_at >= options[:dateTimeQuery]) &
             (id.in options[:club_id])
           }.limit(options[:limit]
           ).selecting{ [id,
-              flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'), 'tr.id as ur_id', 'tr.status as tr_status'
+              flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'),
+              'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name')
           ]}.to_sql
           course_results = ActiveRecord::Base.connection.execute(course_query_statement).inject(results){ |p,n|
             flight_handle = p.select{|x| x[:club][:id] == n[0]}.first[:flights].select{|x| x[:matrix_id] == n[1]}.first
@@ -179,7 +193,7 @@ class GolfClub < ActiveRecord::Base
               flight_handle[:course_data][:courses] = []
             end
             flight_handle[:course_data][:courses] << {
-              id:n[2], reservation_id:n[3], reservation_status:n[4],
+              id:n[2], name:n[5], reservation_id:n[3], reservation_status:n[4],
                 reservation_status_text: UserReservation.statuses.select{ |k,v| v == n[4]}.keys.first
             }
             p
@@ -326,16 +340,22 @@ class GolfClub < ActiveRecord::Base
     self.transaction do
       #delete flight schedules that don't exists anymore
       FlightSchedule.where(:id => (self.flight_schedules.map{|x| x.id } -
-        flight_schedules.map{ |k,v| v["flight_id"].to_i }.select{ |x| !x.zero? }) ).each{|y| y.destroy }
+        flight_schedules.map{ |k,v| v["flight_id"].to_i }.select{ |x| !x.zero? }) ).each do |y|
+          y.setInactive
+          #clean out if the fs is created and destroyed within 24 hours
+          if(y.end_active_at - y.start_active_at < 24.hours) then
+            DeleteFlightScheduleJob.perform_later(4)
+          end
+        end
 
       flight_schedules.each_pair do |idx, elm|
-        #puts "updating the flight schedules"
         if(elm["flight_id"].empty? ) then
           #create new flight_schedule
           fs = self.flight_schedules.new(:name => elm["name"],
             :min_pax => elm["min_pax"], :max_pax => elm["max_pax"],
             :min_cart => elm["min_cart"], :max_cart => elm["max_cart"],
-            :min_caddy => elm["min_caddy"], :max_caddy => elm["max_caddy"] )
+            :min_caddy => elm["min_caddy"], :max_caddy => elm["max_caddy"],
+            :start_active_at => DateTime.now )
           fs.save!
 
           #create new charge_schedule
@@ -346,11 +366,10 @@ class GolfClub < ActiveRecord::Base
             :cart => elm[:cart], :insurance_mode => elm[:insurance_mode].to_i)
           cs.save!
 
-          #need to fix this later <- why?
           #create new flight_matrices
           elm["times"].each do |flight_time|
             fm = fs.flight_matrices.new(
-              elm["days"].inject( {:tee_time => Time.parse(flight_time).strftime("%H:%M")} ){
+              elm["days"].inject( {:tee_time => Time.parse(flight_time).strftime("%H:%M"), :start_active_at => DateTime.now} ){
                 |p,n| p.merge({ "day#{n}".to_sym => 1})
               }
             )
@@ -375,32 +394,37 @@ class GolfClub < ActiveRecord::Base
 
           #remove flight matrices that does not exists anymore
           new_times = elm["times"].map{|x| Time.parse("2000-01-01 #{x} +0000")}
-          current_flight.flight_matrices.where.not(:tee_time => new_times).each{ |x| x.destroy }
+          current_flight.flight_matrices.where.not(:tee_time => new_times).each{ |x| x.setInactive }
 
           #handle the flight matrices
           elm["times"].each do |flight_time|
             #check if this exists or not
             fm = current_flight.flight_matrices.where(:tee_time => Time.parse("2000-01-01 #{flight_time} +0000")).first
             if fm.nil? then
-              #create new
+              #fm not found in the current list, create new
               fm = current_flight.flight_matrices.new(
-                elm["days"].inject({:tee_time => flight_time}){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
+                elm["days"].inject({:tee_time => flight_time, start_active_at: DateTime.now}){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
               )
               fm.save!
             else
-              #update the days / what not
+              #fm found in current list, update the days
               fm.update_attributes(
                 (1..7).inject({}){|p,n| p.merge({"day#{n}".to_sym => 0})}.merge(
                   elm["days"].inject({:tee_time => flight_time}){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
                 )
               )
+
+              #update end_active_at if reusing previously deleted flight_matrices
+              if fm.end_active_at < DateTime.now then
+                fm.update_attribute(:end_active_at, DateTime.parse("01-01-3017"))
+              end
             end
-          end
+
+          end #elm["times"].each ....
         end
 
       end
-    end
-
+    end #self.transaction do ...
   end
 
   #get the complete amenity listing
@@ -451,5 +475,10 @@ class GolfClub < ActiveRecord::Base
         current_sequence += 1
       end
     end
+  end
+
+  #get active flight schedules
+  def active_flight_schedules
+    self.flight_schedules.where.has{end_active_at >= DateTime.now }
   end
 end

@@ -9,6 +9,7 @@ class UserReservation < ActiveRecord::Base
   belongs_to :course_listing
 
   has_one :review, as: :topic
+  belongs_to :contact, polymorphic: true
   has_many :ur_member_details, dependent: :destroy
   has_many :ur_transactions, dependent: :destroy
 
@@ -27,13 +28,15 @@ class UserReservation < ActiveRecord::Base
   validates_presence_of :actual_pax, :actual_buggy, :actual_caddy, :actual_insurance, :actual_tax
   validates_presence_of :count_pax, :count_buggy, :count_caddy, :count_insurance, :count_member
   validates_presence_of :booking_date, :booking_time, :course_listing_id
-  validates_presence_of :status
+  validates_presence_of :status, :reserve_method
   validate :validates_booking_datetime, on: :create
+  validate :count_insurance_must_less_eq_count_pax
 
   has_secure_token
 
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,
     :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed, :reservation_failed, :requires_members_verification]
+  enum reserve_method: [:online, :dashboard]
 
   after_initialize :init
 
@@ -51,10 +54,14 @@ class UserReservation < ActiveRecord::Base
       self.actual_insurance ||= 0.00
       self.actual_tax ||= 0.00
 
-      self.status ||= 0
+      self.count_pax ||= 0
       self.count_member ||= 0
-    rescue ActiveModel::MissingAttributeError
-      Rails.logger.info "some stuff are not found"
+      self.count_buggy ||= 0
+      self.count_caddy ||= 0
+      self.count_insurance ||= 0
+
+      self.status ||= 0
+      self.reserve_method ||= 0
     end
   end
 
@@ -232,7 +239,11 @@ class UserReservation < ActiveRecord::Base
   #streamline method to generate user reservation
   #includes the sanity checks, etc...
   # flight_info must be format {:pax, :caddy, :buggy, :insurance}, ie- count, everything else will be calculated
-  def self.create_reservation flight_matrix_id, user_id, booked_date = Date.today, flight_info = {}
+  def self.create_reservation flight_matrix_id, user_id, booked_date = Date.today, flight_info = {}, options = {}
+    default_options = { reserve_method:UserReservation.reserve_methods[:online] }
+
+    options = default_options.merge(options)
+
     #sanity checks, expects that flight_info has all the necessary keys and values
     flight_info = flight_info.symbolize_keys
 
@@ -254,17 +265,24 @@ class UserReservation < ActiveRecord::Base
       taxation = (flight_info[:pax].to_i * cs.session_price + flight_info[:caddy].to_i * cs.caddy +
           flight_info[:buggy].to_i * cs.cart + flight_info[:insurance].to_i * cs.insurance) * club.tax_schedule.rate
       ur = UserReservation.new(
-        user_id:user_id, golf_club_id: cs.golf_club_id, flight_matrix_id:fm.id,
+        user_id:user_id, golf_club_id: cs.golf_club_id,
+        flight_matrix_id:fm.id, charge_schedule_id:cs.id,
         booking_date: booking_date_clause, booking_time: booking_time_clause,
         count_pax:flight_info[:pax], count_caddy:flight_info[:caddy], count_buggy: flight_info[:buggy] , count_insurance:flight_info[:insurance],
           count_member:flight_info[:member],
         actual_pax:flight_info[:pax].to_i * cs.session_price, actual_caddy: flight_info[:caddy].to_i * cs.caddy,
           actual_buggy:flight_info[:buggy].to_i * cs.cart, actual_insurance: flight_info[:insurance].to_i * cs.insurance,
           actual_tax: taxation,
-        status:0
+        status:UserReservation.statuses[:reservation_created], reserve_method:options[:reserve_method]
       )
 
+      #setup the contact info
+      if options[:reserve_method] == UserReservation.reserve_methods[:online] then
+        ur.assign_attributes({contact_id:user_id, contact_type:"User"})
+      end
+
       #find the free coursetime
+      #TODO, automatically use the first free course or set the course
       first_course_id = (club.course_listings.map{ |x| x.id } -
         UserReservation.where.has{
           (golf_club_id == club_id) &
@@ -389,5 +407,12 @@ class UserReservation < ActiveRecord::Base
     end
 
     final_tranxs
+  end
+
+  private
+  def count_insurance_must_less_eq_count_pax
+    self.init
+    errors.add(:count_insurance, "must less or equal count_pax + count_member") unless
+      count_insurance <= count_pax + count_member
   end
 end
