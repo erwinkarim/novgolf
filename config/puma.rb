@@ -20,6 +20,7 @@ environment ENV.fetch("RAILS_ENV")
 # Specifies the `port` that Puma will listen on to receive requests, default is 3000.
 #
 #port        ENV.fetch("PORT") { 5000 }
+=begin
 if ENV.fetch("RAILS_ENV") == 'development'
   ssl_bind '0.0.0.0', '5000', {
     key: ENV.fetch("SSL_KEY_PATH"),
@@ -27,7 +28,8 @@ if ENV.fetch("RAILS_ENV") == 'development'
     verify_mode: 'none'
   }
 end
-#bind "unix:////Users/erwinkarim/novgolf/tmp/sockets/puma.sock"
+=end
+bind "unix:////Users/erwinkarim/novgolf/tmp/sockets/puma.sock"
 
 # Specifies the number of `workers` to boot in clustered mode.
 # Workers are forked webserver processes. If using threads and workers together
