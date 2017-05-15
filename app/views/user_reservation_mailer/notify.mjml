@@ -24,6 +24,6 @@
               %td
                 %strong First Flight
               %td #{@reservation.booking_time.strftime("%I:%M %p")}
-          %mj-button{ 'font-family':"Helvetica", 'background-color':'#f45e43', color:'white', href:user_reservation_url(@user, @reservation)} View Reservation
+          %mj-button{ 'font-family':"Helvetica", 'background-color':'#f45e43', color:'white', href:reservation_url(@reservation, {t:@reservation.token})} View Reservation
           %mj-text Thank you,
           %mj-text JomGolf Team

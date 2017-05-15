@@ -1,5 +1,5 @@
 class UserReservationsController < ApplicationController
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: [:public_view]
 
   # POST/GET     /golf_clubs/:golf_club_id/user_reservations/reserve(.:format)
   def reserve
@@ -169,14 +169,16 @@ class UserReservationsController < ApplicationController
   # allow to publicly view the reservation w/ special token
   def public_view
     if !params.has_key?(:t) then
-      head :unauthorized
+      Rails.logger.error "No token to view reservation"
+      render file: "public/401.html", status: :unauthorized
       return
     end
 
     @reservation = UserReservation.find(params[:reservation_id])
 
     if @reservation.token != params[:t] then
-      head :unauthorized
+      Rails.logger.error "Incorrect token to view reservation"
+      render file:"public/401.html", status: :unauthorized
       return
     end
 

@@ -28,6 +28,11 @@
       %li.list-group-item
         %strong Note:
         We detect that you attempting to pay for this booking. If you lost the payment page, please wait around 10 minutes for the booking to be released again
+- if (!@reservation.contact.nil?) then
+  .card.mb-2
+    .card-block
+      %h3 #{@reservation.contact.name}
+      %p.card-text #{@reservation.contact.email || ""}
 .card.mb-2
   .card-header Details
   .card-block
