@@ -7,6 +7,7 @@ class User < ActiveRecord::Base
     :omniauthable, :omniauth_providers => [:facebook]
 
   has_many :user_reservations
+  has_many :ur_contacts
   has_many :golf_clubs
   has_many :memberships
 
@@ -25,6 +26,11 @@ class User < ActiveRecord::Base
   def init
     self.role ||= 0
     self.image_path ||= DEFAULT_IMAGE_PATH
+  end
+
+  #by default, send emails in the background
+  def send_devise_notification(notification, *args)
+    devise_mailer.send(notification, self, *args).deliver_later
   end
 
   # update the memberships sets, membership will arrive in {random_id => {membership_detail}, random_id => {membership_detail} } fashion
@@ -59,6 +65,15 @@ class User < ActiveRecord::Base
         end
       end
     end
+  end
+
+  #get usual hangouts
+  def hangouts
+    id = self.id
+    hangouts_sql = UserReservation.where.has{ (created_at > 6.months.ago) & (user_id == id)}.
+      select("golf_club_id, count(*) as golf_club_count, 0 as status, 0 as count_member").
+      group(:golf_club_id).order("golf_club_count desc").limit(3).to_sql
+    results = ActiveRecord::Base.connection.execute(hangouts_sql).map{|x| GolfClub.find(x[0]) }
   end
 
   def self.from_omniauth(auth)

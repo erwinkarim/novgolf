@@ -1,3 +1,11 @@
+let FLIGHT_INFO_DEFAULTS = {
+      pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[], reserved_by:null,
+      ur_contact:null, reserve_method:0, reservation_id:null
+};
+let UR_CONTACT_DEFAULTS = {
+  id:"", contact_type:"UrContact", name:"", email:"", telephone:""
+};
+
 var GolfClubDashStatistics = React.createClass({
   propTypes:{
     flightsArray:React.PropTypes.array, days:React.PropTypes.array
@@ -83,8 +91,6 @@ var GolfClubDashStatus = React.createClass({
   getDefaultProps: function(){
       return {status:'Nothing Selected'};
   },
-  componentDidMount:function(){
-  },
   toggleChevron: function(){
     $(this.refs.chevron).toggleClass('fa-angle-double-up');
     $(this.refs.chevron).toggleClass('fa-angle-double-down');
@@ -94,6 +100,7 @@ var GolfClubDashStatus = React.createClass({
     var flightInfo = null;
     var btnRow = null;
     var moneyInfo = null;
+    var courseInfo = null;
     var toggleReservationPanel = this.props.status == null ? null : (
       <a onClick={this.toggleChevron} data-toggle="collapse" href="#reservationCollapse"><i ref="chevron" className="fa fa-angle-double-up"></i></a>
     );
@@ -125,6 +132,14 @@ var GolfClubDashStatus = React.createClass({
         </li>
       );
 
+      courseInfo = (
+        <li className="list-group-item">
+          <GolfCoursesGroup
+            flight={flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}
+            reservation={this.props.flightInfo}/>
+        </li>
+      )
+
       flightInfo = (
         <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
           selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
@@ -150,6 +165,7 @@ var GolfClubDashStatus = React.createClass({
             <li className="list-group-item">
               Selected Flight: {this.props.status}
             </li>
+            { courseInfo}
             { flightInfo }
             { moneyInfo }
             { btnRow }
@@ -216,6 +232,10 @@ var ReservationTransactionModal = React.createClass({
       </div>
     );
 
+    var loadingBody = (this.props.processing) ? (
+      <tr><td colSpan="3">Loading... </td></tr>
+    ) : null;
+
     var urTransactionModal = this.props.flightTransaction == null ? null : (
       <div className="modal fade" id="ur-transaction-modal">
         <div className="modal-dialog modal-lg">
@@ -244,6 +264,7 @@ var ReservationTransactionModal = React.createClass({
                       </tr>
                     );
                   })}
+                  { loadingBody }
                   <tr>
                     <td colSpan="2"><h4>Outstanding</h4></td>
                     <td><h4>{toCurrency(parseFloat(this.props.flightTransaction.outstanding))}</h4></td>
@@ -284,6 +305,7 @@ var ReservationMembersModal = React.createClass({
         modalMaxMember = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight].maxPax;
     };
 
+    //should only enable if there's a reservation ID
     var enableVerifyMemberLink = this.props.selectedArray == null ? false : (
       this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight]
       .course_data.courses[this.props.selectedCourse].reservation_status == 8
@@ -339,18 +361,9 @@ var ReservationMembersModal = React.createClass({
               </form>
             </div>
             <div className="modal-footer">
-              <div className="btn-group">
-                <button type="button" className="btn btn-primary" onClick={this.props.updateMembersList}>Update Members</button>
-                <button type="button" className="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown">
-                  <span className="sr-only">Toggle Dropdown</span>
-                </button>
-                <div className="dropdown-menu">
-                  <a href="#" className={`dropdown-item ${enableVerifyMemberLink ? "" : "disabled"}`}
-                    onClick={this.props.reservationConfirmMembers} data-dismiss-modal="false">
-                    Update and Verify Member(s)
-                  </a>
-                </div>
-              </div>
+              <button type="button" className="btn btn-primary" onClick={this.props.reservationConfirmMembers}>
+                Update & Verify Members
+              </button>
             </div>
           </div>
         </div>
@@ -361,15 +374,301 @@ var ReservationMembersModal = React.createClass({
   }
 });
 
-var GolfClubDashboard = React.createClass({
-  propTypes: {
-      club:React.PropTypes.object,
-      token:React.PropTypes.string,
-      paths:React.PropTypes.object,
-      refreshEvery:React.PropTypes.number
+var ReservationContactInfoModal = React.createClass({
+  propTypes:{
+    reservation:React.PropTypes.object,
+    paths:React.PropTypes.object,
+    token:React.PropTypes.string
+  },
+  getInitialState: function(){
+    return {ur_contact:this.props.reservation.ur_contact}
+  },
+  componentWillReceiveProps:function(nextProps){
+    var newContact = this.props.reservation.ur_contact == null ?
+      UR_CONTACT_DEFAULTS : this.props.reservation.ur_contact;
+    this.setState({ur_contact:newContact});
+  },
+  handleChangeContact: function(e){
+    //update the ur_contact state
+    var newUrContact = (this.state.ur_contact===null) ?
+      Object.assign({}, UR_CONTACT_DEFAULTS) : this.state.ur_contact;
+
+    //reset id to null
+    newUrContact.id = "";
+    newUrContact = Object.assign(newUrContact, {[e.target.dataset.target]:e.target.value});
+    this.setState({ur_contact:newUrContact});
+  },
+  componentDidMount:function(){
+    var handle = this;
+
+    $(this.contactModal).on('hide.bs.modal', function(){
+      //reset the state.ur_contact
+      var newUrContact = (handle.props.reservation.ur_contact === null) ?
+        Object.assign({}, UR_CONTACT_DEFAULTS) : handle.props.reservation.ur_contact;
+      handle.setState({ur_contact:newUrContact});
+    });
+
+    var autocompleteOptions = {
+      serviceUrl:'/admin/contacts/suggest',
+      dataType:'json',
+      deferRequestBy:100,
+      paramName:'q',
+      minChars:3,
+      formatResult:function(suggestion,currentValue){
+        return `${suggestion.data.name} (e:${suggestion.data.email} / t:${suggestion.data.telephone})`.replace(currentValue, `<strong>${currentValue}</strong>`);
+      },
+      onSelect:function(suggestion){
+        //update the ur_contact state
+        var newUrContact = Object.assign(UR_CONTACT_DEFAULTS,
+          {id:suggestion.data.id, name:suggestion.data.name, email:suggestion.data.email, telephone:suggestion.data.telephone}
+        );
+
+        handle.setState({ur_contact:newUrContact});
+      }
+    };
+
+    $(this.contactNameInput).autocomplete(autocompleteOptions);
+    $(this.contactEmailInput).autocomplete(autocompleteOptions);
+  },
+  sendContactUpdate:function(e){
+    var handle = this;
+    //update the contact details
+    var form_path = `${this.props.paths.user_reservations}/${this.props.reservation.reservation_id}/ur_contacts`;
+
+    fetch(form_path, {
+      method:'POST',
+      body:new FormData(handle.contactForm),
+      credentials: 'same-origin'
+    }).then(function(response){
+      //all done, should update the user_reservation
+      if(response.status >= 200 && response.status < 400){
+        $.snackbar({content:'Contact Info Updated', style:'notice'});
+        //reload the current reservation
+        handle.props.reservationReload();
+      } else {
+        $.snackbar({content:'There are some errors updating the contact info', style:'error'});
+        $.snackbar({content:response.text(), style:'error'});
+        throw new Error(response.statusText);
+      };
+    });
+
+    //update the reservation
+    $(this.contactModal).modal('hide');
+  },
+  render: function(){
+    disableForm = this.props.reservation.reserve_method == "online";
+    var contact_id = (this.state.ur_contact === null) ? "" :
+      this.state.ur_contact.id;
+    var contact_type = (this.state.ur_contact === null) ? "" :
+      this.state.ur_contact.contact_type;
+    var contact_name = (this.state.ur_contact === null) ? "" :
+      this.state.ur_contact.name;
+    var contact_email = (this.state.ur_contact === null) ? "" :
+      this.state.ur_contact.email;
+    var contact_telephone = (this.state.ur_contact === null) ? "" :
+      this.state.ur_contact.telephone;
+
+    var online_notice = disableForm ? (
+      <p>The reservation was creating using JomGolf website</p>
+    ) : null;
+
+    return (
+      <div id="flight-contact-info-modal" className="modal fade" ref={(input)=>{this.contactModal = input;}}>
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3 className="modal-title">Reservation Contact Info</h3>
+              <button type="button" className="close" data-dismiss="modal">
+                <span>&times;</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              {online_notice}
+              <form action={`${this.props.paths.user_reservations}/${this.props.reservation.reservation_id}/ur_contacts`}
+                method="POST" ref={(form)=>this.contactForm=form}>
+                <input type="hidden" value={this.props.token} name="authenticity_token" />
+                <input type="hidden" name="ur_contact[id]" value={contact_id} />
+                <input type="hidden" name="ur_contact[type]" value={contact_type} />
+                <div className="row form-group">
+                  <label className="col-4 col-form-label">Name:</label>
+                  <div className="col-8">
+                    <input type="text" className="form-control" name="ur_contact[name]"
+                      data-target="name" value={contact_name} onChange={this.handleChangeContact}
+                      ref={(input)=>{this.contactNameInput=input;}}
+                      placeholder="Name" disabled={disableForm}/>
+                  </div>
+                </div>
+                <div className="row form-group">
+                  <label className="col-4 col-form-label">Email:</label>
+                  <div className="col-8">
+                    <input type="text" className="form-control" name="ur_contact[email]"
+                      data-target="email" value={contact_email} onChange={this.handleChangeContact}
+                      ref={(input)=>{this.contactEmailInput=input;}}
+                      placeholder="Email" disabled={disableForm} />
+                  </div>
+                </div>
+                <div className="row form-group">
+                  <label className="col-4 col-form-label">Telephone:</label>
+                  <div className="col-8">
+                    <input type="text" className="form-control" name="ur_contact[telephone]"
+                      data-target="telephone" value={contact_telephone} onChange={this.handleChangeContact}
+                      placeholder="Telephone" disabled={disableForm} />
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div className="modal-footer">
+              <button data-dismiss="modal" type="button" className="btn btn-secondary">Close</button>
+              <button type="button" className="btn btn-primary" onClick={this.sendContactUpdate} disabled={disableForm}
+                data-value="" data-array-index="">
+                Update Contacts
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+});
+
+//should which courses are occupied
+//should show statuses
+var GolfCoursesGroup = React.createClass({
+  propTypes:{
+    flight: React.PropTypes.object,
+    selectedCourse: React.PropTypes.number,
+    reservation:React.PropTypes.object
   },
   getDefaultProps: function(){
-      return { options: {displayCourseGroup:true, GolfClubTimesShowPrices:false, displayMembersModal:true}, refreshEvery:60};
+    return {selectedCourse:0};
+  },
+  getInitialState: function(){
+    return {random_id:randomID()};
+  },
+  notifyContact: function(){
+    var handle = this;
+
+    //check if there's a reservation
+    if(this.props.reservation.reservation_id === null){
+      $.snackbar({content:'No reservation detected', style:'error'});
+      return;
+    }
+
+    //check if contact  is there
+    if(this.props.reservation.ur_contact === null){
+      $.snackbar({content:'No contact info detected', style:'error'});
+      return;
+    }
+
+    //check if contact has email
+    if(this.props.reservation.ur_contact.email === null || this.props.reservation.ur_contact.email == ''){
+      $.snackbar({content:'Contact has no email', style:'error'});
+      return;
+    }
+
+    //request server to send notification
+    fetch(`/admin/user_reservations/${this.props.reservation.reservation_id}/notify`, {
+      method:'GET',
+      credentials:'same-origin'
+    }).then(function(response){
+      if(response.status >= 400){
+        $.snackbar({content:'Error when trying to send email', style:'error'});
+        return;
+      }
+
+      //everything ok
+      $.snackbar({content:'Email notification sent', style:'notice'});
+    })
+  },
+  componentDidUpdate:function(prevProps, prevState){
+    //close the collapse if the selectedCourse changes
+    if(this.props.selectedCourse != prevProps.selectedCourse){
+      $(this.reservationDetailCollapse).collapse('hide');
+    }
+
+  },
+  render: function(){
+    var reservation_id = this.props.flight.course_data.courses[this.props.selectedCourse].reservation_id || null;
+    var reservation_user_id = this.props.reservation.reserved_by == null ? null :
+      this.props.reservation.reserved_by.id;
+    var reservation_text = this.props.flight.course_data.courses[this.props.selectedCourse].reservation_status_text || "Nil";
+    var reservation_link = reservation_id == null ? "Nil" : (
+      <a href={`#reservation-detail`} data-toggle="collapse">{reservation_id}</a>
+    );
+    var reservation_detail_link = reservation_id == null ? null : (
+      <a href={`/users/${reservation_user_id}/reservations/${reservation_id}`} className="btn btn-info mb-2 mr-2" target="_blank">View</a>
+    );
+    var reservation_notify_link = reservation_id == null ? null : (
+      <button type="button" className="btn btn-info mb-2 mr-2" onClick={this.notifyContact}>Send Notification</button>
+    )
+
+    var ur_contact_name = this.props.reservation.ur_contact == null ? "No Info" :
+      this.props.reservation.ur_contact.name;
+    var ur_contact_email = this.props.reservation.ur_contact == null ? "No Info" :
+      this.props.reservation.ur_contact.email;
+    var ur_contact_telephone = this.props.reservation.ur_contact == null ? "No Info" :
+      this.props.reservation.ur_contact.telephone;
+
+    var reserved_by_text = this.props.reservation.reserved_by == null ? "Nil" : this.props.reservation.reserved_by.name;
+    return (
+      <div>
+        <p>Courses:</p>
+        <div className="btn-group w-100 flex-wrap" data-toggle="buttons">{ this.props.flight.course_data.courses.map( (e,i) => {
+          var reserve_status = "secondary"
+          switch (e.reservation_status) {
+            case 1: reserve_status = "warning"; break;
+            case 8: reserve_status = "info"; break;
+            case 2: reserve_status = "danger"; break;
+            case 3: reserve_status = "danger"; break;
+            default: reserve_status = "secondary";
+          };
+          var activeState = (i == this.props.selectedCourse) ? "active" : null;
+          return (
+            <label className={`btn btn-${reserve_status} ${activeState}`} key={i} onClick={this.props.selectCourse}
+              data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}>
+              <input type="radio" name="courses" value={`course-${e.id}`}  />
+              {e.name}
+            </label>
+          );
+        })}</div>
+        <ul className="list-unstyled">
+          <li> Selected Course: {this.props.flight.course_data.courses[this.props.selectedCourse].name}; </li>
+          <li> Reservation ID:{reservation_link}; </li>
+          <li> Reservation Status: {reservation_text } </li>
+        </ul>
+        <div className="collapse in" id={`reservation-detail`} ref={(collapse)=>{this.reservationDetailCollapse = collapse;}}>
+          <hr />
+          <ul className="list-unstyled">
+            <li>Reserved By: {reserved_by_text} </li>
+            <li>Reserved For:
+              <ul>
+                <li>Name: {ur_contact_name}</li>
+                <li>Email: {ur_contact_email} </li>
+                <li>Telephone: {ur_contact_telephone} </li>
+              </ul>
+            </li>
+          </ul>
+          <hr />
+          {reservation_detail_link}
+          {reservation_notify_link}
+          <button type="button" className="btn btn-info mb-2 mr-2" data-target="#flight-contact-info-modal" data-toggle="modal">Edit Contact</button>
+          <button type="button" className="btn btn-secondary mb-2 mr-2" data-toggle="collapse" data-target="#reservation-detail">Close</button>
+        </div>
+      </div>
+    );
+  }
+});
+
+var GolfClubDashboard = React.createClass({
+  propTypes: {
+    club:React.PropTypes.object,
+    token:React.PropTypes.string,
+    paths:React.PropTypes.object,
+    refreshEvery:React.PropTypes.number
+  },
+  getDefaultProps: function(){
+      return { options: {displayCourseGroup:false, GolfClubTimesShowPrices:false, displayMembersModal:true}, refreshEvery:60};
   },
   getInitialState: function(){
     var today = new Date();
@@ -379,9 +678,9 @@ var GolfClubDashboard = React.createClass({
       flightsArray:[], dashBoardStatusText:'None Selected',
       days: this.updateDays(today), queryDate:queryDate,
       loadFlight: false, selectedArray:null, selectedFlight:null, selectedCourse:null,
-      flightInfo:{pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[]},flightTransaction:null,
-      cashValue:0.0,
-      processing:false
+      flightInfo:FLIGHT_INFO_DEFAULTS,
+      flightTransaction:null,
+      cashValue:0.0, processing:false
     }
   },
   tick: function(){
@@ -452,8 +751,11 @@ var GolfClubDashboard = React.createClass({
       }).then(function(data){
         var reserve = data.user_reservation;
         var newFlightInfo = Object.assign(currentFlightInfo,
-          {pax:reserve.count_pax, member:reserve.count_member, buggy:reserve.count_buggy, caddy:reserve.count_caddy,
-            insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price, members:reserve.ur_member_details});
+          {
+            pax:reserve.count_pax, member:reserve.count_member, buggy:reserve.count_buggy, caddy:reserve.count_caddy,
+            insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price, members:reserve.ur_member_details,
+            reserved_by:reserve.reserved_by, ur_contact: reserve.ur_contact, reserve_method:reserve.reserve_method, reservation_id:reserve.id
+          });
         handle.setState({flightInfo:newFlightInfo});
       });
 
@@ -527,38 +829,54 @@ var GolfClubDashboard = React.createClass({
     //happens when i click on a flight time
     var handle = this;
 
-    //parseInt for IE
-    var selectedArray = parseInt(e.target.dataset.arrayIndex);
-    var selectedIndex = parseInt(e.target.dataset.value);
+    var clickDashPromise = new Promise(function(resolve,reject){
+      //first, update the info when selecting a time
 
-    //if array changed, reset active class on the previous array
-    if(selectedArray != this.state.selectedArray){
-      $($('.btn-group')[this.state.selectedArray]).find('.active').toggleClass('active');
-    };
+      //parseInt for IE
+      var selectedArray = parseInt(e.target.dataset.arrayIndex);
+      var selectedIndex = parseInt(e.target.dataset.value);
 
-    //setup the dashboard status
-    var newDashText = this.state.days[selectedArray] + ", " + this.state.flightsArray[selectedArray][selectedIndex].tee_time;
+      //if array changed, reset active class on the previous array
+      if(selectedArray != handle.state.selectedArray){
+        $($('.btn-group')[handle.state.selectedArray]).find('.active').toggleClass('active');
+      };
 
-    var flight = this.state.flightsArray[selectedArray][selectedIndex];
-    var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, members:[], tax:0.00, totalPrice:0.00};
-    newFlightInfo = this.updatePrice(newFlightInfo, flight);
+      //hide the reservation detail
+      $('#reservation-detail').collapse('hide');
 
-    //load the user_reservation_id for the first course
-    //var user_reservation_id = Math.min.apply(null, flight.course_data.courses.map((e,i) => e.reservation_id) );
-    var user_reservation_id = flight.course_data.courses[0].reservation_id;
-    if(user_reservation_id){
-      this.loadReservationJSON(user_reservation_id, newFlightInfo);
-    } else {
-      this.setState({flightTransaction:null});
-    };
+      //setup the dashboard status
+      var newDashText = handle.state.days[selectedArray] + ", " + handle.state.flightsArray[selectedArray][selectedIndex].tee_time;
+      var flight = handle.state.flightsArray[selectedArray][selectedIndex];
+      //var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, members:[], tax:0.00, totalPrice:0.00};
+      var newDefaults = Object.assign({}, FLIGHT_INFO_DEFAULTS);
+      var newFlightInfo = Object.assign(newDefaults, {pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy});
+      newFlightInfo = handle.updatePrice(newFlightInfo, flight);
 
-    //setup the state
-    this.setState({
-      dashBoardStatusText:newDashText,
-      selectedArray:parseInt(e.target.dataset.arrayIndex),
-      selectedFlight: parseInt(e.target.dataset.value), selectedCourse:0, loadFlight:true,
-      flightInfo:newFlightInfo
+      //setup the state
+      handle.setState({
+        dashBoardStatusText:newDashText,
+        selectedArray:parseInt(e.target.dataset.arrayIndex),
+        selectedFlight: parseInt(e.target.dataset.value), selectedCourse:0, loadFlight:true,
+        flightInfo:newFlightInfo
+      });
+
+      resolve({flight:flight, newFlightInfo:newFlightInfo});
     });
+
+    clickDashPromise.then(function(data){
+      //load the user_reservation_id for the first course
+      //var user_reservation_id = Math.min.apply(null, flight.course_data.courses.map((e,i) => e.reservation_id) );
+      var user_reservation_id = data.flight.course_data.courses[0].reservation_id;
+      if(user_reservation_id){
+        var newFlightInfo = data.newFlightInfo;
+        handle.loadReservationJSON(user_reservation_id, newFlightInfo);
+      } else {
+        handle.setState({flightTransaction:null, flightInfo:data.newFlightInfo});
+      };
+    });
+
+
+
   },
   updateMembersList: function(e){
     var membersArray = $(this.refs.membersModal.refs.memberBody).serializeArray();
@@ -681,9 +999,14 @@ var GolfClubDashboard = React.createClass({
       return response.json();
     }).then(function(data){
       $.snackbar({content:data.message});
+      //update the current flightInfo to include reservation id
+      var newFlightInfo = handle.state.flightInfo;
+      newFlightInfo.reservation_id = data.reservation.id;
+      handle.setState({flightInfo:newFlightInfo});
+
       handle.loadSchedule();
     }).catch(function(ex){
-      $.snackbar({content:'Failed to reserve Flight'});
+      $.snackbar({content:'Failed to reserve Flight', style:'error'});
       //console.log("exception", ex);
     });
   },
@@ -750,12 +1073,30 @@ var GolfClubDashboard = React.createClass({
 
     }).catch(
       function(reason){
-        $.snackbar({content:'Unable to verify member list'});
+        $.snackbar({content:'Unable to verify member list', class:'error'});
       }
     );
 
     $(handle.refs.membersModal.refs.membersModal).modal('hide');
 
+  },
+  reservationUpdateContactInfo: function(e){
+    //update reservation info
+    return null;
+  },
+  reservationReload:function(){
+    if(this.state.flightInfo === null){
+      return;
+    }
+
+    if(this.state.flightInfo.reservation_id == null){
+      console.log("current reservation_id is null");
+      return;
+    }
+
+    //reload current reservation
+    var currentFlightInfo = this.state.flightInfo;
+    this.loadReservationJSON(this.state.flightInfo.reservation_id, currentFlightInfo);
   },
   updateCashValue: function(e){
     this.setState({cashValue:parseFloat(e.target.value)});
@@ -800,6 +1141,9 @@ var GolfClubDashboard = React.createClass({
         />
         <ReservationTransactionModal flightTransaction={this.state.flightTransaction} cashValue={this.state.cashValue}
           reservationPay={this.reservationPay} updateCashValue={this.updateCashValue} processing={this.state.processing}/>
+        <ReservationContactInfoModal reservation={this.state.flightInfo} paths={this.props.paths} token={this.props.token}
+          reservationReload={this.reservationReload}
+          />
         <div className="col-lg-8">
           <p>
             <input className="datepicker form-control" ref={ (datepicker)=>{this.datepicker=datepicker; }}

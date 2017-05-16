@@ -102,7 +102,7 @@
         .card-block
           %p.card-text Taxation Country: #{ @golf_club.tax_schedule.country} (#{number_to_percentage(@golf_club.tax_schedule.rate*100)})
     .col-12.col-md-8
-      - @golf_club.flight_schedules.each do |flight_schedule|
+      - @golf_club.active_flight_schedules.each do |flight_schedule|
         - prices = flight_schedule.charge_schedule
         - random_id = SecureRandom.hex(6)
         .card.mb-2
@@ -118,25 +118,20 @@
                   %thead
                     %tr
                       %th Item
-                      %th Value
+                      %th Min
+                      %th Max
                   %tbody
                     %tr
-                      %td Min Balls per Flight
+                      %td Pax
                       %td #{ flight_schedule.min_pax }
+                      %td #{ flight_schedule.max_pax}
                     %tr
-                      %td Max Balls per Flight
+                      %td Buggy
+                      %td #{ flight_schedule.min_cart }
                       %td #{ flight_schedule.max_pax }
                     %tr
-                      %td Min Buggy per Flight
-                      %td #{ flight_schedule.min_cart }
-                    %tr
-                      %td Max Buggy per Flight
-                      %td #{ flight_schedule.max_cart }
-                    %tr
-                      %td Min Caddy per Flight
+                      %td Caddy
                       %td #{ flight_schedule.min_caddy }
-                    %tr
-                      %td Max Caddy per Flight
                       %td #{ flight_schedule.max_caddy }
               %li.list-group-item
                 %h4.w-100 Notes
@@ -167,12 +162,12 @@
               %li.list-group-item
                 %h4.w-100 Flight Days
                 .btn-group.flex-wrap{ :'data-toggle' => 'buttons'}
-                  - flight_schedule.flight_matrices.first.attributes.select{ |k,v| k.to_s.match(/day[1-7]/)}.map do |x,y|
+                  - flight_schedule.active_flight_matrices.first.attributes.select{ |k,v| k.to_s.match(/day[1-7]/)}.map do |x,y|
                     %label.btn.btn-secondary{ :class => (y==1) ? "active" : "", :disabled => true }
                       #{ (x[3].to_i == 7) ? "Sunday" : DateTime::DAYNAMES[ (x[3].to_i)]}
                 %h4.w-100 Flight Times
                 .btn-group.flex-wrap
-                  - flight_schedule.flight_matrices.map{|x| x.tee_time}.sort.each do |flight_time|
+                  - flight_schedule.active_flight_matrices.map{|x| x.tee_time}.sort.each do |flight_time|
                     %button.btn.btn-secondary{ :type => 'button' } #{ flight_time.strftime("%H:%M") }
           .card-block{ id:"summary-#{random_id}"}
             %p.card-text
@@ -184,7 +179,7 @@
             %p.card-text
               Tee Times:
               .btn-group.flex-wrap
-                - flight_schedule.flight_matrices.map{|x| x.tee_time}.sort.each do |flight_time|
+                - flight_schedule.active_flight_matrices.map{|x| x.tee_time}.sort.each do |flight_time|
                   %button.btn.btn-secondary{ :type => 'button' } #{ flight_time.strftime("%H:%M") }
             %p.card-text
               Prices:
@@ -229,14 +224,12 @@
 
   $('.flight-info-collapse').each(function(index){
       $(this).on('hide.bs.collapse', function(e){
-        console.log('show the summary', e.target.dataset.summary);
         $(e.target.dataset.summary).slideDown(100);
         $(e.target.dataset.chevron).removeClass("fa-chevron-up");
         $(e.target.dataset.chevron).addClass("fa-chevron-down");
 
       });
       $(this).on('show.bs.collapse', function(e){
-        console.log('hide the summary', e.target.dataset.summary);
         $(e.target.dataset.summary).slideUp(100);
         $(e.target.dataset.chevron).addClass("fa-chevron-up");
         $(e.target.dataset.chevron).removeClass("fa-chevron-down");

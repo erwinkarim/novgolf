@@ -78,12 +78,18 @@ class Admin::GolfClubsController < ApplicationController
   # TODO: rescue from transactio
   def create
     #create all the prototypes
-    #golf_club = GolfClub.new(golf_club_params)
+
+    #titleize the name
+    params[:golf_club][:name] = params[:golf_club][:name].titleize
+
     golf_club = current_user.golf_clubs.new(golf_club_params)
 
     golf_club.transaction do
       golf_club.save!
       golf_club.setFlightSchedule(params[:flight])
+
+      #course listings
+      golf_club.setCourseListing(params[:courses])
 
       #amenities
       new_am = params.has_key?(:amenities) ? params[:amenities].map{ |x,y| x.to_i } : []
@@ -103,12 +109,12 @@ class Admin::GolfClubsController < ApplicationController
   # GET      /admin/golf_clubs/:id/edit(.:format)
   def edit
     @golf_club = GolfClub.find(params[:id])
-    @flight_schedules = @golf_club.flight_schedules.map do |fs|
+    @flight_schedules = @golf_club.active_flight_schedules.map do |fs|
       (
         fs.attributes.merge("charge_schedule" => fs.charge_schedule.attributes)
       ).
       merge(
-        "flight_matrices" => fs.flight_matrices.map{
+        "flight_matrices" => fs.active_flight_matrices.map{
           |x| x.attributes.merge({"tee_time" => x.tee_time.strftime("%I:%M%P")} )
         }
       )
@@ -147,6 +153,9 @@ class Admin::GolfClubsController < ApplicationController
     gc = GolfClub.find(params[:id])
 
     gc.transaction do
+      #titleize the name
+      params[:golf_club][:name] = params[:golf_club][:name].titleize
+
       gc.update_attributes(golf_club_params)
 
       # course listings
