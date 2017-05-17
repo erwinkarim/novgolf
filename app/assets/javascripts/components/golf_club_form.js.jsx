@@ -636,12 +636,22 @@ var FlightBox = React.createClass({
     this.setState({teeTimes:newTeeTimes});
   },
   deleteTeeTime: function(e){
-    //delete tee times
-    if(this.state.teeTimes.length > 1){
-      var newTeeTimes = this.state.teeTimes;
-      newTeeTimes[e.target.dataset.indexSchedule].splice(e.target.dataset.indexTime, 1);
-      this.setState({teeTimes:newTeeTimes});
+    //don't delete anything if there's on 2 left
+    if(this.state.teeTimes[e.target.dataset.indexSchedule].length <= 2){
+      return;
     }
+
+    //delete tee times
+    var indexTime = parseInt(e.target.dataset.indexTime);
+    var newTeeTimes = this.state.teeTimes;
+    var selectedTeeTimes = newTeeTimes[e.target.dataset.indexSchedule];
+    var lowerIndex = (selectedTeeTimes.length/2 < indexTime) ? (indexTime - selectedTeeTimes.length/2) : (indexTime);
+    var upperIndex = (selectedTeeTimes.length/2 < indexTime) ? (indexTime) : (selectedTeeTimes.length/2 + indexTime);
+
+    selectedTeeTimes.splice(upperIndex, 1);
+    selectedTeeTimes.splice(lowerIndex,1);
+
+    this.setState({teeTimes:newTeeTimes});
   },
   generateTeeTime: function(e){
     var newTeeTimes = this.state.teeTimes;
