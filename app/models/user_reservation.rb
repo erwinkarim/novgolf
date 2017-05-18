@@ -7,11 +7,13 @@ class UserReservation < ActiveRecord::Base
   belongs_to :golf_club
   belongs_to :flight_matrix
   belongs_to :course_listing
+  belongs_to :second_course_listing, class_name:"CourseListing"
 
   has_one :review, as: :topic
   belongs_to :contact, polymorphic: true
   has_many :ur_member_details, dependent: :destroy
   has_many :ur_transactions, dependent: :destroy
+
 
   #each club id should have a unique booking date and time
   #  and unique course #
@@ -407,6 +409,16 @@ class UserReservation < ActiveRecord::Base
     end
 
     final_tranxs
+  end
+
+
+  #first booking and course_listing
+  def first_booking_time
+    self.booking_time
+  end
+
+  def first_course_listing
+    self.course_listing
   end
 
   private
