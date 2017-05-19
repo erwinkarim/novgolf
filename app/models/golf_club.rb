@@ -314,9 +314,9 @@ class GolfClub < ActiveRecord::Base
     fullSch = {}
     #setup the full flightSchedule
     flight_schedules.each_pair do |i,e|
-      e["times"].each do |teeTime|
+      e["times"].each_pair do |teeTimeKey, teeTimeValue|
         #setup the time pair
-        std_time = Time.parse(teeTime).strftime("%H:%M")
+        std_time = Time.parse(teeTimeValue["tee_time"]).strftime("%H:%M")
         time_pair = { std_time => (0..7).inject([]){|p,n| p << 0} }
         e["days"].map{ |x| x.to_i }.each{ |x| time_pair.values.first[x] = 1 }
 
@@ -344,7 +344,7 @@ class GolfClub < ActiveRecord::Base
           y.setInactive
           #clean out if the fs is created and destroyed within 24 hours
           if(y.end_active_at - y.start_active_at < 24.hours) then
-            DeleteFlightScheduleJob.perform_later(4)
+            DeleteFlightScheduleJob.perform_later(y.id)
           end
         end
 
@@ -367,9 +367,22 @@ class GolfClub < ActiveRecord::Base
           cs.save!
 
           #create new flight_matrices
-          elm["times"].each do |flight_time|
+          # convert from {tee_time:x, flight_order:y} to {tee_time:x, second_tee_time:x2} based on position in y
+          # oft = ordered flight time
+          oft = elm["times"].sort_by{ |k,v| v["tee_time"]}.map{ |k,v| v }.to_a
+          (0..oft.length/2-1).each do |index|
+          #elm["times"].each do |flight_time|
+            #fm = fs.flight_matrices.new(
+            #  elm["days"].inject( {:tee_time => Time.parse(flight_time).strftime("%H:%M"), :start_active_at => DateTime.now} ){
+            #    |p,n| p.merge({ "day#{n}".to_sym => 1})
+            #  }
+            #)
             fm = fs.flight_matrices.new(
-              elm["days"].inject( {:tee_time => Time.parse(flight_time).strftime("%H:%M"), :start_active_at => DateTime.now} ){
+              elm["days"].inject( {
+                :tee_time => Time.parse(oft[index]["tee_time"]).strftime("%H:%M"),
+                :second_tee_time => Time.parse(oft[index + oft.length/2]["tee_time"]).strftime("%H:%M"),
+                :start_active_at => DateTime.now
+              }){
                 |p,n| p.merge({ "day#{n}".to_sym => 1})
               }
             )
@@ -397,20 +410,29 @@ class GolfClub < ActiveRecord::Base
           current_flight.flight_matrices.where.not(:tee_time => new_times).each{ |x| x.setInactive }
 
           #handle the flight matrices
-          elm["times"].each do |flight_time|
+          oft = elm["times"].sort_by{ |k,v| v["tee_time"]}.map{ |k,v| v }.to_a
+          (0..oft.length/2-1).each do |index|
+          #elm["times"].each do |flight_time|
             #check if this exists or not
-            fm = current_flight.flight_matrices.where(:tee_time => Time.parse("2000-01-01 #{flight_time} +0000")).first
+            fm = current_flight.flight_matrices.where(:tee_time => Time.parse("2000-01-01 #{oft[index]["tee_time"]} +0000")).first
             if fm.nil? then
               #fm not found in the current list, create new
               fm = current_flight.flight_matrices.new(
-                elm["days"].inject({:tee_time => flight_time, start_active_at: DateTime.now}){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
-              )
+                elm["days"].inject({
+                  :tee_time => oft[index]["tee_time"],
+                  :second_tee_time => oft[index + oft.length/2]["tee_time"],
+                  start_active_at: DateTime.now
+                }){|p,n| p.merge({ "day#{n}".to_sym => 1})
+              })
               fm.save!
             else
               #fm found in current list, update the days
               fm.update_attributes(
                 (1..7).inject({}){|p,n| p.merge({"day#{n}".to_sym => 0})}.merge(
-                  elm["days"].inject({:tee_time => flight_time}){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
+                  elm["days"].inject({
+                    :tee_time => oft[index]["tee_time"],
+                    :second_tee_time => oft[index + oft.length/2]["tee_time"]
+                  }){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
                 )
               )
 

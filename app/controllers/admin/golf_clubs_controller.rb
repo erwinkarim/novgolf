@@ -150,6 +150,7 @@ class Admin::GolfClubsController < ApplicationController
     #   => update the charge schedule associated with the flight schedules
     #   => update the flight matrices assocaited with the flight scheduleso
     # TODO: rescue from exception during transaction
+
     gc = GolfClub.find(params[:id])
 
     gc.transaction do

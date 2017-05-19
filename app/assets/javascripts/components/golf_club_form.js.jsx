@@ -193,6 +193,7 @@ var CourseListingForm = React.createClass({
   }
 });
 
+// TODO: figure out how to to do 2nd time ordering from a single flight matrix
 var FlightScheduleControl = React.createClass({
   propTypes: {
       flightTimes: React.PropTypes.array
@@ -226,9 +227,11 @@ var FlightScheduleControl = React.createClass({
         <div className="card mb-2">
           <div className="card-block btn-toolbar flex-wrap">{ this.props.flightTimes.map( (e,i) => {
             var btnColor = e.flight_order == 0 ? "btn-secondary" : "btn-info";
+            var random_id = randomID();
             return (
               <div className="btn-group mb-2 mr-2" key={i}>
-                <input type="hidden" name={"flight[" + this.props.random_id + "][times][]"} value={e} />
+                <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][tee_time]`} value={e.tee_time} />
+                <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][flight_order]`} value={e.flight_order} />
                 <div className={`btn ${btnColor}`}>{e.tee_time}</div>
                 <button className={`btn ${btnColor}`}
                   type="button"

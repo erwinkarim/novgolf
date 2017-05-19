@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170518092850) do
+ActiveRecord::Schema.define(version: 20170519083246) do
 
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -85,6 +85,7 @@ ActiveRecord::Schema.define(version: 20170518092850) do
     t.datetime "start_active_at",    default: '2017-01-01 00:00:00'
     t.datetime "end_active_at",      default: '3017-01-01 00:00:00'
     t.integer  "flight_order",       default: 0
+    t.time     "second_tee_time"
     t.index ["flight_schedule_id"], name: "index_flight_matrices_on_flight_schedule_id", using: :btree
   end
 
@@ -241,7 +242,7 @@ ActiveRecord::Schema.define(version: 20170518092850) do
     t.integer  "reserve_method",                                    default: 0
     t.string   "contact_type"
     t.integer  "contact_id"
-    t.datetime "second_booking_time"
+    t.time     "second_booking_time"
     t.integer  "second_course_listing_id"
     t.index ["charge_schedule_id"], name: "index_user_reservations_on_charge_schedule_id", using: :btree
     t.index ["contact_type", "contact_id"], name: "index_user_reservations_on_contact_type_and_contact_id", using: :btree
