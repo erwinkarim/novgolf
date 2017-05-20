@@ -226,14 +226,15 @@ var FlightScheduleControl = React.createClass({
       <div>
         <div className="card mb-2">
           <div className="card-block btn-toolbar flex-wrap">{ this.props.flightTimes.map( (e,i) => {
-            var btnColor = e.flight_order == 0 ? "btn-secondary" : "btn-info";
             var random_id = randomID();
             return (
               <div className="btn-group mb-2 mr-2" key={i}>
                 <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][tee_time]`} value={e.tee_time} />
+                <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][second_tee_time]`} value={e.second_tee_time} />
                 <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][flight_order]`} value={e.flight_order} />
-                <div className={`btn ${btnColor}`}>{e.tee_time}</div>
-                <button className={`btn ${btnColor}`}
+                <div className={`btn btn-secondary`}>{e.tee_time}</div>
+                <div className={`btn btn-info`}>{e.second_tee_time}</div>
+                <button className={`btn btn-secondary`}
                   type="button"
                   onClick={this.props.deleteTeeTime}
                   data-index-schedule={this.props.scheduleIndex} data-index-time={i} data-flight-order={e.flight_order}
@@ -639,8 +640,8 @@ var FlightBox = React.createClass({
     this.setState({teeTimes:newTeeTimes});
   },
   deleteTeeTime: function(e){
-    //don't delete anything if there's on 2 left
-    if(this.state.teeTimes[e.target.dataset.indexSchedule].length <= 2){
+    //don't delete anything if there's on 1 left
+    if(this.state.teeTimes[e.target.dataset.indexSchedule].length <= 1){
       return;
     }
 
@@ -648,12 +649,7 @@ var FlightBox = React.createClass({
     var indexTime = parseInt(e.target.dataset.indexTime);
     var newTeeTimes = this.state.teeTimes;
     var selectedTeeTimes = newTeeTimes[e.target.dataset.indexSchedule];
-    var lowerIndex = (selectedTeeTimes.length/2 < indexTime) ? (indexTime - selectedTeeTimes.length/2) : (indexTime);
-    var upperIndex = (selectedTeeTimes.length/2 < indexTime) ? (indexTime) : (selectedTeeTimes.length/2 + indexTime);
-
-    selectedTeeTimes.splice(upperIndex, 1);
-    selectedTeeTimes.splice(lowerIndex,1);
-
+    selectedTeeTimes.splice(indexTime,1);
     this.setState({teeTimes:newTeeTimes});
   },
   generateTeeTime: function(e){
@@ -673,44 +669,41 @@ var FlightBox = React.createClass({
     endTime.setMinutes(e.target.dataset.endTime.split(":")[1]);
     endTime.setSeconds(0);
 
-    //start time
-    var startTime = new Date(currentTime);
+    //2nd tee time
+    var secondTeeTime = new Date(currentTime.getTime()
+        + 1000*60*60*parseFloat(e.target.dataset.typicalDuration)
+        + 1000*60*parseInt(e.target.dataset.interval));
 
-    //ensure that currentTime + typicalCourseDuration > endTime
+    //sanity check: ensure that currentTime + typicalCourseDuration > endTime
     var projectedEndTime = new Date(currentTime.getTime() + 1000*60*60*e.target.dataset.typicalDuration);
     if(projectedEndTime.getTime() < endTime.getTime()){
       $.snackbar({content:'Projected time to complete course is less than the last flight time', style:'error'});
       return;
     }
 
-    //startTime must be before endTime
+    //sanity check: startTime must be before endTime
     if(currentTime.getTime() > endTime.getTime()){
       $.snackbar({content:'Start Time must be earlier than End Time', style:'error'});
       return;
     };
-    //TODO: value must be valid between 0500 and 2300
+
+    //sanityf check: start and end times must be valid between 0500 and 2100
     if(currentTime.getHours() < 5 || endTime.getHours < 5){
       $.snackbar({content:'Time must set at least 5:00am', style:'error'});
     };
-    if(currentTime.getHours() > 23 || endTime.getHours > 23){
-      $.snackbar({content:'Time must set before 11:00pm', style:'error'});
+    if(currentTime.getHours() > 21 || endTime.getHours > 21){
+      $.snackbar({content:'Time must set before 9:00pm', style:'error'});
     };
 
-    //generate the first course times
+    //push the times into array
     while(currentTime.getTime() <= endTime.getTime()){
       //newTeeTimesArray.push([currentTime.toTimeString().substring(0,5), 0 ]);
-      newTeeTimesArray.push({tee_time:currentTime.toTimeString().substring(0,5), flight_order:0 });
-      currentTime = new Date(currentTime.getTime() + 1000*60*parseInt(e.target.dataset.interval));
-    }
+      newTeeTimesArray.push({tee_time:currentTime.toTimeString().substring(0,5),
+        second_tee_time:secondTeeTime.toTimeString().substring(0,5),
+        flight_order:0 });
 
-    //generate the 2nd course Times
-    startTime = new Date(startTime.getTime() + 1000*60*60*parseFloat(e.target.dataset.typicalDuration) + 1000*60*parseInt(e.target.dataset.interval));
-    endTime = new Date(endTime.getTime() + 1000*60*60*parseFloat(e.target.dataset.typicalDuration) + 1000*60*parseInt(e.target.dataset.interval));
-    console.log("new currentTime", currentTime, "endTime", endTime);
-    while(currentTime.getTime() <= endTime.getTime()){
-      //newTeeTimesArray.push([currentTime.toTimeString().substring(0,5), 0 ]);
-      newTeeTimesArray.push({tee_time:currentTime.toTimeString().substring(0,5), flight_order:1 });
       currentTime = new Date(currentTime.getTime() + 1000*60*parseInt(e.target.dataset.interval));
+      secondTeeTime = new Date(secondTeeTime.getTime() + 1000*60*parseInt(e.target.dataset.interval));
     }
 
     newTeeTimes[e.target.dataset.indexSchedule] = newTeeTimesArray;
