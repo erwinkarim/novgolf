@@ -97,10 +97,9 @@ class GolfClub < ActiveRecord::Base
 
     # todo: remove clubs that is fully booked in the time period
     #get current reservations, excluding failed/canceled attempts
-    Rails.logger.info "queryDateTime = #{options[:dateTimeQuery]}"
-
     tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).where(:status => [0,1,2,3,8]).to_sql
-    sql_statement = self.joining{
+    #load the data model
+    rel = self.joining{
         flight_schedules.flight_matrices
       }.joining{ course_listings
       }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joining{
@@ -116,7 +115,9 @@ class GolfClub < ActiveRecord::Base
         (flight_schedules.flight_matrices.end_active_at >= options[:dateTimeQuery]) &
         (id.in options[:club_id])
       }.limit(options[:limit]
-      ).group( " golf_clubs.id,
+      )
+
+    sql_statement = rel.group( " golf_clubs.id,
         golf_clubs.name, session_price, tee_time, min_pax,
         max_pax, cart, caddy, insurance,
         flight_matrices.id, charge_schedules.note,
@@ -131,6 +132,7 @@ class GolfClub < ActiveRecord::Base
         ]
       }.to_sql
 
+      #shoud change this to exec_sql because it'd returns a hash instead of an array (cleaner code)
       results = ActiveRecord::Base.connection.execute(sql_statement).inject([]){ |p,n|
         club = p.select{ |x| x[:club][:id] == n[0] }.first
         if club.nil? then
@@ -167,23 +169,7 @@ class GolfClub < ActiveRecord::Base
       #if more details course data require, go ask the database
       if options[:loadCourseData] then
         queryDate =  options[:dateTimeQuery].strftime("%Y-%m-%d")
-        course_query_statement = self.joining{
-            flight_schedules.flight_matrices
-          }.joining{ course_listings
-          }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joining{
-            flight_schedules.charge_schedule
-          }.where.has{
-            ( (name.like "%#{query}%") ) &
-            (flight_schedules.flight_matrices.tee_time.in timeRange ) &
-            (flight_schedules.min_pax <= options[:pax]) &
-            (flight_schedules.flight_matrices.send("day#{queryDay}") == 1) &
-            (flight_schedules.start_active_at <= options[:dateTimeQuery]) &
-            (flight_schedules.end_active_at >= options[:dateTimeQuery]) &
-            (flight_schedules.flight_matrices.start_active_at <= options[:dateTimeQuery]) &
-            (flight_schedules.flight_matrices.end_active_at >= options[:dateTimeQuery]) &
-            (id.in options[:club_id])
-          }.limit(options[:limit]
-          ).selecting{ [id,
+        course_query_statement = rel.selecting{ [id,
               flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'),
               'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name')
           ]}.to_sql
