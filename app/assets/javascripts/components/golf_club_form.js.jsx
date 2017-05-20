@@ -227,16 +227,13 @@ var FlightScheduleControl = React.createClass({
         <div className="card mb-2">
           <div className="card-block btn-toolbar flex-wrap">{ this.props.flightTimes.map( (e,i) => {
             var random_id = randomID();
-            var second_tee_time_box = e.second_tee_time_box == null ? "" : (
-              <div className={`btn btn-info`}>{e.second_tee_time}</div>
-            );
             return (
               <div className="btn-group mb-2 mr-2" key={i}>
                 <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][tee_time]`} value={e.tee_time} />
                 <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][second_tee_time]`} value={e.second_tee_time} />
                 <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][flight_order]`} value={e.flight_order} />
                 <div className={`btn btn-secondary`}>{e.tee_time}</div>
-                {second_tee_time_box}
+                <div className={`btn btn-info`}>{e.second_tee_time}</div>
                 <button className={`btn btn-secondary`}
                   type="button"
                   onClick={this.props.deleteTeeTime}

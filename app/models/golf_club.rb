@@ -248,14 +248,18 @@ class GolfClub < ActiveRecord::Base
 
         #attach flight matrix
         tee_time = Time.parse("2001-01-01 #{flight.odd? ? "0#{rand(6..9)}:00" : "#{rand(14..16)}:00"} UTC")
+        # 2nd tee time starts around 1.5 to 2.5 hours after the first
+        second_tee_time = tee_time + ([2,2.5,3][rand(0..2)]).hours + rand(6..8).minutes
 
         #around 5 to 20 flights per session
         (5..rand(10..20)).each do |tee_off|
           fm = [1,2].include?(flight) ?
-            fs.flight_matrices.new(day1:1, day2:1, day3:1, day4:1, day5:1, day6:0, day7:0, tee_time:tee_time) :
-            fs.flight_matrices.new(day1:0, day2:0, day3:0, day4:0, day5:0, day6:1, day7:1, tee_time:tee_time)
+            fs.flight_matrices.new(day1:1, day2:1, day3:1, day4:1, day5:1, day6:0, day7:0, tee_time:tee_time, second_tee_time:second_tee_time) :
+            fs.flight_matrices.new(day1:0, day2:0, day3:0, day4:0, day5:0, day6:1, day7:1, tee_time:tee_time, second_tee_time:second_tee_time)
           fm.save!
-          tee_time += rand(7..14).minutes
+          interval = rand(6..8).minutes
+          tee_time += interval
+          second_tee_time += interval
         end
 
         #attach price schedule
