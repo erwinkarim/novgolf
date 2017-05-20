@@ -115,7 +115,8 @@ class Admin::GolfClubsController < ApplicationController
       ).
       merge(
         "flight_matrices" => fs.active_flight_matrices.order(:tee_time).map{
-          |x| x.attributes.merge({"tee_time" => x.tee_time.strftime("%I:%M%P")} )
+          |x| x.attributes.merge({"tee_time" => x.tee_time.strftime("%I:%M%P"),
+            "second_tee_time" => x.second_tee_time.nil? ? nil : x.second_tee_time.strftime("%I:%M%P")} )
         }
       )
     end

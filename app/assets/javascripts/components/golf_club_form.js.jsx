@@ -227,13 +227,16 @@ var FlightScheduleControl = React.createClass({
         <div className="card mb-2">
           <div className="card-block btn-toolbar flex-wrap">{ this.props.flightTimes.map( (e,i) => {
             var random_id = randomID();
+            var second_tee_time_box = e.second_tee_time_box == null ? "" : (
+              <div className={`btn btn-info`}>{e.second_tee_time}</div>
+            );
             return (
               <div className="btn-group mb-2 mr-2" key={i}>
                 <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][tee_time]`} value={e.tee_time} />
                 <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][second_tee_time]`} value={e.second_tee_time} />
                 <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][flight_order]`} value={e.flight_order} />
                 <div className={`btn btn-secondary`}>{e.tee_time}</div>
-                <div className={`btn btn-info`}>{e.second_tee_time}</div>
+                {second_tee_time_box}
                 <button className={`btn btn-secondary`}
                   type="button"
                   onClick={this.props.deleteTeeTime}
@@ -547,7 +550,7 @@ var FlightSchedulePriceCard = React.createClass({
         </div>
         <div className="card-block" ref="cardSummary">
           <p className="card-text">Tee Days: { daysNames.slice(1).map( (e,i) => (<span key={i}>{ this.props.flightSchedule.flight_matrices[0][`day${i+1}`] == 1 ? `${e}; ` : ""}</span>) )}</p>
-          <p className="card-text">Tee Times: { this.props.teeTimes.map( (e,i) => (<span key={i}>{e.tee_time}; </span>)) }</p>
+          <p className="card-text">Tee Times: { this.props.teeTimes.map( (e,i) => (<span key={i}>{e.tee_time}; </span>)) } - Click drop-down for second flight tee times</p>
           <p className="card-text">Prices:
             <span>{ toCurrency(this.props.flightSchedule.charge_schedule.session_price)} / </span>
             <span>{ toCurrency(this.props.flightSchedule.charge_schedule.cart)} / </span>

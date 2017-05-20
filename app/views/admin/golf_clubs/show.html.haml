@@ -171,7 +171,7 @@
                     %button.btn.btn-secondary{ :type => 'button' } #{ flight_time.strftime("%H:%M") }
                 %h4.w-100 2nd Flight Times
                 .btn-group.flex-wrap
-                  - flight_schedule.active_flight_matrices.map{|x| x.second_tee_time}.sort.each do |flight_time|
+                  - flight_schedule.active_flight_matrices.where.not(:second_tee_time => nil).map{|x| x.second_tee_time}.sort.each do |flight_time|
                     %button.btn.btn-secondary{ :type => 'button' } #{ flight_time.strftime("%H:%M") }
           .card-block{ id:"summary-#{random_id}"}
             %p.card-text
@@ -188,7 +188,7 @@
             %p.card-text
               2nd Tee Times:
               .btn-group.flex-wrap
-                - flight_schedule.active_flight_matrices.map{|x| x.second_tee_time}.sort.each do |flight_time|
+                - flight_schedule.active_flight_matrices.where.not(:second_tee_time => nil).map{|x| x.second_tee_time}.sort.each do |flight_time|
                   %button.btn.btn-secondary{ :type => 'button' } #{ flight_time.strftime("%H:%M") }
             %p.card-text
               Prices:

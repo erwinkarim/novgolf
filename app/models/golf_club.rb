@@ -313,6 +313,7 @@ class GolfClub < ActiveRecord::Base
     #validation
     fullSch = {}
     #setup the full flightSchedule
+    #TODO:, push second_tee_time values for validation
     flight_schedules.each_pair do |i,e|
       e["times"].each_pair do |teeTimeKey, teeTimeValue|
         #setup the time pair
@@ -367,20 +368,11 @@ class GolfClub < ActiveRecord::Base
           cs.save!
 
           #create new flight_matrices
-          # convert from {tee_time:x, flight_order:y} to {tee_time:x, second_tee_time:x2} based on position in y
-          # oft = ordered flight time
-          oft = elm["times"].sort_by{ |k,v| v["tee_time"]}.map{ |k,v| v }.to_a
-          (0..oft.length/2-1).each do |index|
-          #elm["times"].each do |flight_time|
-            #fm = fs.flight_matrices.new(
-            #  elm["days"].inject( {:tee_time => Time.parse(flight_time).strftime("%H:%M"), :start_active_at => DateTime.now} ){
-            #    |p,n| p.merge({ "day#{n}".to_sym => 1})
-            #  }
-            #)
+          elm["times"].each_pair do |fk, fv |
             fm = fs.flight_matrices.new(
               elm["days"].inject( {
-                :tee_time => Time.parse(oft[index]["tee_time"]).strftime("%H:%M"),
-                :second_tee_time => Time.parse(oft[index + oft.length/2]["tee_time"]).strftime("%H:%M"),
+                :tee_time => Time.parse(fv["tee_time"]).strftime("%H:%M"),
+                :second_tee_time => Time.parse(fv["second_tee_time"]).strftime("%H:%M"),
                 :start_active_at => DateTime.now
               }){
                 |p,n| p.merge({ "day#{n}".to_sym => 1})
@@ -410,17 +402,15 @@ class GolfClub < ActiveRecord::Base
           current_flight.flight_matrices.where.not(:tee_time => new_times).each{ |x| x.setInactive }
 
           #handle the flight matrices
-          oft = elm["times"].sort_by{ |k,v| v["tee_time"]}.map{ |k,v| v }.to_a
-          (0..oft.length/2-1).each do |index|
-          #elm["times"].each do |flight_time|
+          elm["times"].each_pair do |fk, fv |
             #check if this exists or not
-            fm = current_flight.flight_matrices.where(:tee_time => Time.parse("2000-01-01 #{oft[index]["tee_time"]} +0000")).first
+            fm = current_flight.flight_matrices.where(:tee_time => Time.parse("2000-01-01 #{fv["tee_time"]} +0000")).first
             if fm.nil? then
               #fm not found in the current list, create new
               fm = current_flight.flight_matrices.new(
                 elm["days"].inject({
-                  :tee_time => oft[index]["tee_time"],
-                  :second_tee_time => oft[index + oft.length/2]["tee_time"],
+                  :tee_time => fv["tee_time"],
+                  :second_tee_time => fv["second_tee_time"],
                   start_active_at: DateTime.now
                 }){|p,n| p.merge({ "day#{n}".to_sym => 1})
               })
@@ -430,8 +420,8 @@ class GolfClub < ActiveRecord::Base
               fm.update_attributes(
                 (1..7).inject({}){|p,n| p.merge({"day#{n}".to_sym => 0})}.merge(
                   elm["days"].inject({
-                    :tee_time => oft[index]["tee_time"],
-                    :second_tee_time => oft[index + oft.length/2]["tee_time"]
+                    :tee_time => fv["tee_time"],
+                    :second_tee_time => fv["second_tee_time"]
                   }){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
                 )
               )
