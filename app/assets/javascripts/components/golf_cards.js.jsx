@@ -129,8 +129,8 @@ var GolfCardTimes = React.createClass({
     } else {
       //normal mode
       switch ( this.props.flight.course_data.status ){
-        case 1: reserve_status = "warning disabled"; break;
-        case 8: reserve_status = "info disabled"; break;
+        case 1: reserve_status = "warning disabled"; break;//reserved - waiting payment
+        case 8: reserve_status = "info disabled"; break;   //awaiting members verification
         case 2: reserve_status = "danger disabled"; break; //payment_confirmed
         case 3: reserve_status = "danger disabled"; break; //reservation_confirmed - confirmed by club, not payment not confirmed
         default: clickFn = this.props.handleClick;

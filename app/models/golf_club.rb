@@ -126,61 +126,62 @@ class GolfClub < ActiveRecord::Base
       ").selecting{[id,
         name, flight_schedules.charge_schedule.session_price, flight_schedules.flight_matrices.tee_time, flight_schedules.min_pax, #4
         flight_schedules.max_pax, flight_schedules.charge_schedule.cart, flight_schedules.charge_schedule.caddy, flight_schedules.charge_schedule.insurance,        #8
-        flight_schedules.flight_matrices.id, 'min(tr.status) as tr_min_status', flight_schedules.charge_schedule.note, flight_schedules.min_cart,  #12
+        flight_schedules.flight_matrices.id.as('fm_id'), 'min(tr.status) as tr_min_status', flight_schedules.charge_schedule.note, flight_schedules.min_cart,  #12
         flight_schedules.max_cart, flight_schedules.min_caddy, flight_schedules.max_caddy, flight_schedules.charge_schedule.insurance_mode,  #16
         'count(course_listings.id) as cl_count', 'count(tr.course_listing_id) as ur_cl_count'
         ]
       }.to_sql
 
       #shoud change this to exec_sql because it'd returns a hash instead of an array (cleaner code)
-      results = ActiveRecord::Base.connection.execute(sql_statement).inject([]){ |p,n|
-        club = p.select{ |x| x[:club][:id] == n[0] }.first
+      results = ActiveRecord::Base.connection.exec_query(sql_statement).inject([]){ |p,n|
+        club = p.select{ |x| x[:club][:id] == n["id"] }.first
         if club.nil? then
           p << {
-            :club => { :tax_schedule => GolfClub.find(n[0]).tax_schedule, :id => n[0],
-              :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:sequence => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
+            :club => { :tax_schedule => GolfClub.find(n["id"]).tax_schedule, :id => n["id"],
+              :name => n["name"], :photos => GolfClub.find(n["id"]).photos.order(:sequence => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
             :flights => [ {
-              :minPax => n[4], :maxPax => n[5],
-              :minCart => n[12], :maxCart => n[13],
-              :minCaddy => n[14], :maxCaddy => n[15],
-              :tee_time => n[3].strftime("%H:%M"),
-              :matrix_id => n[9],
-              :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[11], :insurance_mode => n[16]},
-              :course_data => { :status => n[18].nil? || n[18] < n[17] ? 0 : n[10] }
+              :minPax => n["min_pax"], :maxPax => n["max_pax"],
+              :minCart => n["min_cart"], :maxCart => n["max_cart"],
+              :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
+              :tee_time => n["tee_time"].strftime("%H:%M"),
+              :matrix_id => n["fm_id"],
+              :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
+              :course_data => { :status => n["ur_cl_count"].nil? || n["ur_cl_count"] < n["cl_count"] ? 0 : n["tr_min_status"] }
             }],
             :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
           }
         else
           # TODO: find the appropiate flights, add courses, or new flight if necessary
-          selected_flight = club[:flights].select{ |x| x[:matrix_id] == n[9]}
+          selected_flight = club[:flights].select{ |x| x[:matrix_id] == n["fm_id"]}
           club[:flights] << {
-            :minPax => n[4], :maxPax => n[5],
-            :minCart => n[12], :maxCart => n[13],
-            :minCaddy => n[14], :maxCaddy => n[15],
-            :tee_time => n[3].strftime("%H:%M"),
-            :matrix_id => n[9],
-            :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[11], :insurance_mode => n[16]},
-            :course_data => { :status => n[18].nil? || n[18] < n[17] ? 0 : n[10] }
+            :minPax => n["min_pax"], :maxPax => n["max_pax"],
+            :minCart => n["min_cart"], :maxCart => n["max_cart"],
+            :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
+            :tee_time => n["tee_time"].strftime("%H:%M"),
+            :matrix_id => n["fm_id"],
+            :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
+            :course_data => { :status => n["ur_cl_count"].nil? || n["ur_cl_count"] < n["cl_count"] ? 0 : n["tr_min_status"] }
           }
           p
         end
       }
 
       #if more details course data require, go ask the database
+      # TODO: put course data on 2nd tee time
       if options[:loadCourseData] then
         queryDate =  options[:dateTimeQuery].strftime("%Y-%m-%d")
         course_query_statement = rel.selecting{ [id,
-              flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'),
-              'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name')
+              flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'), #2
+              'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name') #5
           ]}.to_sql
-          course_results = ActiveRecord::Base.connection.execute(course_query_statement).inject(results){ |p,n|
-            flight_handle = p.select{|x| x[:club][:id] == n[0]}.first[:flights].select{|x| x[:matrix_id] == n[1]}.first
+          course_results = ActiveRecord::Base.connection.exec_query(course_query_statement).inject(results){ |p,n|
+            flight_handle = p.select{|x| x[:club][:id] == n["id"]}.first[:flights].select{|x| x[:matrix_id] == n["fm_id"]}.first
             if flight_handle[:course_data][:courses].nil? then
               flight_handle[:course_data][:courses] = []
             end
             flight_handle[:course_data][:courses] << {
-              id:n[2], name:n[5], reservation_id:n[3], reservation_status:n[4],
-                reservation_status_text: UserReservation.statuses.select{ |k,v| v == n[4]}.keys.first
+              id:n["cl_id"], name:n["cl_name"], reservation_id:n["ur_id"], reservation_status:n["tr_status"],
+                reservation_status_text: UserReservation.statuses.select{ |k,v| v == n["tr_status"]}.keys.first
             }
             p
           }
