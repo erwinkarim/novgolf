@@ -118,13 +118,14 @@ class GolfClub < ActiveRecord::Base
       )
 
     sql_statement = rel.group( " golf_clubs.id,
-        golf_clubs.name, session_price, tee_time, min_pax,
+        golf_clubs.name, session_price, tee_time, second_tee_time, min_pax,
         max_pax, cart, caddy, insurance,
         flight_matrices.id, charge_schedules.note,
         min_cart, max_cart, min_caddy, max_caddy,
         insurance_mode
       ").selecting{[id,
-        name, flight_schedules.charge_schedule.session_price, flight_schedules.flight_matrices.tee_time, flight_schedules.min_pax, #4
+        name, flight_schedules.charge_schedule.session_price, flight_schedules.flight_matrices.tee_time, flight_schedules.flight_matrices.second_tee_time,
+        flight_schedules.min_pax, #4
         flight_schedules.max_pax, flight_schedules.charge_schedule.cart, flight_schedules.charge_schedule.caddy, flight_schedules.charge_schedule.insurance,        #8
         flight_schedules.flight_matrices.id.as('fm_id'), 'min(tr.status) as tr_min_status', flight_schedules.charge_schedule.note, flight_schedules.min_cart,  #12
         flight_schedules.max_cart, flight_schedules.min_caddy, flight_schedules.max_caddy, flight_schedules.charge_schedule.insurance_mode,  #16
@@ -144,6 +145,7 @@ class GolfClub < ActiveRecord::Base
               :minCart => n["min_cart"], :maxCart => n["max_cart"],
               :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
               :tee_time => n["tee_time"].strftime("%H:%M"),
+              :second_tee_time => n["second_tee_time"].nil? ? nil : n["second_tee_time"].strftime("%H:%M"),
               :matrix_id => n["fm_id"],
               :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
               :course_data => { :status => n["ur_cl_count"].nil? || n["ur_cl_count"] < n["cl_count"] ? 0 : n["tr_min_status"] }
@@ -172,19 +174,33 @@ class GolfClub < ActiveRecord::Base
         queryDate =  options[:dateTimeQuery].strftime("%Y-%m-%d")
         course_query_statement = rel.selecting{ [id,
               flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'), #2
-              'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name') #5
+              'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name'), #5
+              'tr.second_course_listing_id'
           ]}.to_sql
-          course_results = ActiveRecord::Base.connection.exec_query(course_query_statement).inject(results){ |p,n|
+          course_results = ActiveRecord::Base.connection.exec_query(course_query_statement)
+          course_results.inject(results){ |p,n|
             flight_handle = p.select{|x| x[:club][:id] == n["id"]}.first[:flights].select{|x| x[:matrix_id] == n["fm_id"]}.first
             if flight_handle[:course_data][:courses].nil? then
               flight_handle[:course_data][:courses] = []
             end
             flight_handle[:course_data][:courses] << {
               id:n["cl_id"], name:n["cl_name"], reservation_id:n["ur_id"], reservation_status:n["tr_status"],
-                reservation_status_text: UserReservation.statuses.select{ |k,v| v == n["tr_status"]}.keys.first
+                reservation_status_text: UserReservation.statuses.select{ |k,v| v == n["tr_status"]}.keys.first,
+                second_reservation_id:nil, second_reservation_status:nil
             }
             p
           }
+          course_results.inject(results){ |p,n|
+            course_handle = p.select{|x| x[:club][:id] == n["id"]}.first[:flights].select{|x| x[:matrix_id] == n["fm_id"]}.
+              first[:course_data][:courses].select{|x| x[:id] == n["second_course_listing_id"]}.first
+            if !course_handle.nil? then
+              course_handle[:second_reservation_id] = n["ur_id"]
+              course_handle[:second_reservation_status] = n["tr_status"]
+            end
+            p
+          }
+          #find the 2nd course listing data
+
       end
 
       results

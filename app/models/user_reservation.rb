@@ -260,6 +260,7 @@ class UserReservation < ActiveRecord::Base
     club_id = cs.golf_club_id
     booking_date_clause = booked_date.class == String ? (Date.parse(booked_date).strftime("%Y-%m-%d")) : booked_date.strftime("%Y-%m-%d")
     booking_time_clause = fm.tee_time
+    second_bookting_time_clause = fm.second_tee_time
 
     # create the new user_reservation, with the correct flight_info and cost calculation
     ur = UserReservation.new
@@ -269,7 +270,7 @@ class UserReservation < ActiveRecord::Base
       ur = UserReservation.new(
         user_id:user_id, golf_club_id: cs.golf_club_id,
         flight_matrix_id:fm.id, charge_schedule_id:cs.id,
-        booking_date: booking_date_clause, booking_time: booking_time_clause,
+        booking_date: booking_date_clause, booking_time: booking_time_clause, second_booking_time:second_bookting_time_clause,
         count_pax:flight_info[:pax], count_caddy:flight_info[:caddy], count_buggy: flight_info[:buggy] , count_insurance:flight_info[:insurance],
           count_member:flight_info[:member],
         actual_pax:flight_info[:pax].to_i * cs.session_price, actual_caddy: flight_info[:caddy].to_i * cs.caddy,
@@ -284,7 +285,7 @@ class UserReservation < ActiveRecord::Base
       end
 
       #find the free coursetime
-      #TODO, automatically use the first free course or set the course
+      #TODO: future can select course that you want to order
       first_course_id = (club.course_listings.map{ |x| x.id } -
         UserReservation.where.has{
           (golf_club_id == club_id) &
@@ -292,7 +293,7 @@ class UserReservation < ActiveRecord::Base
           (booking_time == booking_time_clause) &
           (status.not_in [4,5,6])
         }.map{|x| x.course_listing_id }).first
-      ur.assign_attributes({course_listing_id:first_course_id})
+      ur.assign_attributes({course_listing_id:first_course_id, second_course_listing_id:first_course_id})
       Rails.logger.info "new course id = #{first_course_id}"
 
       ur.save!
