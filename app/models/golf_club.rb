@@ -68,7 +68,7 @@ class GolfClub < ActiveRecord::Base
   def self.search options = {}
     default_options = { :query => "", :dateTimeQuery => DateTime.parse("#{Date.tomorrow} 07:00"), :spread => 30.minutes,
       :pax => 8, :club_id => 0..10000000,
-      :limit => 300, :offset => 0 , :adminMode => false, :loadCourseData => false}
+      :limit => 300, :offset => 0 , :adminMode => false, :loadCourseData => true}
 
     options = default_options.merge(options)
 

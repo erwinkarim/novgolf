@@ -96,6 +96,19 @@ class flightFunctions {
     return {total:newTotalPrice, tax: newTax, grand_total:newTax + newTotalPrice};
 
   }
+  static reserveColor(status){
+    //return the reserve color
+    var reserve_status = "secondary"
+    switch ( status ){
+      case 1: reserve_status = "warning"; break;
+      case 2: reserve_status = "danger"; break;
+      case 3: reserve_status = "danger"; break;
+      case 8: reserve_status = "info"; break;
+      default: true;
+    }
+
+    return reserve_status;
+  }
 };
 
 var GolfCardTimes = React.createClass({
@@ -118,23 +131,16 @@ var GolfCardTimes = React.createClass({
     var clickFn = null;
     if(this.props.adminMode){
       //admin mode - disable disabled
-      switch ( this.props.flight.course_data.status ){
-        case 1: reserve_status = "warning"; break;
-        case 2: reserve_status = "danger"; break;
-        case 3: reserve_status = "danger"; break;
-        case 8: reserve_status = "info"; break;
-        default: true;
-      }
+      reserve_status = flightFunctions.reserveColor(this.props.flight.course_data.status);
       clickFn = this.props.handleClick;
     } else {
       //normal mode
-      switch ( this.props.flight.course_data.status ){
-        case 1: reserve_status = "warning disabled"; break;//reserved - waiting payment
-        case 8: reserve_status = "info disabled"; break;   //awaiting members verification
-        case 2: reserve_status = "danger disabled"; break; //payment_confirmed
-        case 3: reserve_status = "danger disabled"; break; //reservation_confirmed - confirmed by club, not payment not confirmed
-        default: clickFn = this.props.handleClick;
-      };
+      reserve_status = flightFunctions.reserveColor(this.props.flight.course_data.status);
+      if(reserve_status == "secondary"){
+        clickFn = this.props.handleClick;
+      } else {
+        reserve_status = reserve_status + " disabled";
+      }
     }
 
     //show the prices
@@ -148,12 +154,9 @@ var GolfCardTimes = React.createClass({
     var courseIndicator = ("courses" in this.props.flight.course_data) ? (
       this.props.flight.course_data.courses.map( (e,i) => {
         var indicatorClass = null;
-        switch (e.reservation_status) {
-          case 1: indicatorClass = "warning"; break;
-          case 2: indicatorClass = "danger"; break;
-          case 3: indicatorClass = "danger"; break;
-          case 8: indicatorClass = "info"; break;
-          default: indicatorClass = null;
+        indicatorClass = flightFunctions.reserveColor(e.reservation_status);
+        if(indicatorClass == "secondary"){
+          indicatorClass = null;
         }
         var result = indicatorClass == null ? null : (
           <i key={i} className={`text-${indicatorClass} fa fa-circle`}
@@ -228,6 +231,70 @@ var GolfCardTimesGroup = React.createClass({
         {golfCards}
       </div>
     );
+  }
+});
+
+var CourseSelection = React.createClass({
+  propTypes: {
+    courses:React.PropTypes.array,
+    flightInfoID:React.PropTypes.string     //should be a random ID
+  },
+  render: function(){
+    //return just the hidden input if there's only 1 course
+    if(this.props.courses.length == 1){
+      return (
+        <div>
+          <input type="hidden" name={`flight[${this.props.flightInfoID}][courses][first_course]`} value={this.props.courses[0].id} />
+          <input type="hidden" name={`flight[${this.props.flightInfoID}][courses][second_course]`} value={this.props.courses[0].id} />
+        </div>
+      );
+    }
+
+    //TODO: select the first available
+    return (
+      <div>
+        <hr />
+        <div className="form-group row mb-1">
+          <label className="col-12">First Flight:</label>
+          <div className="col-12">
+            <div className="btn-group" data-toggle="buttons">
+              {this.props.courses.map((e,i) => {
+                var course_status = flightFunctions.reserveColor(e.reservation_status);
+                if(course_status != "secondary"){
+                  course_status = course_status + " disabled";
+                }
+                return (
+                  <label key={i} className={`btn btn-${course_status} ${i==0 ? 'active' : ''}`}>
+                    <input type="radio" name={`flight[${this.props.flightInfoID}][courses][first_course]`} value={e.id} defaultChecked={i==0} />
+                    {e.name}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        <div className="form-group row mb-1">
+          <label className="col-12">Second Flight:</label>
+          <div className="col-12">
+            <div className="btn-group" data-toggle="buttons">
+              {this.props.courses.map((e,i) => {
+                var course_status = flightFunctions.reserveColor(e.second_reservation_status);
+                if(course_status != "secondary"){
+                  course_status = course_status + " disabled";
+                }
+                return (
+                  <label key={i} className={`btn btn-${course_status} ${i==0 ? 'active' : ''}`}>
+                    <input type="radio" name={`flight[${this.props.flightInfoID}][courses][second_course]`} value={e.id} defaultChecked={i==0} />
+                    {e.name}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
   }
 });
 
@@ -381,6 +448,7 @@ var ReserveFormPage = React.createClass({
             {toCurrency(this.tax_amount())}
           </label>
         </div>
+        <CourseSelection courses={this.props.flight.course_data.courses} flightInfoID={this.props.flightInfo.id} />
       </div>
     );
 
@@ -501,7 +569,8 @@ var GolfReserveForm = React.createClass({
         newTeeTimes.sort();
         newIndex = $.inArray(value, newTeeTimes);
 
-        var fi = Object.assign({}, this.state.defaultFlightInfo);
+        //var fi = Object.assign({}, this.state.defaultFlightInfo);
+        var fi = Object.assign({}, FLIGHT_INFO_DEFAULTS);
         Object.assign( fi,
           {
             id:randomID(), teeTime:this.props.flights[value].tee_time, index:newIndex, flightIndex:value,

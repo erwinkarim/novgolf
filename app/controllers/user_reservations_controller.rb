@@ -29,7 +29,10 @@ class UserReservationsController < ApplicationController
     #create a reservation w/o token to show that this flight is being reserved
     UserReservation.transaction do
       session[:flight].each_pair do |k,v|
-        ur = UserReservation.create_reservation v["matrix_id"], current_user.id, Date.parse(session[:info]["date"]), v["count"]
+        ur = UserReservation.create_reservation v["matrix_id"], current_user.id, Date.parse(session[:info]["date"]), v["count"],
+          {course_selection:UserReservation.course_selection_methods[:manual], course_selection_ids:[
+              v["courses"]["first_course"], v["courses"]["second_course"]
+            ]}
         if ur.valid? then
           ur.regenerate_token
 
