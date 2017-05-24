@@ -19,6 +19,7 @@ class flightFunctions {
       * will update the insurnace count to member + pax if the insurance is inclusive
       * return the updated flightInfo
     */
+    console.log(e.target.dataset.target, e.target.value);
     flightInfo[e.target.dataset.target] = parseInt(e.target.value);
 
     if(e.target.dataset.target == "pax" || e.target.dataset.target == "member"){
@@ -237,25 +238,31 @@ var GolfCardTimesGroup = React.createClass({
 var CourseSelection = React.createClass({
   propTypes: {
     courses:React.PropTypes.array,
-    flightInfoID:React.PropTypes.string     //should be a random ID
+    flightInfo:React.PropTypes.object,
+    adminMode:React.PropTypes.bool,
+    updatePrice: React.PropTypes.func
+  },
+  getDefaultProps: ()=>{
+    return {adminMode:false, updatePrice:()=>{return null;}}
   },
   render: function(){
     //return just the hidden input if there's only 1 course
     if(this.props.courses.length == 1){
       return (
         <div>
-          <input type="hidden" name={`flight[${this.props.flightInfoID}][courses][first_course]`} value={this.props.courses[0].id} />
-          <input type="hidden" name={`flight[${this.props.flightInfoID}][courses][second_course]`} value={this.props.courses[0].id} />
+          <input type="hidden" name={`flight[${this.props.flightInfo.id}][courses][first_course]`} value={this.props.courses[0].id} />
+          <input type="hidden" name={`flight[${this.props.flightInfo.id}][courses][second_course]`} value={this.props.courses[0].id} />
         </div>
       );
     }
 
     // the course selection. will select first available course
     var handle = this;
+    var coursesArray = this.props.adminMode ? ["second"] : ["first", "second"]
     return (
       <div>
         <hr />
-        {["first", "second"].map( (course_name,course_index) => {
+        {coursesArray.map( (course_name,course_index) => {
           var firstAvailableIndex = handle.props.courses.findIndex((e) => {
             return e[`${course_name}_reservation_id`] == null;
           });
@@ -263,7 +270,7 @@ var CourseSelection = React.createClass({
             <div key={course_index} className="form-group row mb-1">
               <label className="col-12">{`${toTitleCase(course_name)} course:`}</label>
               <div className="col-12">
-                <div className="btn-group" data-toggle="buttons">
+                <div className="btn-group w-100 flex-wrap" data-toggle="buttons">
                   {
                     handle.props.courses.map((e,i) => {
                       var course_status = flightFunctions.reserveColor(e[`${course_name}_reservation_status`]);
@@ -271,8 +278,12 @@ var CourseSelection = React.createClass({
                         course_status = course_status + " disabled";
                       }
                       return (
-                        <label key={i} className={`btn btn-${course_status} ${i==firstAvailableIndex ? 'active' : ''}`}>
-                          <input type="radio" name={`flight[${handle.props.flightInfoID}][courses][${course_name}_course]`}
+                        <label key={i} className={`btn btn-${course_status} ${i==firstAvailableIndex ? 'active' : ''}`}
+                          onClick={this.props.updatePrice}
+                          data-value={e.id} data-index={handle.props.flightInfo.index} data-target={`${course_name}_course_id`}
+                          value={e.id}
+                        >
+                          <input type="radio" name={`flight[${handle.props.flightInfo.id}][courses][${course_name}_course]`}
                             value={e.id} defaultChecked={i==firstAvailableIndex} />
                           {e.name}
                         </label>
@@ -302,11 +313,12 @@ var ReserveFormPage = React.createClass({
   },
   getInitialState: function(){
     return {
-      random_id:randomID()
+      random_id:randomID(),
+      courseSelectionAdminMode:React.PropTypes.bool
     };
   },
   getDefaultProps: function(){
-    return { options: golfCardDefaultOptions, displayAs:'card', taxSchedule:{rate:0.06}};
+    return { options: golfCardDefaultOptions, displayAs:'card', taxSchedule:{rate:0.06}, courseSelectionAdminMode:false};
   },
   rawNote: function(){
     md = new Remarkable();
@@ -441,7 +453,9 @@ var ReserveFormPage = React.createClass({
             {toCurrency(this.tax_amount())}
           </label>
         </div>
-        <CourseSelection courses={this.props.flight.course_data.courses} flightInfoID={this.props.flightInfo.id} />
+        <CourseSelection courses={this.props.flight.course_data.courses}
+          flightInfo={this.props.flightInfo}
+          adminMode={this.props.courseSelectionAdminMode} updatePrice={this.props.updatePrice}/>
       </div>
     );
 

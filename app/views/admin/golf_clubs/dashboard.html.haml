@@ -6,6 +6,8 @@
         %li.breadcrumb-item
           %a{ :href => admin_path} Admin
         %li.breadcrumb-item
+          %a{ :href => admin_golf_clubs_path} Clubs
+        %li.breadcrumb-item
           %a{ :href => admin_golf_club_path(@golf_club) } #{ @golf_club.name }
         %li.active.breadcrumb-item DashBoard
   = react_component("GolfClubDashboard", { club: @golf_club.attributes.merge({tax_schedule:@golf_club.tax_schedule}),

@@ -135,7 +135,7 @@ var GolfClubDashStatus = React.createClass({
       flightInfo = (
         <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
           selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
-          updateMembersList={this.props.updateMembersList} displayAs="flushed-list" />
+          updateMembersList={this.props.updateMembersList} displayAs="flushed-list" courseSelectionAdminMode={true} />
       )
 
       moneyInfo = (
@@ -775,7 +775,10 @@ var GolfClubDashboard = React.createClass({
 
   },
   updatePax: function(e){
-    //console.log("handle price updates, etc for", e.target);
+    //include value targets when it's talking about reservation
+    if(e.target.dataset.target=="first_course_id" || e.target.dataset.target=="second_course_id"){
+      Object.assign(e.target, {value:e.target.dataset.value});
+    };
     var newFlightInfo = this.state.flightInfo;
     var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
 
