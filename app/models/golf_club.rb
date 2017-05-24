@@ -160,6 +160,7 @@ class GolfClub < ActiveRecord::Base
             :minCart => n["min_cart"], :maxCart => n["max_cart"],
             :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
             :tee_time => n["tee_time"].strftime("%H:%M"),
+            :second_tee_time => n["second_tee_time"].nil? ? nil : n["second_tee_time"].strftime("%H:%M"),
             :matrix_id => n["fm_id"],
             :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
             :course_data => { :status => n["ur_cl_count"].nil? || n["ur_cl_count"] < n["cl_count"] ? 0 : n["tr_min_status"] }
@@ -184,7 +185,9 @@ class GolfClub < ActiveRecord::Base
               flight_handle[:course_data][:courses] = []
             end
             flight_handle[:course_data][:courses] << {
-              id:n["cl_id"], name:n["cl_name"], reservation_id:n["ur_id"], reservation_status:n["tr_status"],
+              id:n["cl_id"], name:n["cl_name"],
+                reservation_id:n["ur_id"], reservation_status:n["tr_status"],
+                first_reservation_id:n["ur_id"], first_reservation_status:n["tr_status"],
                 reservation_status_text: UserReservation.statuses.select{ |k,v| v == n["tr_status"]}.keys.first,
                 second_reservation_id:nil, second_reservation_status:nil
             }

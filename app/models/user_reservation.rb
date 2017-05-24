@@ -286,8 +286,8 @@ class UserReservation < ActiveRecord::Base
         ur.assign_attributes({contact_id:user_id, contact_type:"User"})
       end
 
-      #TODO: future can select course that you want to order
       if options[:course_selection] == self.course_selection_methods[:auto] then
+        # auto => automatically find the first available courses
         #find the free coursetime
         first_course_id = (club.course_listings.map{ |x| x.id } -
           UserReservation.where.has{

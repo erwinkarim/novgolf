@@ -250,48 +250,40 @@ var CourseSelection = React.createClass({
       );
     }
 
-    //TODO: select the first available
+    // the course selection. will select first available course
+    var handle = this;
     return (
       <div>
         <hr />
-        <div className="form-group row mb-1">
-          <label className="col-12">First Flight:</label>
-          <div className="col-12">
-            <div className="btn-group" data-toggle="buttons">
-              {this.props.courses.map((e,i) => {
-                var course_status = flightFunctions.reserveColor(e.reservation_status);
-                if(course_status != "secondary"){
-                  course_status = course_status + " disabled";
-                }
-                return (
-                  <label key={i} className={`btn btn-${course_status} ${i==0 ? 'active' : ''}`}>
-                    <input type="radio" name={`flight[${this.props.flightInfoID}][courses][first_course]`} value={e.id} defaultChecked={i==0} />
-                    {e.name}
-                  </label>
-                );
-              })}
+        {["first", "second"].map( (course_name,course_index) => {
+          var firstAvailableIndex = handle.props.courses.findIndex((e) => {
+            return e[`${course_name}_reservation_id`] == null;
+          });
+          return (
+            <div key={course_index} className="form-group row mb-1">
+              <label className="col-12">{`${toTitleCase(course_name)} course:`}</label>
+              <div className="col-12">
+                <div className="btn-group" data-toggle="buttons">
+                  {
+                    handle.props.courses.map((e,i) => {
+                      var course_status = flightFunctions.reserveColor(e[`${course_name}_reservation_status`]);
+                      if(course_status != "secondary"){
+                        course_status = course_status + " disabled";
+                      }
+                      return (
+                        <label key={i} className={`btn btn-${course_status} ${i==firstAvailableIndex ? 'active' : ''}`}>
+                          <input type="radio" name={`flight[${handle.props.flightInfoID}][courses][${course_name}_course]`}
+                            value={e.id} defaultChecked={i==firstAvailableIndex} />
+                          {e.name}
+                        </label>
+                      );
+                    })
+                  }
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div className="form-group row mb-1">
-          <label className="col-12">Second Flight:</label>
-          <div className="col-12">
-            <div className="btn-group" data-toggle="buttons">
-              {this.props.courses.map((e,i) => {
-                var course_status = flightFunctions.reserveColor(e.second_reservation_status);
-                if(course_status != "secondary"){
-                  course_status = course_status + " disabled";
-                }
-                return (
-                  <label key={i} className={`btn btn-${course_status} ${i==0 ? 'active' : ''}`}>
-                    <input type="radio" name={`flight[${this.props.flightInfoID}][courses][second_course]`} value={e.id} defaultChecked={i==0} />
-                    {e.name}
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
     );
 
@@ -358,6 +350,7 @@ var ReserveFormPage = React.createClass({
       <div className="w-100">
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][matrix_id]"} value={this.props.flight.matrix_id} />
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][tee_time]"} value={this.props.flightInfo.teeTime} />
+        <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][second_tee_time]"} value={this.props.flightInfo.second_tee_time} />
         <div className="form-group row mb-1">
           <div className="col-2">
             <select name={ "flight[" + this.props.flightInfo.id + "][count][pax]"}
@@ -573,9 +566,14 @@ var GolfReserveForm = React.createClass({
         var fi = Object.assign({}, FLIGHT_INFO_DEFAULTS);
         Object.assign( fi,
           {
-            id:randomID(), teeTime:this.props.flights[value].tee_time, index:newIndex, flightIndex:value,
-            pax:this.props.flights[value].minPax, insurance:this.props.flights[value].minPax,
-              buggy:this.props.flights[value].minCart, caddy:this.props.flights[value].minCaddy
+            id:randomID(),
+            teeTime:this.props.flights[value].tee_time,
+            second_tee_time:this.props.flights[value].second_tee_time,
+            index:newIndex, flightIndex:value,
+            pax:this.props.flights[value].minPax,
+            insurance:this.props.flights[value].minPax,
+            buggy:this.props.flights[value].minCart,
+            caddy:this.props.flights[value].minCaddy
           }
         );
         newFlightInfo.splice($.inArray(value, newTeeTimes), 0, fi ) ;

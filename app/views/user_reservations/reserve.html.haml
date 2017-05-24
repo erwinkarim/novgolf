@@ -20,6 +20,7 @@
           .card.mb-2
             .card-header #{v[:tee_time]} Flight Details
             .card-block
+              %h4 Flight Settings
               %table.table
                 %thead
                   %tr
@@ -50,6 +51,21 @@
             - if v[:count][:member].to_i > 0 then
               .card-block
                 %p.card-text Members Name and ID will be verified at the Club House during registration.
+            .card-block
+              %h4 Courses
+              %table.table
+                %thead
+                  %tr
+                    %th Tee Time
+                    %th Course Name
+                %tbody
+                  %tr
+                    %td #{v[:tee_time]}
+                    %td #{@courses.where(:id => v[:courses][:first_course]).first.name}
+                  %tr
+                    %td #{v[:second_tee_time]}
+                    %td #{@courses.where(:id => v[:courses][:second_course]).first.name}
+
     .row
       .col-12.col-md-8.col-md-offset-2
         %table.table

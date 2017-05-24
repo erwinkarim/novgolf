@@ -4,6 +4,7 @@ class UserReservationsController < ApplicationController
   # POST/GET     /golf_clubs/:golf_club_id/user_reservations/reserve(.:format)
   def reserve
     @club = GolfClub.find(params[:golf_club_id])
+    @courses = @club.course_listings
 
     #add tax rate into the params
     params[:info][:tax] = params[:info][:total_price].to_f * @club.tax_schedule.rate
