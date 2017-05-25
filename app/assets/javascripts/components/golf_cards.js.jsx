@@ -394,10 +394,12 @@ var ReserveFormPage = React.createClass({
               topRange = this.props.flight[`max${toTitleCase(formContentElm.value)}`];
           };
 
+          //disable the select dropdown, mostly for insurnace
           var disabledSelect = (formContentElm.value == "insurance") ?
             (this.props.flight.prices.insurance_mode == 0 ? false : true) :
             false;
 
+          //set the pricing to zero for members field
           var elmPrice = this.props.flightInfo[formContentElm.value] * parseFloat(this.props.flight.prices[formContentElm.price]);
           if(formContentElm.value == "member"){ elmPrice = 0; }
 
