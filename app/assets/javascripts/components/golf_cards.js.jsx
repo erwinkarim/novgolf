@@ -259,6 +259,7 @@ var CourseSelection = React.createClass({
     // the course selection. will select first available course
     var handle = this;
     var coursesArray = this.props.adminMode ? ["second"] : ["first", "second"]
+    //when in admin mode, highlight which course this reservation is selected
     return (
       <div>
         <hr />

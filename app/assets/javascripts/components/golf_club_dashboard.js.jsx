@@ -618,7 +618,8 @@ var GolfCoursesGroup = React.createClass({
           var activeState = (i == this.props.selectedCourse) ? "active" : null;
           return (
             <label className={`btn btn-${reserve_status} ${activeState}`} key={i} onClick={this.props.selectCourse}
-              data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}>
+              data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}
+              data-target="first_course_id" data-value={e.id}>
               <input type="radio" name="courses" value={`course-${e.id}`}  />
               {e.name}
             </label>
@@ -746,7 +747,8 @@ var GolfClubDashboard = React.createClass({
           {
             pax:reserve.count_pax, member:reserve.count_member, buggy:reserve.count_buggy, caddy:reserve.count_caddy,
             insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price, members:reserve.ur_member_details,
-            reserved_by:reserve.reserved_by, ur_contact: reserve.ur_contact, reserve_method:reserve.reserve_method, reservation_id:reserve.id
+            reserved_by:reserve.reserved_by, ur_contact: reserve.ur_contact, reserve_method:reserve.reserve_method, reservation_id:reserve.id,
+            first_course_id:reserve.course_listing_id, second_course_id:reserve.second_course_listing_id
           });
         handle.setState({flightInfo:newFlightInfo});
       });
@@ -797,9 +799,13 @@ var GolfClubDashboard = React.createClass({
     if (e.target.dataset.reservationId == null){
       //if there's no reservation ID, update flightInfo to default values
       var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
+      /*
       var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0,
         tax:0.00, totalPrice:0.00, members:[]};
+        */
+      var newFlightInfo = Object.assign({}, FLIGHT_INFO_DEFAULTS);
       newFlightInfo = this.updatePrice(newFlightInfo, flight);
+      this.updatePax(e);
       this.setState({flightInfo:newFlightInfo, selectedCourse:parseInt(e.target.dataset.index), flightTransaction:null});
 
     }else{
@@ -843,8 +849,12 @@ var GolfClubDashboard = React.createClass({
       var newDashText = handle.state.days[selectedArray] + ", " + handle.state.flightsArray[selectedArray][selectedIndex].tee_time;
       var flight = handle.state.flightsArray[selectedArray][selectedIndex];
       //var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, members:[], tax:0.00, totalPrice:0.00};
-      var newDefaults = Object.assign({}, FLIGHT_INFO_DEFAULTS);
-      var newFlightInfo = Object.assign(newDefaults, {pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy});
+      //var newDefaults = Object.assign({}, FLIGHT_INFO_DEFAULTS);
+      var newFlightInfo = Object.assign(FLIGHT_INFO_DEFAULTS, {
+        pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy,
+        first_course_id:flight.course_data.courses[0].id, second_course_id:flight.course_data.courses[0].id
+      });
+      console.log("newFlightInfo", newFlightInfo);
       newFlightInfo = handle.updatePrice(newFlightInfo, flight);
 
       //setup the state

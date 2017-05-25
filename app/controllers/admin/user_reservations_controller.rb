@@ -30,6 +30,8 @@ class Admin::UserReservationsController < ApplicationController
   #    "flight_info"=>{"pax"=>"2", "buggy"=>"1", "caddy"=>"1", "insurance"=>"0", "tax"=>"37.8", "totalPrice"=>"667.8"}}
   def create
     #get the charge schedule based on flight_matrix_id
+    head :ok
+    return
     flight_info = params[:flight_info]
 
     #if trying to book something > 24 before today, send out error message
