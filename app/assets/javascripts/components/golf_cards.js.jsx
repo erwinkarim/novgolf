@@ -257,7 +257,6 @@ var CourseSelection = React.createClass({
       );
     }
 
-    // the course selection. will select first available course
     var handle = this;
     //if adminMode == true, it will only highlight the courses that is being used
     // by the highlighted reservation in the dashboard
@@ -266,6 +265,7 @@ var CourseSelection = React.createClass({
       <div>
         <hr />
         {["first","second"].map( (course_name,course_index) => {
+          // the course selection. will select first available course
           var firstAvailableIndex = handle.props.courses.findIndex((e) => {
             return e[`${course_name}_reservation_id`] == null;
           });
@@ -276,12 +276,28 @@ var CourseSelection = React.createClass({
                 <div className="btn-group w-100 flex-wrap" data-toggle="buttons">
                   {
                     handle.props.courses.map((e,i) => {
-                      //if in admin mode, only show the status of courses that is being selected
+                      var course_status = "secondary"
+                      var disable_course = false;
+                      if(handle.props.adminMode){
+                        //if in admin mode, only show the status of courses that is being selected
+                        var selectedReservationId = handle.props.courses[handle.props.selectedCourse].first_reservation_id;
+                        if(selectedReservationId != null && e[`${course_name}_reservation_id`] == selectedReservationId){
+                          course_status = flightFunctions.reserveColor(e[`${course_name}_reservation_status`]);
+                          firstAvailableIndex=-1;
+                        }
+                        //disable the chose if the course has been occupied
+                        if(e[`${course_name}_reservation_id`] != null){
+                          course_status = course_status + " disabled";
+                          disable_course = true;
+                        }
+                      } else {
+                        course_status = flightFunctions.reserveColor(e[`${course_name}_reservation_status`]);
+                        if(course_status != "secondary"){
+                          course_status = course_status + " disabled";
+                          disable_course = true;
+                        }
+                      };
 
-                      var course_status = flightFunctions.reserveColor(e[`${course_name}_reservation_status`]);
-                      if(course_status != "secondary"){
-                        course_status = course_status + " disabled";
-                      }
                       return (
                         <label key={i} className={`btn btn-${course_status} ${i==firstAvailableIndex ? 'active' : ''}`}
                           onClick={this.props.updatePrice}
@@ -289,7 +305,7 @@ var CourseSelection = React.createClass({
                           value={e.id}
                         >
                           <input type="radio" name={`flight[${handle.props.flightInfo.id}][courses][${course_name}_course]`}
-                            value={e.id} defaultChecked={i==firstAvailableIndex} />
+                            disabled={disable_course} value={e.id} defaultChecked={i==firstAvailableIndex} />
                           {e.name}
                         </label>
                       );
@@ -433,7 +449,7 @@ var ReserveFormPage = React.createClass({
            </label>
          </div>
         <CourseSelection courses={this.props.flight.course_data.courses}
-          flightInfo={this.props.flightInfo}
+          flightInfo={this.props.flightInfo} selectedCourse={this.props.selectedCourse}
           adminMode={this.props.courseSelectionAdminMode} updatePrice={this.props.updatePrice}/>
       </div>
     );
