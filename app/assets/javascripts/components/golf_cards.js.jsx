@@ -240,10 +240,11 @@ var CourseSelection = React.createClass({
     courses:React.PropTypes.array,
     flightInfo:React.PropTypes.object,
     adminMode:React.PropTypes.bool,
-    updatePrice: React.PropTypes.func
+    updatePrice: React.PropTypes.func,
+    selectedCourse: React.PropTypes.number
   },
   getDefaultProps: ()=>{
-    return {adminMode:false, updatePrice:()=>{return null;}}
+    return {adminMode:false, updatePrice:()=>{return null;}, selectedCourse:0}
   },
   render: function(){
     //return just the hidden input if there's only 1 course
@@ -258,12 +259,13 @@ var CourseSelection = React.createClass({
 
     // the course selection. will select first available course
     var handle = this;
-    var coursesArray = this.props.adminMode ? ["second"] : ["first", "second"]
-    //when in admin mode, highlight which course this reservation is selected
+    //if adminMode == true, it will only highlight the courses that is being used
+    // by the highlighted reservation in the dashboard
+
     return (
       <div>
         <hr />
-        {coursesArray.map( (course_name,course_index) => {
+        {["first","second"].map( (course_name,course_index) => {
           var firstAvailableIndex = handle.props.courses.findIndex((e) => {
             return e[`${course_name}_reservation_id`] == null;
           });
@@ -274,6 +276,8 @@ var CourseSelection = React.createClass({
                 <div className="btn-group w-100 flex-wrap" data-toggle="buttons">
                   {
                     handle.props.courses.map((e,i) => {
+                      //if in admin mode, only show the status of courses that is being selected
+
                       var course_status = flightFunctions.reserveColor(e[`${course_name}_reservation_status`]);
                       if(course_status != "secondary"){
                         course_status = course_status + " disabled";
@@ -338,10 +342,6 @@ var ReserveFormPage = React.createClass({
   render: function(){
     var activeClass = (this.props.isActive) ? "active" : "";
 
-    var membersLink = (this.props.options.displayMembersModal) ? (
-      <a href="#membersModal" data-toggle="modal"> x Members </a>
-    ) : " x Members";
-
     var notesContent = (
       <div>
         <p className="mb-0">
@@ -356,12 +356,11 @@ var ReserveFormPage = React.createClass({
           <p>Club T&C applies</p>
         </div>
       </div>
-
     );
 
     var formContentRow = [
-      {caption:'Non-Member', value:'pax', price:'flight'},
-      {caption:'Member', value:'member', price:'member'},
+      {caption:'Non-Members', value:'pax', price:'flight'},
+      {caption:'Members', value:'member', price:'member'},
       {caption:'Buggy', value:'buggy', price:'cart'},
       {caption:'Caddy', value:'caddy', price:'caddy'},
       {caption:'Insurance', value:'insurance', price:'insurance'},
@@ -394,6 +393,14 @@ var ReserveFormPage = React.createClass({
               topRange = this.props.flight[`max${toTitleCase(formContentElm.value)}`];
           };
 
+          //for member, there's a link to members details
+          var captionDisplay = ` x ${formContentElm.caption}`;
+          if(formContentElm.value == "member"){
+            captionDisplay = (this.props.options.displayMembersModal) ? (
+              <a href="#membersModal" data-toggle="modal"> x Members</a>
+            ) : " x Members";
+          };
+
           //disable the select dropdown, mostly for insurnace
           var disabledSelect = (formContentElm.value == "insurance") ?
             (this.props.flight.prices.insurance_mode == 0 ? false : true) :
@@ -407,15 +414,14 @@ var ReserveFormPage = React.createClass({
             <div key={formContentIndex} className="form-group row mb-1">
               <input type="hidden" value={elmPrice} name={`flight[${this.props.flightInfo.id}][price][${formContentElm.value}]`} />
               <div className="col-2">
-                <select name={`flight[${this.props.flightInfo.id}][count][${formContentElm.value}]` }
-                  disabled={ disabledSelect}
+                <select name={`flight[${this.props.flightInfo.id}][count][${formContentElm.value}]` } disabled={ disabledSelect}
                   onChange={this.props.updatePrice} value={this.props.flightInfo[formContentElm.value]}
                   data-index={this.props.flightInfo.index} data-target={formContentElm.value}>
                   { arrayFromRange(bottomRange, topRange).map( (e,i) => <option key={i}>{e}</option> )}
                 </select>
               </div>
-              <label className="col-5">{` x ${formContentElm.caption} `}</label>
-              <label className="col-5"> {toCurrency(elmPrice)} </label>
+              <label className="col-5">{captionDisplay}</label>
+              <label className="col-5">{toCurrency(elmPrice)} </label>
             </div>
 
           );
@@ -432,6 +438,7 @@ var ReserveFormPage = React.createClass({
       </div>
     );
 
+    //display as a card or a list group items
     return this.props.displayAs == 'card' ? (
       <div className={`tab-pane card ${activeClass}`} id={`flight-tab-${this.props.flightInfo.id}`} >
         <div className="card-header text-right" style={ {color:'black'}}>
