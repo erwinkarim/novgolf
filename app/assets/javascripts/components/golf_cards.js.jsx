@@ -266,29 +266,43 @@ var CourseSelection = React.createClass({
         <hr />
         {["first","second"].map( (course_name,course_index) => {
           // the course selection. will select first available course
+          //  when in admin mode, only show if the current selected course is not null
+          var selectedReservationId = this.props.courses[this.props.selectedCourse].first_reservation_id;
           var firstAvailableIndex = handle.props.courses.findIndex((e) => {
             return e[`${course_name}_reservation_id`] == null;
           });
+          if(this.props.adminMode && selectedReservationId != null){
+            firstAvailableIndex = -1;
+          };
           return (
             <div key={course_index} className="form-group row mb-1">
               <label className="col-12">{`${toTitleCase(course_name)} course:`}</label>
               <div className="col-12">
-                <div className="btn-group w-100 flex-wrap" data-toggle="buttons">
+                <div className="btn-group w-100 flex-wrap" data-toggle="buttons" ref={(input)=>{this[`${course_name}_btn_group`] = input;}}>
                   {
                     handle.props.courses.map((e,i) => {
                       var course_status = "secondary"
                       var disable_course = false;
                       if(handle.props.adminMode){
-                        //if in admin mode, only show the status of courses that is being selected
-                        var selectedReservationId = handle.props.courses[handle.props.selectedCourse].first_reservation_id;
-                        if(selectedReservationId != null && e[`${course_name}_reservation_id`] == selectedReservationId){
-                          course_status = flightFunctions.reserveColor(e[`${course_name}_reservation_status`]);
-                          firstAvailableIndex=-1;
-                        }
-                        //disable the chose if the course has been occupied
-                        if(e[`${course_name}_reservation_id`] != null){
+                        /*
+                          if selectedReservationId is not null, highlight the courses that is being selected
+                          if selectedReservationId is null, highlight the selected course for the first
+                            and first available course for the second
+                          if in admin mode, only show the status of courses that is being selected
+                        */
+                        if(e[`${course_name}_reservation_id`] == null){
+                          if(course_name=="first"){
+                            firstAvailableIndex = handle.props.selectedCourse;
+                          }
+                        } else {
+                          //disable the course if the course has been occupied
                           course_status = course_status + " disabled";
                           disable_course = true;
+
+                          //highlight the selected course if matches
+                          if(e[`${course_name}_reservation_id`] == selectedReservationId){
+                            course_status = flightFunctions.reserveColor(e[`${course_name}_reservation_status`]);
+                          };
                         }
                       } else {
                         course_status = flightFunctions.reserveColor(e[`${course_name}_reservation_status`]);

@@ -25,13 +25,19 @@ class Admin::UserReservationsController < ApplicationController
   end
 
   # POST     /admin/user_reservations(.:format)
-  # sample Parameters: {"golf_club_id"=>"2", "booking_date"=>"5/11/2016", "booking_time"=>"08:08",
-  #    "flight_matrix_id"=>"73",
-  #    "flight_info"=>{"pax"=>"2", "buggy"=>"1", "caddy"=>"1", "insurance"=>"0", "tax"=>"37.8", "totalPrice"=>"667.8"}}
+  # Sample Parameters: {"authenticity_token"=>"OYTfOOd7bBVqq2IqAMQ832c4aQ6A7carBGZugsqGu/AgmN1P33bSlVAU1xu7n9dPDg2HT+Bjes/Mhqae9bPueQ==",
+  #  "golf_club_id"=>3, "booking_date"=>"29/5/2017", "booking_time"=>"08:04", "flight_matrix_id"=>1501,
+  #  "flight_info"=>{"pax"=>3, "member"=>0, "buggy"=>0, "caddy"=>0, "insurance"=>0,
+  #  "tax"=>52.919999999999995, "totalPrice"=>934.92, "members"=>[], "reserved_by"=>nil, "ur_contact"=>nil,
+  #  "reserve_method"=>0, "reservation_id"=>nil, "first_course_id"=>3, "second_course_id"=>4},
+  #  "user_reservation"=>{"golf_club_id"=>3, "booking_date"=>"29/5/2017", "booking_time"=>"08:04", "flight_matrix_id"=>1501}}
   def create
     #get the charge schedule based on flight_matrix_id
-    head :ok
-    return
+
+    #debug
+    #head :ok
+    #return
+
     flight_info = params[:flight_info]
 
     #if trying to book something > 24 before today, send out error message
@@ -55,7 +61,11 @@ class Admin::UserReservationsController < ApplicationController
     UserReservation.transaction do
       #create the reservation
       ur = UserReservation.create_reservation params[:flight_matrix_id], current_user.id, params[:booking_date], params[:flight_info],
-        {reserve_method:UserReservation.reserve_methods[:dashboard]}
+        {
+          reserve_method:UserReservation.reserve_methods[:dashboard],
+          course_selection:UserReservation.course_selection_methods[:manual],
+          course_selection_ids:[params[:flight_info][:first_course_id], params[:flight_info][:second_course_id]]
+        }
       unless params.has_key?(:flight_info) then
         flight_info["members"].each_pair do |index, member|
           ur_member_details = UrMemberDetail.new({name:member["name"], member_id:member["id"], user_reservation_id:ur.id})
