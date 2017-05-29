@@ -268,17 +268,23 @@ var CourseSelection = React.createClass({
           // the course selection. will select first available course
           //  when in admin mode, only show if the current selected course is not null
           var selectedReservationId = this.props.courses[this.props.selectedCourse].first_reservation_id;
+
           var firstAvailableIndex = handle.props.courses.findIndex((e) => {
             return e[`${course_name}_reservation_id`] == null;
           });
           if(this.props.adminMode && selectedReservationId != null){
             firstAvailableIndex = -1;
           };
+
+          var tee_time = course_name == "first" ?
+            handle.props.flightInfo.teeTime :
+            handle.props.flightInfo.second_tee_time;
+
           return (
             <div key={course_index} className="form-group row mb-1">
-              <label className="col-12">{`${toTitleCase(course_name)} course:`}</label>
+              <label className="col-12">{`${toTitleCase(course_name)} course (${tee_time}):`}</label>
               <div className="col-12">
-                <div className="btn-group w-100 flex-wrap" data-toggle="buttons" ref={(input)=>{this[`${course_name}_btn_group`] = input;}}>
+                <div className="btn-group flex-wrap" data-toggle="buttons" ref={(input)=>{this[`${course_name}_btn_group`] = input;}}>
                   {
                     handle.props.courses.map((e,i) => {
                       var course_status = "secondary"

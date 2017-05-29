@@ -4,7 +4,9 @@
     .col-12
       %ol.breadcrumb
         %li.breadcrumb-item
-          %a{ :href => admin_golf_clubs_path} Admin
+          %a{ :href => admin_path} Admin
+        %li.breadcrumb-item
+          %a{ :href => admin_golf_clubs_path} Clubs
         %li.active.breadcrumb-item #{ @golf_club.name }
     .col-12
       %h1 Club Info

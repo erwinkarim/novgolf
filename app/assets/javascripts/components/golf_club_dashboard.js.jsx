@@ -116,13 +116,27 @@ var GolfClubDashStatus = React.createClass({
         toCurrency(parseFloat(this.props.flightTransaction.outstanding))
       );
 
-      btnRow = (
-        <li className="list-group-item">
-          <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
-          <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
-          <button className="btn btn-danger ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
-        </li>
-      );
+      // show which button is available based on select course status
+      if(this.props.selectedCourse == null){
+        btnRow = null;
+      } else {
+        //evaluate the state of the selected course
+        var course_state = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight].course_data.courses[this.props.selectedCourse];
+        if(course_state.first_reservation_id == null){
+          btnRow = (
+            <li className="list-group-item">
+              <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
+            </li>
+          );
+        } else {
+          btnRow = (
+            <li className="list-group-item">
+              <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
+              <button className="btn btn-danger ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
+            </li>
+          );
+        }
+      }
 
       courseInfo = (
         <li className="list-group-item">
