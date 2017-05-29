@@ -804,6 +804,14 @@ var GolfClubDashboard = React.createClass({
         tax:0.00, totalPrice:0.00, members:[]};
         */
       var newFlightInfo = Object.assign({}, FLIGHT_INFO_DEFAULTS);
+      var firstCourseId = parseInt(e.target.dataset.courseId);
+      var courseData = flight.course_data.courses.find( (e) => {return e.id == firstCourseId});
+      //choose the first available course if current selection has no reservation_id
+      //otherwise choose the assocaited second course id
+      var secondCourseId = (courseData.reservation_id == null) ?
+        (flight.course_data.courses.find( (e) => {return e.second_reservation_id == null;} ).id ) :
+        (flight.course_data.courses.find( (e) => {return e.second_reservation_id == courseData.first_reservation_id}).id );
+      newFlightInfo = Object.assign(newFlightInfo, {first_course_id:firstCourseId, second_course_id:secondCourseId});
       newFlightInfo = this.updatePrice(newFlightInfo, flight);
       this.updatePax(e);
       this.setState({flightInfo:newFlightInfo, selectedCourse:parseInt(e.target.dataset.index), flightTransaction:null});

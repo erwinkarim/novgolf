@@ -198,6 +198,11 @@ class UserReservation < ActiveRecord::Base
         count_member:flight_info[:member],
         count_caddy:flight_info[:caddy], count_insurance:flight_info[:insurance]})
 
+      #update course selection
+      self.update_attributes({
+        course_listing_id:flight_info[:first_course_id], second_course_listing_id:flight_info[:second_course_id]
+      })
+
       #update member info, if there's members
       if flight_info.has_key? :members then
         unless flight_info[:members].nil? then
