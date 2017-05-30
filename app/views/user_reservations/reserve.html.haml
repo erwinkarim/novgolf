@@ -30,11 +30,11 @@
                 %tbody
                   %tr
                     %td #{ v[:count][:pax]}
-                    %td Pax
+                    %td Non-Members
                     %td #{ number_to_currency(v[:price][:pax], { :unit => "RM"}) }
                   %tr
                     %td #{ v[:count][:member]}
-                    %td Pax
+                    %td Members
                     %td RM 0.00
                   %tr
                     %td #{ v[:count][:caddy]}
@@ -43,7 +43,7 @@
                   %tr
                     %td #{ v[:count][:buggy]}
                     %td Buggy
-                    %td #{ number_to_currency(v[:price][:cart], { :unit => "RM"}) }
+                    %td #{ number_to_currency(v[:price][:buggy], { :unit => "RM"}) }
                   %tr
                     %td #{ v[:count][:insurance]}
                     %td Insurance

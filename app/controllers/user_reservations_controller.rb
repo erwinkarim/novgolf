@@ -1,10 +1,61 @@
 class UserReservationsController < ApplicationController
   before_action :authenticate_user!, except: [:public_view]
 
+  def handle_bad_request
+    render file: "public/400.html", status: :bad_request
+    return
+  end
   # POST/GET     /golf_clubs/:golf_club_id/user_reservations/reserve(.:format)
   def reserve
     @club = GolfClub.find(params[:golf_club_id])
     @courses = @club.course_listings
+
+    check_passed = true
+
+    #sanity checks to ensure all info is there
+    if !params.has_key?(:info) then
+      check_passed = false
+    end
+
+    if !params.has_key?(:flight) then
+      check_passed = false
+    else
+      #check each of the flight details
+      params[:flight].each_pair do |k,v|
+        if !v.has_key?(:tee_time) then
+          check_passed = false
+        end
+
+        if !v.has_key?(:courses) then
+          check_passed = false
+        else
+          #check the first and second course name
+          if !v[:courses].has_key?(:first_course) || !v[:courses].has_key?(:second_course) then
+            check_passed = false
+          end
+        end
+
+        if !v.has_key?(:count) then
+          check_passed = false
+        else
+          if !v[:count].has_key?(:pax) || !v[:count].has_key?(:caddy) || !v[:count].has_key?(:buggy) || !v[:count].has_key?(:insurance) then
+            check_passed = false
+          end
+        end
+
+        if !v.has_key?(:price) then
+          check_passed = false
+        else
+          if !v[:price].has_key?(:pax) || !v[:price].has_key?(:caddy) || !v[:price].has_key?(:buggy) || !v[:price].has_key?(:insurance) then
+            check_passed = false
+          end
+        end
+      end
+    end #params[:flight] check
+
+    if !check_passed then
+      render file: "public/400.html", status: :bad_request
+    end
 
     #add tax rate into the params
     params[:info][:tax] = params[:info][:total_price].to_f * @club.tax_schedule.rate

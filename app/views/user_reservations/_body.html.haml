@@ -91,7 +91,7 @@
           %td #{@reservation.first_booking_time.strftime("%H:%M")}
           %td #{@reservation.first_course_listing.name}
         %tr
-          %td #{@reservation.second_booking_time.strftime("%H:%M")}
+          %td #{@reservation.second_booking_time.nil? ? "" : @reservation.second_booking_time.strftime("%H:%M")}
           %td #{@reservation.second_course_listing.name}
 - if @reservation.count_member > 0 then
   .card

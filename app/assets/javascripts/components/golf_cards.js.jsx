@@ -442,6 +442,15 @@ var ReserveFormPage = React.createClass({
             (this.props.flight.prices.insurance_mode == 0 ? false : true) :
             false;
 
+          //record insurance count covertly if the insurance mode is not optional
+          var hiddenInsuranceCount = null;
+          if(formContentElm.value == "insurance" && this.props.flight.prices.insurance_mode != 0){
+            hiddenInsuranceCount = (
+              <input type="hidden" name={`flight[${this.props.flightInfo.id}][count][${formContentElm.value}]`}
+                value={this.props.flightInfo[formContentElm.value]}/>
+            )
+          }
+
           //set the pricing to zero for members field
           var elmPrice = this.props.flightInfo[formContentElm.value] * parseFloat(this.props.flight.prices[formContentElm.price]);
           if(formContentElm.value == "member"){ elmPrice = 0; }
@@ -449,6 +458,7 @@ var ReserveFormPage = React.createClass({
           return (
             <div key={formContentIndex} className="form-group row mb-1">
               <input type="hidden" value={elmPrice} name={`flight[${this.props.flightInfo.id}][price][${formContentElm.value}]`} />
+              { hiddenInsuranceCount }
               <div className="col-2">
                 <select name={`flight[${this.props.flightInfo.id}][count][${formContentElm.value}]` } disabled={ disabledSelect}
                   onChange={this.props.updatePrice} value={this.props.flightInfo[formContentElm.value]}
