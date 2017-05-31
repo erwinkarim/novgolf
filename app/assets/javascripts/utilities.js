@@ -25,3 +25,21 @@ var arrayFromRange = function(startNumber, endNumber){
 var toTitleCase = function(inputStr){
   return inputStr.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 };
+
+var getDayOfWeek = function(n){
+  var weekday = new Array(7);
+  weekday[0] =  "Sunday";
+  weekday[1] = "Monday";
+  weekday[2] = "Tuesday";
+  weekday[3] = "Wednesday";
+  weekday[4] = "Thursday";
+  weekday[5] = "Friday";
+  weekday[6] = "Saturday";
+
+  return weekday[n];
+};
+
+//pad the number 0-9 to 01 to 09
+var pad = function(n){
+  return n < 10 ? '0'+n : n;
+}

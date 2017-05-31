@@ -699,7 +699,8 @@ var GolfClubDashboard = React.createClass({
     //new Date must be type Date
     days = arrayFromRange(0,6).map( (e,i) => {
       var newDay = new Date(newDate.getTime() + (60*60*24*1000*e));
-      return newDay.getDate() + '/' + (newDay.getMonth() + 1) + '/' + newDay.getFullYear();
+      return newDay.getFullYear() + '-' + pad(newDay.getMonth() + 1) + '-' + pad(newDay.getDate());
+      //return newDay.getDate() + '/' + (newDay.getMonth() + 1) + '/' + newDay.getFullYear();
     });
     return days;
   },
@@ -876,7 +877,7 @@ var GolfClubDashboard = React.createClass({
         pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy,
         first_course_id:flight.course_data.courses[0].id, second_course_id:flight.course_data.courses[0].id
       });
-      console.log("newFlightInfo", newFlightInfo);
+      //console.log("newFlightInfo", newFlightInfo);
       newFlightInfo = handle.updatePrice(newFlightInfo, flight);
 
       //setup the state
@@ -1183,7 +1184,7 @@ var GolfClubDashboard = React.createClass({
             this.state.flightsArray.map( (e,i) => {
             return (
               <div key={i} >
-                <strong>{this.state.days[i]}</strong>
+                <strong>{this.state.days[i]} ({getDayOfWeek((new Date(this.state.days[i])).getDay())})</strong>
                 <GolfCardTimesGroup flights={e} btnGroupMode="radio" handleClick={this.handleClick}
                   arrayIndex={i} adminMode={true} options={this.props.options} />
               </div>

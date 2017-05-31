@@ -11,9 +11,7 @@
           %ul.list-group.list-group-flush
             %li.list-group-item #{ @club.name }
             %li.list-group-item #{ simple_format(@club.address)}
-            %li.list-group-item
-              %strong Flight Date
-              #{ Date.parse(params[:info][:date]).strftime("%d/%b/%Y")}
+            %li.list-group-item #{Date.parse(params[:info][:date]).strftime("%d/%b/%Y")}
     .row
       .col-12.col-md-8.col-md-offset-2
         - params[:flight].each_pair do |k,v|

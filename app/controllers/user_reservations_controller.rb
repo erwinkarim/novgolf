@@ -15,6 +15,11 @@ class UserReservationsController < ApplicationController
     #sanity checks to ensure all info is there
     if !params.has_key?(:info) then
       check_passed = false
+    else
+      #params[:info].keys tax and total price are derived values
+      if !params[:info].has_key?(:total_price) then
+        check_passed = false
+      end
     end
 
     if !params.has_key?(:flight) then

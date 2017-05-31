@@ -19,7 +19,7 @@ class flightFunctions {
       * will update the insurnace count to member + pax if the insurance is inclusive
       * return the updated flightInfo
     */
-    console.log(e.target.dataset.target, e.target.value);
+    //console.log(e.target.dataset.target, e.target.value);
     flightInfo[e.target.dataset.target] = parseInt(e.target.value);
 
     if(e.target.dataset.target == "pax" || e.target.dataset.target == "member"){
@@ -53,9 +53,9 @@ class flightFunctions {
 
       //push empty members data if members.length < member
       if('members' in flightInfo && flightInfo.member > flightInfo.members.length){
-        console.log("pushing dummy into members");
+        //console.log("pushing dummy into members");
         for(var n of arrayFromRange(flightInfo.members.length + 1, flightInfo.member)){
-          flightInfo.members.push({name:'', id:''});
+          flightInfo.members.push({name:'AutoName', member_id:'AutoID'});
         };
       };
 
