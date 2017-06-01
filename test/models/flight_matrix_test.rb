@@ -3,6 +3,8 @@ require 'test_helper'
 class FlightMatrixTest < ActiveSupport::TestCase
   should validate_presence_of(:flight_schedule_id)
   should validate_presence_of(:tee_time)
+  should validate_presence_of(:flight_order)
+
 
   should have_many(:user_reservations)
   should belong_to(:flight_schedule)

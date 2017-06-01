@@ -68,7 +68,7 @@ class GolfClub < ActiveRecord::Base
   def self.search options = {}
     default_options = { :query => "", :dateTimeQuery => DateTime.parse("#{Date.tomorrow} 07:00"), :spread => 30.minutes,
       :pax => 8, :club_id => 0..10000000,
-      :limit => 300, :offset => 0 , :adminMode => false, :loadCourseData => false}
+      :limit => 300, :offset => 0 , :adminMode => false, :loadCourseData => true}
 
     options = default_options.merge(options)
 
@@ -100,7 +100,8 @@ class GolfClub < ActiveRecord::Base
     Rails.logger.info "queryDateTime = #{options[:dateTimeQuery]}"
 
     tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).where(:status => [0,1,2,3,8]).to_sql
-    sql_statement = self.joining{
+    #load the data model
+    rel = self.joining{
         flight_schedules.flight_matrices
       }.joining{ course_listings
       }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joining{
@@ -116,88 +117,95 @@ class GolfClub < ActiveRecord::Base
         (flight_schedules.flight_matrices.end_active_at >= options[:dateTimeQuery]) &
         (id.in options[:club_id])
       }.limit(options[:limit]
-      ).group( " golf_clubs.id,
-        golf_clubs.name, session_price, tee_time, min_pax,
+      )
+
+    sql_statement = rel.group( " golf_clubs.id,
+        golf_clubs.name, session_price, tee_time, second_tee_time, min_pax,
         max_pax, cart, caddy, insurance,
         flight_matrices.id, charge_schedules.note,
         min_cart, max_cart, min_caddy, max_caddy,
         insurance_mode
       ").selecting{[id,
-        name, flight_schedules.charge_schedule.session_price, flight_schedules.flight_matrices.tee_time, flight_schedules.min_pax, #4
+        name, flight_schedules.charge_schedule.session_price, flight_schedules.flight_matrices.tee_time, flight_schedules.flight_matrices.second_tee_time,
+        flight_schedules.min_pax, #4
         flight_schedules.max_pax, flight_schedules.charge_schedule.cart, flight_schedules.charge_schedule.caddy, flight_schedules.charge_schedule.insurance,        #8
-        flight_schedules.flight_matrices.id, 'min(tr.status) as tr_min_status', flight_schedules.charge_schedule.note, flight_schedules.min_cart,  #12
+        flight_schedules.flight_matrices.id.as('fm_id'), 'min(tr.status) as tr_min_status', flight_schedules.charge_schedule.note, flight_schedules.min_cart,  #12
         flight_schedules.max_cart, flight_schedules.min_caddy, flight_schedules.max_caddy, flight_schedules.charge_schedule.insurance_mode,  #16
         'count(course_listings.id) as cl_count', 'count(tr.course_listing_id) as ur_cl_count'
         ]
       }.to_sql
 
-      results = ActiveRecord::Base.connection.execute(sql_statement).inject([]){ |p,n|
-        club = p.select{ |x| x[:club][:id] == n[0] }.first
+      #shoud change this to exec_sql because it'd returns a hash instead of an array (cleaner code)
+      results = ActiveRecord::Base.connection.exec_query(sql_statement).inject([]){ |p,n|
+        club = p.select{ |x| x[:club][:id] == n["id"] }.first
         if club.nil? then
           p << {
-            :club => { :tax_schedule => GolfClub.find(n[0]).tax_schedule, :id => n[0],
-              :name => n[1], :photos => GolfClub.find(n[0]).photos.order(:sequence => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
+            :club => { :tax_schedule => GolfClub.find(n["id"]).tax_schedule, :id => n["id"],
+              :name => n["name"], :photos => GolfClub.find(n["id"]).photos.order(:sequence => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
             :flights => [ {
-              :minPax => n[4], :maxPax => n[5],
-              :minCart => n[12], :maxCart => n[13],
-              :minCaddy => n[14], :maxCaddy => n[15],
-              :tee_time => n[3].strftime("%H:%M"),
-              :matrix_id => n[9],
-              :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[11], :insurance_mode => n[16]},
-              :course_data => { :status => n[18].nil? || n[18] < n[17] ? 0 : n[10] }
+              :minPax => n["min_pax"], :maxPax => n["max_pax"],
+              :minCart => n["min_cart"], :maxCart => n["max_cart"],
+              :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
+              :tee_time => n["tee_time"].strftime("%H:%M"),
+              :second_tee_time => n["second_tee_time"].nil? ? nil : n["second_tee_time"].strftime("%H:%M"),
+              :matrix_id => n["fm_id"],
+              :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
+              :course_data => { :status => n["ur_cl_count"].nil? || n["ur_cl_count"] < n["cl_count"] ? 0 : n["tr_min_status"] }
             }],
             :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
           }
         else
           # TODO: find the appropiate flights, add courses, or new flight if necessary
-          selected_flight = club[:flights].select{ |x| x[:matrix_id] == n[9]}
+          selected_flight = club[:flights].select{ |x| x[:matrix_id] == n["fm_id"]}
           club[:flights] << {
-            :minPax => n[4], :maxPax => n[5],
-            :minCart => n[12], :maxCart => n[13],
-            :minCaddy => n[14], :maxCaddy => n[15],
-            :tee_time => n[3].strftime("%H:%M"),
-            :matrix_id => n[9],
-            :prices => { :flight => n[2], :cart => n[6], :caddy => n[7], :insurance => n[8], :note => n[11], :insurance_mode => n[16]},
-            :course_data => { :status => n[18].nil? || n[18] < n[17] ? 0 : n[10] }
+            :minPax => n["min_pax"], :maxPax => n["max_pax"],
+            :minCart => n["min_cart"], :maxCart => n["max_cart"],
+            :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
+            :tee_time => n["tee_time"].strftime("%H:%M"),
+            :second_tee_time => n["second_tee_time"].nil? ? nil : n["second_tee_time"].strftime("%H:%M"),
+            :matrix_id => n["fm_id"],
+            :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
+            :course_data => { :status => n["ur_cl_count"].nil? || n["ur_cl_count"] < n["cl_count"] ? 0 : n["tr_min_status"] }
           }
           p
         end
       }
 
       #if more details course data require, go ask the database
+      # TODO: put course data on 2nd tee time
       if options[:loadCourseData] then
         queryDate =  options[:dateTimeQuery].strftime("%Y-%m-%d")
-        course_query_statement = self.joining{
-            flight_schedules.flight_matrices
-          }.joining{ course_listings
-          }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joining{
-            flight_schedules.charge_schedule
-          }.where.has{
-            ( (name.like "%#{query}%") ) &
-            (flight_schedules.flight_matrices.tee_time.in timeRange ) &
-            (flight_schedules.min_pax <= options[:pax]) &
-            (flight_schedules.flight_matrices.send("day#{queryDay}") == 1) &
-            (flight_schedules.start_active_at <= options[:dateTimeQuery]) &
-            (flight_schedules.end_active_at >= options[:dateTimeQuery]) &
-            (flight_schedules.flight_matrices.start_active_at <= options[:dateTimeQuery]) &
-            (flight_schedules.flight_matrices.end_active_at >= options[:dateTimeQuery]) &
-            (id.in options[:club_id])
-          }.limit(options[:limit]
-          ).selecting{ [id,
-              flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'),
-              'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name')
+        course_query_statement = rel.selecting{ [id,
+              flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'), #2
+              'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name'), #5
+              'tr.second_course_listing_id'
           ]}.to_sql
-          course_results = ActiveRecord::Base.connection.execute(course_query_statement).inject(results){ |p,n|
-            flight_handle = p.select{|x| x[:club][:id] == n[0]}.first[:flights].select{|x| x[:matrix_id] == n[1]}.first
+          course_results = ActiveRecord::Base.connection.exec_query(course_query_statement)
+          course_results.inject(results){ |p,n|
+            flight_handle = p.select{|x| x[:club][:id] == n["id"]}.first[:flights].select{|x| x[:matrix_id] == n["fm_id"]}.first
             if flight_handle[:course_data][:courses].nil? then
               flight_handle[:course_data][:courses] = []
             end
             flight_handle[:course_data][:courses] << {
-              id:n[2], name:n[5], reservation_id:n[3], reservation_status:n[4],
-                reservation_status_text: UserReservation.statuses.select{ |k,v| v == n[4]}.keys.first
+              id:n["cl_id"], name:n["cl_name"],
+                reservation_id:n["ur_id"], reservation_status:n["tr_status"],
+                first_reservation_id:n["ur_id"], first_reservation_status:n["tr_status"],
+                reservation_status_text: UserReservation.statuses.select{ |k,v| v == n["tr_status"]}.keys.first,
+                second_reservation_id:nil, second_reservation_status:nil
             }
             p
           }
+          course_results.inject(results){ |p,n|
+            course_handle = p.select{|x| x[:club][:id] == n["id"]}.first[:flights].select{|x| x[:matrix_id] == n["fm_id"]}.
+              first[:course_data][:courses].select{|x| x[:id] == n["second_course_listing_id"]}.first
+            if !course_handle.nil? then
+              course_handle[:second_reservation_id] = n["ur_id"]
+              course_handle[:second_reservation_status] = n["tr_status"]
+            end
+            p
+          }
+          #find the 2nd course listing data
+
       end
 
       results
@@ -248,14 +256,18 @@ class GolfClub < ActiveRecord::Base
 
         #attach flight matrix
         tee_time = Time.parse("2001-01-01 #{flight.odd? ? "0#{rand(6..9)}:00" : "#{rand(14..16)}:00"} UTC")
+        # 2nd tee time starts around 1.5 to 2.5 hours after the first
+        second_tee_time = tee_time + ([2,2.5,3][rand(0..2)]).hours + rand(6..8).minutes
 
         #around 5 to 20 flights per session
         (5..rand(10..20)).each do |tee_off|
           fm = [1,2].include?(flight) ?
-            fs.flight_matrices.new(day1:1, day2:1, day3:1, day4:1, day5:1, day6:0, day7:0, tee_time:tee_time) :
-            fs.flight_matrices.new(day1:0, day2:0, day3:0, day4:0, day5:0, day6:1, day7:1, tee_time:tee_time)
+            fs.flight_matrices.new(day1:1, day2:1, day3:1, day4:1, day5:1, day6:0, day7:0, tee_time:tee_time, second_tee_time:second_tee_time) :
+            fs.flight_matrices.new(day1:0, day2:0, day3:0, day4:0, day5:0, day6:1, day7:1, tee_time:tee_time, second_tee_time:second_tee_time)
           fm.save!
-          tee_time += rand(7..14).minutes
+          interval = rand(6..8).minutes
+          tee_time += interval
+          second_tee_time += interval
         end
 
         #attach price schedule
@@ -313,10 +325,11 @@ class GolfClub < ActiveRecord::Base
     #validation
     fullSch = {}
     #setup the full flightSchedule
+    #TODO:, push second_tee_time values for validation
     flight_schedules.each_pair do |i,e|
-      e["times"].each do |teeTime|
+      e["times"].each_pair do |teeTimeKey, teeTimeValue|
         #setup the time pair
-        std_time = Time.parse(teeTime).strftime("%H:%M")
+        std_time = Time.parse(teeTimeValue["tee_time"]).strftime("%H:%M")
         time_pair = { std_time => (0..7).inject([]){|p,n| p << 0} }
         e["days"].map{ |x| x.to_i }.each{ |x| time_pair.values.first[x] = 1 }
 
@@ -344,7 +357,7 @@ class GolfClub < ActiveRecord::Base
           y.setInactive
           #clean out if the fs is created and destroyed within 24 hours
           if(y.end_active_at - y.start_active_at < 24.hours) then
-            DeleteFlightScheduleJob.perform_later(4)
+            DeleteFlightScheduleJob.perform_later(y.id)
           end
         end
 
@@ -367,9 +380,13 @@ class GolfClub < ActiveRecord::Base
           cs.save!
 
           #create new flight_matrices
-          elm["times"].each do |flight_time|
+          elm["times"].each_pair do |fk, fv |
             fm = fs.flight_matrices.new(
-              elm["days"].inject( {:tee_time => Time.parse(flight_time).strftime("%H:%M"), :start_active_at => DateTime.now} ){
+              elm["days"].inject( {
+                :tee_time => Time.parse(fv["tee_time"]).strftime("%H:%M"),
+                :second_tee_time => Time.parse(fv["second_tee_time"]).strftime("%H:%M"),
+                :start_active_at => DateTime.now
+              }){
                 |p,n| p.merge({ "day#{n}".to_sym => 1})
               }
             )
@@ -397,20 +414,27 @@ class GolfClub < ActiveRecord::Base
           current_flight.flight_matrices.where.not(:tee_time => new_times).each{ |x| x.setInactive }
 
           #handle the flight matrices
-          elm["times"].each do |flight_time|
+          elm["times"].each_pair do |fk, fv |
             #check if this exists or not
-            fm = current_flight.flight_matrices.where(:tee_time => Time.parse("2000-01-01 #{flight_time} +0000")).first
+            fm = current_flight.flight_matrices.where(:tee_time => Time.parse("2000-01-01 #{fv["tee_time"]} +0000")).first
             if fm.nil? then
               #fm not found in the current list, create new
               fm = current_flight.flight_matrices.new(
-                elm["days"].inject({:tee_time => flight_time, start_active_at: DateTime.now}){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
-              )
+                elm["days"].inject({
+                  :tee_time => fv["tee_time"],
+                  :second_tee_time => fv["second_tee_time"],
+                  start_active_at: DateTime.now
+                }){|p,n| p.merge({ "day#{n}".to_sym => 1})
+              })
               fm.save!
             else
               #fm found in current list, update the days
               fm.update_attributes(
                 (1..7).inject({}){|p,n| p.merge({"day#{n}".to_sym => 0})}.merge(
-                  elm["days"].inject({:tee_time => flight_time}){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
+                  elm["days"].inject({
+                    :tee_time => fv["tee_time"],
+                    :second_tee_time => fv["second_tee_time"]
+                  }){|p,n| p.merge({ "day#{n}".to_sym => 1}) }
                 )
               )
 

@@ -37,6 +37,7 @@
 .card.mb-2
   .card-header Details
   .card-block
+    %h4 Flight Settings
     %table.table
       %thead
         %tr
@@ -79,6 +80,19 @@
             %p Note
             %p
               = @note.nil? || @note.empty? || @note.blank? ? "No note given" : @note
+    %h4 Course Selection
+    %table.table
+      %thead
+        %tr
+          %th Tee Time
+          %th Course
+      %tbody
+        %tr
+          %td #{@reservation.first_booking_time.strftime("%H:%M")}
+          %td #{@reservation.first_course_listing.name}
+        %tr
+          %td #{@reservation.second_booking_time.nil? ? "" : @reservation.second_booking_time.strftime("%H:%M")}
+          %td #{@reservation.second_course_listing.name}
 - if @reservation.count_member > 0 then
   .card
     .card-header Members

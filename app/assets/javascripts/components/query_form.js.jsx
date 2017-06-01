@@ -68,7 +68,6 @@ var QueryForm = React.createClass({
         {searchNav}
         <div className="font-special">
           <form id="search-query-form" className={"collapse" + collapseClass }  method="get" action={this.props.queryTarget} key="query1">
-            <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
             <div className="col-12">
               <br />
               <div className="form-group row">

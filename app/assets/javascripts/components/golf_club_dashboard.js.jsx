@@ -124,13 +124,35 @@ var GolfClubDashStatus = React.createClass({
         toCurrency(parseFloat(this.props.flightTransaction.outstanding))
       );
 
-      btnRow = (
+      // show which button is available based on select course status
+      if(this.props.selectedCourse == null){
+        btnRow = null;
+      } else {
+        //evaluate the state of the selected course
+        var course_state = this.props.flightsArray[this.props.selectedArray][this.props.selectedFlight].course_data.courses[this.props.selectedCourse];
+        if(course_state.first_reservation_id == null){
+          btnRow = (
+            <li className="list-group-item">
+              <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
+            </li>
+          );
+        } else {
+          btnRow = (
+            <li className="list-group-item">
+              <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
+              <button className="btn btn-danger ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
+            </li>
+          );
+        }
+      }
+
+      courseInfo = (
         <li className="list-group-item">
-          <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
-          <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
-          <button className="btn btn-danger ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
+          <GolfCoursesGroup
+            flight={flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}
+            reservation={this.props.flightInfo}/>
         </li>
-      );
+      )
 
       courseInfo = (
         <li className="list-group-item">
@@ -143,7 +165,7 @@ var GolfClubDashStatus = React.createClass({
       flightInfo = (
         <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
           selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
-          updateMembersList={this.props.updateMembersList} displayAs="flushed-list" />
+          updateMembersList={this.props.updateMembersList} displayAs="flushed-list" courseSelectionAdminMode={true} />
       )
 
       moneyInfo = (
@@ -626,7 +648,9 @@ var GolfCoursesGroup = React.createClass({
           var activeState = (i == this.props.selectedCourse) ? "active" : null;
           return (
             <label className={`btn btn-${reserve_status} ${activeState}`} key={i} onClick={this.props.selectCourse}
-              data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}>
+              data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}
+              data-target="first_course_id" data-value={e.id}>
+
               <input type="radio" name="courses" value={`course-${e.id}`}  />
               {e.name}
             </label>
@@ -692,7 +716,8 @@ var GolfClubDashboard = React.createClass({
     //new Date must be type Date
     days = arrayFromRange(0,6).map( (e,i) => {
       var newDay = new Date(newDate.getTime() + (60*60*24*1000*e));
-      return newDay.getDate() + '/' + (newDay.getMonth() + 1) + '/' + newDay.getFullYear();
+      return newDay.getFullYear() + '-' + pad(newDay.getMonth() + 1) + '-' + pad(newDay.getDate());
+      //return newDay.getDate() + '/' + (newDay.getMonth() + 1) + '/' + newDay.getFullYear();
     });
     return days;
   },
@@ -754,7 +779,9 @@ var GolfClubDashboard = React.createClass({
           {
             pax:reserve.count_pax, member:reserve.count_member, buggy:reserve.count_buggy, caddy:reserve.count_caddy,
             insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price, members:reserve.ur_member_details,
-            reserved_by:reserve.reserved_by, ur_contact: reserve.ur_contact, reserve_method:reserve.reserve_method, reservation_id:reserve.id
+            reserved_by:reserve.reserved_by, ur_contact: reserve.ur_contact, reserve_method:reserve.reserve_method, reservation_id:reserve.id,
+            first_course_id:reserve.course_listing_id, second_course_id:reserve.second_course_listing_id
+
           });
         handle.setState({flightInfo:newFlightInfo});
       });
@@ -783,7 +810,10 @@ var GolfClubDashboard = React.createClass({
 
   },
   updatePax: function(e){
-    //console.log("handle price updates, etc for", e.target);
+    //include value targets when it's talking about reservation
+    if(e.target.dataset.target=="first_course_id" || e.target.dataset.target=="second_course_id"){
+      Object.assign(e.target, {value:e.target.dataset.value});
+    };
     var newFlightInfo = this.state.flightInfo;
     var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
 
@@ -802,9 +832,21 @@ var GolfClubDashboard = React.createClass({
     if (e.target.dataset.reservationId == null){
       //if there's no reservation ID, update flightInfo to default values
       var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
+      /*
       var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0,
         tax:0.00, totalPrice:0.00, members:[]};
+        */
+      var newFlightInfo = Object.assign({}, FLIGHT_INFO_DEFAULTS);
+      var firstCourseId = parseInt(e.target.dataset.courseId);
+      var courseData = flight.course_data.courses.find( (e) => {return e.id == firstCourseId});
+      //choose the first available course if current selection has no reservation_id
+      //otherwise choose the assocaited second course id
+      var secondCourseId = (courseData.reservation_id == null) ?
+        (flight.course_data.courses.find( (e) => {return e.second_reservation_id == null;} ).id ) :
+        (flight.course_data.courses.find( (e) => {return e.second_reservation_id == courseData.first_reservation_id}).id );
+      newFlightInfo = Object.assign(newFlightInfo, {first_course_id:firstCourseId, second_course_id:secondCourseId});
       newFlightInfo = this.updatePrice(newFlightInfo, flight);
+      this.updatePax(e);
       this.setState({flightInfo:newFlightInfo, selectedCourse:parseInt(e.target.dataset.index), flightTransaction:null});
 
     }else{
@@ -848,8 +890,13 @@ var GolfClubDashboard = React.createClass({
       var newDashText = handle.state.days[selectedArray] + ", " + handle.state.flightsArray[selectedArray][selectedIndex].tee_time;
       var flight = handle.state.flightsArray[selectedArray][selectedIndex];
       //var newFlightInfo = {pax:flight.minPax, member:0, buggy:flight.minCart, caddy:flight.minCaddy, insurance:0, members:[], tax:0.00, totalPrice:0.00};
-      var newDefaults = Object.assign({}, FLIGHT_INFO_DEFAULTS);
-      var newFlightInfo = Object.assign(newDefaults, {pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy});
+      //var newDefaults = Object.assign({}, FLIGHT_INFO_DEFAULTS);
+      var newFlightInfo = Object.assign(FLIGHT_INFO_DEFAULTS, {
+        pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy,
+        first_course_id:flight.course_data.courses[0].id, second_course_id:flight.course_data.courses[0].id
+      });
+      //console.log("newFlightInfo", newFlightInfo);
+
       newFlightInfo = handle.updatePrice(newFlightInfo, flight);
 
       //setup the state
@@ -1156,7 +1203,7 @@ var GolfClubDashboard = React.createClass({
             this.state.flightsArray.map( (e,i) => {
             return (
               <div key={i} >
-                <strong>{this.state.days[i]}</strong>
+                <strong>{this.state.days[i]} ({getDayOfWeek((new Date(this.state.days[i])).getDay())})</strong>
                 <GolfCardTimesGroup flights={e} btnGroupMode="radio" handleClick={this.handleClick}
                   arrayIndex={i} adminMode={true} options={this.props.options} />
               </div>

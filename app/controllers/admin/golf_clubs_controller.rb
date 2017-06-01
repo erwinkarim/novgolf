@@ -114,8 +114,9 @@ class Admin::GolfClubsController < ApplicationController
         fs.attributes.merge("charge_schedule" => fs.charge_schedule.attributes)
       ).
       merge(
-        "flight_matrices" => fs.active_flight_matrices.map{
-          |x| x.attributes.merge({"tee_time" => x.tee_time.strftime("%I:%M%P")} )
+        "flight_matrices" => fs.active_flight_matrices.order(:tee_time).map{
+          |x| x.attributes.merge({"tee_time" => x.tee_time.strftime("%I:%M%P"),
+            "second_tee_time" => x.second_tee_time.nil? ? nil : x.second_tee_time.strftime("%I:%M%P")} )
         }
       )
     end
@@ -150,6 +151,7 @@ class Admin::GolfClubsController < ApplicationController
     #   => update the charge schedule associated with the flight schedules
     #   => update the flight matrices assocaited with the flight scheduleso
     # TODO: rescue from exception during transaction
+
     gc = GolfClub.find(params[:id])
 
     gc.transaction do

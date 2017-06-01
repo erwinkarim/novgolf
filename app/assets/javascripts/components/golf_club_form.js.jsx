@@ -193,19 +193,33 @@ var CourseListingForm = React.createClass({
   }
 });
 
+// TODO: figure out how to to do 2nd time ordering from a single flight matrix
 var FlightScheduleControl = React.createClass({
   propTypes: {
       flightTimes: React.PropTypes.array
   },
   getInitialState: function(){
-      return {flightTime:"", startTime:"07:00", endTime:"09:00", interval:8}
+      return {startTime:"07:00", endTime:"09:00", interval:8, courseDurationIndex:1, courseDurations:[1.5,2,2.5,3]};
   },
   componentDidMount: function(){
     $(this.refs.teeTimeInput).timepicker({ minTime:"05:00", maxTime:"23:00", timeFormat:"h:ia"});
     $(this.refs.teeTimeInput).on('changeTime', this.updateFlightTime);
   },
-  updateFlightTime: function(e){
-    this.setState({flightTime:e.target.value});
+  updateValue: function(e){
+    var newValue=""
+    switch (e.target.dataset.target) {
+      case "interval":
+        newValue=parseInt(e.target.value);
+        break;
+      case "courseDurationIndex":
+        newValue=parseInt(e.target.value);
+        break;
+      default:
+        newValue=e.target.value;
+    };
+
+    var newTuple={[e.target.dataset.target]:newValue};
+    this.setState(newTuple);
   },
   updateStartTime: function(e){
     this.setState({startTime:e.target.value});
@@ -220,18 +234,63 @@ var FlightScheduleControl = React.createClass({
     return (
       <div>
         <div className="card mb-2">
-          <div className="card-block btn-toolbar flex-wrap">{ this.props.flightTimes.map( (e,i) =>
-            <div className="btn-group mb-2 mr-2" key={i}>
-              <input type="hidden" name={"flight[" + this.props.random_id + "][times][]"} value={e} />
-              <div className="btn btn-secondary">{e}</div>
-              <button className="btn btn-secondary"
-                type="button"
-                onClick={this.props.deleteTeeTime} data-index-schedule={this.props.scheduleIndex} data-index-time={i}
-                disabled={this.props.flightTimes.length == 1} >
-                <i className="fa fa-close" data-index-schedule={this.props.scheduleIndex} data-index-time={i}></i>
-              </button>
-            </div>
-          ) }</div>
+          <div className="card-block btn-toolbar flex-wrap">{ this.props.flightTimes.map( (e,i) => {
+            var random_id = randomID();
+            return (
+              <div className="btn-group mb-2 mr-2" key={i}>
+                <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][tee_time]`} value={e.tee_time} />
+                <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][second_tee_time]`} value={e.second_tee_time} />
+                <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][flight_order]`} value={e.flight_order} />
+                <div className={`btn btn-secondary`}>{e.tee_time}</div>
+                <div className={`btn btn-info`}>{e.second_tee_time}</div>
+                <button className={`btn btn-secondary`}
+                  type="button"
+                  onClick={this.props.deleteTeeTime}
+                  data-index-schedule={this.props.scheduleIndex} data-index-time={i} data-flight-order={e.flight_order}
+                  disabled={this.props.flightTimes.length == 1} >
+                  <i className="fa fa-close" data-index-schedule={this.props.scheduleIndex} data-index-time={i}></i>
+                </button>
+              </div>
+            )
+          } )}</div>
+        </div>
+        <div className="form-group row">
+          <label className="col-4 col-form-label">Start Time:</label>
+          <label className="col-4 col-form-label">End Time:</label>
+          <label className="col-4 col-form-label">Interval (Minutes)</label>
+        </div>
+        <div className="form-group row">
+          <div className="col-4">
+            <input type="time" className="form-control"
+              data-target="startTime" value={this.state.startTime} onChange={this.updateValue}
+              placeholder="HH:mm AM/PM" />
+          </div>
+          <div className="col-4">
+            <input type="time" className="form-control"
+              data-target="endTime" value={this.state.endTime} onChange={this.updateValue}
+              placeholder="HH:mm AM/PM"/>
+          </div>
+          <div className="col-4">
+            <select className="form-control"
+              data-target="interval" value={this.state.interval} onChange={this.updateValue}>{
+              arrayFromRange(4,20).map( (e,i) => {
+                return (<option key={i} value={e}>{e}</option>)
+              })
+            }</select>
+          </div>
+        </div>
+        <div className="form-group row">
+          <label className="col-4 col-form-label">Course Duration:</label>
+        </div>
+        <div className="form-group row">
+          <div className="col-4">
+            <select className="form-control" onChange={this.updateValue} data-target="courseDurationIndex"
+              value={this.state.courseDurationIndex}>{this.state.courseDurations.map((e,i)=>{
+                return (<option key={i} value={i}>{e}</option>)
+              })}
+            </select>
+          </div>
+          <label className="col-4 col-form-label">Hours</label>
         </div>
         <div className="form-group row">
           <label className="col-4 col-form-label">Start Time:</label>
@@ -260,7 +319,8 @@ var FlightScheduleControl = React.createClass({
         <button type="button" className="btn btn-success" onClick={this.props.generateTeeTime}
           disabled={this.state.startTime == "" || this.state.endTime == ""}
           data-index-schedule={this.props.scheduleIndex} data-start-time={this.state.startTime} data-end-time={this.state.endTime}
-          data-interval={this.state.interval}>
+          data-interval={this.state.interval} data-typical-duration={this.state.courseDurations[this.state.courseDurationIndex]}>
+
           Generate!
         </button>
       </div>
@@ -519,7 +579,7 @@ var FlightSchedulePriceCard = React.createClass({
         </div>
         <div className="card-block" ref="cardSummary">
           <p className="card-text">Tee Days: { daysNames.slice(1).map( (e,i) => (<span key={i}>{ this.props.flightSchedule.flight_matrices[0][`day${i+1}`] == 1 ? `${e}; ` : ""}</span>) )}</p>
-          <p className="card-text">Tee Times: { this.props.teeTimes.map( (e,i) => (<span key={i}>{e}; </span>)) }</p>
+          <p className="card-text">Tee Times: { this.props.teeTimes.map( (e,i) => (<span key={i}>{e.tee_time}; </span>)) } - Click drop-down for second flight tee times</p>
           <p className="card-text">Prices:
             <span>{ toCurrency(this.props.flightSchedule.charge_schedule.session_price)} / </span>
             <span>{ toCurrency(this.props.flightSchedule.charge_schedule.cart)} / </span>
@@ -539,6 +599,7 @@ var FlightBox = React.createClass({
   },
   getInitialState: function(){
     //zeroized the flightSchedules.id if it's null
+    var handle = this;
     var newFlightSchedules = this.props.flightSchedules;
 
     newFlightSchedules = newFlightSchedules.map((e,i) => {
@@ -551,7 +612,8 @@ var FlightBox = React.createClass({
 
     return {
         flightSchedules:this.props.flightSchedules,
-        teeTimes:this.props.flightSchedules.map( (e,i) => e.flight_matrices.map( (e2,i2) => e2.tee_time) )
+        //teeTimes:this.props.flightSchedules.map( (e,i) => e.flight_matrices.map( (e2,i2) => {return [e2.tee_time, e2.flight_order] }))
+        teeTimes:this.props.flightSchedules.map( (e,i)=> e.flight_matrices)
     };
   },
   newSchedule: function(e){
@@ -610,12 +672,77 @@ var FlightBox = React.createClass({
     this.setState({teeTimes:newTeeTimes});
   },
   deleteTeeTime: function(e){
-    //delete tee times
-    if(this.state.teeTimes.length > 1){
-      var newTeeTimes = this.state.teeTimes;
-      newTeeTimes[e.target.dataset.indexSchedule].splice(e.target.dataset.indexTime, 1);
-      this.setState({teeTimes:newTeeTimes});
+    //don't delete anything if there's on 1 left
+    if(this.state.teeTimes[e.target.dataset.indexSchedule].length <= 1){
+      return;
     }
+
+    //delete tee times
+    var indexTime = parseInt(e.target.dataset.indexTime);
+    var newTeeTimes = this.state.teeTimes;
+    var selectedTeeTimes = newTeeTimes[e.target.dataset.indexSchedule];
+    selectedTeeTimes.splice(indexTime,1);
+    this.setState({teeTimes:newTeeTimes});
+  },
+  generateTeeTime: function(e){
+    var newTeeTimes = this.state.teeTimes;
+    var newTeeTimesArray = [];
+
+    //inset the first one
+    var currentTime = new Date();
+    var endTime = new Date();
+    var typicalCourseDuration = 0.0;
+
+    //setup the time
+    currentTime.setHours(e.target.dataset.startTime.split(":")[0]);
+    currentTime.setMinutes(e.target.dataset.startTime.split(":")[1]);
+    currentTime.setSeconds(0);
+    endTime.setHours(e.target.dataset.endTime.split(":")[0]);
+    endTime.setMinutes(e.target.dataset.endTime.split(":")[1]);
+    endTime.setSeconds(0);
+
+    //2nd tee time
+    var secondTeeTime = new Date(currentTime.getTime()
+        + 1000*60*60*parseFloat(e.target.dataset.typicalDuration)
+        + 1000*60*parseInt(e.target.dataset.interval));
+
+    //sanity check: ensure that currentTime + typicalCourseDuration > endTime
+    var projectedEndTime = new Date(currentTime.getTime() + 1000*60*60*e.target.dataset.typicalDuration);
+    if(projectedEndTime.getTime() < endTime.getTime()){
+      $.snackbar({content:'Projected time to complete course is less than the last flight time', style:'error'});
+      return;
+    }
+
+    //sanity check: startTime must be before endTime
+    if(currentTime.getTime() > endTime.getTime()){
+      $.snackbar({content:'Start Time must be earlier than End Time', style:'error'});
+      return;
+    };
+
+    //sanityf check: start and end times must be valid between 0500 and 2100
+    if(currentTime.getHours() < 5 || endTime.getHours < 5){
+      $.snackbar({content:'Time must set at least 5:00am', style:'error'});
+    };
+    if(currentTime.getHours() > 21 || endTime.getHours > 21){
+      $.snackbar({content:'Time must set before 9:00pm', style:'error'});
+    };
+
+    //push the times into array
+    while(currentTime.getTime() <= endTime.getTime()){
+      //newTeeTimesArray.push([currentTime.toTimeString().substring(0,5), 0 ]);
+      newTeeTimesArray.push({tee_time:currentTime.toTimeString().substring(0,5),
+        second_tee_time:secondTeeTime.toTimeString().substring(0,5),
+        flight_order:0 });
+
+      currentTime = new Date(currentTime.getTime() + 1000*60*parseInt(e.target.dataset.interval));
+      secondTeeTime = new Date(secondTeeTime.getTime() + 1000*60*parseInt(e.target.dataset.interval));
+    }
+
+    newTeeTimes[e.target.dataset.indexSchedule] = newTeeTimesArray;
+    this.setState({teeTimes:newTeeTimes});
+
+
+
   },
   generateTeeTime: function(e){
     var newTeeTimes = this.state.teeTimes;

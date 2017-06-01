@@ -7,11 +7,13 @@ class UserReservation < ActiveRecord::Base
   belongs_to :golf_club
   belongs_to :flight_matrix
   belongs_to :course_listing
+  belongs_to :second_course_listing, class_name:"CourseListing"
 
   has_one :review, as: :topic
   belongs_to :contact, polymorphic: true
   has_many :ur_member_details, dependent: :destroy
   has_many :ur_transactions, dependent: :destroy
+
 
   #each club id should have a unique booking date and time
   #  and unique course #
@@ -37,6 +39,7 @@ class UserReservation < ActiveRecord::Base
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,
     :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed, :reservation_failed, :requires_members_verification]
   enum reserve_method: [:online, :dashboard]
+  enum course_selection_method: [:auto, :manual]
 
   after_initialize :init
 
@@ -195,6 +198,11 @@ class UserReservation < ActiveRecord::Base
         count_member:flight_info[:member],
         count_caddy:flight_info[:caddy], count_insurance:flight_info[:insurance]})
 
+      #update course selection
+      self.update_attributes({
+        course_listing_id:flight_info[:first_course_id], second_course_listing_id:flight_info[:second_course_id]
+      })
+
       #update member info, if there's members
       if flight_info.has_key? :members then
         unless flight_info[:members].nil? then
@@ -240,7 +248,8 @@ class UserReservation < ActiveRecord::Base
   #includes the sanity checks, etc...
   # flight_info must be format {:pax, :caddy, :buggy, :insurance}, ie- count, everything else will be calculated
   def self.create_reservation flight_matrix_id, user_id, booked_date = Date.today, flight_info = {}, options = {}
-    default_options = { reserve_method:UserReservation.reserve_methods[:online] }
+    default_options = { reserve_method:UserReservation.reserve_methods[:online],
+      course_selection:self.course_selection_methods[:auto], course_selection_ids:[]}
 
     options = default_options.merge(options)
 
@@ -258,6 +267,7 @@ class UserReservation < ActiveRecord::Base
     club_id = cs.golf_club_id
     booking_date_clause = booked_date.class == String ? (Date.parse(booked_date).strftime("%Y-%m-%d")) : booked_date.strftime("%Y-%m-%d")
     booking_time_clause = fm.tee_time
+    second_bookting_time_clause = fm.second_tee_time
 
     # create the new user_reservation, with the correct flight_info and cost calculation
     ur = UserReservation.new
@@ -267,7 +277,7 @@ class UserReservation < ActiveRecord::Base
       ur = UserReservation.new(
         user_id:user_id, golf_club_id: cs.golf_club_id,
         flight_matrix_id:fm.id, charge_schedule_id:cs.id,
-        booking_date: booking_date_clause, booking_time: booking_time_clause,
+        booking_date: booking_date_clause, booking_time: booking_time_clause, second_booking_time:second_bookting_time_clause,
         count_pax:flight_info[:pax], count_caddy:flight_info[:caddy], count_buggy: flight_info[:buggy] , count_insurance:flight_info[:insurance],
           count_member:flight_info[:member],
         actual_pax:flight_info[:pax].to_i * cs.session_price, actual_caddy: flight_info[:caddy].to_i * cs.caddy,
@@ -281,19 +291,35 @@ class UserReservation < ActiveRecord::Base
         ur.assign_attributes({contact_id:user_id, contact_type:"User"})
       end
 
-      #find the free coursetime
-      #TODO, automatically use the first free course or set the course
-      first_course_id = (club.course_listings.map{ |x| x.id } -
-        UserReservation.where.has{
-          (golf_club_id == club_id) &
-          (booking_date == booking_date_clause) &
-          (booking_time == booking_time_clause) &
-          (status.not_in [4,5,6])
-        }.map{|x| x.course_listing_id }).first
-      ur.assign_attributes({course_listing_id:first_course_id})
-      Rails.logger.info "new course id = #{first_course_id}"
+      if options[:course_selection] == self.course_selection_methods[:auto] then
+        # auto => automatically find the first available courses
+        #find the free coursetime
+        first_course_id = (club.course_listings.map{ |x| x.id } -
+          UserReservation.where.has{
+            (golf_club_id == club_id) &
+            (booking_date == booking_date_clause) &
+            (booking_time == booking_time_clause) &
+            (status.not_in [4,5,6])
+          }.map{|x| x.course_listing_id }).first
+        second_course_id = (club.course_listings.map{ |x| x.id } -
+          UserReservation.where.has{
+            (golf_club_id == club_id) &
+            (booking_date == booking_date_clause) &
+            (booking_time == booking_time_clause) &
+            (status.not_in [4,5,6])
+          }.map{|x| x.second_course_listing_id }).first
+        ur.assign_attributes({course_listing_id:first_course_id, second_course_listing_id:second_course_id})
+        #Rails.logger.info "new course id = #{first_course_id}"
+      else
+        # set the course selection manually
+        ur.assign_attributes({
+          course_listing_id: options[:course_selection_ids][0],
+          second_course_listing_id: options[:course_selection_ids][1]
+        })
+      end
 
       ur.save!
+      Rails.logger.info "Error messages when creating reservation; #{ur.errors.messages}"
       ur.reservation_created!
     end
     ur
@@ -407,6 +433,15 @@ class UserReservation < ActiveRecord::Base
     end
 
     final_tranxs
+  end
+
+  #first booking and course_listing
+  def first_booking_time
+    self.booking_time
+  end
+
+  def first_course_listing
+    self.course_listing
   end
 
   private

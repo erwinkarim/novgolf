@@ -2,7 +2,7 @@ class FlightMatrix < ActiveRecord::Base
   belongs_to :flight_schedule
   has_many :user_reservations
   has_one :user_reservation, -> (booking_date){ where("user_reservations.booking_date in ?", booking_date) }
-  validates_presence_of :flight_schedule_id, :tee_time
+  validates_presence_of :flight_schedule_id, :tee_time, :flight_order
 
   # each tee time is unique to flight schedule
   validates :tee_time, :uniqueness => { :scope => [:flight_schedule_id] }
@@ -22,6 +22,7 @@ class FlightMatrix < ActiveRecord::Base
     self.day4 ||= 1
     self.day5 ||= 1
     self.tee_time ||= "07:00am"
+    self.flight_order ||= 0
 
     self.start_active_at ||= DateTime.parse("01-01-2017")
     self.end_active_at ||= DateTime.parse("01-01-3017")

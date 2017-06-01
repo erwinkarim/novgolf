@@ -19,6 +19,7 @@ class flightFunctions {
       * will update the insurnace count to member + pax if the insurance is inclusive
       * return the updated flightInfo
     */
+    //console.log(e.target.dataset.target, e.target.value);
     flightInfo[e.target.dataset.target] = parseInt(e.target.value);
 
     if(e.target.dataset.target == "pax" || e.target.dataset.target == "member"){
@@ -52,9 +53,9 @@ class flightFunctions {
 
       //push empty members data if members.length < member
       if('members' in flightInfo && flightInfo.member > flightInfo.members.length){
-        console.log("pushing dummy into members");
+        //console.log("pushing dummy into members");
         for(var n of arrayFromRange(flightInfo.members.length + 1, flightInfo.member)){
-          flightInfo.members.push({name:'', id:''});
+          flightInfo.members.push({name:'AutoName', member_id:'AutoID'});
         };
       };
 
@@ -96,6 +97,19 @@ class flightFunctions {
     return {total:newTotalPrice, tax: newTax, grand_total:newTax + newTotalPrice};
 
   }
+  static reserveColor(status){
+    //return the reserve color
+    var reserve_status = "secondary"
+    switch ( status ){
+      case 1: reserve_status = "warning"; break;
+      case 2: reserve_status = "danger"; break;
+      case 3: reserve_status = "danger"; break;
+      case 8: reserve_status = "info"; break;
+      default: true;
+    }
+
+    return reserve_status;
+  }
 };
 
 var GolfCardTimes = React.createClass({
@@ -118,23 +132,17 @@ var GolfCardTimes = React.createClass({
     var clickFn = null;
     if(this.props.adminMode){
       //admin mode - disable disabled
-      switch ( this.props.flight.course_data.status ){
-        case 1: reserve_status = "warning"; break;
-        case 2: reserve_status = "danger"; break;
-        case 3: reserve_status = "danger"; break;
-        case 8: reserve_status = "info"; break;
-        default: true;
-      }
+      reserve_status = flightFunctions.reserveColor(this.props.flight.course_data.status);
       clickFn = this.props.handleClick;
     } else {
       //normal mode
-      switch ( this.props.flight.course_data.status ){
-        case 1: reserve_status = "warning disabled"; break;
-        case 8: reserve_status = "info disabled"; break;
-        case 2: reserve_status = "danger disabled"; break; //payment_confirmed
-        case 3: reserve_status = "danger disabled"; break; //reservation_confirmed - confirmed by club, not payment not confirmed
-        default: clickFn = this.props.handleClick;
-      };
+      reserve_status = flightFunctions.reserveColor(this.props.flight.course_data.status);
+      if(reserve_status == "secondary"){
+        clickFn = this.props.handleClick;
+      } else {
+        reserve_status = reserve_status + " disabled";
+      }
+
     }
 
     //show the prices
@@ -148,12 +156,9 @@ var GolfCardTimes = React.createClass({
     var courseIndicator = ("courses" in this.props.flight.course_data) ? (
       this.props.flight.course_data.courses.map( (e,i) => {
         var indicatorClass = null;
-        switch (e.reservation_status) {
-          case 1: indicatorClass = "warning"; break;
-          case 2: indicatorClass = "danger"; break;
-          case 3: indicatorClass = "danger"; break;
-          case 8: indicatorClass = "info"; break;
-          default: indicatorClass = null;
+        indicatorClass = flightFunctions.reserveColor(e.reservation_status);
+        if(indicatorClass == "secondary"){
+          indicatorClass = null;
         }
         var result = indicatorClass == null ? null : (
           <i key={i} className={`text-${indicatorClass} fa fa-circle`}
@@ -231,6 +236,113 @@ var GolfCardTimesGroup = React.createClass({
   }
 });
 
+var CourseSelection = React.createClass({
+  propTypes: {
+    courses:React.PropTypes.array,
+    flightInfo:React.PropTypes.object,
+    adminMode:React.PropTypes.bool,
+    updatePrice: React.PropTypes.func,
+    selectedCourse: React.PropTypes.number
+  },
+  getDefaultProps: ()=>{
+    return {adminMode:false, updatePrice:()=>{return null;}, selectedCourse:0}
+  },
+  render: function(){
+    //return just the hidden input if there's only 1 course
+    if(this.props.courses.length == 1){
+      return (
+        <div>
+          <input type="hidden" name={`flight[${this.props.flightInfo.id}][courses][first_course]`} value={this.props.courses[0].id} />
+          <input type="hidden" name={`flight[${this.props.flightInfo.id}][courses][second_course]`} value={this.props.courses[0].id} />
+        </div>
+      );
+    }
+
+    var handle = this;
+    //if adminMode == true, it will only highlight the courses that is being used
+    // by the highlighted reservation in the dashboard
+
+    return (
+      <div>
+        <hr />
+        {["first","second"].map( (course_name,course_index) => {
+          // the course selection. will select first available course
+          //  when in admin mode, only show if the current selected course is not null
+          var selectedReservationId = this.props.courses[this.props.selectedCourse].first_reservation_id;
+
+          var firstAvailableIndex = handle.props.courses.findIndex((e) => {
+            return e[`${course_name}_reservation_id`] == null;
+          });
+          if(this.props.adminMode && selectedReservationId != null){
+            firstAvailableIndex = -1;
+          };
+
+          var tee_time = course_name == "first" ?
+            handle.props.flightInfo.teeTime :
+            handle.props.flightInfo.second_tee_time;
+
+          return (
+            <div key={course_index} className="form-group row mb-1">
+              <label className="col-12">{`${toTitleCase(course_name)} course (${tee_time}):`}</label>
+              <div className="col-12">
+                <div className="btn-group flex-wrap" data-toggle="buttons" ref={(input)=>{this[`${course_name}_btn_group`] = input;}}>
+                  {
+                    handle.props.courses.map((e,i) => {
+                      var course_status = "secondary"
+                      var disable_course = false;
+                      if(handle.props.adminMode){
+                        /*
+                          if selectedReservationId is not null, highlight the courses that is being selected
+                          if selectedReservationId is null, highlight the selected course for the first
+                            and first available course for the second
+                          if in admin mode, only show the status of courses that is being selected
+                        */
+                        if(e[`${course_name}_reservation_id`] == null){
+                          if(course_name=="first"){
+                            firstAvailableIndex = handle.props.selectedCourse;
+                          }
+                        } else {
+                          //disable the course if the course has been occupied
+                          course_status = course_status + " disabled";
+                          disable_course = true;
+
+                          //highlight the selected course if matches
+                          if(e[`${course_name}_reservation_id`] == selectedReservationId){
+                            course_status = flightFunctions.reserveColor(e[`${course_name}_reservation_status`]);
+                          };
+                        }
+                      } else {
+                        course_status = flightFunctions.reserveColor(e[`${course_name}_reservation_status`]);
+                        if(course_status != "secondary"){
+                          course_status = course_status + " disabled";
+                          disable_course = true;
+                        }
+                      };
+
+                      return (
+                        <label key={i} className={`btn btn-${course_status} ${i==firstAvailableIndex ? 'active' : ''}`}
+                          onClick={this.props.updatePrice}
+                          data-value={e.id} data-index={handle.props.flightInfo.index} data-target={`${course_name}_course_id`}
+                          value={e.id}
+                        >
+                          <input type="radio" name={`flight[${handle.props.flightInfo.id}][courses][${course_name}_course]`}
+                            disabled={disable_course} value={e.id} defaultChecked={i==firstAvailableIndex} />
+                          {e.name}
+                        </label>
+                      );
+                    })
+                  }
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+
+  }
+});
+
 //content of each tab to show how many balls, insurance, etc being choosen for each flight
 var ReserveFormPage = React.createClass({
   propTypes: {
@@ -243,11 +355,13 @@ var ReserveFormPage = React.createClass({
   },
   getInitialState: function(){
     return {
-      random_id:randomID()
+      random_id:randomID(),
+      courseSelectionAdminMode:React.PropTypes.bool
     };
   },
   getDefaultProps: function(){
-    return { options: golfCardDefaultOptions, displayAs:'card', taxSchedule:{rate:0.06}};
+    return { options: golfCardDefaultOptions, displayAs:'card', taxSchedule:{rate:0.06}, courseSelectionAdminMode:false};
+
   },
   rawNote: function(){
     md = new Remarkable();
@@ -266,10 +380,6 @@ var ReserveFormPage = React.createClass({
   render: function(){
     var activeClass = (this.props.isActive) ? "active" : "";
 
-    var membersLink = (this.props.options.displayMembersModal) ? (
-      <a href="#membersModal" data-toggle="modal"> x Members </a>
-    ) : " x Members";
-
     var notesContent = (
       <div>
         <p className="mb-0">
@@ -284,106 +394,100 @@ var ReserveFormPage = React.createClass({
           <p>Club T&C applies</p>
         </div>
       </div>
-
     );
+
+    var formContentRow = [
+      {caption:'Non-Members', value:'pax', price:'flight'},
+      {caption:'Members', value:'member', price:'member'},
+      {caption:'Buggy', value:'buggy', price:'cart'},
+      {caption:'Caddy', value:'caddy', price:'caddy'},
+      {caption:'Insurance', value:'insurance', price:'insurance'},
+    ]
 
     var formContent = (
       <div className="w-100">
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][matrix_id]"} value={this.props.flight.matrix_id} />
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][tee_time]"} value={this.props.flightInfo.teeTime} />
+        <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][second_tee_time]"} value={this.props.flightInfo.second_tee_time} />
+        { formContentRow.map( (formContentElm, formContentIndex)=> {
+          //for member max count is same as maxPax
+          var bottomRange = 0;
+          var topRange = 0;
+          switch (formContentElm.value) {
+            case "pax":
+            case "member":
+              topRange = this.props.flight.maxPax;
+              break;
+            case "buggy":
+              bottomRange = this.props.flight.minCart;
+              topRange = this.props.flight.maxCart;
+              break;
+            case "insurance":
+              bottomRange = $.inArray(this.props.flight.prices.insurance_mode, [1,2]) != -1 ? this.props.flight.minPax : 0;
+              topRange = this.props.flight.maxPax;
+              break;
+            default:
+              bottomRange = this.props.flight[`min${toTitleCase(formContentElm.value)}`];
+              topRange = this.props.flight[`max${toTitleCase(formContentElm.value)}`];
+          };
+
+          //for member, there's a link to members details
+          var captionDisplay = ` x ${formContentElm.caption}`;
+          if(formContentElm.value == "member"){
+            captionDisplay = (this.props.options.displayMembersModal) ? (
+              <a href="#membersModal" data-toggle="modal"> x Members</a>
+            ) : " x Members";
+          };
+
+          //disable the select dropdown, mostly for insurnace
+          var disabledSelect = (formContentElm.value == "insurance") ?
+            (this.props.flight.prices.insurance_mode == 0 ? false : true) :
+            false;
+
+          //record insurance count covertly if the insurance mode is not optional
+          var hiddenInsuranceCount = null;
+          if(formContentElm.value == "insurance" && this.props.flight.prices.insurance_mode != 0){
+            hiddenInsuranceCount = (
+              <input type="hidden" name={`flight[${this.props.flightInfo.id}][count][${formContentElm.value}]`}
+                value={this.props.flightInfo[formContentElm.value]}/>
+            )
+          }
+
+          //set the pricing to zero for members field
+          var elmPrice = this.props.flightInfo[formContentElm.value] * parseFloat(this.props.flight.prices[formContentElm.price]);
+          if(formContentElm.value == "member"){ elmPrice = 0; }
+
+          return (
+            <div key={formContentIndex} className="form-group row mb-1">
+              <input type="hidden" value={elmPrice} name={`flight[${this.props.flightInfo.id}][price][${formContentElm.value}]`} />
+              { hiddenInsuranceCount }
+              <div className="col-2">
+                <select name={`flight[${this.props.flightInfo.id}][count][${formContentElm.value}]` } disabled={ disabledSelect}
+                  onChange={this.props.updatePrice} value={this.props.flightInfo[formContentElm.value]}
+                  data-index={this.props.flightInfo.index} data-target={formContentElm.value}>
+                  { arrayFromRange(bottomRange, topRange).map( (e,i) => <option key={i}>{e}</option> )}
+                </select>
+              </div>
+              <label className="col-5">{captionDisplay}</label>
+              <label className="col-5">{toCurrency(elmPrice)} </label>
+            </div>
+
+          );
+        })}
         <div className="form-group row mb-1">
-          <div className="col-2">
-            <select name={ "flight[" + this.props.flightInfo.id + "][count][pax]"}
-              onChange={this.props.updatePrice}
-              value={this.props.flightInfo.pax} ref="paxCount" className=""
-              data-index={this.props.flightInfo.index} data-target="pax">
-            { arrayFromRange(0, this.props.flight.maxPax).map( (e,i) =>
-              <option key={i}>{e}</option>
-            )}</select>
-          </div>
-          <label className="col-5"> x Non-Member </label>
-          <label className="col-5">
-            {toCurrency(this.props.flightInfo.pax * parseFloat(this.props.flight.prices.flight) )}
-          </label>
-          <input type="hidden" value={this.props.flightInfo.pax*parseFloat(this.props.flight.prices.flight)}
-            name={"flight[" + this.props.flightInfo.id + "][price][pax]"} />
-        </div>
-        <div className="form-group row mb-1">
-          <div className="col-2">
-            <select name={ "flight[" + this.props.flightInfo.id + "][count][member]"}
-              onChange={this.props.updatePrice}
-              value={this.props.flightInfo.member} ref="memberCount" className=""
-              data-index={this.props.flightInfo.index} data-target="member">
-            { arrayFromRange(0, this.props.flight.maxPax).map( (e,i) =>
-              <option key={i}>{e}</option>
-            )}</select>
-          </div>
-          <label className="col-5">{ membersLink }</label>
-          <label className="col-5">RM 0.00 </label>
-          <input type="hidden" value="0" name={"flight[" + this.props.flightInfo.id + "][price][member]"} />
-        </div>
-        <div className="form-group row mb-1">
-          <div className="col-2">
-            <select name={ "flight[" + this.props.flightInfo.id  + "][count][buggy]"}
-              onChange={this.props.updatePrice}
-              value={this.props.flightInfo.buggy} ref="buggyCount" className=""
-              data-index={this.props.flightInfo.index} data-target="buggy">
-            { arrayFromRange(this.props.flight.minCart, this.props.flight.maxCart).map( (e,i) =>
-              <option key={i}>{e}</option>
-            )}</select>
-          </div>
-          <label className="col-5"> x Buggy </label>
-          <label className="col-5">
-            {toCurrency(this.props.flightInfo.buggy * parseFloat(this.props.flight.prices.cart) )}
-          </label>
-          <input type="hidden" value={this.props.flightInfo.buggy * parseFloat(this.props.flight.prices.cart) }
-            name={"flight[" + this.props.flightInfo.id + "][price][cart]"} />
-        </div>
-        <div className="form-group row mb-1">
-          <div className="col-2">
-            <select name={"flight[" + this.props.flightInfo.id + "][count][caddy]"} className=""
-                onChange={this.props.updatePrice}
-                value={this.props.flightInfo.caddy} ref="caddyCount"
-                data-index={this.props.flightInfo.index} data-target="caddy">
-              { arrayFromRange(this.props.flight.minCaddy, this.props.flight.maxCaddy).map( (e,i) =>
-                <option key={e}>{e}</option>
-            )}</select>
-          </div>
-          <label className="col-5"> x Caddy</label>
-          <label className="col-5">
-            {toCurrency(this.props.flightInfo.caddy * parseFloat(this.props.flight.prices.caddy) )}
-          </label>
-          <input type="hidden" value={this.props.flightInfo.caddy * parseFloat(this.props.flight.prices.caddy) }
-            name={"flight[" + this.props.flightInfo.id + "][price][caddy]"} />
-        </div>
-        <div className="form-group row mb-1">
-          <div className="col-2">
-            <select name={"flight[" + this.props.flightInfo.id + "][count][insurance]"} className=""
-              onChange={this.props.updatePrice}
-              value={this.props.flightInfo.insurance} ref="insuranceCount"
-              disabled={ this.props.flight.prices.insurance_mode == 0 ? false : true }
-              data-index={this.props.flightInfo.index} data-target="insurance">
-            { arrayFromRange($.inArray(this.props.flight.prices.insurance_mode, [1,2]) != -1 ? this.props.flight.minPax : 0, this.props.flight.maxPax ).map( (e,i) =>
-                <option key={e}>{e}</option>
-            )}</select>
-            <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][count][insurance]"} value={this.props.flightInfo.insurance} />
-          </div>
-          <label className="col-5"> x Insurance</label>
-          <label className="col-5">
-            {toCurrency(this.props.flightInfo.insurance * parseFloat(this.props.flight.prices.insurance) )}
-          </label>
-          <input type="hidden" value={this.props.flightInfo.insurance * parseFloat(this.props.flight.prices.insurance) }
-            name={"flight[" + this.props.flightInfo.id + "][price][insurance]"} />
-        </div>
-        <div className="form-group row mb-1">
-          <label className="col-5 offset-2">Tax</label>
-          <label className="col-5">
-            {toCurrency(this.tax_amount())}
-          </label>
-        </div>
+           <label className="col-5 offset-2">Tax</label>
+           <label className="col-5">
+             {toCurrency(this.tax_amount())}
+           </label>
+         </div>
+        <CourseSelection courses={this.props.flight.course_data.courses}
+          flightInfo={this.props.flightInfo} selectedCourse={this.props.selectedCourse}
+          adminMode={this.props.courseSelectionAdminMode} updatePrice={this.props.updatePrice}/>
+
       </div>
     );
 
+    //display as a card or a list group items
     return this.props.displayAs == 'card' ? (
       <div className={`tab-pane card ${activeClass}`} id={`flight-tab-${this.props.flightInfo.id}`} >
         <div className="card-header text-right" style={ {color:'black'}}>
@@ -501,12 +605,18 @@ var GolfReserveForm = React.createClass({
         newTeeTimes.sort();
         newIndex = $.inArray(value, newTeeTimes);
 
-        var fi = Object.assign({}, this.state.defaultFlightInfo);
+        //var fi = Object.assign({}, this.state.defaultFlightInfo);
+        var fi = Object.assign({}, FLIGHT_INFO_DEFAULTS);
         Object.assign( fi,
           {
-            id:randomID(), teeTime:this.props.flights[value].tee_time, index:newIndex, flightIndex:value,
-            pax:this.props.flights[value].minPax, insurance:this.props.flights[value].minPax,
-              buggy:this.props.flights[value].minCart, caddy:this.props.flights[value].minCaddy
+            id:randomID(),
+            teeTime:this.props.flights[value].tee_time,
+            second_tee_time:this.props.flights[value].second_tee_time,
+            index:newIndex, flightIndex:value,
+            pax:this.props.flights[value].minPax,
+            insurance:this.props.flights[value].minPax,
+            buggy:this.props.flights[value].minCart,
+            caddy:this.props.flights[value].minCaddy
           }
         );
         newFlightInfo.splice($.inArray(value, newTeeTimes), 0, fi ) ;
