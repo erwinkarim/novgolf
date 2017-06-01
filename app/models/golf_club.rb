@@ -97,6 +97,8 @@ class GolfClub < ActiveRecord::Base
 
     # todo: remove clubs that is fully booked in the time period
     #get current reservations, excluding failed/canceled attempts
+    Rails.logger.info "queryDateTime = #{options[:dateTimeQuery]}"
+
     tr = UserReservation.where(:booking_date => options[:dateTimeQuery].to_date).where(:status => [0,1,2,3,8]).to_sql
     #load the data model
     rel = self.joining{

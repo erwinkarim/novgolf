@@ -435,7 +435,6 @@ class UserReservation < ActiveRecord::Base
     final_tranxs
   end
 
-
   #first booking and course_listing
   def first_booking_time
     self.booking_time

@@ -142,6 +142,7 @@ var GolfCardTimes = React.createClass({
       } else {
         reserve_status = reserve_status + " disabled";
       }
+
     }
 
     //show the prices
@@ -360,6 +361,7 @@ var ReserveFormPage = React.createClass({
   },
   getDefaultProps: function(){
     return { options: golfCardDefaultOptions, displayAs:'card', taxSchedule:{rate:0.06}, courseSelectionAdminMode:false};
+
   },
   rawNote: function(){
     md = new Remarkable();
@@ -481,6 +483,7 @@ var ReserveFormPage = React.createClass({
         <CourseSelection courses={this.props.flight.course_data.courses}
           flightInfo={this.props.flightInfo} selectedCourse={this.props.selectedCourse}
           adminMode={this.props.courseSelectionAdminMode} updatePrice={this.props.updatePrice}/>
+
       </div>
     );
 

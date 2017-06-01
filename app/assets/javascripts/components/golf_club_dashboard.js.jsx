@@ -1,3 +1,11 @@
+let FLIGHT_INFO_DEFAULTS = {
+      pax:0, member:0, buggy:0, caddy:0, insurance:0, tax:0.00, totalPrice:0.00, members:[], reserved_by:null,
+      ur_contact:null, reserve_method:0, reservation_id:null
+};
+let UR_CONTACT_DEFAULTS = {
+  id:"", contact_type:"UrContact", name:"", email:"", telephone:""
+};
+
 var GolfClubDashStatistics = React.createClass({
   propTypes:{
     flightsArray:React.PropTypes.array, days:React.PropTypes.array
@@ -137,6 +145,14 @@ var GolfClubDashStatus = React.createClass({
           );
         }
       }
+
+      courseInfo = (
+        <li className="list-group-item">
+          <GolfCoursesGroup
+            flight={flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}
+            reservation={this.props.flightInfo}/>
+        </li>
+      )
 
       courseInfo = (
         <li className="list-group-item">
@@ -634,6 +650,7 @@ var GolfCoursesGroup = React.createClass({
             <label className={`btn btn-${reserve_status} ${activeState}`} key={i} onClick={this.props.selectCourse}
               data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}
               data-target="first_course_id" data-value={e.id}>
+
               <input type="radio" name="courses" value={`course-${e.id}`}  />
               {e.name}
             </label>
@@ -764,6 +781,7 @@ var GolfClubDashboard = React.createClass({
             insurance:reserve.count_insurance, tax:reserve.actual_tax, totalPrice:reserve.total_price, members:reserve.ur_member_details,
             reserved_by:reserve.reserved_by, ur_contact: reserve.ur_contact, reserve_method:reserve.reserve_method, reservation_id:reserve.id,
             first_course_id:reserve.course_listing_id, second_course_id:reserve.second_course_listing_id
+
           });
         handle.setState({flightInfo:newFlightInfo});
       });
@@ -878,6 +896,7 @@ var GolfClubDashboard = React.createClass({
         first_course_id:flight.course_data.courses[0].id, second_course_id:flight.course_data.courses[0].id
       });
       //console.log("newFlightInfo", newFlightInfo);
+
       newFlightInfo = handle.updatePrice(newFlightInfo, flight);
 
       //setup the state
