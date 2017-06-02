@@ -44,6 +44,9 @@ Rails.application.routes.draw do
         get 'recreate_versions'
       end
     end
+    resources :billings, :only => [:index] do
+      #manage user billings
+    end
     resources :golf_clubs do
       get 'dashboard'
       get 'tax_schedule'
