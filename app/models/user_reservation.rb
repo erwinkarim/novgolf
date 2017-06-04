@@ -326,6 +326,7 @@ class UserReservation < ActiveRecord::Base
   end
 
   #generate the random user reservation complete with review
+  # TOOD, find a way to specify a date
   def self.generate_random_reservation user = User.random
     #get the club
     ids = GolfClub.all.limit(100).pluck(:id)
@@ -349,15 +350,17 @@ class UserReservation < ActiveRecord::Base
     taxation = (caddy_count*cs.caddy + buggy_count*cs.cart + flight_count*cs.session_price + flight_count*cs.insurance).to_f * club.tax_schedule.rate
     #get first course
     course_id = club.course_listings.first.id
+    second_course_id = club.course_listings.last.id
 
     reservation = user.user_reservations.new(
       flight_matrix_id:fm.id, golf_club_id:fs.golf_club_id,
       status: 0,
-      booking_date:proposed_date, booking_time: fm.tee_time,
+      booking_date:proposed_date,
+      booking_time: fm.tee_time, second_booking_time: fm.second_tee_time,
       actual_caddy:caddy_count*cs.caddy , actual_buggy:buggy_count*cs.cart ,
       actual_pax:flight_count*cs.session_price, actual_insurance:flight_count*cs.insurance ,
       actual_tax:taxation,
-      course_listing_id: course_id,
+      course_listing_id: course_id, second_course_listing_id: second_course_id,
       count_caddy:caddy_count, count_buggy:buggy_count, count_pax:flight_count , count_insurance:flight_count
     )
 
