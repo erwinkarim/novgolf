@@ -5,9 +5,16 @@
       %ol.breadcrumb
         %li.breadcrumb-item
           %a{href:admin_path} Admin Console
-        %li.breadcrumb-item.active Billings
+        %li.breadcrumb-item.active Billing
   .row
     .col-12
-      %h2 Golf Clubs
-    .col-12
-      %p Talk about monthly billings here
+      %h2 Billing
+    .col-4
+      .card
+        %ul.list-group.list-group-flush
+          %li.list-group-item
+            %a{href:admin_invoices_path} Invoices
+          %li.list-group-item
+            %a{href:settings_admin_billings_path} Settings
+    .col-8
+      %p Summary of billings here

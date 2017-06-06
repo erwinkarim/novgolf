@@ -45,6 +45,10 @@ Rails.application.routes.draw do
       end
     end
     resources :billings, :only => [:index] do
+      collection do
+        resources :invoices, :only => [:index, :show]
+        get 'settings'
+      end
       #manage user billings
     end
     resources :golf_clubs do

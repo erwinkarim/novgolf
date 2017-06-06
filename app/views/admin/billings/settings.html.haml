@@ -1,0 +1,27 @@
+- content_for(:head){ "Admin - Billing Settings"}
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:admin_path} Admin Console
+        %li.breadcrumb-item
+          %a{href:admin_billings_path} Billing
+        %li.breadcrumb-item.active Settings
+  .row
+    .col-12
+      %h2 Billing Settings
+    .col-12
+      %h3 Payment method
+      %hr
+      %form
+        .form-check
+          %label.form-check-label
+            %input.form-check-input{type:'radio', name:'payment_method',  value:'invoice', checked:true}
+            %strong Invoice
+            \- we will send you an invoice once a month
+        .form-check.disabled
+          %label.form-check-label
+            %input.form-check-input{type:'radio', name:'payment_method',  value:'cc_autopay', disabled:true}
+            %strong Credit Card Autopay
+            \- automatically deduct payment using your credit card

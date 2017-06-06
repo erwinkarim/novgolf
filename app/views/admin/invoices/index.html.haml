@@ -1,0 +1,15 @@
+- content_for(:head){ "Admin - Billings - Invoices"}
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:admin_path} Admin Console
+        %li.breadcrumb-item
+          %a{href:admin_billings_path} Billing
+        %li.breadcrumb-item.active Invoices
+  .row
+    .col-12
+      %h2 Invoices
+    .col-4
+      %p Show list of invoices here. Click to view individual invoice
