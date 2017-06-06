@@ -184,6 +184,10 @@ class UserReservation < ActiveRecord::Base
     actual_tax
   end
 
+  def jomgolf_share
+    self.total_price * NovGolf::PROVIDER_SHARE
+  end
+
   def booking_datetime
     #"#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"
     DateTime.parse "#{self.booking_date} #{self.booking_time.to_datetime.strftime('%H:%M')} +0000"

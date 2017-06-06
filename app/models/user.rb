@@ -15,6 +15,7 @@ class User < ActiveRecord::Base
   has_many :reviews
 
   has_one :billing_cycle
+  has_many :invoices
 
   has_one :profile_picture, class_name:"Photo", foreign_key: :id, primary_key: :profile_picture
   validates_presence_of :role
@@ -92,7 +93,7 @@ class User < ActiveRecord::Base
       return
     end
 
-    if self.golf_clubs.lenght == 0 then
+    if self.golf_clubs.length == 0 then
       raise "User don't own any clubs"
       return
     end
