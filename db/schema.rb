@@ -10,7 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170519083246) do
+ActiveRecord::Schema.define(version: 20170606034156) do
+
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
     t.string   "label"
@@ -26,6 +27,14 @@ ActiveRecord::Schema.define(version: 20170519083246) do
     t.datetime "updated_at",   null: false
     t.index ["amenity_id"], name: "index_amenity_lists_on_amenity_id", using: :btree
     t.index ["golf_club_id"], name: "index_amenity_lists_on_golf_club_id", using: :btree
+  end
+
+  create_table "billing_cycles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.integer  "user_id"
+    t.integer  "cycle"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_billing_cycles_on_user_id", using: :btree
   end
 
   create_table "charge_schedules", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -121,6 +130,14 @@ ActiveRecord::Schema.define(version: 20170519083246) do
     t.index ["user_id"], name: "index_golf_clubs_on_user_id", using: :btree
   end
 
+  create_table "invoices", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.integer  "user_id"
+    t.decimal  "total_billing", precision: 10, scale: 2
+    t.datetime "created_at",                             null: false
+    t.datetime "updated_at",                             null: false
+    t.index ["user_id"], name: "index_invoices_on_user_id", using: :btree
+  end
+
   create_table "line_item_listings", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.decimal  "rate",               precision: 10, scale: 2
     t.boolean  "taxed"
@@ -193,6 +210,17 @@ ActiveRecord::Schema.define(version: 20170519083246) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_ur_contacts_on_user_id", using: :btree
+  end
+
+  create_table "ur_invoices", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.integer  "user_reservation_id"
+    t.integer  "invoice_id"
+    t.decimal  "final_total",         precision: 10, scale: 2
+    t.integer  "billing_category"
+    t.datetime "created_at",                                   null: false
+    t.datetime "updated_at",                                   null: false
+    t.index ["invoice_id"], name: "index_ur_invoices_on_invoice_id", using: :btree
+    t.index ["user_reservation_id"], name: "index_ur_invoices_on_user_reservation_id", using: :btree
   end
 
   create_table "ur_member_details", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -294,6 +322,7 @@ ActiveRecord::Schema.define(version: 20170519083246) do
 
   add_foreign_key "amenity_lists", "amenities"
   add_foreign_key "amenity_lists", "golf_clubs"
+  add_foreign_key "billing_cycles", "users"
   add_foreign_key "charge_schedules", "flight_schedules"
   add_foreign_key "charge_schedules", "golf_clubs"
   add_foreign_key "course_listings", "course_statuses"
@@ -302,6 +331,7 @@ ActiveRecord::Schema.define(version: 20170519083246) do
   add_foreign_key "flight_schedules", "golf_clubs"
   add_foreign_key "golf_clubs", "tax_schedules"
   add_foreign_key "golf_clubs", "users"
+  add_foreign_key "invoices", "users"
   add_foreign_key "line_item_listings", "charge_schedules"
   add_foreign_key "line_item_listings", "line_items"
   add_foreign_key "line_items", "users"
@@ -310,6 +340,8 @@ ActiveRecord::Schema.define(version: 20170519083246) do
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"
   add_foreign_key "ur_contacts", "users"
+  add_foreign_key "ur_invoices", "invoices"
+  add_foreign_key "ur_invoices", "user_reservations"
   add_foreign_key "ur_member_details", "user_reservations"
   add_foreign_key "ur_transactions", "user_reservations"
   add_foreign_key "user_reservations", "charge_schedules"

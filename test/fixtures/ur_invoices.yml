@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user_reservation: one
+  invoice: one
+  final_total: 9.99
+  billing_category: 1
+
+two:
+  user_reservation: two
+  invoice: two
+  final_total: 9.99
+  billing_category: 1

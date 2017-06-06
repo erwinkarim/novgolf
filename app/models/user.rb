@@ -14,6 +14,8 @@ class User < ActiveRecord::Base
   has_many :photos, as: :imageable
   has_many :reviews
 
+  has_one :billing_cycle
+
   has_one :profile_picture, class_name:"Photo", foreign_key: :id, primary_key: :profile_picture
   validates_presence_of :role
   validates_presence_of :image_path
@@ -74,6 +76,34 @@ class User < ActiveRecord::Base
       select("golf_club_id, count(*) as golf_club_count, 0 as status, 0 as count_member").
       group(:golf_club_id).order("golf_club_count desc").limit(3).to_sql
     results = ActiveRecord::Base.connection.execute(hangouts_sql).map{|x| GolfClub.find(x[0]) }
+  end
+
+  # setup the billing cycle based on join date
+  def set_billing_cycle
+    #ensure that billing cycle is not yet set
+    if !self.billing_cycle.nil? then
+      raise "User already has billing cycle"
+      return
+    end
+
+    #ensure that the guy is admin and a few clubs in his belt
+    if !self.admin? then
+      raise 'User is not admin'
+      return
+    end
+
+    if self.golf_clubs.lenght == 0 then
+      raise "User don't own any clubs"
+      return
+    end
+
+    #set the billing cycle
+    bc = BillingCycle.new({user_id:self.id, cycle:self.created_at.day})
+    if bc.save! then
+      return bc
+    else
+      raise "Unable to create billing cycle"
+    end
   end
 
   def self.from_omniauth(auth)
