@@ -115,6 +115,7 @@ class UserReservation < ActiveRecord::Base
     # raise error is amount is less that outstanding balance
     if self.check_outstanding > amount then
       raise "Amount is not enough to cover expenses"
+      return
     end
 
     self.transaction do
@@ -122,7 +123,8 @@ class UserReservation < ActiveRecord::Base
       #need to take note when doing delta payments (esp when updating revenue count)
       outstanding_balance = self.check_outstanding
       tax_payment = outstanding_balance -  (outstanding_balance / (1 + self.golf_club.tax_schedule.rate)).round(2)
-      jomgolf_cut = ((outstanding_balance - tax_payment) * 0.1).round(2)
+      jomgolf_share = self.reserve_method == "online" ? NovGolf::PROVIDER_SHARE : NovGolf::DASHBOARD_PROVIDER_SHARE
+      jomgolf_cut = ((outstanding_balance - tax_payment) * jomgolf_share).round(2)
       revenue_payment = outstanding_balance - tax_payment - jomgolf_cut
       cash_change_amount = amount - outstanding_balance
 
@@ -184,8 +186,24 @@ class UserReservation < ActiveRecord::Base
     actual_tax
   end
 
+  # total_price - tax) * share
   def jomgolf_share
-    self.total_price * NovGolf::PROVIDER_SHARE
+    if reserve_method == "online" then
+      (self.total_price - self.actual_tax) * NovGolf::PROVIDER_SHARE
+    else
+      (self.total_price - self.actual_tax) * NovGolf::DASHBOARD_PROVIDER_SHARE
+    end
+  end
+
+  #calculate how much to put in the invoice
+  def invoice_value
+    # if the reservation method is online, we need to give back
+    # if the reservation method is dashboard, we claim the 5% as tranx fee
+    if reserve_method == "online" then
+      self.jomgolf_share - self.total_price
+    else
+      self.jomgolf_share
+    end
   end
 
   def booking_datetime

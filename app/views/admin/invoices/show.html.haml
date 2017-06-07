@@ -1,0 +1,33 @@
+- content_for(:head){ "Admin - Billings - Invoices - #{@invoice.billing_date}"}
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:admin_path} Admin Console
+        %li.breadcrumb-item
+          %a{href:admin_billings_path} Billing
+        %li.breadcrumb-item
+          %a{href:admin_invoices_path} Invoices
+        %li.breadcrumb-item.active #{@invoice.billing_date}
+  .row
+    .col-12
+      %h2 #{@invoice.billing_date}
+      %hr
+    .col-12
+      %table.table
+        %thead
+          %tr
+            %th Item
+            %th.text-right Value
+        %tbody
+          %tr
+            %td #{ @online_trax.count} online transactions
+            %td.text-right #{ number_to_currency(@online_trax.inject(0){ |p,n| p += n.final_total }, unit:"RM", negative_format:"(%u%n)")}
+          %tr
+            %td #{ @dashboard_tranx.count} dashboard transactions
+            %td.text-right #{ number_to_currency(@dashboard_tranx.inject(0){ |p,n| p += n.final_total }, unit:"RM", negative_format:"(%u%n)")}
+          %tr
+            %td
+              %strong Grand Total
+            %td.text-right #{number_to_currency(@invoice.total_billing, unit:"RM", negative_format:"(%u%n)")}

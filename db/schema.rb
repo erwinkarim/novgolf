@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170606221154) do
+ActiveRecord::Schema.define(version: 20170607014932) do
 
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -137,6 +137,7 @@ ActiveRecord::Schema.define(version: 20170606221154) do
     t.datetime "updated_at",                                    null: false
     t.date     "start_billing_period"
     t.date     "end_billing_period"
+    t.date     "billing_date"
     t.index ["user_id"], name: "index_invoices_on_user_id", using: :btree
   end
 

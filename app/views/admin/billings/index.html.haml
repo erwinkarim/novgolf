@@ -17,4 +17,11 @@
           %li.list-group-item
             %a{href:settings_admin_billings_path} Settings
     .col-8
-      %p Summary of billings here
+      %h3 Latest Invoice
+      %hr
+      - if @invoice.nil? then
+        %p No invoice(s) so far...
+      - else
+        %p
+          %a{ href:admin_invoice_path(@invoice)}
+            #{@invoice.billing_date} (#{number_to_currency(@invoice.total_billing, unit:"RM")})

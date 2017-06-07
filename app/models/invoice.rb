@@ -1,6 +1,6 @@
 class Invoice < ApplicationRecord
   belongs_to :user
-  has_many :ur_invoices
+  has_many :ur_invoices, :dependent => :destroy
 
   # generate the invoices for the billing cycle
   def self.generate_invoice billing_cycle_day = Date.today.day == 31 ? 30 : Date.today.day
@@ -38,7 +38,7 @@ class Invoice < ApplicationRecord
     end
 
     #generate the invoice
-    invoice = user.invoices.new({start_billing_period:billing_period.first, end_billing_period:billing_period.last})
+    invoice = user.invoices.new({billing_date:billing_date, start_billing_period:billing_period.first, end_billing_period:billing_period.last})
 
     # generate the ur_invoice of each clubs
     if invoice.save! then
@@ -50,7 +50,7 @@ class Invoice < ApplicationRecord
           }.values
         ).each do |ur|
             ur_invoice = invoice.ur_invoices.new({
-              user_reservation_id:ur.id, final_total:ur.jomgolf_share ,billing_category:ur.reserve_method,
+              user_reservation_id:ur.id, final_total:ur.invoice_value ,billing_category:ur.reserve_method,
             })
             if ur_invoice.save! then
             else
