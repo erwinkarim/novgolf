@@ -50,7 +50,7 @@ class Invoice < ApplicationRecord
           }.values
         ).each do |ur|
             ur_invoice = invoice.ur_invoices.new({
-              user_reservation_id:ur.id, final_total:ur.invoice_value ,billing_category:ur.reserve_method,
+              user_reservation_id:ur.id, golf_club_id:ur.golf_club_id, final_total:ur.invoice_value ,billing_category:ur.reserve_method,
             })
             if ur_invoice.save! then
             else

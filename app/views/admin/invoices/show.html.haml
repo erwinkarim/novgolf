@@ -15,6 +15,9 @@
       %h2 #{@invoice.billing_date}
       %hr
     .col-12
+      %p
+        %strong Billing period:
+        #{ @invoice.start_billing_period} to #{ @invoice.end_billing_period}
       %table.table
         %thead
           %tr
@@ -22,11 +25,37 @@
             %th.text-right Value
         %tbody
           %tr
-            %td #{ @online_trax.count} online transactions
+            %td
+              %a{ href:'#online-trax-collapse', data:{toggle:'collapse'}}
+                %i.fa.fa-plus
+              #{ @online_trax.count} online transactions
             %td.text-right #{ number_to_currency(@online_trax.inject(0){ |p,n| p += n.final_total }, unit:"RM", negative_format:"(%u%n)")}
+          %tr.collapse#online-trax-collapse
+            %td
+              - @online_trax.group_by{ |x| x.golf_club_id }.each_pair do |golf_club_id,ur_invoices|
+                %p.ml-2
+                  %strong #{ ur_invoices[0].golf_club.name}
+                %ul.list-unstyled.ml-4
+                  - ur_invoices.each do |ur_invoice|
+                    %li
+                      #{ur_invoice.user_reservation.booking_date}@#{ur_invoice.user_reservation.booking_time.strftime("%I:%M%P")} -
+                      #{number_to_currency(ur_invoice.final_total, unit:"RM", negative_format:"(%u%n)")}
           %tr
-            %td #{ @dashboard_tranx.count} dashboard transactions
+            %td
+              %a{ href:'#dashboard-trax-collapse', data:{toggle:'collapse'}}
+                %i.fa.fa-plus
+              #{ @dashboard_tranx.count} dashboard transactions
             %td.text-right #{ number_to_currency(@dashboard_tranx.inject(0){ |p,n| p += n.final_total }, unit:"RM", negative_format:"(%u%n)")}
+          %tr.collapse#dashboard-trax-collapse
+            %td
+              - @dashboard_tranx.group_by{ |x| x.golf_club_id }.each_pair do |golf_club_id,ur_invoices|
+                %p.ml-2
+                  %strong #{ ur_invoices[0].golf_club.name}
+                %ul.list-unstyled.ml-4
+                  - ur_invoices.each do |ur_invoice|
+                    %li
+                      #{ur_invoice.user_reservation.booking_date}@#{ur_invoice.user_reservation.booking_time.strftime("%I:%M%P")} -
+                      #{number_to_currency(ur_invoice.final_total, unit:"RM", negative_format:"(%u%n)")}
           %tr
             %td
               %strong Grand Total

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170607014932) do
+ActiveRecord::Schema.define(version: 20170608025719) do
 
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -222,6 +222,8 @@ ActiveRecord::Schema.define(version: 20170607014932) do
     t.integer  "billing_category"
     t.datetime "created_at",                                   null: false
     t.datetime "updated_at",                                   null: false
+    t.integer  "golf_club_id"
+    t.index ["golf_club_id"], name: "index_ur_invoices_on_golf_club_id", using: :btree
     t.index ["invoice_id"], name: "index_ur_invoices_on_invoice_id", using: :btree
     t.index ["user_reservation_id"], name: "index_ur_invoices_on_user_reservation_id", using: :btree
   end
@@ -343,6 +345,7 @@ ActiveRecord::Schema.define(version: 20170607014932) do
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"
   add_foreign_key "ur_contacts", "users"
+  add_foreign_key "ur_invoices", "golf_clubs"
   add_foreign_key "ur_invoices", "invoices"
   add_foreign_key "ur_invoices", "user_reservations"
   add_foreign_key "ur_member_details", "user_reservations"

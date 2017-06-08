@@ -3,6 +3,7 @@ class Admin::InvoicesController < ApplicationController
 
   # GET      /admin/billings/invoices(.:format)
   def index
+    @invoices = current_user.invoices.order(:billing_date => :desc).limit(5)
   end
 
   # GET      /admin/billings/invoices/:id(.:format)
@@ -20,6 +21,7 @@ class Admin::InvoicesController < ApplicationController
       return
     end
 
+    #setup for itemized billing
     @online_trax = @invoice.ur_invoices.where(:billing_category => "online")
     @dashboard_tranx = @invoice.ur_invoices.where(:billing_category => "dashboard")
   end

@@ -11,5 +11,15 @@
   .row
     .col-12
       %h2 Invoices
-    .col-4
-      %p Show list of invoices here. Click to view individual invoice
+    .col-12
+      %table.table
+        %thead
+          %tr
+            %th Billing Date
+            %th Amount
+        %tbody
+          - @invoices.each do |invoice|
+            %tr
+              %td
+                %a{href:admin_invoice_path(invoice)} #{invoice.billing_date}
+              %td #{number_to_currency(invoice.total_billing, unit:"RM", negative_format:"(%u%n)")}
