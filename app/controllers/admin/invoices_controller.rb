@@ -22,7 +22,9 @@ class Admin::InvoicesController < ApplicationController
     end
 
     #setup for itemized billing
-    @online_trax = @invoice.ur_invoices.where(:billing_category => "online")
-    @dashboard_tranx = @invoice.ur_invoices.where(:billing_category => "dashboard")
+    @tranxs = {
+      online: @invoice.ur_invoices.where(:billing_category => "online"),
+      dashboard: @invoice.ur_invoices.where(:billing_category => "dashboard")
+    }
   end
 end
