@@ -27,7 +27,7 @@
         %tbody
           %tr
             %td #{@invoice.billing_date}
-            %td <something>
+            %td #{@invoice.status}
             %td #{@invoice.billing_date + 14.days }
             %td #{ number_to_currency(@invoice.total_billing, unit:"RM", negative_format:"(%u%n)")}
     .col-12

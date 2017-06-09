@@ -1,6 +1,14 @@
 class Invoice < ApplicationRecord
   belongs_to :user
   has_many :ur_invoices, :dependent => :destroy
+  validates_presence_of(:status)
+
+  enum status:[:outstanding, :settled]
+
+  after_initialize :init
+  def init
+    self.status ||= 0
+  end
 
   # generate the invoices for the billing cycle
   def self.generate_invoice billing_cycle_day = Date.today.day == 31 ? 30 : Date.today.day
