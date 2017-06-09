@@ -3,7 +3,7 @@ class Admin::InvoicesController < ApplicationController
 
   # GET      /admin/billings/invoices(.:format)
   def index
-    @invoices = current_user.invoices.order(:billing_date => :desc).limit(5)
+    @invoices = current_user.invoices.order(:billing_date => :desc)
   end
 
   # GET      /admin/billings/invoices/:id(.:format)

@@ -90,6 +90,16 @@ Rails.application.routes.draw do
     end
   end
 
+  # monolith is the superadmin, just like the monolith in space oddessy
+  namespace :monolith do
+    get '/' => "monolith#index"
+    resources :invoices, :only => [:index] do
+      collection do
+        post 'generate' => 'invoice#generate'
+      end
+    end
+  end
+
   resources :golf_clubs, :only => [:index, :show] do
     resources :flight_matrices, :only => [:index]
     resources :user_reservations, :only => [:index] do
