@@ -95,7 +95,10 @@ Rails.application.routes.draw do
     get '/' => "monolith#index"
     resources :invoices, :only => [:index] do
       collection do
-        post 'generate' => 'invoice#generate'
+        post 'generate' => 'invoices#generate'
+        get 'load' => 'invoices#load'
+      end
+      resources :ur_invoices, :only => [:index] do
       end
     end
   end

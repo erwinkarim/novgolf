@@ -1,0 +1,2 @@
+module Monolith::UrInvoicesHelper
+end
