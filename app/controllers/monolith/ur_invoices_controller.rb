@@ -6,6 +6,6 @@ class Monolith::UrInvoicesController < ApplicationController
   def index
     invoice = Invoice.find(params[:invoice_id])
 
-    render json: invoice.ur_invoices
+    render json: invoice.attributes.merge({ur_invoices:invoice.ur_invoices});
   end
 end

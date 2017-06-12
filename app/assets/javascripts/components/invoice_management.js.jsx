@@ -4,34 +4,128 @@ var InvoiceBody = React.createClass({
     random_id:React.PropTypes.string
   },
   getInitialState: ()=>{
-    return {contentLoaded:false, ur_invoices:[]};
+    return {contentLoaded:false, ur_invoices:[], invoice:{}};
   },
   componentDidMount:function(){
     var handle = this;
     $(`#invoice-body-${this.props.random_id}`).on('shown.bs.collapse', function(e){
       if(!handle.state.contentLoaded){
-        fetch(`/monolith/invoices/${handle.props.invoice.id}/ur_invoices`, {
+        fetch(`/monolith/invoices/${handle.props.invoice.id}`, {
           credentials:'same-origin'
         }).then(function(response){
           return response.json();
         }).then(function(json){
-            handle.setState({ ur_invoices:json, contentLoaded:true });
+            handle.setState({ invoice:json, ur_invoices:json.ur_invoices, contentLoaded:true });
         })
       };
     });
   },
   render: function(){
-    var content_body = this.state.contentLoaded ? (
-      <div>
-        <ul>{ this.state.ur_invoices.map( (ur_invoice, index) => {
-            return (<li key={index}>{ur_invoice.billing_category} - {ur_invoice.final_total}</li>)
-          })}
-        </ul>
-      </div>
-    ) : (
-      <p>
+    if(!this.state.contentLoaded){
+      return (<div id={`invoice-body-${this.props.random_id}`}>
         <i className="fa fa-cog fa-spin"></i> Loading invoice ...
-      </p>
+        </div>);
+    };
+
+    var tranx = [
+      {
+        caption:'online',
+        ur_invoices: this.state.invoice.ur_invoices.filter(
+          (x)=> {return x.billing_category == "online";}).sort(
+            (a,b)=> {return a.golf_club_id - b.golf_club_id;})
+      },
+      {
+        caption:'dashboard',
+        ur_invoices: this.state.invoice.ur_invoices.filter(
+          (x)=> {return x.billing_category == "dashboard";}).sort(
+            (a,b)=> {return a.golf_club_id - b.golf_club_id;})
+      }
+    ]
+    var online_traxs = this.state.invoice.ur_invoices.filter(
+      (x)=> {return x.billing_category == "online";}).sort(
+        (a,b)=> {return a.golf_club_id - b.golf_club_id;});
+    var dashboard_tranx = this.state.invoice.ur_invoices.filter(
+      (x)=> {return x.billing_category == "dashboard";}).sort(
+        (a,b)=> {return a.golf_club_id - b.golf_club_id;});
+
+    var content_body = (
+      <div>
+        <table className="table table-bordered">
+          <thead>
+            <tr>
+              <th>Billing Date</th>
+              <th>Status</th>
+              <th>Due Date</th>
+              <th>Outstanding Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{this.state.invoice.billing_date}</td>
+              <td>{this.state.invoice.status}</td>
+              <td>{this.state.invoice.billing_date}</td>
+              <td>{toCurrency(this.state.invoice.total_billing)}</td>
+            </tr>
+          </tbody>
+        </table>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              tranx.map( (elm,index) => {
+                var random_id = randomID();
+
+                return (
+                  <tr key={index}>
+                    <td>
+                      <a href={`#club-tranx-${random_id}`} data-toggle="collapse">
+                        <i className="fa fa-plus"></i>
+                      </a>
+                      <span> </span>
+                      {elm.ur_invoices.length } {elm.caption} transactions
+                      <div className="collapse" id={`club-tranx-${random_id}`}>
+                        {
+                          //split by clubs
+                          // TODO: show club name instead of club id
+                          Object.entries(groupBy(elm.ur_invoices, 'golf_club_id')).map( (club_elm, club_index) => {
+                            var club_random_id = randomID();
+                            return (
+                              <div key={club_index} className="ml-2">
+                                <a href={`#club-tranx-detail-${club_random_id}`} data-toggle="collapse">
+                                  <i className="fa fa-plus"></i>
+                                </a><span> </span>
+                                {club_elm[0]} - {club_elm[1].length} transaction(s) -
+                                {toCurrency(club_elm[1].map(x=>parseFloat(x.final_total)).reduce((a,v) => {return a+v;}, 0) )}
+                                <div className="ml-4 collapse" id={`club-tranx-detail-${club_random_id}`} >
+                                  <ul>
+                                    {
+                                      club_elm[1].map( (ur_invoice, ur_invoice_elm) => {
+                                        return (
+                                          <li key={ur_invoice_elm}>{ur_invoice.id} - {toCurrency(ur_invoice.final_total)}</li>
+                                        )
+                                      })
+                                    }
+                                  </ul>
+                                </div>
+                              </div>
+                            );
+                          })
+                        }
+                      </div>
+                    </td>
+                    <td>{toCurrency(elm.ur_invoices.map( x => parseFloat(x.final_total) ).reduce( (a,v) => { return a+v; }, 0) )}</td>
+                  </tr>
+                );
+              })
+            }
+          </tbody>
+        </table>
+      </div>
     );
     return (<div id={`invoice-body-${this.props.random_id}`}>{content_body}</div>)
   }
@@ -82,7 +176,8 @@ var InvoiceManagerBody = React.createClass({
             <div className="w-100" data-toggle="collapse" data-target={`#invoice-body-${random_id}`}>
               { invoice.user.name } - {invoice.billing_date} - {toCurrency(invoice.total_billing)}
             </div>
-            <div className="collapse" id={`invoice-body-${random_id}`}>
+            <div className="collapse w-100 mt-2" id={`invoice-body-${random_id}`}>
+              <hr />
               <InvoiceBody invoice={invoice} random_id={random_id} />
             </div>
           </li>

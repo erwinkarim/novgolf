@@ -1,9 +1,20 @@
+//change from float to currency format
+//TODO: negative format should be (RMXX.XX)
 var toCurrency = function(digits){
   return "RM " + parseFloat(digits).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
 };
 
 var randomID = function(){
   return Math.floor(Math.random()*16777215).toString(16);
+};
+
+//group by an array by it's key
+// copied from https://stackoverflow.com/questions/14446511/what-is-the-most-efficient-method-to-groupby-on-a-javascript-array-of-objects
+var groupBy = function(xs, key) {
+  return xs.reduce(function(rv, x) {
+    (rv[x[key]] = rv[x[key]] || []).push(x);
+    return rv;
+  }, {});
 };
 
 /*

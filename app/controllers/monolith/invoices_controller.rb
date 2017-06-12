@@ -11,6 +11,13 @@ class Monolith::InvoicesController < ApplicationController
     GenerateInvoiceJob.perform_later
   end
 
+  # GET      /monolith/invoices/:id
+  def show
+    invoice = Invoice.find(params[:id])
+
+    render json: invoice.attributes.merge({ur_invoices:invoice.ur_invoices})
+  end
+
   # GET      /monolith/invoices/load(.:format)
   #load them invoices
   def load
