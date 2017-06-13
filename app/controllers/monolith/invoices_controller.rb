@@ -15,7 +15,15 @@ class Monolith::InvoicesController < ApplicationController
   def show
     invoice = Invoice.find(params[:id])
 
-    render json: invoice.attributes.merge({ur_invoices:invoice.ur_invoices})
+    # add club id + user_reservation info
+    invoice = invoice.attributes.merge({
+        ur_invoices:invoice.ur_invoices.map{ |x| x.attributes.merge({
+            golf_club_name:x.golf_club.name, user_reservation:x.user_reservation
+          })}
+      })
+
+    #render json: invoice.attributes.merge({ur_invoices:invoice.ur_invoices})
+    render json: invoice
   end
 
   # GET      /monolith/invoices/load(.:format)

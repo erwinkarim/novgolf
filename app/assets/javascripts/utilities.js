@@ -1,7 +1,14 @@
 //change from float to currency format
-//TODO: negative format should be (RMXX.XX)
+//negative format should be (RMXX.XX)
 var toCurrency = function(digits){
-  return "RM " + parseFloat(digits).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+  var display = "";
+
+  if(digits > 0){
+    display = "RM" + parseFloat(digits).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+  } else {
+    display = "(RM" + (-1 * parseFloat(digits)).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,') + ")";
+  };
+  return display;
 };
 
 var randomID = function(){
@@ -19,6 +26,7 @@ var groupBy = function(xs, key) {
 
 /*
 for some fucking reason, this doesn't compile in production
+now i know because this is not jsx
 var arrayFromRange = function(startNumber,endNumber){
   return Array.from(Array(endNumber-startNumber+1),(v,k) => k + startNumber);
 };
@@ -35,6 +43,12 @@ var arrayFromRange = function(startNumber, endNumber){
 
 var toTitleCase = function(inputStr){
   return inputStr.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+};
+
+//get initials of a word
+var toInitials = function(inputStr){
+  var initials = inputStr.match(/\b\w/g) || [];
+  return initials = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
 };
 
 var getDayOfWeek = function(n){

@@ -41,12 +41,14 @@ var InvoiceBody = React.createClass({
             (a,b)=> {return a.golf_club_id - b.golf_club_id;})
       }
     ]
+    /*
     var online_traxs = this.state.invoice.ur_invoices.filter(
       (x)=> {return x.billing_category == "online";}).sort(
         (a,b)=> {return a.golf_club_id - b.golf_club_id;});
     var dashboard_tranx = this.state.invoice.ur_invoices.filter(
       (x)=> {return x.billing_category == "dashboard";}).sort(
         (a,b)=> {return a.golf_club_id - b.golf_club_id;});
+        */
 
     var content_body = (
       <div>
@@ -56,7 +58,7 @@ var InvoiceBody = React.createClass({
               <th>Billing Date</th>
               <th>Status</th>
               <th>Due Date</th>
-              <th>Outstanding Amount</th>
+              <th>Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -68,6 +70,7 @@ var InvoiceBody = React.createClass({
             </tr>
           </tbody>
         </table>
+        <p>Billing period is from {this.state.invoice.start_billing_period} to {this.state.invoice.end_billing_period}</p>
         <table className="table">
           <thead>
             <tr>
@@ -92,21 +95,28 @@ var InvoiceBody = React.createClass({
                         {
                           //split by clubs
                           // TODO: show club name instead of club id
-                          Object.entries(groupBy(elm.ur_invoices, 'golf_club_id')).map( (club_elm, club_index) => {
+                          Object.entries(groupBy(elm.ur_invoices, 'golf_club_name')).map( (club_elm, club_index) => {
                             var club_random_id = randomID();
                             return (
-                              <div key={club_index} className="ml-2">
+                              <div key={club_index} className="ml-2 pt-1 pb-1">
                                 <a href={`#club-tranx-detail-${club_random_id}`} data-toggle="collapse">
                                   <i className="fa fa-plus"></i>
                                 </a><span> </span>
-                                {club_elm[0]} - {club_elm[1].length} transaction(s) -
+                                <strong> {club_elm[0]} </strong>
+                                <span> - {club_elm[1].length} transaction(s) - </span>
                                 {toCurrency(club_elm[1].map(x=>parseFloat(x.final_total)).reduce((a,v) => {return a+v;}, 0) )}
                                 <div className="ml-4 collapse" id={`club-tranx-detail-${club_random_id}`} >
-                                  <ul>
+                                  <ul className="list-unstyled">
                                     {
                                       club_elm[1].map( (ur_invoice, ur_invoice_elm) => {
+                                        var booking_time = new Date(ur_invoice.user_reservation.booking_time);
                                         return (
-                                          <li key={ur_invoice_elm}>{ur_invoice.id} - {toCurrency(ur_invoice.final_total)}</li>
+                                          <li key={ur_invoice_elm}>
+                                            {ur_invoice.user_reservation.booking_date}@
+                                            {`${pad(booking_time.getHours())}:${pad(booking_time.getMinutes())}`}
+                                            <span> - </span>
+                                            {toCurrency(ur_invoice.final_total)}
+                                          </li>
                                         )
                                       })
                                     }
@@ -154,7 +164,12 @@ var InvoiceManagerSidebar = React.createClass({
                 default:
                   invoiceCount = 0;
               };
-              return (<li key={i} className="list-group-item">{e} ({invoiceCount})</li>)
+              return (
+                <li key={i} className="list-group-item justify-content-between">
+                  {e}
+                  <span className="text-right badge badge-primary">{invoiceCount}</span>
+                </li>
+              )
             } )
           }
         </ul>
@@ -173,7 +188,8 @@ var InvoiceManagerBody = React.createClass({
         var random_id = randomID();
         return (
           <li key={invoice_index} className="list-group-item">
-            <div className="w-100" data-toggle="collapse" data-target={`#invoice-body-${random_id}`}>
+            <div className="w-100 cursor-pointer" data-toggle="collapse" data-target={`#invoice-body-${random_id}`}>
+              <span className="step font-special">{ toInitials(invoice.user.name)}</span>
               { invoice.user.name } - {invoice.billing_date} - {toCurrency(invoice.total_billing)}
             </div>
             <div className="collapse w-100 mt-2" id={`invoice-body-${random_id}`}>

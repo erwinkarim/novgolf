@@ -52,7 +52,7 @@ class Invoice < ApplicationRecord
     if invoice.save! then
       # build the invoice
       user.golf_clubs.each do |golf_club|
-        golf_club.user_reservations.where(:created_at => billing_period,
+        golf_club.user_reservations.where(:booking_date => billing_period,
           :status => UserReservation.statuses.select{ |x|
             x == "reservation_confirmed" || x == "payment_confirmed" || x == "requires_members_verification"
           }.values
