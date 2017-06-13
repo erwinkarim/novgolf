@@ -17,6 +17,7 @@ class Monolith::InvoicesController < ApplicationController
 
     # add club id + user_reservation info
     invoice = invoice.attributes.merge({
+        billing_due_date: invoice.billing_date + 14.days,
         ur_invoices:invoice.ur_invoices.map{ |x| x.attributes.merge({
             golf_club_name:x.golf_club.name, user_reservation:x.user_reservation
           })}

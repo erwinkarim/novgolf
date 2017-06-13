@@ -65,7 +65,7 @@ var InvoiceBody = React.createClass({
             <tr>
               <td>{this.state.invoice.billing_date}</td>
               <td>{this.state.invoice.status}</td>
-              <td>{this.state.invoice.billing_date}</td>
+              <td>{this.state.invoice.billing_due_date}</td>
               <td>{toCurrency(this.state.invoice.total_billing)}</td>
             </tr>
           </tbody>
@@ -142,37 +142,47 @@ var InvoiceBody = React.createClass({
 });
 
 var InvoiceManagerSidebar = React.createClass({
+  propTypes:{
+    invoices:React.PropTypes.array,
+    invoiceCategory: React.PropTypes.array,
+    selectedInvoiceCategory: React.PropTypes.number,
+    selectCategory: React.PropTypes.func
+  },
   render: function(){
     var handle = this;
 
     return (
-      <div className="card">
-        <ul className="list-group list-group-flush">
-          {
-            handle.props.invoiceCategory.map( (e,i) => {
-              var invoiceCount = 0;
-              switch (e) {
-                case "all":
-                  invoiceCount = handle.props.invoices.length;
-                  break;
-                case "outstanding":
-                  invoiceCount = handle.props.invoices.filter(function(x){ return x.status == "outstanding"}).length;
-                  break;
-                case "settled":
-                  invoiceCount = handle.props.invoices.filter(function(x){ return x.status == "settled"}).length;
-                  break;
-                default:
-                  invoiceCount = 0;
-              };
-              return (
-                <li key={i} className="list-group-item justify-content-between">
-                  {e}
-                  <span className="text-right badge badge-primary">{invoiceCount}</span>
-                </li>
-              )
-            } )
-          }
-        </ul>
+      <div>
+        <h4>{ toTitleCase(`${handle.props.invoiceCategory[handle.props.selectedInvoiceCategory]}`)}</h4>
+        <div className="card">
+          <ul className="list-group list-group-flush">
+            {
+              handle.props.invoiceCategory.map( (e,i) => {
+                var invoiceCount = 0;
+                var highlightColor = i == handle.props.selectedInvoiceCategory ? 'list-group-item-info' : '';
+                switch (e) {
+                  case "all":
+                    invoiceCount = handle.props.invoices.length;
+                    break;
+                  case "outstanding":
+                    invoiceCount = handle.props.invoices.filter(function(x){ return x.status == "outstanding"}).length;
+                    break;
+                  case "settled":
+                    invoiceCount = handle.props.invoices.filter(function(x){ return x.status == "settled"}).length;
+                    break;
+                  default:
+                    invoiceCount = 0;
+                };
+                return (
+                  <li key={i} className={`list-group-item justify-content-between cursor-pointer ${highlightColor}`} data-index={i} onClick={this.props.selectCategory}>
+                    {toTitleCase(e)}
+                    <span className="text-right badge badge-primary">{invoiceCount}</span>
+                  </li>
+                )
+              } )
+            }
+          </ul>
+        </div>
       </div>
     )
     return (<div>Invoice Manager Sidebar here</div>)
@@ -180,11 +190,51 @@ var InvoiceManagerSidebar = React.createClass({
 });
 
 var InvoiceManagerBody = React.createClass({
+  propTypes: {
+    invoices:React.PropTypes.array,
+    selectedInvoiceCategory:React.PropTypes.number
+  },
+  getInitialState: function(){
+    return {invoices:this.props.invoices};
+  },
+  componentWillReceiveProps: function(nextProps){
+    var handle = this;
+
+    //update the invoice state when new invoices comes in
+    if(nextProps.invoices.length != this.props.invoices.length){
+      handle.setState({invoices:nextProps.invoices});
+    };
+
+    //filter the invoices when the category selection changed
+    if(nextProps.selectedInvoiceCategory != this.props.selectedInvoiceCategory){
+      //update the invoice listings based on category
+      var newInvoices = [];
+      switch (nextProps.selectedInvoiceCategory) {
+        case 0:
+          //all
+          newInvoices = nextProps.invoices;
+          break;
+        case 1:
+          // outstanding
+          newInvoices = nextProps.invoices.filter((x) => {return x.status == "outstanding";});
+          break;
+        case 2:
+          // settled
+          newInvoices = nextProps.invoices.filter(function(x){ return x.status == "settled"});
+          break;
+        default:
+          newInvoices = nextProps.invoices;
+      }
+
+      handle.setState({invoices:newInvoices});
+    }
+  },
   render: function(){
-    var invoice_listing = this.props.invoices.length == 0 ? (
+    console.log(this.state.invoices);
+    var invoice_listing = this.state.invoices.length == 0 ? (
       <li className="list-group-item"> Nothing to show... </li>
     ) : (
-      this.props.invoices.map( (invoice,invoice_index) => {
+      this.state.invoices.map( (invoice,invoice_index) => {
         var random_id = randomID();
         return (
           <li key={invoice_index} className="list-group-item">
@@ -243,12 +293,20 @@ var InvoiceManager = React.createClass({
   },
   selectCategory: function(e){
     //handle when cateogry selected has been changed
+    //update the invoice list to show the current
+    console.log("should update selectCategory to", e.target.dataset.index);
+    var newSelectCategory = parseInt(e.target.dataset.index);
+    this.setState({selectedInvoiceCategory:newSelectCategory});
   },
   render: function(){
     return (
       <div className="row">
-        <div className="col-3"><InvoiceManagerSidebar invoiceCategory={this.props.invoiceCategory} invoices={this.state.invoices}/></div>
-        <div className="col-9"><InvoiceManagerBody invoices={this.state.invoices}/></div>
+        <div className="col-3"><InvoiceManagerSidebar
+          invoiceCategory={this.props.invoiceCategory} selectedInvoiceCategory={this.state.selectedInvoiceCategory}
+          selectCategory={this.selectCategory} invoices={this.state.invoices} /></div>
+        <div className="col-9"><InvoiceManagerBody invoices={this.state.invoices}
+          selectedInvoiceCategory={this.state.selectedInvoiceCategory}
+          /></div>
       </div>
     );
   }
