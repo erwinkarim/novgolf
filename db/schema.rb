@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170609020816) do
+ActiveRecord::Schema.define(version: 20170614055045) do
 
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -27,14 +27,6 @@ ActiveRecord::Schema.define(version: 20170609020816) do
     t.datetime "updated_at",   null: false
     t.index ["amenity_id"], name: "index_amenity_lists_on_amenity_id", using: :btree
     t.index ["golf_club_id"], name: "index_amenity_lists_on_golf_club_id", using: :btree
-  end
-
-  create_table "billing_cycles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
-    t.integer  "user_id"
-    t.integer  "cycle"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_billing_cycles_on_user_id", using: :btree
   end
 
   create_table "charge_schedules", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -311,6 +303,7 @@ ActiveRecord::Schema.define(version: 20170609020816) do
     t.datetime "confirmed_at"
     t.datetime "confirmation_sent_at"
     t.string   "telephone",              limit: 12
+    t.integer  "billing_cycle"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true, using: :btree
     t.index ["email"], name: "index_users_on_email", unique: true, using: :btree
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
@@ -328,7 +321,6 @@ ActiveRecord::Schema.define(version: 20170609020816) do
 
   add_foreign_key "amenity_lists", "amenities"
   add_foreign_key "amenity_lists", "golf_clubs"
-  add_foreign_key "billing_cycles", "users"
   add_foreign_key "charge_schedules", "flight_schedules"
   add_foreign_key "charge_schedules", "golf_clubs"
   add_foreign_key "course_listings", "course_statuses"

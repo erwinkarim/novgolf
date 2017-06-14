@@ -10,7 +10,6 @@ class UserTest < ActiveSupport::TestCase
   should have_many(:golf_clubs)
   should have_many(:photos)
   should have_one(:profile_picture)
-  should have_one(:billing_cycle)
   should have_many(:reviews)
   should have_many(:memberships)
 
@@ -19,7 +18,7 @@ class UserTest < ActiveSupport::TestCase
   # end
 
   test "set_memberships_fn" do
-    assert_respond_to User.new, :set_memberships
+    assert_respond_to User.first, :set_memberships
   end
 
 end

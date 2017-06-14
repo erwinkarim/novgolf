@@ -13,8 +13,6 @@ class User < ActiveRecord::Base
 
   has_many :photos, as: :imageable
   has_many :reviews
-
-  has_one :billing_cycle
   has_many :invoices
 
   has_one :profile_picture, class_name:"Photo", foreign_key: :id, primary_key: :profile_picture
@@ -23,12 +21,18 @@ class User < ActiveRecord::Base
 
   enum role: [:user, :admin, :superadmin ]
   after_initialize :init
+  after_create :after_create_callback
 
   DEFAULT_IMAGE_PATH = "/images/users/default.jpg"
 
   def init
     self.role ||= 0
     self.image_path ||= DEFAULT_IMAGE_PATH
+
+  end
+
+  def after_create_callback
+    self.set_billing_cycle
   end
 
   #by default, send emails in the background
@@ -81,33 +85,13 @@ class User < ActiveRecord::Base
 
   # setup the billing cycle based on join date
   def set_billing_cycle
-    #ensure that billing cycle is not yet set
-    if !self.billing_cycle.nil? then
-      raise "User already has billing cycle"
-      return
-    end
-
-    #ensure that the guy is admin and a few clubs in his belt
-    if !self.admin? then
-      raise 'User is not admin'
-      return
-    end
-
-    if self.golf_clubs.length == 0 then
-      raise "User don't own any clubs"
-      return
-    end
-
     # handle billing cycle on
     # (29,30,31) => 28
     # others, carry on
     bill_cycle_day = [29,30,31].include?(self.created_at.day) ? 28 : self.created_at.day
-    bc = BillingCycle.new({user_id:self.id, cycle:bill_cycle_day})
-    if bc.save! then
-      return bc
-    else
-      raise "Unable to create billing cycle"
-    end
+    #bc = BillingCycle.new({user_id:self.id, cycle:bill_cycle_day})
+    self.update_attribute(:billing_cycle, bill_cycle_day)
+
   end
 
   def self.from_omniauth(auth)

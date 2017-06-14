@@ -2,6 +2,7 @@ class Invoice < ApplicationRecord
   belongs_to :user
   has_many :ur_invoices, :dependent => :destroy
   validates_presence_of(:status)
+  validates_uniqueness_of(:user_id, scope:[:start_billing_period, :end_billing_period], message:'- only one invoice per billing period')
 
   enum status:[:outstanding, :settled]
 
@@ -15,8 +16,7 @@ class Invoice < ApplicationRecord
   def self.generate_invoice billing_cycle_day = (Date.today - 2.days).day
     #find out users which has this billing cycle
     Invoice.transaction do
-      BillingCycle.where({cycle:billing_cycle_day}).each do |bill_cycle|
-        user = bill_cycle.user
+      User.where.has{ (billing_cycle.eq billing_cycle_day) & (role.in [1,2])}.each do |user|
         Invoice.generate_user_invoice user
       end
     end
@@ -27,7 +27,7 @@ class Invoice < ApplicationRecord
   def self.generate_user_invoice user = User.first, billing_date = Date.today
 
     #get user billing cycle
-    billing_cycle = user.billing_cycle.cycle
+    billing_cycle = user.billing_cycle
 
     # get the month of the billing date
     billing_month = billing_date.month
