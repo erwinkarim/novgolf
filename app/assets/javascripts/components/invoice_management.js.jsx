@@ -238,9 +238,10 @@ var InvoiceManagerBody = React.createClass({
         var random_id = randomID();
         return (
           <li key={invoice_index} className="list-group-item">
-            <div className="w-100 cursor-pointer" data-toggle="collapse" data-target={`#invoice-body-${random_id}`}>
+            <div className="w-100 cursor-pointer d-flex justify-content-start" data-toggle="collapse" data-target={`#invoice-body-${random_id}`}>
               <span className="step font-special">{ toInitials(invoice.user.name)}</span>
-              { invoice.user.name } - {invoice.billing_date} - {toCurrency(invoice.total_billing)}
+              <span className="align-self-center"> { invoice.user.name } - {invoice.billing_date} </span>
+              <span className="align-self-center ml-auto"> {toCurrency(invoice.total_billing)} due {invoice.billing_due_date} </span>
             </div>
             <div className="collapse w-100 mt-2" id={`invoice-body-${random_id}`}>
               <hr />

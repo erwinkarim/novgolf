@@ -98,8 +98,11 @@ class User < ActiveRecord::Base
       return
     end
 
-    #set the billing cycle
-    bc = BillingCycle.new({user_id:self.id, cycle:self.created_at.day})
+    # handle billing cycle on
+    # (29,30,31) => 28
+    # others, carry on
+    bill_cycle_day = [29,30,31].include?(self.created_at.day) ? 28 : self.created_at.day
+    bc = BillingCycle.new({user_id:self.id, cycle:bill_cycle_day})
     if bc.save! then
       return bc
     else

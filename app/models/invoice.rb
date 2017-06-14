@@ -10,8 +10,9 @@ class Invoice < ApplicationRecord
     self.status ||= 0
   end
 
-  # generate the invoices for the billing cycle
-  def self.generate_invoice billing_cycle_day = Date.today.day == 31 ? 30 : Date.today.day
+  # generate the invoices for the billing cycle on cycle which is 2 days ago
+  #   to ensure that the user_reservations are locked
+  def self.generate_invoice billing_cycle_day = (Date.today - 2.days).day
     #find out users which has this billing cycle
     Invoice.transaction do
       BillingCycle.where({cycle:billing_cycle_day}).each do |bill_cycle|

@@ -34,7 +34,7 @@ class Monolith::InvoicesController < ApplicationController
 
     invoices = Invoice.order(:billing_date => :desc).offset(offset).limit(100)
 
-    render json: invoices.map{ |x| x.attributes.merge({user:x.user})}
+    render json: invoices.map{ |x| x.attributes.merge({user:x.user, billing_due_date:x.billing_date+14.days})}
   end
 
 end
