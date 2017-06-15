@@ -3,6 +3,7 @@ require 'test_helper'
 class InvoiceTest < ActiveSupport::TestCase
   should belong_to :user
   should have_many :ur_invoices
+  should have_many :invoice_items
 
   should validate_presence_of(:status)
   should validate_uniqueness_of(:user_id).
