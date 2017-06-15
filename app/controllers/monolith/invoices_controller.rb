@@ -27,6 +27,12 @@ class Monolith::InvoicesController < ApplicationController
     render json: invoice
   end
 
+  #setup the settlement
+  # GET      /monolith/invoices/:invoice_id/settlement(.:format)
+  def settlement
+    @invoice = Invoice.find(params[:invoice_id])
+  end
+
   # GET      /monolith/invoices/load(.:format)
   #load them invoices
   def load

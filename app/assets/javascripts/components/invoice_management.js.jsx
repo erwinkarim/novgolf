@@ -52,6 +52,20 @@ var InvoiceBody = React.createClass({
 
     var content_body = (
       <div>
+        <div className="mb-2 d-flex justify-content-start">
+          <span className="">
+            <strong>For: </strong><a href={`/users/${this.props.invoice.user.id}`} target="_blank">{ this.props.invoice.user.name}</a>
+          </span>
+          {
+            (this.props.invoice.status == "outstanding") ? (
+              <span className="ml-auto">
+                <a href={`/monolith/invoices/${this.props.invoice.id}/settlement`} target="_blank"
+                  className="btn btn-primary btn-sm">Settle</a>
+              </span>
+
+            ) : ''
+          }
+        </div>
         <table className="table table-bordered">
           <thead>
             <tr>

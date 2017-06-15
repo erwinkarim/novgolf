@@ -98,9 +98,8 @@ Rails.application.routes.draw do
         post 'generate' => 'invoices#generate'
         get 'load' => 'invoices#load'
       end
-      # TODO: remove this to show only, 
-      resources :ur_invoices, :only => [:index] do
-      end
+      get 'settlement'
+      post 'settlement'
     end
   end
 

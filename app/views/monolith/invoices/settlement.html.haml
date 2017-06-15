@@ -1,0 +1,14 @@
+- content_for(:head){ "Monolith - Billings - Invoices - #{@invoice.id} settlement"}
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:monolith_path} Monolith
+        %li.breadcrumb-item
+          %a{href:monolith_invoices_path} Invoices
+        %li.breadcrumb-item.active Invoice #{@invoice.id} Settlement
+  .row
+    .col-12
+      %h2 Invoice #{@invoice.id } Settlement
+      %p Record settlement here. Cash / Cheque / CC
