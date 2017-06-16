@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170615033949) do
+ActiveRecord::Schema.define(version: 20170616025357) do
 
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -122,12 +122,22 @@ ActiveRecord::Schema.define(version: 20170615033949) do
     t.index ["user_id"], name: "index_golf_clubs_on_user_id", using: :btree
   end
 
+  create_table "invoice_item_categories", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.string   "description", limit: 500
+    t.string   "caption",     limit: 80
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+  end
+
   create_table "invoice_items", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer  "invoice_id"
-    t.decimal  "charges",    precision: 15, scale: 2, default: "0.0"
-    t.datetime "created_at",                                          null: false
-    t.datetime "updated_at",                                          null: false
+    t.decimal  "charges",                              precision: 15, scale: 2, default: "0.0"
+    t.datetime "created_at",                                                                    null: false
+    t.datetime "updated_at",                                                                    null: false
+    t.integer  "invoice_item_category_id"
+    t.string   "note",                     limit: 160
     t.index ["invoice_id"], name: "index_invoice_items_on_invoice_id", using: :btree
+    t.index ["invoice_item_category_id"], name: "index_invoice_items_on_invoice_item_category_id", using: :btree
   end
 
   create_table "invoices", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -337,6 +347,7 @@ ActiveRecord::Schema.define(version: 20170615033949) do
   add_foreign_key "flight_schedules", "golf_clubs"
   add_foreign_key "golf_clubs", "tax_schedules"
   add_foreign_key "golf_clubs", "users"
+  add_foreign_key "invoice_items", "invoice_item_categories"
   add_foreign_key "invoice_items", "invoices"
   add_foreign_key "invoices", "users"
   add_foreign_key "line_item_listings", "charge_schedules"
