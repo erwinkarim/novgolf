@@ -147,6 +147,26 @@ var InvoiceBody = React.createClass({
                 );
               })
             }
+            {
+              this.state.invoice.invoice_items.map( (e,i) => {
+                var random_id = randomID();
+
+                return (
+                  <tr>
+                    <td>
+                      <a href={`#invoice-item-${random_id}`} data-toggle="collapse">
+                        <i className="fa fa-plus"></i>
+                      </a><span> </span>
+                      {e.invoice_item_category.caption}
+                      <div className="collapse ml-2" id={`invoice-item-${random_id}`}>
+                        {e.note}
+                      </div>
+                    </td>
+                    <td>{toCurrency(e.charges)}</td>
+                  </tr>
+                )
+              })
+            }
           </tbody>
         </table>
       </div>

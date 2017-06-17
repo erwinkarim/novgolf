@@ -83,11 +83,49 @@ class Invoice < ApplicationRecord
   def rebuild_invoice
   end
 
+  #record the charges made and update the total_billing and status
+  # default params is RM0 is charged through credit card
+  def charge amount=0.0, method="pcc", note=''
+
+    invoice_item_category = InvoiceItemCategory.where(code:method).first
+
+    #check the invoice category
+    if invoice_item_category.nil? then
+      raise "Category not found"
+      return
+    end
+
+    #create a new invoice_item w/ the appropiate category
+    Invoice.transaction do
+      invoice_item = self.invoice_items.new({
+        invoice_item_category_id:invoice_item_category.id,
+        charges:amount,
+        note:note
+      })
+
+      if invoice_item.save! then
+        #update the total billing
+        self.update_attribute(:total_billing, self.generate_total_billing)
+        if self.total_billing.zero? then
+          self.settled!
+        end
+      else
+        raise "failed to save transaction"
+        return
+      end
+
+    end
+  end
+
   #get the final total by tally up the ur_invoice
   def generate_total_billing
     total = 0
     self.ur_invoices.each do |ur_invoice|
       total += ur_invoice.final_total
+    end
+
+    self.invoice_items.each do |invoice_item|
+      total += invoice_item.charges
     end
 
     total

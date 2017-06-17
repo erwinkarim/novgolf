@@ -3,7 +3,7 @@
 var toCurrency = function(digits){
   var display = "";
 
-  if(digits > 0){
+  if(digits >= 0){
     display = "RM" + parseFloat(digits).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
   } else {
     display = "(RM" + (-1 * parseFloat(digits)).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,') + ")";

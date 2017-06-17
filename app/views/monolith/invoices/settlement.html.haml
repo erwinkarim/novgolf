@@ -11,4 +11,44 @@
   .row
     .col-12
       %h2 Invoice #{@invoice.id } Settlement
-      %p Record settlement here. Cash / Cheque / CC
+    .col-12
+      %h4 Summary
+      %hr
+      %table.table.table-bordered
+        %thead
+          %tr
+            %th Billing Date
+            %th Invoice Status
+            %th Due Date
+            %th Amount
+        %tbody
+          %tr
+            %td #{@invoice.billing_date}
+            %td #{@invoice.status}
+            %td #{@invoice.billing_date + 14.days }
+            %td #{ number_to_currency(@invoice.total_billing, unit:"RM", negative_format:"(%u%n)")}
+    .col-12.col-md-6
+      - if @invoice.total_billing < 0 then
+        %h4 Settlement Options
+        %form{ action:monolith_invoice_settlement_path(@invoice), method:'post'}
+          %input{type:'hidden', name:'authenticity_token', :value => form_authenticity_token}
+          .form-group
+            %label Settlement Method
+            %select.form-control{name:'payment_method'}
+              %option{value:'rch'} Cheque
+              %option{value:'rbr'} Inter-bank transfer
+              %option{value:'rcc'} Credit Card
+              %option{value:'rcs'} Cash
+          .form-group
+            %label Amount
+            .input-group
+              %span.input-group-addon RM
+              %input.form-control{type:'number', placeholder:'Amount', min:0, step:'0.01',name:'amount', value:@invoice.total_billing*-1}
+          .form-group
+            %label Notes
+            %input.form-control{type:'text', name:'note', placeholder:'Note about payment (Cheque #; etc)'}
+          %button.btn.btn-primary{type:'submit'} Place Settlement
+      - elsif
+        %p Invoice amount due is RM0. Invoice status should be settled
+      - else
+        %p Invoice billing is more than 0. Awaiting payment from invoicee

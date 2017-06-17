@@ -99,7 +99,7 @@ Rails.application.routes.draw do
         get 'load' => 'invoices#load'
       end
       get 'settlement'
-      post 'settlement'
+      post 'settlement' => 'invoices#place_settlement'
     end
   end
 
