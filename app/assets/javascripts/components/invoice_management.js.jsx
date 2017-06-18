@@ -56,15 +56,15 @@ var InvoiceBody = React.createClass({
           <span className="">
             <strong>For: </strong><a href={`/users/${this.props.invoice.user.id}`} target="_blank">{ this.props.invoice.user.name}</a>
           </span>
-          {
-            (this.props.invoice.status == "outstanding") ? (
-              <span className="ml-auto">
+          <span className="ml-auto">
+            {
+              (this.props.invoice.status == "outstanding") ? (
                 <a href={`/monolith/invoices/${this.props.invoice.id}/settlement`} target="_blank"
                   className="btn btn-primary btn-sm">Settle</a>
-              </span>
-
-            ) : ''
-          }
+              ) : ''
+            }
+            <a href={`/monolith/invoices/${this.props.invoice.id}/edit`} target="_blank" className="btn btn-secondary btn-sm ml-2">Edit</a>
+          </span>
         </div>
         <table className="table table-bordered">
           <thead>

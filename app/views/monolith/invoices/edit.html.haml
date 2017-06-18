@@ -1,0 +1,13 @@
+- content_for(:head){ "Monolith - Billings - Edit Invoices - #{@invoice.id}"}
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:monolith_path} Monolith
+        %li.breadcrumb-item
+          %a{href:monolith_invoices_path} Invoices
+        %li.breadcrumb-item.active Edit Invoice #{@invoice.id}
+  .row
+    .col-12
+      %p Editing options here

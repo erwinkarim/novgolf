@@ -59,4 +59,8 @@ class Monolith::InvoicesController < ApplicationController
     render json: invoices.map{ |x| x.attributes.merge({user:x.user, billing_due_date:x.billing_date+14.days})}
   end
 
+  # GET      /monolith/invoices/:id/edit(.:format)
+  def edit
+    @invoice = Invoice.find(params[:id])
+  end
 end

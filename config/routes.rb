@@ -93,7 +93,7 @@ Rails.application.routes.draw do
   # monolith is the superadmin, just like the monolith in space oddessy
   namespace :monolith do
     get '/' => "monolith#index"
-    resources :invoices, :only => [:index, :show] do
+    resources :invoices, :only => [:index, :edit, :show] do
       collection do
         post 'generate' => 'invoices#generate'
         get 'load' => 'invoices#load'
