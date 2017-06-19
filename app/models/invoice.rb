@@ -2,6 +2,9 @@ class Invoice < ApplicationRecord
   belongs_to :user
   has_many :ur_invoices, :dependent => :destroy
   has_many :invoice_items, :dependent => :destroy
+
+  accepts_nested_attributes_for :invoice_items, allow_destroy: true
+
   validates_presence_of(:status)
   validates_uniqueness_of(:user_id, scope:[:start_billing_period, :end_billing_period], message:'- only one invoice per billing period')
 

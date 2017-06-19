@@ -41,14 +41,6 @@ var InvoiceBody = React.createClass({
             (a,b)=> {return a.golf_club_id - b.golf_club_id;})
       }
     ]
-    /*
-    var online_traxs = this.state.invoice.ur_invoices.filter(
-      (x)=> {return x.billing_category == "online";}).sort(
-        (a,b)=> {return a.golf_club_id - b.golf_club_id;});
-    var dashboard_tranx = this.state.invoice.ur_invoices.filter(
-      (x)=> {return x.billing_category == "dashboard";}).sort(
-        (a,b)=> {return a.golf_club_id - b.golf_club_id;});
-        */
 
     var content_body = (
       <div>
@@ -63,7 +55,7 @@ var InvoiceBody = React.createClass({
                   className="btn btn-primary btn-sm">Settle</a>
               ) : ''
             }
-            <a href={`/monolith/invoices/${this.props.invoice.id}/edit`} target="_blank" className="btn btn-secondary btn-sm ml-2">Edit</a>
+            <a href={`/monolith/invoices/${this.props.invoice.id}/edit`} className="btn btn-secondary btn-sm ml-2">Edit</a>
           </span>
         </div>
         <table className="table table-bordered">

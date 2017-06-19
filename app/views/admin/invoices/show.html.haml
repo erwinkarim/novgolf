@@ -17,19 +17,7 @@
     .col-12
       %h4 Summary
       %hr
-      %table.table.table-bordered
-        %thead
-          %tr
-            %th Billing Date
-            %th Invoice Status
-            %th Due Date
-            %th Amount
-        %tbody
-          %tr
-            %td #{@invoice.billing_date}
-            %td #{@invoice.status}
-            %td #{@invoice.billing_date + 14.days }
-            %td #{ number_to_currency(@invoice.total_billing, unit:"RM", negative_format:"(%u%n)")}
+      = render partial: "invoice_summary"
     .col-12
       %h4 Invoice Details
       %hr

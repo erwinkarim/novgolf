@@ -63,4 +63,41 @@ class Monolith::InvoicesController < ApplicationController
   def edit
     @invoice = Invoice.find(params[:id])
   end
+
+  # PATCH    /monolith/invoices/:id(.:format)
+  # POST    /monolith/invoices/:id(.:format)
+  def update
+    # too many issues trying to do strong parametesr.
+    # TODO: implement strong params in the future
+    params = request.parameters
+
+    if !params.has_key?(:invoice_items) then
+      flash[:error] = "No items to update in invoice #{invoice.id}"
+      head status: :precondition_failed
+      return
+    end
+
+    invoice = Invoice.find(params[:id])
+
+    #just try to update the damn thing
+    params[:invoice_items].each_pair do |key,value|
+      InvoiceItem.find(key).update_attributes(value)
+    end
+
+    invoice.update_attribute(:total_billing, invoice.generate_total_billing)
+    # update status
+    if invoice.total_billing.zero? then
+      invoice.update_attribute(:status, Invoice.statuses["settled"])
+    else
+      invoice.update_attribute(:status, Invoice.statuses["outstanding"])
+    end
+
+    flash[:notice] = "Invoice #{invoice.id} updated"
+    render json: {message:"Invoice #{invoice.id} updated", invoice:invoice}, status: :ok
+  end
+
+  private
+  def invoice_params
+    params.requi
+  end
 end
