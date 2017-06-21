@@ -82,6 +82,28 @@ class Invoice < ApplicationRecord
     # generate the final tally
   end
 
+  # show amount user owned in the past 0,30,90, 120+ days
+  def self.ageing user = User.first
+    invoices = user.invoices
+    ageing_matrix = {:"0" => 0.0, :"30"=>0.0, :"90"=> 0.0, :"120+"=>0.0}
+
+    invoices.each do |invoice|
+      due_period = invoice.billing_date + 14.days - Date.today
+      case
+      when  due_period > 0
+        ageing_matrix[:"0"] += invoice.total_billing
+      when due_period > -30 && due_period < 0
+        ageing_matrix[:"30"] += invoice.total_billing
+      when due_period > -90 && due_period < -30
+        ageing_matrix[:"90"] += invoice.total_billing
+      else
+        ageing_matrix[:"120+"] += invoice.total_billing
+      end
+    end
+
+    ageing_matrix
+  end
+
   #find a way to rebuild the invoice
   def rebuild_invoice
   end

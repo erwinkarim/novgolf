@@ -128,4 +128,8 @@ class User < ActiveRecord::Base
   def self.random
     User.order("RAND()").first
   end
+
+  def invoice_ageing
+    Invoice.ageing self
+  end
 end

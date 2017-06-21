@@ -18,10 +18,33 @@
             %a{href:settings_admin_billings_path} Settings
     .col-8
       %h3 Latest Invoice
-      %hr
-      - if @invoice.nil? then
+      - if @invoices.empty? then
+        %hr
         %p No invoice(s) so far...
       - else
-        %p
-          %a{ href:admin_invoice_path(@invoice)}
-            #{@invoice.billing_date} (#{number_to_currency(@invoice.total_billing, unit:"RM")})
+        %table.table
+          %thead
+            %tr
+              %th Invoice Date
+              %th Amount Due
+          %tbody
+            - @invoices.each do |invoice|
+              %tr
+                %td
+                  %a{ href:admin_invoice_path(invoice)} #{invoice.billing_date}
+                %td #{ number_to_currency(invoice.total_billing, unit: "RM", negative_format:"(%u%n)")}
+        %h4 Invoice Ageing
+        %hr
+        %table.table.table-bordered
+          %thead
+            %tr
+              %th Due in the future
+              %th Overdue within 30 days
+              %th Overdue within 31-90 days
+              %th overdue more >120 days
+          %tbody
+            %tr
+              %td #{number_to_currency(@ageing[:"0"], unit:"RM", negative_format:"(%u%n)")}
+              %td #{number_to_currency(@ageing[:"30"], unit:"RM", negative_format:"(%u%n)")}
+              %td #{number_to_currency(@ageing[:"90"], unit:"RM", negative_format:"(%u%n)")}
+              %td #{number_to_currency(@ageing[:"120+"], unit:"RM", negative_format:"(%u%n)")}
