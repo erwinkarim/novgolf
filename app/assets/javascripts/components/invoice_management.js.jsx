@@ -209,6 +209,15 @@ var InvoiceManagerSidebar = React.createClass({
             }
           </ul>
         </div>
+
+        <h4>Others</h4>
+        <div className="card">
+          <ul className="list-group list-group-flush">
+            <li className="list-group-item">
+              <a href="/monolith/invoices/stats">Stats</a>
+            </li>
+          </ul>
+        </div>
       </div>
     )
     return (<div>Invoice Manager Sidebar here</div>)

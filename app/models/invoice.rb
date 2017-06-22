@@ -82,6 +82,10 @@ class Invoice < ApplicationRecord
     # generate the final tally
   end
 
+  #find a way to rebuild the invoice
+  def rebuild_invoice
+  end
+
   # show amount user owned in the past 0,30,90, 120+ days
   def self.ageing user = User.first
     invoices = user.invoices
@@ -104,8 +108,60 @@ class Invoice < ApplicationRecord
     ageing_matrix
   end
 
-  #find a way to rebuild the invoice
-  def rebuild_invoice
+  # show ageing on all invoices
+  def self.ageing_all_users
+    ageing_matrix = {:"0" => 0.0, :"30"=>0.0, :"90"=> 0.0, :"120+"=>0.0}
+
+    self.all.each do |invoice|
+      due_period = invoice.billing_date + 14.days - Date.today
+      case
+      when  due_period > 0
+        ageing_matrix[:"0"] += invoice.total_billing
+      when due_period > -30 && due_period < 0
+        ageing_matrix[:"30"] += invoice.total_billing
+      when due_period > -90 && due_period < -30
+        ageing_matrix[:"90"] += invoice.total_billing
+      else
+        ageing_matrix[:"120+"] += invoice.total_billing
+      end
+    end
+
+    ageing_matrix
+  end
+
+  #return a list of top users and the amount they owe
+  def self.top_users
+    #top 5 people owe us money
+    query = self.joining{user}.
+      selecting{ [user.name.as('user_name'), total_billing.sum.as('total_billing_sum')]}.
+      group(:'users.name').limit(5).ordering{ total_billing.sum.desc}.to_sql
+
+    results = ActiveRecord::Base.connection.exec_query(query).map{ |x| {:user_name => x["user_name"], :total_billing => x["total_billing_sum"]}}
+
+    #top 5 people we owe money
+    query = self.joining{user}.
+      selecting{ [user.name.as('user_name'), total_billing.sum.as('total_billing_sum')]}.
+      group(:'users.name').limit(5).ordering{ total_billing.sum.asc}.to_sql
+
+    results2 = ActiveRecord::Base.connection.exec_query(query).map{ |x| {:user_name => x["user_name"], :total_billing => x["total_billing_sum"]}}
+
+    #results.map{ |x| {:user_name => x["user_name"], :total_billing => x["total_billing_sum"]}}
+    (results + results2).uniq
+  end
+
+  #return a list of users with the highest number of activities
+  def self.top_user_activities
+    query = self.joining{[user, ur_invoices]}.
+      selecting{ [user.name.as('user_name'), ur_invoices.id.count.as('ur_invoice_count')]}.
+      group(:'users.name').limit(5).ordering{ ur_invoices.id.count.desc}.to_sql
+
+    results = ActiveRecord::Base.connection.exec_query(query)
+    results.map{ |x| {:user_name => x["user_name"], :invoice_activities => x["ur_invoice_count"]}}
+
+  end
+
+  def self.invoiceable_users
+    User.where(:role => User.roles["admin"]).count
   end
 
   #record the charges made and update the total_billing and status

@@ -96,6 +96,14 @@ class Monolith::InvoicesController < ApplicationController
     render json: {message:"Invoice #{invoice.id} updated", invoice:invoice}, status: :ok
   end
 
+  def stats
+    @ageing = Invoice.ageing_all_users
+    @top_users = Invoice.top_users
+    @top_user_activities = Invoice.top_user_activities
+    @invoiceable_users = Invoice.invoiceable_users
+
+  end
+
   private
   def invoice_params
     params.requi

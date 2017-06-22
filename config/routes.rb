@@ -97,9 +97,16 @@ Rails.application.routes.draw do
       collection do
         post 'generate' => 'invoices#generate'
         get 'load' => 'invoices#load'
+        get 'stats' => 'invoices#stats'
       end
       get 'settlement'
       post 'settlement' => 'invoices#place_settlement'
+    end
+  end
+
+  namespace :invoke do
+    controller :jobs do
+      get 'invoices'
     end
   end
 
