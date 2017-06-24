@@ -67,7 +67,7 @@ class Invoice < ApplicationRecord
             })
             if ur_invoice.save! then
             else
-              raise "Unabel to save invoice reservation transaction"
+              raise "Unable to save invoice reservation transaction"
               return
             end
         end
@@ -75,6 +75,9 @@ class Invoice < ApplicationRecord
 
       #get the final total
       invoice.update_attribute(:total_billing, invoice.generate_total_billing)
+
+      #send an email to notify user invoice is ready
+      UserMailer.invoice_is_ready(invoice).deliver_later
     else
       raise "Unable to save invoice"
       return

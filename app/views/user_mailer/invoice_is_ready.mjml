@@ -1,0 +1,21 @@
+%mjml
+  %mj-body
+    %mj-container
+      %mj-section
+        %mj-column
+          %mj-text{ 'font-size':'20px', color:'#595959', align:'center'} Your Invoice is Ready
+          %mj-divider{ 'border-color':'#F45E43'}
+      %mj-section
+        %mj-column
+          %mj-table
+            %tr{style:'border:1px solid black;'}
+              %td Billing Date
+              %td Amount Due
+              %td Billing Due
+            %tr
+              %td #{@invoice.billing_date}
+              %td #{number_to_currency(@invoice.total_billing, unit:"RM", negative_format:"(%u%n)")}
+              %td #{@invoice.billing_date + 14.days}
+          %mj-button{ href:admin_invoice_url(@invoice)} View Invoice
+          %mj-text Thank You,
+          %mj-text JomGolf Team

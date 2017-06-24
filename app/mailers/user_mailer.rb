@@ -17,4 +17,13 @@ class UserMailer < ApplicationMailer
       format.mjml
     end
   end
+
+  #send email notification that invoice is ready
+  def invoice_is_ready invoice = Invoice.first
+    @invoice = invoice
+    mail(to: @invoice.user.email, subject: "You Invoice is ready") do |format|
+      format.text
+      format.mjml
+    end
+  end
 end
