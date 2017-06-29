@@ -59,6 +59,16 @@
                           %li
                             #{ur_invoice.user_reservation.booking_date}@#{ur_invoice.user_reservation.booking_time.strftime("%I:%M%P")} -
                             #{number_to_currency(ur_invoice.final_total, unit:"RM", negative_format:"(%u%n)")}
+          - @invoice.invoice_items.each do |invoice_item|
+            - invoice_item_random = SecureRandom.hex(6)
+            %tr
+              %td
+                %a{ href:"#invoice-item-collapse-#{invoice_item_random}", data:{toggle:'collapse'}}
+                  %i.fa.fa-plus
+                #{invoice_item.invoice_item_category.caption}
+                .collapse.ml-2{id:"invoice-item-collapse-#{invoice_item_random}"}
+                  #{invoice_item.note}
+              %td.text-right #{number_to_currency(invoice_item.charges, unit:"RM", negative_format:"(%u%n)")}
           %tr
             %td
               %strong Grand Total
