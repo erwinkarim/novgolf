@@ -39,12 +39,10 @@
           %thead
             %tr
               %th Due in the future
-              %th Overdue within 30 days
-              %th Overdue within 31-90 days
-              %th overdue more >120 days
+              %th Overdue 30 days
+              %th Overdue 31-90 days
+              %th overdue 90+ days
           %tbody
             %tr
-              %td #{number_to_currency(@ageing[:"0"], unit:"RM", negative_format:"(%u%n)")}
-              %td #{number_to_currency(@ageing[:"30"], unit:"RM", negative_format:"(%u%n)")}
-              %td #{number_to_currency(@ageing[:"90"], unit:"RM", negative_format:"(%u%n)")}
-              %td #{number_to_currency(@ageing[:"120+"], unit:"RM", negative_format:"(%u%n)")}
+              - @ageing.each_pair do |key,value|
+                %td #{number_to_currency(value, unit:"RM", negative_format:"(%u%n)")}
