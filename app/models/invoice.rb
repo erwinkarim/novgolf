@@ -76,6 +76,11 @@ class Invoice < ApplicationRecord
       #get the final total
       invoice.update_attribute(:total_billing, invoice.generate_total_billing)
 
+      #if the invoice total_billing is zero, consider the invoice settled
+      if invoice.total_billing.zero? then
+        invoice.settled!
+      end
+
       #send an email to notify user invoice is ready
       UserMailer.invoice_is_ready(invoice).deliver_later
     else
