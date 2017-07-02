@@ -115,6 +115,7 @@ class UserReservation < ActiveRecord::Base
     # raise error is amount is less that outstanding balance
     if self.check_outstanding > amount then
       raise "Amount is not enough to cover expenses"
+      return
     end
 
     self.transaction do
@@ -122,7 +123,8 @@ class UserReservation < ActiveRecord::Base
       #need to take note when doing delta payments (esp when updating revenue count)
       outstanding_balance = self.check_outstanding
       tax_payment = outstanding_balance -  (outstanding_balance / (1 + self.golf_club.tax_schedule.rate)).round(2)
-      jomgolf_cut = ((outstanding_balance - tax_payment) * 0.1).round(2)
+      jomgolf_share = self.reserve_method == "online" ? NovGolf::PROVIDER_SHARE : NovGolf::DASHBOARD_PROVIDER_SHARE
+      jomgolf_cut = ((outstanding_balance - tax_payment) * jomgolf_share).round(2)
       revenue_payment = outstanding_balance - tax_payment - jomgolf_cut
       cash_change_amount = amount - outstanding_balance
 
@@ -182,6 +184,26 @@ class UserReservation < ActiveRecord::Base
     actual_caddy +
     actual_insurance +
     actual_tax
+  end
+
+  # total_price - tax) * share
+  def jomgolf_share
+    if reserve_method == "online" then
+      (self.total_price - self.actual_tax) * NovGolf::PROVIDER_SHARE
+    else
+      (self.total_price - self.actual_tax) * NovGolf::DASHBOARD_PROVIDER_SHARE
+    end
+  end
+
+  #calculate how much to put in the invoice
+  def invoice_value
+    # if the reservation method is online, we need to give back
+    # if the reservation method is dashboard, we claim the 5% as tranx fee
+    if reserve_method == "online" then
+      self.jomgolf_share - self.total_price
+    else
+      self.jomgolf_share
+    end
   end
 
   def booking_datetime
@@ -326,6 +348,7 @@ class UserReservation < ActiveRecord::Base
   end
 
   #generate the random user reservation complete with review
+  # TOOD, find a way to specify a date
   def self.generate_random_reservation user = User.random
     #get the club
     ids = GolfClub.all.limit(100).pluck(:id)
@@ -349,15 +372,17 @@ class UserReservation < ActiveRecord::Base
     taxation = (caddy_count*cs.caddy + buggy_count*cs.cart + flight_count*cs.session_price + flight_count*cs.insurance).to_f * club.tax_schedule.rate
     #get first course
     course_id = club.course_listings.first.id
+    second_course_id = club.course_listings.last.id
 
     reservation = user.user_reservations.new(
       flight_matrix_id:fm.id, golf_club_id:fs.golf_club_id,
       status: 0,
-      booking_date:proposed_date, booking_time: fm.tee_time,
+      booking_date:proposed_date,
+      booking_time: fm.tee_time, second_booking_time: fm.second_tee_time,
       actual_caddy:caddy_count*cs.caddy , actual_buggy:buggy_count*cs.cart ,
       actual_pax:flight_count*cs.session_price, actual_insurance:flight_count*cs.insurance ,
       actual_tax:taxation,
-      course_listing_id: course_id,
+      course_listing_id: course_id, second_course_listing_id: second_course_id,
       count_caddy:caddy_count, count_buggy:buggy_count, count_pax:flight_count , count_insurance:flight_count
     )
 

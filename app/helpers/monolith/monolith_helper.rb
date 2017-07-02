@@ -1,0 +1,2 @@
+module Monolith::MonolithHelper
+end

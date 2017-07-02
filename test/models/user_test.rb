@@ -18,7 +18,7 @@ class UserTest < ActiveSupport::TestCase
   # end
 
   test "set_memberships_fn" do
-    assert_respond_to User.new, :set_memberships
+    assert_respond_to User.first, :set_memberships
   end
 
 end

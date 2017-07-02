@@ -10,7 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170519083246) do
+ActiveRecord::Schema.define(version: 20170617012756) do
+
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
     t.string   "label"
@@ -121,6 +122,37 @@ ActiveRecord::Schema.define(version: 20170519083246) do
     t.index ["user_id"], name: "index_golf_clubs_on_user_id", using: :btree
   end
 
+  create_table "invoice_item_categories", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.string   "description", limit: 500
+    t.string   "caption",     limit: 80
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.string   "code",        limit: 3
+  end
+
+  create_table "invoice_items", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.integer  "invoice_id"
+    t.decimal  "charges",                              precision: 15, scale: 2, default: "0.0"
+    t.datetime "created_at",                                                                    null: false
+    t.datetime "updated_at",                                                                    null: false
+    t.integer  "invoice_item_category_id"
+    t.string   "note",                     limit: 160
+    t.index ["invoice_id"], name: "index_invoice_items_on_invoice_id", using: :btree
+    t.index ["invoice_item_category_id"], name: "index_invoice_items_on_invoice_item_category_id", using: :btree
+  end
+
+  create_table "invoices", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.integer  "user_id"
+    t.decimal  "total_billing",        precision: 10, scale: 2
+    t.datetime "created_at",                                                null: false
+    t.datetime "updated_at",                                                null: false
+    t.date     "start_billing_period"
+    t.date     "end_billing_period"
+    t.date     "billing_date"
+    t.integer  "status",                                        default: 0
+    t.index ["user_id"], name: "index_invoices_on_user_id", using: :btree
+  end
+
   create_table "line_item_listings", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.decimal  "rate",               precision: 10, scale: 2
     t.boolean  "taxed"
@@ -193,6 +225,19 @@ ActiveRecord::Schema.define(version: 20170519083246) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_ur_contacts_on_user_id", using: :btree
+  end
+
+  create_table "ur_invoices", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.integer  "user_reservation_id"
+    t.integer  "invoice_id"
+    t.decimal  "final_total",         precision: 10, scale: 2
+    t.integer  "billing_category"
+    t.datetime "created_at",                                   null: false
+    t.datetime "updated_at",                                   null: false
+    t.integer  "golf_club_id"
+    t.index ["golf_club_id"], name: "index_ur_invoices_on_golf_club_id", using: :btree
+    t.index ["invoice_id"], name: "index_ur_invoices_on_invoice_id", using: :btree
+    t.index ["user_reservation_id"], name: "index_ur_invoices_on_user_reservation_id", using: :btree
   end
 
   create_table "ur_member_details", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -277,6 +322,7 @@ ActiveRecord::Schema.define(version: 20170519083246) do
     t.datetime "confirmed_at"
     t.datetime "confirmation_sent_at"
     t.string   "telephone",              limit: 12
+    t.integer  "billing_cycle"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true, using: :btree
     t.index ["email"], name: "index_users_on_email", unique: true, using: :btree
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
@@ -302,6 +348,9 @@ ActiveRecord::Schema.define(version: 20170519083246) do
   add_foreign_key "flight_schedules", "golf_clubs"
   add_foreign_key "golf_clubs", "tax_schedules"
   add_foreign_key "golf_clubs", "users"
+  add_foreign_key "invoice_items", "invoice_item_categories"
+  add_foreign_key "invoice_items", "invoices"
+  add_foreign_key "invoices", "users"
   add_foreign_key "line_item_listings", "charge_schedules"
   add_foreign_key "line_item_listings", "line_items"
   add_foreign_key "line_items", "users"
@@ -310,6 +359,9 @@ ActiveRecord::Schema.define(version: 20170519083246) do
   add_foreign_key "photos", "users"
   add_foreign_key "reviews", "users"
   add_foreign_key "ur_contacts", "users"
+  add_foreign_key "ur_invoices", "golf_clubs"
+  add_foreign_key "ur_invoices", "invoices"
+  add_foreign_key "ur_invoices", "user_reservations"
   add_foreign_key "ur_member_details", "user_reservations"
   add_foreign_key "ur_transactions", "user_reservations"
   add_foreign_key "user_reservations", "charge_schedules"

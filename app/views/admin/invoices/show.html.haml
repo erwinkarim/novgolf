@@ -1,0 +1,75 @@
+- content_for(:head){ "Admin - Billings - Invoices - #{@invoice.billing_date}"}
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:admin_path} Admin Console
+        %li.breadcrumb-item
+          %a{href:admin_billings_path} Billing
+        %li.breadcrumb-item
+          %a{href:admin_invoices_path} Invoices
+        %li.breadcrumb-item.active #{@invoice.billing_date}
+  .row
+    .col-12
+      %h2 #{@invoice.billing_date}
+      %hr
+    .col-12
+      %h4 Summary
+      %hr
+      = render partial: "invoice_summary"
+    .col-12
+      %h4 Invoice Details
+      %hr
+      %p
+        %strong Billing period:
+        #{ @invoice.start_billing_period} to #{ @invoice.end_billing_period}
+      %table.table
+        %thead
+          %tr
+            %th Item
+            %th.text-right Value
+        %tbody
+          - @tranxs.each_pair do |tranx_type, tranxs|
+            - random_id = SecureRandom.hex
+            %tr
+              %td
+                %a{ href:"#trax-collapse-#{random_id}", data:{toggle:'collapse'}}
+                  %i.fa.fa-plus
+                #{ tranxs.count} #{tranx_type} transactions
+              %td.text-right #{ number_to_currency(tranxs.inject(0){ |p,n| p += n.final_total }, unit:"RM", negative_format:"(%u%n)")}
+            %tr.collapse{id:"trax-collapse-#{random_id}"}
+              - if tranxs.count.zero? then
+                %td
+                  %p.ml-2 No transactions
+              - else
+                %td
+                  - tranxs.group_by{ |x| x.golf_club_id }.each_pair do |golf_club_id,ur_invoices|
+                    - club_random = SecureRandom.hex
+                    %p.ml-2
+                      %a{href:"#club-tranx-#{club_random}", data:{toggle:'collapse'}}
+                        %i.fa.fa-plus
+                      %strong
+                        #{ ur_invoices[0].golf_club.name}
+                      \- #{ur_invoices.count} transaction(s) -
+                      #{number_to_currency(ur_invoices.inject(0){ |p,n| p += n.final_total}, unit:"RM", negative_format:"(%u%n)")}
+                    .collapse{id:"club-tranx-#{club_random}"}
+                      %ul.list-unstyled.ml-4
+                        - ur_invoices.each do |ur_invoice|
+                          %li
+                            #{ur_invoice.user_reservation.booking_date}@#{ur_invoice.user_reservation.booking_time.strftime("%I:%M%P")} -
+                            #{number_to_currency(ur_invoice.final_total, unit:"RM", negative_format:"(%u%n)")}
+          - @invoice.invoice_items.each do |invoice_item|
+            - invoice_item_random = SecureRandom.hex(6)
+            %tr
+              %td
+                %a{ href:"#invoice-item-collapse-#{invoice_item_random}", data:{toggle:'collapse'}}
+                  %i.fa.fa-plus
+                #{invoice_item.invoice_item_category.caption}
+                .collapse.ml-2{id:"invoice-item-collapse-#{invoice_item_random}"}
+                  #{invoice_item.note}
+              %td.text-right #{number_to_currency(invoice_item.charges, unit:"RM", negative_format:"(%u%n)")}
+          %tr
+            %td
+              %strong Grand Total
+            %td.text-right #{number_to_currency(@invoice.total_billing, unit:"RM", negative_format:"(%u%n)")}

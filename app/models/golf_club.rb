@@ -281,6 +281,11 @@ class GolfClub < ActiveRecord::Base
       club.generate_courses
 
       #create the ammenities
+      Amenity.all.each do |amenity|
+        if (rand(0.0..1.0).round == 1) then
+          club.amenity_lists.new({amenity_id:amenity.id}).save!
+        end
+      end
 
       club
     end

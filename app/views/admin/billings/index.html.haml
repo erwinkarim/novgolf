@@ -1,0 +1,48 @@
+- content_for(:head){ "Admin - Billings"}
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:admin_path} Admin Console
+        %li.breadcrumb-item.active Billing
+  .row
+    .col-12
+      %h2 Billing
+    .col-4
+      .card
+        %ul.list-group.list-group-flush
+          %li.list-group-item
+            %a{href:admin_invoices_path} Invoices
+          %li.list-group-item
+            %a{href:settings_admin_billings_path} Settings
+    .col-8
+      %h3 Latest Invoice
+      - if @invoices.empty? then
+        %hr
+        %p No invoice(s) so far...
+      - else
+        %table.table
+          %thead
+            %tr
+              %th Invoice Date
+              %th Amount Due
+          %tbody
+            - @invoices.each do |invoice|
+              %tr
+                %td
+                  %a{ href:admin_invoice_path(invoice)} #{invoice.billing_date}
+                %td #{ number_to_currency(invoice.total_billing, unit: "RM", negative_format:"(%u%n)")}
+        %h4 Invoice Ageing
+        %hr
+        %table.table.table-bordered
+          %thead
+            %tr
+              %th Due in the future
+              %th Overdue 30 days
+              %th Overdue 31-90 days
+              %th overdue 90+ days
+          %tbody
+            %tr
+              - @ageing.each_pair do |key,value|
+                %td #{number_to_currency(value, unit:"RM", negative_format:"(%u%n)")}

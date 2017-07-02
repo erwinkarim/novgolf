@@ -1,0 +1,67 @@
+- content_for(:head){ "Monolith - Billings - Edit Invoices - #{@invoice.id}"}
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:monolith_path} Monolith
+        %li.breadcrumb-item
+          %a{href:monolith_invoices_path} Invoices
+        %li.breadcrumb-item.active Edit Invoice #{@invoice.id}
+  .row
+    .col-12
+      %h3 Summary of Invoice #{@invoice.id}
+      = render partial: "admin/invoices/invoice_summary"
+      - if @invoice.invoice_items.empty? then
+        %hr
+        %h5 Nothing to edit ...
+        %a.btn.btn-primary{href:monolith_invoices_path} Back
+      - else
+        %h4 Invoice Items
+        %form#invoice-items-form
+          %input{type:'hidden', name:'authenticity_token', value:form_authenticity_token}
+          %table.table
+            %thead
+              %tr
+                %th Category
+                %th Charges
+                %th Note
+            %tbody
+              - @invoice.invoice_items.each do |invoice_item|
+                %tr
+                  %td
+                    %select.form-control{name:"invoice_items[#{invoice_item.id}][invoice_item_category_id]" ,value:invoice_item.invoice_item_category.id}
+                      - InvoiceItemCategory.all.each do |invoice_item_cat|
+                        %option{value:invoice_item_cat.id, selected:invoice_item.invoice_item_category.id == invoice_item_cat.id}
+                          #{invoice_item_cat.caption}
+                  %td
+                    %input.form-control{type:'number',name:"invoice_items[#{invoice_item.id}][charges]",  value:invoice_item.charges}
+                  %td
+                    %input.form-control{type:'input',name:"invoice_items[#{invoice_item.id}][note]", value:invoice_item.note}
+          %button#submit-form.btn.btn-primary{type:'button', data:{id:@invoice.id}} Update!!
+:javascript
+  //too much work to create a react component just to send patch
+  // when it's only being used by 1-2 persons in early stage
+  // so a little bit of in-page javascript (oh the horror!!)
+  $('#submit-form').click(function(e){
+
+    fetch(`/monolith/invoices/${e.target.dataset.id}`,{
+      method:'PATCH',
+      credentials:'same-origin',
+      body: new FormData(document.getElementById('invoice-items-form'))
+    }).then(function(response){
+      //if got issues from rails
+      if(response.status>=400){
+        $.snackbar({content:'error when updating invoice items', style:'error'})
+        return;
+      }
+
+      return response.json();
+
+    }).then(function(json){
+      $.snackbar({content:json.message, style:'notice'});
+      window.location.replace(`/monolith/invoices`);
+      //got back to the invoice management
+
+    })
+  })

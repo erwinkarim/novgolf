@@ -44,6 +44,13 @@ Rails.application.routes.draw do
         get 'recreate_versions'
       end
     end
+    resources :billings, :only => [:index] do
+      collection do
+        resources :invoices, :only => [:index, :show]
+        get 'settings'
+      end
+      #manage user billings
+    end
     resources :golf_clubs do
       get 'dashboard'
       get 'tax_schedule'
@@ -80,6 +87,26 @@ Rails.application.routes.draw do
         get 'suggest'
         get 'load'
       end
+    end
+  end
+
+  # monolith is the superadmin, just like the monolith in space oddessy
+  namespace :monolith do
+    get '/' => "monolith#index"
+    resources :invoices, :only => [:index,:update, :edit, :show] do
+      collection do
+        post 'generate' => 'invoices#generate'
+        get 'load' => 'invoices#load'
+        get 'stats' => 'invoices#stats'
+      end
+      get 'settlement'
+      post 'settlement' => 'invoices#place_settlement'
+    end
+  end
+
+  namespace :invoke do
+    controller :jobs do
+      get 'invoices'
     end
   end
 

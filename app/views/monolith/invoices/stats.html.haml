@@ -1,0 +1,57 @@
+- content_for(:head){ "Monolith - Billings - Statistics"}
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:monolith_path} Monolith
+        %li.breadcrumb-item
+          %a{href:monolith_invoices_path} Invoices
+        %li.breadcrumb-item.active Statistics
+  .row
+    .col-12
+      %h3 Basic stats for Invoices
+      %hr
+      %table.table.table-bordered
+        %thead
+          %tr
+            %th Item
+            %th Value
+        %tbody
+          %tr
+            %td Invoice-able users
+            %td #{ @invoiceable_users}
+      %h4 Ageing
+      %table.table.table-bordered
+        %thead
+          %tr
+            %th Due in the future
+            %th Overdue <30 days
+            %th Overdue 31-90 days
+            %th Overdue >90 days
+        %tbody
+          %tr
+            - @ageing.each_pair do |key, this_age|
+              %td #{number_to_currency(this_age, unit:"RM", negative_format:"(%u%n)")}
+      %h4 Top Users
+      %table.table.table-bordered
+        %thead
+          %tr
+            %th User
+            %th Amount
+        %tbody
+          - @top_users.each do |row|
+            %tr
+              %td #{row[:user_name]}
+              %td #{number_to_currency(row[:total_billing], unit:"RM", negative_format:"(%u%n)")}
+      %h4 Top User Activities
+      %table.table.table-bordered
+        %thead
+          %tr
+            %th User
+            %th Transactions
+        %tbody
+          - @top_user_activities.each do |row|
+            %tr
+              %td #{row[:user_name]}
+              %td #{row[:invoice_activities]}

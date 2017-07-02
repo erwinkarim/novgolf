@@ -221,15 +221,6 @@ var FlightScheduleControl = React.createClass({
     var newTuple={[e.target.dataset.target]:newValue};
     this.setState(newTuple);
   },
-  updateStartTime: function(e){
-    this.setState({startTime:e.target.value});
-  },
-  updateEndTime: function(e){
-    this.setState({endTime:e.target.value});
-  },
-  updateInterval: function(e){
-    this.setState({interval:parseInt(e.target.value)});
-  },
   render: function(){
     return (
       <div>
@@ -292,35 +283,12 @@ var FlightScheduleControl = React.createClass({
           </div>
           <label className="col-4 col-form-label">Hours</label>
         </div>
-        <div className="form-group row">
-          <label className="col-4 col-form-label">Start Time:</label>
-          <label className="col-4 col-form-label">End Time:</label>
-          <label className="col-4 col-form-label">Interval (Minutes)</label>
-        </div>
-        <div className="form-group row">
-          <div className="col-4">
-            <input type="time" className="form-control" value={this.state.startTime} onChange={this.updateStartTime}
-              placeholder="HH:mm AM/PM" />
-          </div>
-          <div className="col-4">
-            <input type="time" className="form-control" value={this.state.endTime} onChange={this.updateEndTime}
-              placeholder="HH:mm AM/PM"/>
-          </div>
-          <div className="col-4">
-            <select className="form-control" value={this.state.interval} onChange={this.updateInterval}>{
-              arrayFromRange(4,20).map( (e,i) => {
-                return (<option key={i} value={e}>{e}</option>)
-              })
-            }</select>
-          </div>
-        </div>
         <div className="form-group">
         </div>
         <button type="button" className="btn btn-success" onClick={this.props.generateTeeTime}
           disabled={this.state.startTime == "" || this.state.endTime == ""}
           data-index-schedule={this.props.scheduleIndex} data-start-time={this.state.startTime} data-end-time={this.state.endTime}
           data-interval={this.state.interval} data-typical-duration={this.state.courseDurations[this.state.courseDurationIndex]}>
-
           Generate!
         </button>
       </div>
@@ -738,37 +706,6 @@ var FlightBox = React.createClass({
       secondTeeTime = new Date(secondTeeTime.getTime() + 1000*60*parseInt(e.target.dataset.interval));
     }
 
-    newTeeTimes[e.target.dataset.indexSchedule] = newTeeTimesArray;
-    this.setState({teeTimes:newTeeTimes});
-
-
-
-  },
-  generateTeeTime: function(e){
-    var newTeeTimes = this.state.teeTimes;
-    var newTeeTimesArray = [];
-
-    //inset the first one
-    var currentTime = new Date();
-    var endTime = new Date();
-
-    currentTime.setHours(e.target.dataset.startTime.split(":")[0]);
-    currentTime.setMinutes(e.target.dataset.startTime.split(":")[1]);
-    endTime.setHours(e.target.dataset.endTime.split(":")[0]);
-    endTime.setMinutes(e.target.dataset.endTime.split(":")[1]);
-
-    //startTime must be before endTime
-    if(currentTime.getTime() > endTime.getTime()){
-      $.snackbar({content:'Start Time must be earlier than End Time', style:'error'});
-      return;
-    }
-    //TODO: value must be valid between 0500 and 2300
-
-    while(currentTime.getTime() <= endTime.getTime()){
-      newTeeTimesArray.push(currentTime.toTimeString().substring(0,5));
-      currentTime = new Date(currentTime.getTime() + 1000*60*parseInt(e.target.dataset.interval));
-      console.log("newTeeTimesArray", newTeeTimesArray);
-    }
     newTeeTimes[e.target.dataset.indexSchedule] = newTeeTimesArray;
     this.setState({teeTimes:newTeeTimes});
 

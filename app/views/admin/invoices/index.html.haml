@@ -1,0 +1,25 @@
+- content_for(:head){ "Admin - Billings - Invoices"}
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:admin_path} Admin Console
+        %li.breadcrumb-item
+          %a{href:admin_billings_path} Billing
+        %li.breadcrumb-item.active Invoices
+  .row
+    .col-12
+      %h2 Invoices
+    .col-12
+      %table.table
+        %thead
+          %tr
+            %th Billing Date
+            %th Amount
+        %tbody
+          - @invoices.each do |invoice|
+            %tr
+              %td
+                %a{href:admin_invoice_path(invoice)} #{invoice.billing_date}
+              %td #{number_to_currency(invoice.total_billing, unit:"RM", negative_format:"(%u%n)")}
