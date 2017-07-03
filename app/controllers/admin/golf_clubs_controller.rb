@@ -92,7 +92,7 @@ class Admin::GolfClubsController < ApplicationController
       golf_club.setCourseListing(params[:courses])
 
       #amenities
-      new_am = params.has_key?(:amenities) ? params[:amenities].map{ |x,y| x.to_i } : []
+      new_am = params.has_key?(:amenities) ? params[:amenities].to_unsafe_h.map{ |x,y| x.to_i } : []
       new_am.each{ |x| golf_club.amenity_lists.new(:amenity_id => x).save!}
     end
 
@@ -169,7 +169,7 @@ class Admin::GolfClubsController < ApplicationController
       #update amenities listings
       #get current listing
       current_am = gc.amenity_lists.map{ |x| x.amenity_id }
-      new_am = params.has_key?(:amenities) ? params[:amenities].map{ |x,y| x.to_i } : []
+      new_am = params.has_key?(:amenities) ? params[:amenities].to_unsafe_h.map{ |x,y| x.to_i } : []
 
       #delete the ones that are not there anymore
       gc.amenity_lists.where(:amenity_id => current_am - new_am).each{ |x| x.destroy }
@@ -180,9 +180,7 @@ class Admin::GolfClubsController < ApplicationController
 
     #everything ok, redirect_to site
     respond_to do |format|
-      format.html {
-
-      }
+      format.html
       format.json {
         flash[:notice] = "Club Info Updated"
         render json:{ :path => {:admin => admin_golf_club_path(gc)}, :user => golf_club_path(gc) }

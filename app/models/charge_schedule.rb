@@ -1,7 +1,7 @@
 class ChargeSchedule < ActiveRecord::Base
   belongs_to :golf_club
   belongs_to :flight_schedule
-  belongs_to :tax_schedule
+  belongs_to :tax_schedule, optional: true
 
   after_initialize :init
 
