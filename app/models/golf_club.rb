@@ -467,7 +467,8 @@ class GolfClub < ActiveRecord::Base
 
   #return reviews
   def reviews
-    Review.joining{ user_reservation.golf_club }.where(:'user_reservations.golf_club_id' => self.id).order(:created_at => :desc)
+    club_id = self.id
+    Review.joining{ topic.of(UserReservation).golf_club}.where.has{ (topic.of(UserReservation).golf_club.id == club_id)}.order(:created_at => :desc)
   end
 
   # get rating stats for over 6 months ago

@@ -10,7 +10,7 @@ class UserReservation < ActiveRecord::Base
   belongs_to :second_course_listing, class_name:"CourseListing"
 
   has_one :review, as: :topic
-  belongs_to :contact, polymorphic: true
+  belongs_to :contact, polymorphic: true, optional: true
   has_many :ur_member_details, dependent: :destroy
   has_many :ur_transactions, dependent: :destroy
 
@@ -276,7 +276,7 @@ class UserReservation < ActiveRecord::Base
     options = default_options.merge(options)
 
     #sanity checks, expects that flight_info has all the necessary keys and values
-    flight_info = flight_info.symbolize_keys
+    #flight_info = flight_info.symbolize_keys
 
     # get the flight matrix
     #get the charge schedule based on flight_matrix_id
