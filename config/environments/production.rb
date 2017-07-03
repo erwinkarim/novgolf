@@ -93,4 +93,8 @@ Rails.application.configure do
 
   #ensure mails are delivered
   config.action_mailer.perform_deliveries = true
+
+  #encryp the secrets
+  config.read_encrypted_secrets = true
+
 end
