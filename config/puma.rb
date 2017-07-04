@@ -7,6 +7,15 @@
 threads_count = ENV.fetch("RAILS_MAX_THREADS") { 5 }
 threads threads_count, threads_count
 
+# Specifies the `environment` that Puma will run in.
+begin
+  ENV.fetch("RAILS_ENV")
+rescue IndexError
+  ENV.store("RAILS_ENV", "development")
+end
+#
+environment ENV.fetch("RAILS_ENV")
+
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 #
 #port        ENV.fetch("PORT") { 3000 }
