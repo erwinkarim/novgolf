@@ -18,7 +18,7 @@ Rails.application.configure do
 
     config.cache_store = :memory_store
     config.public_file_server.headers = {
-      'Cache-Control' => 'public, max-age=172800'
+      'Cache-Control' => "public, max-age=#{2.days.seconds.to_i}"
     }
   else
     config.action_controller.perform_caching = false
@@ -52,10 +52,7 @@ Rails.application.configure do
 
   # Use an evented file watcher to asynchronously detect changes in source code,
   # routes, locales, etc. This feature depends on the listen gem.
-  # config.file_watcher = ActiveSupport::EventedFileUpdateChecker
-
-  #time zone aware
-  config.active_record.time_zone_aware_types = [:datetime, :time]
+  config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   #testing queue adapter
   #config.active_job.queue_adapter = :shoryuken_later
@@ -63,7 +60,7 @@ Rails.application.configure do
 
   #mailer settings
   config.action_mailer.perform_deliveries = false
-  config.action_mailer.default_url_options = { host: 'localhost.localdomain', port: 5000}
+  config.action_mailer.default_url_options = { host: 'localhost.localdomain', port: 443}
 
   #force ssl
   #config.force_ssl = true

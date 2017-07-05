@@ -41,15 +41,15 @@ class AvatarUploader < CarrierWave::Uploader::Base
   #   process :resize_to_fit => [50, 50]
   # end
   version :thumb50 do
-    process :resize_and_pad => [50,50, "#78797B"]
+    process :resize_to_fit => [50,50]
   end
 
   version :thumb200 do
-    process :resize_and_pad => [200,200, "#78797B"]
+    process :resize_to_fit => [200,200]
   end
 
   version :thumb400 do
-    process :resize_and_pad => [400,400, "#78797B"]
+    process :resize_to_fit => [400,400]
   end
 
   version :square200 do

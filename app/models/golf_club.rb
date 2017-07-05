@@ -14,7 +14,7 @@ class GolfClub < ActiveRecord::Base
   belongs_to :user
   #should have has_many :reviews where topic_type = UserReservation
   # and topic_id = UserReservations.id and user_reservations.golf_club_id = id
-  belongs_to :tax_schedule
+  belongs_to :tax_schedule, optional:true
 
 
   validates_presence_of :name, :description, :address, :open_hour, :close_hour, :user_id, :tax_schedule_id
@@ -298,7 +298,7 @@ class GolfClub < ActiveRecord::Base
     self.transaction do
       #delete courses not in the new list
       CourseListing.where(:id => self.course_listings.map{|x| x.id} -
-        new_course_listings.map{ |k,v| v["id"].to_i}.select{ |x| !x.zero?}).each{ |x| x.destroy}
+        new_course_listings.to_unsafe_h.map{ |k,v| v["id"].to_i}.select{ |x| !x.zero?}).each{ |x| x.destroy}
 
       #add new courses if applicable (the course id should be empty/null)
       # or update the current ones
@@ -358,7 +358,7 @@ class GolfClub < ActiveRecord::Base
     self.transaction do
       #delete flight schedules that don't exists anymore
       FlightSchedule.where(:id => (self.flight_schedules.map{|x| x.id } -
-        flight_schedules.map{ |k,v| v["flight_id"].to_i }.select{ |x| !x.zero? }) ).each do |y|
+        flight_schedules.to_unsafe_h.map{ |k,v| v["flight_id"].to_i }.select{ |x| !x.zero? }) ).each do |y|
           y.setInactive
           #clean out if the fs is created and destroyed within 24 hours
           if(y.end_active_at - y.start_active_at < 24.hours) then
@@ -415,7 +415,7 @@ class GolfClub < ActiveRecord::Base
             :insurance_mode => elm["insurance_mode"].to_i })
 
           #remove flight matrices that does not exists anymore
-          new_times = elm["times"].map{|x| Time.parse("2000-01-01 #{x} +0000")}
+          new_times = elm["times"].to_unsafe_h.map{|x| Time.parse("2000-01-01 #{x} +0000")}
           current_flight.flight_matrices.where.not(:tee_time => new_times).each{ |x| x.setInactive }
 
           #handle the flight matrices
@@ -467,7 +467,8 @@ class GolfClub < ActiveRecord::Base
 
   #return reviews
   def reviews
-    Review.joining{ user_reservation.golf_club }.where(:'user_reservations.golf_club_id' => self.id).order(:created_at => :desc)
+    club_id = self.id
+    Review.joining{ topic.of(UserReservation).golf_club}.where.has{ (topic.of(UserReservation).golf_club.id == club_id)}.order(:created_at => :desc)
   end
 
   # get rating stats for over 6 months ago
