@@ -358,7 +358,6 @@ class GolfClub < ActiveRecord::Base
     self.transaction do
       #delete flight schedules that don't exists anymore
       FlightSchedule.where(:id => (self.flight_schedules.map{|x| x.id } -
-        # TODO: map doesn't work with ActionController::Parameters
         flight_schedules.to_unsafe_h.map{ |k,v| v["flight_id"].to_i }.select{ |x| !x.zero? }) ).each do |y|
           y.setInactive
           #clean out if the fs is created and destroyed within 24 hours
