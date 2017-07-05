@@ -8,6 +8,8 @@ class Review < ActiveRecord::Base
   validates_presence_of :user_id, :topic_id, :topic_type, :comment
   validates_presence_of :rating, if: :topic_is_user_reservation
 
+  validates_inclusion_of :topic_type, in: ["UserReservation", "GolfClub"]
+
   #should have rating if topic_type is UserReservation
   def topic_is_user_reservation
     topic_type == "UserReservation"
