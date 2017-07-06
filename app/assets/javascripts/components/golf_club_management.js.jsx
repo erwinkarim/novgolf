@@ -1,3 +1,26 @@
+var GolfClubTabSummary = React.createClass({
+  render: function(){
+    return (<div>golf club summary here....</div>)
+  }
+});
+
+var GolfClubTabPhotos = React.createClass({
+  render: function(){
+    return (<div>golf club photos here....</div>)
+  }
+});
+
+var GolfClubTabCourses = React.createClass({
+  render: function(){
+    return (<div>golf club courses here....</div>)
+  }
+});
+
+var GolfClubTabFlights = React.createClass({
+  render: function(){
+    return (<div>golf club flight info here....</div>)
+  }
+});
 
 var GolfClubMgmtCard = React.createClass({
   propTypes: {
@@ -32,16 +55,23 @@ var GolfClubMgmtCard = React.createClass({
           <ul className="nav nav-pills"> {
             tabs.map( (e,i) => {
               return (
-                <li className={`nav-link ${i==0 ? "active" : ""}`} key={i} data-target={`#club-${this.state.random_id}-${e}`} data-toggle="tab">{e}</li>
+                <li className={`nav-link ${i==0 ? "active" : ""}`} key={i} data-target={`#club-${this.state.random_id}-${e}`} data-toggle="tab">{toTitleCase(e)}</li>
               )
             })
           } </ul>
           <div className="tab-content mt-2">{
               tabs.map( (e,i) => {
+                var tabContent = null;
+                switch (e) {
+                  case "photos": tabContent = (<GolfClubTabPhotos />); break;
+                  case "courses": tabContent = (<GolfClubTabCourses />); break;
+                  case "flights": tabContent = (<GolfClubTabFlights />); break;
+                  default: tabContent = (<GolfClubTabSummary />);
+                };
+
                 return (
                   <div className={`tab-pane ${i==0 ? "active" : ""}`} key={i} id={`club-${this.state.random_id}-${e}`}>
-                    //render the propoer components here
-                    {`${e} tab content here`}
+                    { tabContent }
                   </div>
                 )
               })
