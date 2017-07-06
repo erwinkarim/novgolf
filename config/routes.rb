@@ -88,6 +88,9 @@ Rails.application.routes.draw do
         get 'load'
       end
     end
+    resources :courses, controller:'course_listings', :only => [:index] do
+
+    end
   end
 
   # monolith is the superadmin, just like the monolith in space oddessy
