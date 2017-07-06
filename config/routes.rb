@@ -90,6 +90,9 @@ Rails.application.routes.draw do
     end
     resources :courses, controller:'course_listings', :only => [:index] do
 
+      collection do
+        get 'load'
+      end
     end
   end
 

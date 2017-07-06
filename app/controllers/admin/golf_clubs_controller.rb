@@ -5,6 +5,13 @@ class Admin::GolfClubsController < ApplicationController
 
   def index
     @golf_clubs = current_user.golf_clubs
+
+    respond_to do |format|
+      format.html
+      format.json {
+        render json: @golf_clubs.map{ |x| { id:x.id, name:x.name}}
+      }
+    end
   end
 
   # GET      /admin/golf_clubs/:id(.:format)
