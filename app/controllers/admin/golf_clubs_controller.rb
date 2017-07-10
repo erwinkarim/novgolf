@@ -18,22 +18,52 @@ class Admin::GolfClubsController < ApplicationController
   def show
     #ensure that you can actually view this
     @golf_club = GolfClub.find(params[:id])
+    if current_user.id != @golf_club.user_id then
+      render json: {message:'You are not authorized to see this'}, status: :unauthorized
+      return
+    end
 
     @course_listings = @golf_club.course_listings
 
-    if current_user.id == @golf_club.user_id then
-      respond_to do |format|
-        format.html
-        format.json {
-          date = params.has_key?(:date) ? Date.parse(params[:date]) : Date.today + 1.day
-          result = GolfClub.search({ dateTimeQuery:Time.parse("#{date} 14:00 +0000"), spread:9.hours, club_id:params[:id],
-            loadCourseData:true, adminMode:true}).first
-          result = result.nil? ? {:club => [], :flights => [], :queryData => []} : result
-          render json:result
+    # TODO: load the data based on options
+    if params[:format] == "json" then
+      date = params.has_key?(:date) ? Date.parse(params[:date]) : Date.today + 1.day
+      result = GolfClub.search({ dateTimeQuery:Time.parse("#{date} 14:00 +0000"), spread:9.hours, club_id:params[:id],
+        loadCourseData:true, adminMode:true}).first
+      if params[:detailed] == "true" then
+        result[:club] = result[:club].merge(@golf_club.attributes.merge({
+            open_hour:@golf_club.open_hour.strftime("%H:%m"),
+            close_hour:@golf_club.close_hour.strftime("%H:%m")
+          }))
+        result[:club][:photos] = @golf_club.photos.order(:sequence => :desc).map{ |x|
+          {url:x.avatar.url, square200:x.avatar.square200.url, size:x.size, caption:x.caption}
         }
+        result[:club][:course_listings] = @golf_club.course_listings
+        result[:club][:flight_schedules] = @golf_club.flight_schedules.where.has{
+          (start_active_at < DateTime.now) & (end_active_at > DateTime.now)
+        }.map{ |x|
+          x.attributes.merge( {
+            charge_schedule:x.charge_schedule,
+            flight_matrices:x.flight_matrices.where.has{
+                (start_active_at < DateTime.now) & (end_active_at > DateTime.now)
+              }.map{ |fm|
+                fm.attributes.merge({
+                  tee_time: fm.tee_time.strftime("%H:%m"),
+                  second_tee_time: fm.second_tee_time.nil? ? '' : fm.second_tee_time.strftime("%H:%m")
+                })
+            }
+
+          })
+        }
+
       end
-    else
-      render :file => "public/401.html", :code => :unauthorized
+
+      result = result.nil? ? {:club => [], :flights => [], :queryData => []} : result
+    end
+
+    respond_to do |format|
+      format.html
+      format.json { render json:result }
     end
   end
 

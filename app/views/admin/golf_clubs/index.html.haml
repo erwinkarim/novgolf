@@ -6,29 +6,11 @@
         %li.breadcrumb-item
           %a{href:admin_path} Admin Console
         %li.breadcrumb-item.active Golf Clubs
-  .row
+  .row.mb-2
     .col-12
       %h2 Golf Clubs
     .col-12
       = react_component("GolfClubManagement", {})
-    .col-12
-      %p Show golf clubs that you manage here
-      %table.table
-        %thead
-          %tr
-            %th ID
-            %th Name
-            %th Date Created
-            %th Dashboard!
-        - @golf_clubs.each do |golf_club|
-          %tr
-            %td #{ golf_club.id }
-            %td #{ link_to golf_club.name, admin_golf_club_path(golf_club) }
-            %td #{ golf_club.created_at.strftime("%-d-%b-%Y")}
-            %td
-              %a{href:admin_golf_club_dashboard_path(golf_club), class:'btn btn-primary'}
-                %i.fa.fa-dashboard
-                Dashboard
   .row
     .col-12
       %a.btn.btn-primary{ :href => new_admin_golf_club_path } New
