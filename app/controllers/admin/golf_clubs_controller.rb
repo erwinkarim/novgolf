@@ -30,6 +30,7 @@ class Admin::GolfClubsController < ApplicationController
       date = params.has_key?(:date) ? Date.parse(params[:date]) : Date.today + 1.day
       result = GolfClub.search({ dateTimeQuery:Time.parse("#{date} 14:00 +0000"), spread:9.hours, club_id:params[:id],
         loadCourseData:true, adminMode:true}).first
+      result = result.nil? ? {:club => {}, :flights => [], :queryData => []} : result
       if params[:detailed] == "true" then
         result[:club] = result[:club].merge(@golf_club.attributes.merge({
             open_hour:@golf_club.open_hour.strftime("%H:%m"),
@@ -38,7 +39,9 @@ class Admin::GolfClubsController < ApplicationController
         result[:club][:photos] = @golf_club.photos.order(:sequence => :desc).map{ |x|
           {url:x.avatar.url, square200:x.avatar.square200.url, size:x.size, caption:x.caption}
         }
-        result[:club][:course_listings] = @golf_club.course_listings
+        result[:club][:course_listings] = @golf_club.course_listings.map{ |x|
+          x.attributes.merge( {course_status:x.course_status} )
+        }
         result[:club][:flight_schedules] = @golf_club.flight_schedules.where.has{
           (start_active_at < DateTime.now) & (end_active_at > DateTime.now)
         }.map{ |x|
@@ -55,10 +58,9 @@ class Admin::GolfClubsController < ApplicationController
 
           })
         }
-
+        result[:club][:amenities] = @golf_club.amenities
       end
 
-      result = result.nil? ? {:club => [], :flights => [], :queryData => []} : result
     end
 
     respond_to do |format|

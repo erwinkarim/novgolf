@@ -5,8 +5,12 @@
       %ol.breadcrumb
         %li.breadcrumb-item
           %a{href:admin_path} Admin Console
+        %li.breadcrumb-item
+          %a{href:admin_golf_clubs_path} Clubs
+        %li.breadcrumb-item
+          %a{href:admin_golf_club_path(@club)} #{@club.name}
         %li.breadcrumb-item.active Course Management
   .row
     .col-12
       %p Course Management Stuff Here
-      = react_component("courseManagement", {});
+      = react_component("CourseAdmin", {clubId:@club.id});

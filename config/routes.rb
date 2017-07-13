@@ -66,6 +66,8 @@ Rails.application.routes.draw do
       collection do
         get 'tax_schedules'
       end
+      resources :courses, controller:'course_listings', :only => [:index] do
+      end
     end
     resources :user_reservations, :only => [:create, :show, :destroy, :update], constraints: {format:'json'} do
       post 'pay'
@@ -85,12 +87,6 @@ Rails.application.routes.draw do
     resources :contacts, controller:'ur_contacts' do
       collection do
         get 'suggest'
-        get 'load'
-      end
-    end
-    resources :courses, controller:'course_listings', :only => [:index] do
-
-      collection do
         get 'load'
       end
     end

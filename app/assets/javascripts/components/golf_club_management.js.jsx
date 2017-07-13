@@ -42,13 +42,28 @@ var GolfClubTabSummary = React.createClass({
       </div>);
     };
 
+    var amenities_card = this.props.club.amenities.length == 0 ? (
+      <div className="card"><div className="card-block">No amenities ... </div></div>
+    ) : (
+      <div className="card"><div className="card-block"><ul>{ this.props.club.amenities.map( (amenity, index) => {
+          return (<li key={index}>{amenity.label}</li>)
+        })
+      }</ul></div></div>
+    );
+
     return (<div>
       <div className="card">
-        <div className="card-block">{this.props.club.name}</div>
-      </div>
-      <br />
-      <div className="card">
-        <div className="card-block"> {this.props.club.description} </div>
+        <div className="card-block pb-0">
+          <h3> {this.props.club.name} </h3>
+        </div>
+        <div className="card-block">Operating Hours: {this.props.club.open_hour} - {this.props.club.close_hour}</div>
+        <div className="card-block pt-0">
+          { this.props.club.description.split("\n").map( (para, index) => {
+            return (
+              <p key={index}>{para}</p>
+            )
+          } )}
+        </div>
       </div>
       <br />
       <div className="card">
@@ -57,10 +72,7 @@ var GolfClubTabSummary = React.createClass({
         <div className="card-block">Coordinates: {this.props.club.lat}, {this.props.club.lng}</div>
       </div>
       <br />
-      <div className="card">
-        <div className="card-block">Opens: {this.props.club.open_hour}</div>
-        <div className="card-block">Closes: {this.props.club.close_hour}</div>
-      </div>
+      { amenities_card }
       <br />
       <p>
         <a href={`/admin/golf_clubs/${this.props.club.id}`} className="btn btn-secondary mr-2">View Detail</a>
@@ -118,14 +130,22 @@ var GolfClubTabCourses = React.createClass({
     return (<div>
       {
         this.props.courses.map( (course,index) => {
+          var random_id = randomID();
           return (
             <div className="card mb-2" key={index}>
-              <div className="card-block">{course.name}</div>
+              <div className="card-block">
+                <a href={`#course-${random_id}`} data-toggle="collapse"> {course.name} ({course.course_status.desc}) </a>
+              </div>
+              <div className="collapse" id={`course-${random_id}`}>
+                <div className="card-block">
+                  Course management info here
+                </div>
+              </div>
             </div>
           );
         })
       }
-      <a href={`/admin/golf_clubs/${this.props.clubId}/edit`} className="btn btn-primary">Edit Courses</a>
+      <a href={`/admin/golf_clubs/${this.props.clubId}/courses`} className="btn btn-primary">Edit Courses</a>
     </div>)
   }
 });
