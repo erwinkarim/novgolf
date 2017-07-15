@@ -13,6 +13,56 @@ var CourseCard = React.createClass({
   }
 });
 
+var CourseGlobalSettingForm = React.createClass({
+  render: function(){
+
+    var random_id = randomID();
+
+    return (<div className="card mb-2">
+      <div className="card-block">
+        <h4 className="card-title">Global Settings</h4>
+        <p className="card-text">A summary of the settings here.</p>
+        <p className="card-text">
+          <a href={`#global-setting-form-${random_id}`} data-toggle="collapse">
+            <span className="fa-stack fa-lg">
+              <i className="fa fa-circle fa-stack-2x"></i>
+              <i className="fa fa-pencil fa-stack-1x fa-inverse"></i>
+            </span>
+          </a>
+        </p>
+        <div className="collapse" id={`global-setting-form-${random_id}`}>
+          <form>
+            <div className="form-group">
+              <label>Course Selection</label>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Facing</th>
+                    <th>Auto</th>
+                    <th>Manual</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Admin</td>
+                    <td><input type="radio" /></td>
+                    <td><input type="radio" /></td>
+                  </tr>
+                  <tr>
+                    <td>Customer</td>
+                    <td><input type="radio" /></td>
+                    <td><input type="radio" /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>);
+  }
+});
+
 var CourseEditForm = React.createClass({
   propTypes: {course:React.PropTypes.object},
   render: function(){
@@ -34,32 +84,8 @@ var CourseEditForm = React.createClass({
             <label>Course Name</label>
             <input type="text" className="form-control" />
           </div>
-          <div className="form-group">
-            <label>Course Selection</label>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Facing</th>
-                  <th>Auto</th>
-                  <th>Manual</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Admin</td>
-                  <td><input type="radio" /></td>
-                  <td><input type="radio" /></td>
-                </tr>
-                <tr>
-                  <td>Customer</td>
-                  <td><input type="radio" /></td>
-                  <td><input type="radio" /></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
           <h4>Maintainance Settings</h4>
-          <p>Maintainance schedule is here</p>
+          <p>Course will be closed on the following schedule:-</p>
           <button type="button" className="btn btn-primary">Update</button>
         </form>
       </div>
@@ -93,10 +119,13 @@ var CourseAdmin = React.createClass({
 
     var handle = this;
 
-    return (<div className="col-12 col-md-6">{
-      this.state.courses.map( (course, index) => {
-        return (<CourseCard course={course} key={index} />);
-      })
-    }</div>);
+    return (<div className="col-12 col-md-6">
+      <CourseGlobalSettingForm />
+      {
+        this.state.courses.map( (course, index) => {
+          return (<CourseCard course={course} key={index} />);
+        })
+      }
+    </div>);
   }
 })
