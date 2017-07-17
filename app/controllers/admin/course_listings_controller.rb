@@ -16,7 +16,11 @@ class Admin::CourseListingsController < ApplicationController
     if(params[:format] == 'json') then
       club = {
         id:@club.id, name:@club.name,
-        course_listings:@club.course_listings.map{|course| course.attributes.merge({course_status:course.course_status})}
+        course_listings:@club.course_listings.map{|course| course.attributes.merge({course_status:course.course_status})},
+        course_global_setting:@club.course_global_setting.attributes.merge({
+            admin_selection_value:CourseGlobalSetting.admin_selections[@club.course_global_setting.admin_selection],
+            user_selection_value:CourseGlobalSetting.user_selections[@club.course_global_setting.user_selection]
+          })
       }
     end
 
@@ -24,6 +28,30 @@ class Admin::CourseListingsController < ApplicationController
       format.html
       format.json { render json: club}
     end
+  end
+
+  # PATCH    /admin/golf_clubs/:golf_club_id/courses/global_setting(.:format)
+  def update_global_setting
+    club = GolfClub.find(params[:golf_club_id])
+
+    #ensure that you own this
+    if club.user_id != current_user.id then
+      render json: {message:'You don\'t own this club'}, status: :unauthorized
+      return
+    end
+
+    #update the CourseGlobalSetting object and give the new version of things
+    cgs = club.course_global_setting
+    cgs.assign_attributes({
+      admin_selection:params[:admin_selection].to_i, user_selection:params[:user_selection].to_i
+    })
+
+    if cgs.save! then
+      render json: {message:'Ok'}
+    else
+      render json: {message: cgs.errors.messages.join(';')}, status: :internal_server_error
+    end
+
   end
 
   # GET      /admin/courses/load

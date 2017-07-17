@@ -67,6 +67,9 @@ Rails.application.routes.draw do
         get 'tax_schedules'
       end
       resources :courses, controller:'course_listings', :only => [:index] do
+        collection do
+          patch 'global_setting' => 'course_listings#update_global_setting'
+        end
       end
     end
     resources :user_reservations, :only => [:create, :show, :destroy, :update], constraints: {format:'json'} do

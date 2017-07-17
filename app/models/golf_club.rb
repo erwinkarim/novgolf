@@ -11,6 +11,8 @@ class GolfClub < ActiveRecord::Base
   has_many :course_listings, :dependent => :destroy
   has_many :memberships
 
+  has_one :course_global_setting, :dependent => :destroy
+
   belongs_to :user
   #should have has_many :reviews where topic_type = UserReservation
   # and topic_id = UserReservations.id and user_reservations.golf_club_id = id
