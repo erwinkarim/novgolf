@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170717012713) do
+ActiveRecord::Schema.define(version: 20170718013014) do
 
   create_table "amenities", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "name"
@@ -68,6 +68,19 @@ ActiveRecord::Schema.define(version: 20170717012713) do
     t.datetime "updated_at", null: false
     t.index ["course_status_id"], name: "index_course_listings_on_course_status_id"
     t.index ["golf_club_id"], name: "index_course_listings_on_golf_club_id"
+  end
+
+  create_table "course_settings", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.integer "course_listing_id"
+    t.string "property"
+    t.string "value_type"
+    t.integer "value_int"
+    t.string "value_string"
+    t.integer "value_min"
+    t.integer "value_max"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["course_listing_id"], name: "index_course_settings_on_course_listing_id"
   end
 
   create_table "course_statuses", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -354,6 +367,7 @@ ActiveRecord::Schema.define(version: 20170717012713) do
   add_foreign_key "course_global_settings", "golf_clubs"
   add_foreign_key "course_listings", "course_statuses"
   add_foreign_key "course_listings", "golf_clubs"
+  add_foreign_key "course_settings", "course_listings"
   add_foreign_key "flight_matrices", "flight_schedules"
   add_foreign_key "flight_schedules", "golf_clubs"
   add_foreign_key "golf_clubs", "tax_schedules"
