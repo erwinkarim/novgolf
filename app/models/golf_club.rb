@@ -294,10 +294,17 @@ class GolfClub < ActiveRecord::Base
   end
 
   #set the course listings
+  # this function is usually called during update / create fn in admin/GolfClubsController
   def setCourseListing new_course_listings = []
     current_courses = self.course_listings
 
     self.transaction do
+      # create / update the CourseGlobalSetting model for the club
+      if self.course_global_setting.nil? then
+        cgs = CourseGlobalSetting.new({golf_club_id:self.id})
+        cgs.save!
+      end
+
       #delete courses not in the new list
       CourseListing.where(:id => self.course_listings.map{|x| x.id} -
         new_course_listings.to_unsafe_h.map{ |k,v| v["id"].to_i}.select{ |x| !x.zero?}).each{ |x| x.destroy}

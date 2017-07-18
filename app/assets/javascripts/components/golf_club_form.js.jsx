@@ -160,6 +160,9 @@ var CourseListingForm = React.createClass({
       <div className="card" id="course-list">
         <h3 className="card-header">Course Listings</h3>
         <div className="card-block">
+          <p className="card-text">Note: More management functions can be found at the course management page.</p>
+        </div>
+        <div className="card-block">
           <table className="table">
             <thead><tr>
               <th>ID</th><th>Name</th><th>Status</th><th>Action</th>
