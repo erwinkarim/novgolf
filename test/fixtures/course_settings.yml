@@ -2,7 +2,8 @@
 
 one:
   course_listing: one
-  property: MyString
+  course_listing_id: 1
+  course_setting_property_id: 1
   value_type: MyString
   value_int: 1
   value_string: MyString
@@ -11,7 +12,8 @@ one:
 
 two:
   course_listing: two
-  property: MyString
+  course_listing_id: 1
+  course_setting_property_id: 1
   value_type: MyString
   value_int: 1
   value_string: MyString

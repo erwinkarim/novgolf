@@ -66,9 +66,11 @@ Rails.application.routes.draw do
       collection do
         get 'tax_schedules'
       end
-      resources :courses, controller:'course_listings', :only => [:index] do
+      resources :courses, controller:'course_listings', :only => [:index,:update] do
         collection do
           patch 'global_setting' => 'course_listings#update_global_setting'
+          get 'statuses'
+          get 'defaults'
         end
       end
     end
