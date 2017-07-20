@@ -1,3 +1,4 @@
+//import CalendarHeatmap from './react-calendar-heatmap';
 
 var CourseCard = React.createClass({
   propTypes: {clubId:React.PropTypes.number,
@@ -281,6 +282,13 @@ var CourseEditForm = React.createClass({
     newCourse.course_settings.splice(e.target.dataset.index, 1);
     this.setState({course:newCourse});
   },
+  componentDidMount: function(){
+
+  },
+  toggle_edit: function(){
+    console.log('show/hide the edit button');
+    $(this.edit_button).toggle();
+  },
   render: function(){
     var random_id = randomID();
 
@@ -289,25 +297,17 @@ var CourseEditForm = React.createClass({
     };
 
     return (<div className="card-block">
-      <p className="card-text">
-        <a href={`#form-${random_id}`} data-toggle="collapse">
-          <span className="fa-stack fa-lg">
-            <i className="fa fa-circle fa-stack-2x"></i>
-            <i className="fa fa-pencil fa-stack-1x fa-inverse"></i>
-          </span>
-        </a>
-      </p>
-      <div className="collapse" id={`form-${random_id}`}>
+      <div className="collapse" id={`form-${random_id}`} ref={(form)=>{this.collapse_form=form;}}>
         <form ref={(form) => {this.settings_form = form;}}>
           <input type="hidden" value={this.props.csrf_token} name="authenticity_token" />
           <h4>Course Settings</h4>
           <div className="form-group">
             <label>Course Name</label>
-            <input type="text" className="form-control" name="name" defaultValue={this.props.course.name}/>
+            <input type="text" className="form-control" name="course_listing[name]" defaultValue={this.props.course.name}/>
           </div>
           <div className="form-group">
             <label>Course Status</label>
-            <select className="form-control" name="course_status_id" defaultValue={this.props.course.course_status_id}>{
+            <select className="form-control" name="course_listing[course_status_id]" defaultValue={this.props.course.course_status_id}>{
               this.props.statuses.map( (status, index) => {
                 return (<option key={index} value={status.id}>{status.desc}</option>)
               })
@@ -325,9 +325,13 @@ var CourseEditForm = React.createClass({
           <div className="form-group">
             <button type="button" className="btn btn-primary" onClick={this.newCourseSetting}> <i className="fa fa-plus"></i> </button>
           </div>
-          <button type="button" className="btn btn-primary" onClick={this.updateSetting}>Update</button>
+          <button type="button" className="btn btn-primary mr-2" onClick={this.updateSetting}>Update</button>
+          <button type="button" className="btn btn-secondary" onClick={this.toggle_edit} data-toggle="collapse" data-target={`#form-${random_id}`}>Cancel</button>
         </form>
       </div>
+      <p className="card-text" onClick={this.toggle_edit} ref={(button) => {this.edit_button = button;}}>
+        <a href={`#form-${random_id}`} className="btn btn-primary" data-toggle="collapse">Edit</a>
+      </p>
     </div>)
   }
 });

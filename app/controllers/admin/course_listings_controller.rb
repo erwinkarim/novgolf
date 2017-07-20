@@ -72,6 +72,10 @@ class Admin::CourseListingsController < ApplicationController
 
     #should update the course id name, availablitty and settings
     cl = CourseListing.find(params[:id])
+
+    #update the course name, availablitty
+    cl.update_attributes(course_listing_param)
+    #update the course settings
     cl.setCourseSettings params[:course_setting].to_unsafe_h.map{ |k,v| v}
 
     head :ok
@@ -97,5 +101,9 @@ class Admin::CourseListingsController < ApplicationController
       render json: {message:'You don\'t own this club'}, status: :unauthorized
       return
     end
+  end
+
+  def course_listing_param
+    params.require(:course_listing).permit(:name, :course_status_id)
   end
 end
