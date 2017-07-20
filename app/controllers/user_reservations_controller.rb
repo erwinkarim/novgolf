@@ -75,7 +75,6 @@ class UserReservationsController < ApplicationController
 
   # POST /golf_clubs/:golf_club_id/user_reservations/processing
   def processing
-
     #set that you need to complete this transaction (get reservation confirmation token) within 10 minutes
     @club = GolfClub.find(params[:golf_club_id])
     club_id = @club.id

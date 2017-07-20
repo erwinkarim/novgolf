@@ -42,7 +42,14 @@ var arrayFromRange = function(startNumber, endNumber){
 }
 
 var toTitleCase = function(inputStr){
-  return inputStr.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+  return inputStr.replace(/\w\S*/g, function(txt){
+    //shoud ignore ALLCAPS in-case it's an acrynm
+    if(txt === txt.toUpperCase()){
+      return txt;
+    };
+    
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
 };
 
 //get initials of a word

@@ -269,6 +269,9 @@ var CourseEditForm = React.createClass({
 
       $.snackbar({content:'Course settings updated', style:'notice'});
       handle.props.loadCourses();
+
+      //should toggle the collapsible form
+      handle.toggle_edit();
     });
   },
   newCourseSetting: function(e){
@@ -281,9 +284,6 @@ var CourseEditForm = React.createClass({
     var newCourse = this.state.course
     newCourse.course_settings.splice(e.target.dataset.index, 1);
     this.setState({course:newCourse});
-  },
-  componentDidMount: function(){
-
   },
   toggle_edit: function(){
     console.log('show/hide the edit button');
