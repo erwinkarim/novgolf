@@ -272,7 +272,12 @@ class UserReservation < ActiveRecord::Base
   def self.create_reservation flight_matrix_id, user_id, booked_date = Date.today, flight_info = {}, options = {}
 
     #sanity check, symbolize_keys
-    flight_info = flight_info.symbolize_keys
+    if flight_info.class == ActionController::Parameters then
+      flight_info = flight_info.to_unsafe_h.symbolize_keys
+    else
+      flight_info = flight_info.symbolize_keys
+    end
+
 
     default_options = { reserve_method:UserReservation.reserve_methods[:online],
       course_selection:self.course_selection_methods[:auto], course_selection_ids:[]}
