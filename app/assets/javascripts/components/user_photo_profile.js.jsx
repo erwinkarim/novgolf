@@ -12,21 +12,23 @@ var UserPhotoProfile = React.createClass({
   },
   componentDidMount: function(){
     var handle = this;
-    $(this.refs.fileUploader).fileupload({
+    $(this.fileUploader).fileupload({
       acceptFileTypes:/(\.|\/)(jpe?g)$/i,
       maxFileSize: 1073741824,
       dataType:'json',
       disableImageResize:false, imageMaxWidth:500, imageMaxHeight:500,
       start: function(e){
-        console.log(e);
+        //console.log(e);
+        console.log('start loading new photo');
         handle.setState({mode:'loading'});
         $.snackbar({content:'Uploading new profile picture'});
       },
       progress: function(e, data){
         var progress = parseInt(data.loaded / data.total * 100, 10);
-        console.log("progress", progress);
+        //console.log("progress", progress);
       },
       done: function(e,data){
+        console.log('done uploading picture');
         var newUser = Object.assign({}, data.result);
         handle.setState({user:newUser, mode:'ready'});
         $.snackbar({content:"Profile picture updated", style:'notice'});
@@ -39,16 +41,30 @@ var UserPhotoProfile = React.createClass({
     });
   },
   render: function() {
+    /*
     var loadingBtn = this.state.mode == 'ready' ? (
       <span className="btn btn-success fileinput-button mr-2">
         <i className="fa fa-plus"></i>
         <span> Select or Drop files...</span>
-        <input className="" ref="fileUploader" data-url={this.props.path} name="files[]" type="file" />
+        <input className="" ref={(btn)=> { this.fileUploader=btn;}} data-url={this.props.upload_path} name="files[]" type="file" />
       </span>
     ) : (
       <span className="btn btn-success mr-2">
         <i className="fa fa-cog fa-spin"></i>
         <span> Updating profile picture...</span>
+      </span>
+    );
+    */
+    var btnLabel = this.state.mode == 'ready' ?
+      ( <span> <i className="fa fa-plus"></i> Select or Drop files... </span> ) :
+      (
+        <span> <i className="fa fa-cog fa-spin"></i> <span> Updating profile picture...</span> </span>
+      );
+
+    var loadingBtn = (
+      <span className="btn btn-success fileinput-button mr-2">
+        {btnLabel}
+        <input className="" ref={(btn)=> { this.fileUploader=btn;}} data-url={this.props.upload_path} name="files[]" type="file" />
       </span>
     );
 
