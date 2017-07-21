@@ -283,9 +283,9 @@ class Admin::GolfClubsController < ApplicationController
   def destroy
     club = GolfClub.find(params[:id])
 
-    destroy_attemp = club.destroy
+    #destroy_attemp = club.destroy
 
-    if destroy_attemp then
+    if club.self_destruct then
       flash[:notice] = "Club '#{club.name}' has been deleted"
       redirect_to admin_golf_clubs_path
     else

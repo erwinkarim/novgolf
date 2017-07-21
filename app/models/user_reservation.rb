@@ -353,10 +353,10 @@ class UserReservation < ActiveRecord::Base
 
   #generate the random user reservation complete with review
   # TOOD, find a way to specify a date
-  def self.generate_random_reservation user = User.random
+  def self.generate_random_reservation user = User.random, club = GolfClub.find( ids[rand(0..ids.length-1)])
     #get the club
     ids = GolfClub.all.limit(100).pluck(:id)
-    club = GolfClub.find( ids[rand(0..ids.length-1)])
+    #club = GolfClub.find( ids[rand(0..ids.length-1)])
 
     #get a random flight_matrix
     fm_ids = club.flight_matrices.pluck(:id)
@@ -380,6 +380,7 @@ class UserReservation < ActiveRecord::Base
 
     reservation = user.user_reservations.new(
       flight_matrix_id:fm.id, golf_club_id:fs.golf_club_id,
+      charge_schedule_id:cs.id,
       status: 0,
       booking_date:proposed_date,
       booking_time: fm.tee_time, second_booking_time: fm.second_tee_time,

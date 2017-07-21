@@ -396,13 +396,15 @@ class GolfClub < ActiveRecord::Base
           #create new flight_matrices
           elm["times"].each_pair do |fk, fv |
             fm = fs.flight_matrices.new(
-              elm["days"].inject( {
-                :tee_time => Time.parse(fv["tee_time"]).strftime("%H:%M"),
-                :second_tee_time => Time.parse(fv["second_tee_time"]).strftime("%H:%M"),
-                :start_active_at => DateTime.now
-              }){
-                |p,n| p.merge({ "day#{n}".to_sym => 1})
-              }
+              (1..7).inject({}){|p,n| p.merge({"day#{n}".to_sym => 0})}.merge(
+                elm["days"].inject( {
+                  :tee_time => Time.parse(fv["tee_time"]).strftime("%H:%M"),
+                  :second_tee_time => Time.parse(fv["second_tee_time"]).strftime("%H:%M"),
+                  :start_active_at => DateTime.now
+                }){
+                  |p,n| p.merge({ "day#{n}".to_sym => 1})
+                }
+              )
             )
             fm.save!
           end
@@ -519,5 +521,18 @@ class GolfClub < ActiveRecord::Base
   #get active flight schedules
   def active_flight_schedules
     self.flight_schedules.where.has{end_active_at >= DateTime.now }
+  end
+
+  # proper way to delete
+  def self_destruct
+    # delete all ur invoice
+    UrInvoice.where(:golf_club_id => self.id).destroy_all
+
+    # delete user_reservations
+    self.user_reservations.destroy_all
+
+    # delete self
+    self.destroy
+
   end
 end
