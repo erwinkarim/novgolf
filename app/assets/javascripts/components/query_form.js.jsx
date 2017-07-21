@@ -89,15 +89,6 @@ var QueryForm = React.createClass({
               <div className="text-center hidden-md-up"><button className="btn btn-primary" type="submit">Search</button></div>
               <div className="hidden-sm-down"><br /><button className="btn btn-primary" type="submit">Search</button></div>
             </div>
-            <div className="col-12 col-md-6">
-              <br />
-              <div className="card">
-                <div className="card-block">
-                  I have <select name="pax" className="form-control" defaultValue={this.props.queryPax}>{ [2,3,4,5,6,7,8].map( (e,i) =>
-                    <option key={i}>{e}</option>)}</select> balls in my game(s)
-                </div>
-              </div>
-            </div>
           </form>
         </div>
       </div>

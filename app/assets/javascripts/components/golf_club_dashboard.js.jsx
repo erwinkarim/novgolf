@@ -170,9 +170,9 @@ var GolfClubDashStatus = React.createClass({
 
       moneyInfo = (
         <li className="list-group-item">
-          <h4>Tax: {toCurrency(parseFloat(this.props.flightInfo.tax))}</h4>
-          <h3>Total: {toCurrency(parseFloat(this.props.flightInfo.totalPrice))} </h3>
-          <h4>{outstandingModalLink}: {outstanding_value}</h4>
+          <h4 className="w-100">Tax: {toCurrency(parseFloat(this.props.flightInfo.tax))}</h4>
+          <h3 className="w-100">Total: {toCurrency(parseFloat(this.props.flightInfo.totalPrice))} </h3>
+          <h4 className="w-100">{outstandingModalLink}: {outstanding_value}</h4>
         </li>
       );
     };
