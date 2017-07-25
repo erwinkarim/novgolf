@@ -19,16 +19,18 @@ environment ENV.fetch("RAILS_ENV")
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 #
 #port        ENV.fetch("PORT") { 3000 }
-=begin
 if ENV.fetch("RAILS_ENV") == 'development'
+  port        ENV.fetch("PORT") { 3000 }
+=begin
   ssl_bind '0.0.0.0', '5000', {
     key: ENV.fetch("SSL_KEY_PATH"),
     cert: ENV.fetch("SSL_CERT_PATH"),
     verify_mode: 'none'
   }
-end
 =end
-bind "unix:////Users/erwinkarim/novgolf/tmp/sockets/puma.sock"
+else
+  bind "unix:////Users/erwinkarim/novgolf/tmp/sockets/puma.sock"
+end
 
 # Specifies the `environment` that Puma will run in.
 #

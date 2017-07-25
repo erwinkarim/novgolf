@@ -137,4 +137,4 @@ gem 'high_voltage', '~> 3.0.0'
 #track changes
 gem 'paper_trail'
 
-#gem 'webpacker', '~> 2.0'
+gem 'webpacker', '~> 2.0'

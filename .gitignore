@@ -29,3 +29,5 @@ public/uploads/*
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+/public/packs
+/node_modules
