@@ -34,7 +34,8 @@
           queryDate: @date,
           paths: { reserve: reserve_golf_club_user_reservations_path(params[:id]),
             golfClub:golf_club_path(params[:id]) },
-          flights: @result[:flights], queryData: @result[:queryData], insurance_modes:ChargeSchedule.insurance_modes.map{ |k,v| k} }
+          flights: @result[:flights], queryData: @result[:queryData], insurance_modes:ChargeSchedule.insurance_modes.map{ |k,v| k},
+          options: {GolfClubTimesShowPrices:true, displayCourseGroup:@result[:club][:course_user_selection] != CourseGlobalSetting.user_selections["user_auto_select"]} } 
 .container
   .row
     .col-12

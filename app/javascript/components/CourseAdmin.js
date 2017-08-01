@@ -1,32 +1,98 @@
 import React, {PropTypes} from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
+import {RRule, RRuleSet,rrulestr} from 'rrule';
 
 class CourseCalendar extends React.Component {
+  constructor(props){
+    super(props);
+    //convert from course_settings rules to rrule
+    this.updateCalendar(props);
+  }
+  updateCalendar(props){
+    //update the calendar heat map
+    var ruleset = new RRuleSet();
+
+    props.course_settings.map( (cs, index) => {
+      switch (cs.course_setting_property_id) {
+        case 2:
+          //every Nth day of the month
+          //ru.push(`FREQ=WEEKLY;WKST=MO;BYMONTHDAY=20`);
+          ruleset.rrule(
+            new RRule( RRule.parseString( `FREQ=WEEKLY;WKST=MO;BYMONTHDAY=${cs.value_int}` ) )
+          );
+          break;
+        case 3:
+          //every <x>th <day> of the month
+          var occurance = JSON.parse(cs.value_string);
+          //var occurance = JSON.parse("{\"week\":\"2\",\"day\":\"4\"}" );
+          ruleset.rrule(
+            new RRule( RRule.parseString( `FREQ=MONTHLY;WKST=MO;BYDAY=${getDayOfWeekISO(occurance.day)};BYSETPOS=${occurance.week}` ))
+          );
+          break;
+        case 4:
+          //specific date range
+          var minDate = new Date(cs.value_min);
+          var minDateString = `${minDate.getFullYear()}${pad(minDate.getMonth()+1)}${pad(minDate.getDate())}`
+          var maxDate = new Date(cs.value_max);
+          var maxDateString = `${maxDate.getFullYear()}${pad(maxDate.getMonth()+1)}${pad(maxDate.getDate())}`
+
+          ruleset.rrule(
+            new RRule( RRule.parseString(
+              `FREQ=DAILY;DTSTART=${minDateString}T080100Z;UNTIL=${maxDateString}T080100Z;WKST=MO` ))
+          );
+          break;
+        default:
+          //every <day> of the month
+          ruleset.rrule(
+            new RRule( RRule.parseString( `FREQ=WEEKLY;WKST=MO;BYDAY=${getDayOfWeekISO(cs.value_int)}`) )
+          );
+      }
+
+    });
+    this.state = {ruleset:ruleset};
+
+  }
   componentDidMount(){
-    $('[data-toggle="tooltip"]').tooltip();
+    $('[data-toggle="tooltip"]').tooltip({
+      delay:{ "show": 500, "hide": 100 }
+    });
+  }
+  componentWillReceiveProps(nextProps){
+    //update the calender if if's different than the last one
+    this.updateCalendar(nextProps)
   }
   render(){
-    //convert rules to dates
+    //lookup and convert to count:1
+    var dateValues = this.state.ruleset.between(new Date( Date.now()), new Date(Date.now() + 7776000000) ).map(
+      (dateValue,index) => {
+        return { date:dateValue, count:1};
+      }
+    );
 
     return <div className="card-block mb-2 pl-4 pr-4 pb-4">
       <CalendarHeatmap
         endDate={new Date(Date.now() + 7776000000)} numDays={90}
-        values={[ { date: '2017-08-01', count: 1 }, { date: '2017-08-03', count: 4 }, { date: '2017-08-06', count: 2 } ]}
-        classForValue={(value) => { if (!value) { return 'color-empty'; } return `color-scale-${value.count}`; }}
-        titleForValue={(value) => { if (!value) { return `No date`; } return `Date is ${value.date}`; }}
+        values={ dateValues }
+        classForValue={(value) => { if (!value) { return 'color-github-1'; } return `color-red-${value.count}`; }}
+        titleForValue={(value) => { if (!value) { return `Open`; } return `Closed on ${value.date.toDateString()}`; }}
         tooltipDataAttrs={ {'data-toggle':'tooltip'} }
       />
+      <p>Rules:</p>
+      <ul>{ this.state.ruleset.valueOf().map( (icalrule, index) => {
+        var rrule = rrulestr(icalrule);
+        return (<li key={index}>{icalrule}</li>);
+        })
+      }</ul>
     </div>
   }
 }
+
 
 class CourseCard extends React.Component {
   render(){
     return (<div className="card mb-2">
       <div className="card-block">
         <h4 className="card-title">{this.props.course.name}</h4>
-        <p className="card-text">Lay out the off schedule here</p>
-        <p className="card-text">Graphical representation of when this thing is going to be close would be nice</p>
       </div>
       <CourseCalendar course_settings={this.props.course.course_settings} setting_properties={this.props.setting_properties} />
       <CourseEditForm clubId={this.props.clubId} csrf_token={this.props.csrf_token}
@@ -170,6 +236,7 @@ var CourseMaintenanceSchGrp = React.createClass({
             return (<option key={index} value={day}>{getDayOfWeek(day)}</option>);
         })
       }</select>
+      <label></label>
     </div>);
 
     //day of the month schedule
@@ -291,10 +358,10 @@ var CourseEditForm = React.createClass({
       }
 
       $.snackbar({content:'Course settings updated', style:'notice'});
-      handle.props.loadCourses();
-
       //should toggle the collapsible form
       handle.toggle_edit();
+      handle.props.loadCourses();
+
     });
   },
   newCourseSetting: function(e){

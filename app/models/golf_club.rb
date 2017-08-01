@@ -106,6 +106,7 @@ class GolfClub < ActiveRecord::Base
     rel = self.joining{
         flight_schedules.flight_matrices
       }.joining{ course_listings
+      }.joining{ course_global_setting
       }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joining{
         flight_schedules.charge_schedule
       }.where.has{
@@ -126,13 +127,14 @@ class GolfClub < ActiveRecord::Base
         max_pax, cart, caddy, insurance,
         flight_matrices.id, charge_schedules.note,
         min_cart, max_cart, min_caddy, max_caddy,
-        insurance_mode
+        insurance_mode, user_selection
       ").selecting{[id,
         name, flight_schedules.charge_schedule.session_price, flight_schedules.flight_matrices.tee_time, flight_schedules.flight_matrices.second_tee_time,
         flight_schedules.min_pax, #4
         flight_schedules.max_pax, flight_schedules.charge_schedule.cart, flight_schedules.charge_schedule.caddy, flight_schedules.charge_schedule.insurance,        #8
         flight_schedules.flight_matrices.id.as('fm_id'), 'min(tr.status) as tr_min_status', flight_schedules.charge_schedule.note, flight_schedules.min_cart,  #12
         flight_schedules.max_cart, flight_schedules.min_caddy, flight_schedules.max_caddy, flight_schedules.charge_schedule.insurance_mode,  #16
+        course_global_setting.user_selection,
         'count(course_listings.id) as cl_count', 'count(tr.course_listing_id) as ur_cl_count'
         ]
       }.to_sql
@@ -143,7 +145,9 @@ class GolfClub < ActiveRecord::Base
         if club.nil? then
           p << {
             :club => { :tax_schedule => GolfClub.find(n["id"]).tax_schedule, :id => n["id"],
-              :name => n["name"], :photos => GolfClub.find(n["id"]).photos.order(:sequence => :desc).limit(3).map{ |x| x.avatar.banner400.url} },
+              :name => n["name"], :photos => GolfClub.find(n["id"]).photos.order(:sequence => :desc).limit(3).map{ |x| x.avatar.banner400.url},
+              :course_user_selection =>  n["user_selection"]
+            },
             :flights => [ {
               :minPax => n["min_pax"], :maxPax => n["max_pax"],
               :minCart => n["min_cart"], :maxCart => n["max_cart"],
@@ -175,6 +179,7 @@ class GolfClub < ActiveRecord::Base
 
       #if more details course data require, go ask the database
       # TODO: put course data on 2nd tee time
+      # TODO: add maintenance data
       if options[:loadCourseData] then
         queryDate =  options[:dateTimeQuery].strftime("%Y-%m-%d")
         course_query_statement = rel.selecting{ [id,
@@ -534,5 +539,11 @@ class GolfClub < ActiveRecord::Base
     # delete self
     self.destroy
 
+  end
+
+  def open_courses date = Date.today
+    courses = []
+    self.course_listings.inject([]){ |p,v| if v.isOpen? date then courses << v.id end }
+    return courses
   end
 end

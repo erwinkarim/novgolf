@@ -87,7 +87,12 @@ gem 'font-awesome-rails'
 source 'https://rails-assets.org' do
   gem 'rails-assets-tether', '>= 1.1.0'
 end
+
+#styling
 gem 'bootstrap', '= 4.0.0.alpha6'
+
+# js management + view handler
+gem 'webpacker', '~> 2.0'
 gem 'react-rails'
 
 #database
@@ -137,4 +142,5 @@ gem 'high_voltage', '~> 3.0.0'
 #track changes
 gem 'paper_trail'
 
-gem 'webpacker', '~> 2.0'
+# handle date reoccurance envets (ie: maintence schedule)
+gem 'ice_cube'

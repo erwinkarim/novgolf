@@ -34,9 +34,10 @@ class Admin::CourseListingsController < ApplicationController
 
   # PATCH    /admin/golf_clubs/:golf_club_id/courses/global_setting(.:format)
   def update_global_setting
-    check_club_owner params[:golf_club_id]
+    club = check_club_owner params[:golf_club_id]
 
     #update the CourseGlobalSetting object and give the new version of things
+
     cgs = club.course_global_setting
     cgs.assign_attributes({
       admin_selection:params[:admin_selection].to_i, user_selection:params[:user_selection].to_i
@@ -101,6 +102,8 @@ class Admin::CourseListingsController < ApplicationController
       render json: {message:'You don\'t own this club'}, status: :unauthorized
       return
     end
+
+    return club
   end
 
   def course_listing_param

@@ -47,7 +47,7 @@ var toTitleCase = function(inputStr){
     if(txt === txt.toUpperCase()){
       return txt;
     };
-    
+
     return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
   });
 };
@@ -70,6 +70,19 @@ var getDayOfWeek = function(n){
 
   return weekday[n];
 };
+
+var getDayOfWeekISO = function(n){
+  var weekday = new Array(7);
+  weekday[0] = 'SU';
+  weekday[1] = 'MO';
+  weekday[2] = 'TU';
+  weekday[3] = 'WE';
+  weekday[4] = 'TH';
+  weekday[5] = 'FR';
+  weekday[6] = 'SA';
+
+  return weekday[n];
+}
 
 //pad the number 0-9 to 01 to 09
 var pad = function(n){

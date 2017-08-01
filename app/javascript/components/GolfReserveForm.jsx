@@ -43,8 +43,18 @@ var GolfReserveForm = React.createClass({
       prices: [],
       random_id: randomID(),
       tax:0,
-      totalPrice: 0
+      totalPrice: 0,
+      course_availablity_loaded: false, available_courses: []
     }
+  },
+  checkAvailableCourses: function(){
+    fetch(`/golf_clubs/${this.props.club.id}/open_courses?date=${this.props.queryData.date}`, {
+      credentials:'same-origin'
+    }).then( (response) => {
+      return response.json();
+    }).then( (json) => {
+      this.setState({course_availablity_loaded:true, available_courses:json.course_listings_id});
+    });
   },
   componentDidMount: function(){
     $(this.refs.reserveBtnLi).hide();
@@ -109,6 +119,7 @@ var GolfReserveForm = React.createClass({
           {
             id:randomID(),
             teeTime:this.props.flights[value].tee_time,
+            first_tee_time:this.props.flights[value].tee_time,
             second_tee_time:this.props.flights[value].second_tee_time,
             index:newIndex, flightIndex:value,
             pax:this.props.flights[value].minPax,
@@ -124,6 +135,17 @@ var GolfReserveForm = React.createClass({
       newFlightInfo.map( (e,i) => Object.assign(e, {index:i}));
 
       this.setState({selectedTeeTimes:newTeeTimes, selectedTeeTimesIndex:newIndex, flightInfo:newFlightInfo});
+
+      /*
+        load the course availablity if
+        * you can actually choose a course
+        * course availablity data is not loaded yet
+      */
+
+      if(this.props.options.displayCourseGroup && !this.state.course_availablity_loaded){
+        console.log('check available_courses');
+        this.checkAvailableCourses();
+      }
       /*
       var newTotalPrice = this.updateTotalPrice();
       var newTax = (newTotalPrice * this.props.club.tax_schedule.rate);
@@ -199,6 +221,7 @@ var GolfReserveForm = React.createClass({
               return (
                 <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} isActive={isActive}
                   flightIndex={e.flightIndex} deleteFlight={this.deleteFlight}
+                  available_courses={this.state.available_courses}
                   insurance_modes={this.props.insurance_modes} options={this.props.options}
                   taxSchedule = {this.props.club.tax_schedule} />
               )

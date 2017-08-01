@@ -270,6 +270,10 @@ body{
   min-width: 90vw;
 }
 
+/* set the height to 38px */
+.h-38px{
+  height: 38px;
+}
 /* show a cursor when hovered */
 .cursor-pointer{
   cursor:pointer;
@@ -288,4 +292,13 @@ span.step {
   margin-right: 5px;
   text-align: center;
   width: 2.4em;
+}
+
+/* box shadow*/
+.b-shadow{
+  box-shadow: 0 4px 8px 0 rgba(1, 76, 170, 0.2), 0 6px 20px 0 rgba(1, 76, 170, 0.19);
+}
+
+.highlight-box{
+  border: 2px solid black !important;
 }

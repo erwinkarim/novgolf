@@ -118,6 +118,7 @@ Rails.application.routes.draw do
   end
 
   resources :golf_clubs, :only => [:index, :show] do
+    get 'open_courses'
     resources :flight_matrices, :only => [:index]
     resources :user_reservations, :only => [:index] do
       collection do

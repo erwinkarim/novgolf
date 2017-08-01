@@ -9,8 +9,10 @@ var golfCardDefaultOptions = {
 //content of each tab to show how many balls, insurance, etc being choosen for each flight
 var ReserveFormPage = React.createClass({
   propTypes: {
+    club: React.PropTypes.object,
     flightInfo:React.PropTypes.object,
     flight:React.PropTypes.object,
+    available_courses: React.PropTypes.array,
     isActive: React.PropTypes.bool,
     options: React.PropTypes.object,
     displayAs: React.PropTypes.oneOf(['card', 'flushed-list']),
@@ -67,6 +69,14 @@ var ReserveFormPage = React.createClass({
       {caption:'Insurance', value:'insurance', price:'insurance'},
     ]
 
+    //display the course selection component if user/admin has the right to do so
+    var courseSelectionComponent = this.props.options.displayCourseGroup  ? (
+      <CourseSelection courses={this.props.flight.course_data.courses}
+        available_courses={this.props.available_courses}
+        flightInfo={this.props.flightInfo} selectedCourse={this.props.selectedCourse}
+        adminMode={this.props.courseSelectionAdminMode} updatePrice={this.props.updatePrice}/>
+    ) : null;
+
     var formContent = (
       <div className="w-100">
         <input type="hidden" name={"flight[" + this.props.flightInfo.id + "][matrix_id]"} value={this.props.flight.matrix_id} />
@@ -116,6 +126,7 @@ var ReserveFormPage = React.createClass({
             )
           }
 
+
           //set the pricing to zero for members field
           var elmPrice = this.props.flightInfo[formContentElm.value] * parseFloat(this.props.flight.prices[formContentElm.price]);
           if(formContentElm.value == "member"){ elmPrice = 0; }
@@ -137,15 +148,14 @@ var ReserveFormPage = React.createClass({
 
           );
         })}
+
         <div className="form-group row mb-1">
            <label className="col-5 offset-2">Tax</label>
            <label className="col-5">
              {toCurrency(this.tax_amount())}
            </label>
          </div>
-        <CourseSelection courses={this.props.flight.course_data.courses}
-          flightInfo={this.props.flightInfo} selectedCourse={this.props.selectedCourse}
-          adminMode={this.props.courseSelectionAdminMode} updatePrice={this.props.updatePrice}/>
+         { courseSelectionComponent}
 
       </div>
     );

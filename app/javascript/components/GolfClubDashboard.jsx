@@ -155,14 +155,7 @@ var GolfClubDashStatus = React.createClass({
         <li className="list-group-item">
           <GolfCoursesGroup
             flight={flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}
-            reservation={this.props.flightInfo}/>
-        </li>
-      )
-
-      courseInfo = (
-        <li className="list-group-item">
-          <GolfCoursesGroup
-            flight={flight} selectCourse={this.props.selectCourse} selectedCourse={this.props.selectedCourse}
+            available_courses={this.props.available_courses}
             reservation={this.props.flightInfo}/>
         </li>
       )
@@ -170,6 +163,7 @@ var GolfClubDashStatus = React.createClass({
       flightInfo = (
         <ReserveFormPage flight={flight} flightInfo={ this.props.flightInfo } isActive={true} updatePrice={this.props.updatePax }
           selectCourse={this.props.selectCourse} options={this.props.options} selectedCourse={this.props.selectedCourse}
+          available_courses={this.props.available_courses}
           updateMembersList={this.props.updateMembersList} displayAs="flushed-list" courseSelectionAdminMode={true} />
       )
 
@@ -568,7 +562,7 @@ var GolfCoursesGroup = React.createClass({
     reservation:React.PropTypes.object
   },
   getDefaultProps: function(){
-    return {selectedCourse:0};
+    return {selectedCourse:0, available_courses:[]};
   },
   getInitialState: function(){
     return {random_id:randomID()};
@@ -642,6 +636,7 @@ var GolfCoursesGroup = React.createClass({
       <div>
         <p>Courses:</p>
         <div className="btn-group w-100 flex-wrap" data-toggle="buttons">{ this.props.flight.course_data.courses.map( (e,i) => {
+          //color the course button
           var reserve_status = "secondary"
           switch (e.reservation_status) {
             case 1: reserve_status = "warning"; break;
@@ -650,12 +645,19 @@ var GolfCoursesGroup = React.createClass({
             case 3: reserve_status = "danger"; break;
             default: reserve_status = "secondary";
           };
+
+          //disable the course if necessary
+          if(!this.props.available_courses.includes(e.id)){
+            var disable_status = 'disabled';
+          };
+
+          //set if this the selected course
           var activeState = (i == this.props.selectedCourse) ? "active" : null;
+
           return (
-            <label className={`btn btn-${reserve_status} ${activeState}`} key={i} onClick={this.props.selectCourse}
+            <label className={`btn btn-${reserve_status} ${disable_status} ${activeState}`} key={i} onClick={this.props.selectCourse}
               data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}
               data-target="first_course_id" data-value={e.id}>
-
               <input type="radio" name="courses" value={`course-${e.id}`}  />
               {e.name}
             </label>
@@ -697,7 +699,7 @@ var GolfClubDashboard = React.createClass({
     refreshEvery:React.PropTypes.number
   },
   getDefaultProps: function(){
-      return { options: {displayCourseGroup:false, GolfClubTimesShowPrices:false, displayMembersModal:true}, refreshEvery:60};
+      return { options: {displayCourseGroup:true, GolfClubTimesShowPrices:false, displayMembersModal:true}, refreshEvery:60};
   },
   getInitialState: function(){
     var today = new Date();
@@ -709,7 +711,8 @@ var GolfClubDashboard = React.createClass({
       loadFlight: false, selectedArray:null, selectedFlight:null, selectedCourse:null,
       flightInfo:FLIGHT_INFO_DEFAULTS,
       flightTransaction:null,
-      cashValue:0.0, processing:false
+      cashValue:0.0, processing:false,
+      available_courses:[]
     }
   },
   tick: function(){
@@ -831,10 +834,14 @@ var GolfClubDashboard = React.createClass({
     this.setState({flightInfo:newFlightInfo});
   },
   selectCourse: function(e){
+    //ignore request if the courseId is not open
+    if(!this.state.available_courses.includes(parseInt(e.target.dataset.courseId))){
+      return;
+    }
+
     //load and update the course info when selected
-    //console.log("selected course id", e.target.dataset.courseId);
-    //console.log("should load user_reservation", e.target.dataset.reservationId)
     if (e.target.dataset.reservationId == null){
+
       //if there's no reservation ID, update flightInfo to default values
       var flight = this.state.flightsArray[this.state.selectedArray][this.state.selectedFlight];
       /*
@@ -926,9 +933,6 @@ var GolfClubDashboard = React.createClass({
         handle.setState({flightTransaction:null, flightInfo:data.newFlightInfo});
       };
     });
-
-
-
   },
   updateMembersList: function(e){
     var membersArray = $(this.refs.membersModal.refs.memberBody).serializeArray();
@@ -1181,6 +1185,22 @@ var GolfClubDashboard = React.createClass({
   componentWillUnmount: function(){
       clearInterval(this.interval);
   },
+  componentDidUpdate: function(prevProps, prevState){
+    var handle = this;
+
+    //fetch course availble data is the date selected changed
+    if(prevState.selectedArray != this.state.selectedArray){
+      console.log('asking server for course status');
+      fetch(`/golf_clubs/${handle.props.club.id}/open_courses?date=${handle.state.days[handle.state.selectedArray]}`, {
+        credentials:'same-origin'
+      }).then( (response) => {
+        return response.json();
+      }).then( (json) => {
+        handle.setState({available_courses:json.course_listings_id})
+      });
+    }
+
+  },
   render: function(){
     var dashStats = (<GolfClubDashStatistics flightsArray={this.state.flightsArray} days={this.state.days} token={this.props.token} />);
 
@@ -1221,6 +1241,7 @@ var GolfClubDashboard = React.createClass({
               flightsArray={this.state.flightsArray}
               selectedArray={this.state.selectedArray} selectedFlight={this.state.selectedFlight} selectedCourse={this.state.selectedCourse}
               selectCourse={this.selectCourse}
+              available_courses={this.state.available_courses}
               flightTransaction={this.state.flightTransaction}
               days={this.state.days} updatePax={this.updatePax} flightInfo={this.state.flightInfo} options={this.props.options}
               reservationUpdate={this.reservationUpdate} reservationCancel={this.reservationCancel} reservationNew={this.reservationNew}

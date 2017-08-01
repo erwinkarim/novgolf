@@ -45,3 +45,12 @@
 .react-calendar-heatmap .color-gitlab-2 { fill: #7fa8d1; }
 .react-calendar-heatmap .color-gitlab-3 { fill: #49729b; }
 .react-calendar-heatmap .color-gitlab-4 { fill: #254e77; }
+
+/*
+ * shades of red
+ */
+.react-calendar-heatmap .color-red-0 { fill: #ededed; }
+.react-calendar-heatmap .color-red-1 { fill: #f1acac; }
+.react-calendar-heatmap .color-red-2 { fill: #d17e7e; }
+.react-calendar-heatmap .color-red-3 { fill: #9b4949; }
+.react-calendar-heatmap .color-red-4 { fill: #772525; }
