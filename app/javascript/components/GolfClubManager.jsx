@@ -1,4 +1,6 @@
-var React = require('react');
+import React, {PropTypes} from 'react';
+import CalendarHeatmap from 'react-calendar-heatmap';
+import {RRule, RRuleSet,rrulestr} from 'rrule';
 
 let defaultClub = {id:0, name:''};
 
@@ -118,9 +120,58 @@ var GolfClubTabPhotos = React.createClass({
 var GolfClubTabCourses = React.createClass({
   propTypes: {
     courses:React.PropTypes.array,
+    global_setting: React.PropTypes.object,
     clubId:React.PropTypes.number
   },
+  componentDidMount: function(){
+    //this.updateCalendar(this.props);
+  },
+  componentWillReceiveProps: function(nextProps){
+    this.updateCalendar(nextProps);
+  },
+  componentDidUpdate: function(prevProps, prevState){
+    //toggle the tooltip
+    $('[data-toggle="tooltip"]').tooltip({
+      delay:{ "show": 500, "hide": 100 }
+    });
+  },
+  updateCalendar: function(props){
+    if(props.courses == null){
+      console.log('courses is null');
+      return;
+    }
+
+    /*
+      plan:-
+        create a empty array of dates from here to next 180 days
+        go through each rule and add count+1 and msg to each date
+        update the datevlaue as the new date value
+    */
+    var dateValues = dateRange(new Date(Date.now()), new Date(Date.now() + 15552000000) ).map( (this_date, d_index) => {
+      return { date:this_date, count:0}
+    });
+
+
+    props.courses.map( (course, c_index) => {
+      course.course_settings.map( (cs, cs_index) => {
+        //translate from course_setting_property_id to rrule
+        //match the dates and {count += 1, message.push( course N is closed ) }
+        rrulestr(
+          cs.course_setting_property_id == 1 ? `FREQ=WEEKLY;WKST=MO;BYDAY=${getDayOfWeekISO(cs.value_int)}` :
+          cs.course_setting_property_id == 2 ? `FREQ=WEEKLY;WKST=MO;BYMONTHDAY=${cs.value_int}` :
+          cs.course_setting_property_id == 3 ? `FREQ=MONTHLY;WKST=MO;BYDAY=${getDayOfWeekISO(JSON.parse(cs.value_string).day)};BYSETPOS=${JSON.parse(cs.value_string).week}` :
+          cs.course_setting_property_id == 4 ? `FREQ=DAILY;DTSTART=${toISODate(new Date(cs.value_min))}T080100Z;UNTIL=${toISODate(new Date(cs.value_max))}T080100Z;WKST=MO` :
+          null
+        ).between( new Date(Date.now()), new Date(Date.now() + 15552000000 )).map( (selected_date, date_i) => {
+          dateValues.find( (e) => { return parseInt(e.date/1000) == parseInt(selected_date/1000)}).count += 1;
+        });
+      });
+    });
+
+    this.setState({date_values:dateValues});
+  },
   render: function(){
+    var handle = this;
     if(this.props.courses == null){
       return (
         <div className="card">
@@ -130,9 +181,48 @@ var GolfClubTabCourses = React.createClass({
     };
 
     return (<div>
+      <div className="card mb-2">
+        <div className="card-block">
+          <h4 className="card-title">Availability</h4>
+          <CalendarHeatmap
+            endDate={new Date(Date.now() + 15552000000)} numDays={180}
+            values={ handle.state.date_values }
+            classForValue={ (value) => { return value.count == 0 ? `color-github-1` : value.count > 4 ? `color-red-4` :`color-red-${value.count}`; } }
+            titleForValue={ (value) => { return value.count == 0 ? `Open on ${value.date.toDateString()}` : `Closed on ${value.date.toDateString()} by ${value.count} policy(ies)`; }}
+            tooltipDataAttrs={ {'data-toggle':'tooltip'} }
+            />
+        </div>
+        <div className="card-block">
+          <h4 className="card-title">Global settings</h4>
+          <ul>
+            <li>{`Admin course selection: ${handle.props.global_setting.admin_selection}`}</li>
+            <li>{`User course selection: ${handle.props.global_setting.user_selection}`}</li>
+          </ul>
+        </div>
+      </div>
+
       {
         this.props.courses.map( (course,index) => {
           var random_id = randomID();
+          var cs_div = () => {
+            if(course.course_settings.length == 0){
+              return <ul><li>No maintenance schedule</li></ul>
+            };
+
+            return <ul>{
+              course.course_settings.map( (cs, cs_index) => {
+                return (
+                  cs.course_setting_property_id == 1 ? (<li key={cs_index}>{ `Every week on ${getDayOfWeek(cs.value_int)}`}</li>) :
+                  cs.course_setting_property_id == 2 ? (<li key={cs_index}>{`Every month on the ${cs.value_int}`}</li>) :
+                  cs.course_setting_property_id == 3 ? (<li key={cs_index}>{`Every month on ${getDayOfWeek(JSON.parse(cs.value_string).day)}, week ${JSON.parse(cs.value_string).week}`}</li>):
+                  (<li key={cs_index}>{`From ${cs.value_min} to ${cs.value_max}`}</li>)
+                )
+
+                //return <li key={cs_index}>{`${cs.value_int} / ${cs.value_string} / ${cs.value_min} / ${cs.value_max}`}</li>
+              })
+            }</ul>
+          };
+
           return (
             <div className="card mb-2" key={index}>
               <div className="card-block">
@@ -140,7 +230,8 @@ var GolfClubTabCourses = React.createClass({
               </div>
               <div className="collapse" id={`course-${random_id}`}>
                 <div className="card-block">
-                  Course management info here
+                  <p>Maintenance schedule:</p>
+                  { cs_div()}
                 </div>
               </div>
             </div>
@@ -214,8 +305,8 @@ var GolfClubTabFlights = React.createClass({
                     <h4 className="w-100">Days Active</h4>
                     <div className="btn-group w-100">{
                         arrayFromRange(1,7).map( (number,index) => {
-                          day = number == 7 ? 0 : number;
-                          active = (flight.flight_matrices == null) ? '' :
+                          var day = number == 7 ? 0 : number;
+                          var active = (flight.flight_matrices == null) ? '' :
                             (flight.flight_matrices[0][`day${number}`] == 1 ? 'active' : '');
                           return (
                             <label  key={index} className={`btn btn-secondary ${active}`}>{ getDayOfWeek(day) }</label>
@@ -321,7 +412,8 @@ var GolfClubMgmtCard = React.createClass({
                     tabContent = (<GolfClubTabPhotos loaded={handle.state.loaded} photos={photos} clubId={club_id}/>); break;
                   case "courses":
                     var courses = handle.state.club == null ? null : handle.state.club.course_listings;
-                    tabContent = (<GolfClubTabCourses clubId={club_id} courses={courses} />);
+                    var global_setting = handle.state.club == null ? null : handle.state.club.course_global_setting;
+                    tabContent = (<GolfClubTabCourses clubId={club_id} global_setting={global_setting} courses={courses} />);
                     break;
                   case "flights":
                     var flights = handle.state.club == null ? null : handle.state.club.flight_schedules;
@@ -350,7 +442,7 @@ var GolfClubManager = React.createClass({
       return { clubs:[]}
   },
   componentDidMount: function(){
-    handle = this;
+    var handle = this;
 
     //load the clubs
     fetch('/admin/golf_clubs.json', {
@@ -386,4 +478,4 @@ var GolfClubManager = React.createClass({
   }
 })
 
-module.exports = GolfClubManager;
+export default GolfClubManager;

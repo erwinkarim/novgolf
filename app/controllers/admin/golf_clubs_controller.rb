@@ -39,8 +39,9 @@ class Admin::GolfClubsController < ApplicationController
         result[:club][:photos] = @golf_club.photos.order(:sequence => :desc).map{ |x|
           {url:x.avatar.url, square200:x.avatar.square200.url, size:x.size, caption:x.caption}
         }
+        result[:club][:course_global_setting] = @golf_club.course_global_setting
         result[:club][:course_listings] = @golf_club.course_listings.map{ |x|
-          x.attributes.merge( {course_status:x.course_status} )
+          x.attributes.merge( {course_status:x.course_status, course_settings:x.course_settings} )
         }
         result[:club][:flight_schedules] = @golf_club.flight_schedules.where.has{
           (start_active_at < DateTime.now) & (end_active_at > DateTime.now)

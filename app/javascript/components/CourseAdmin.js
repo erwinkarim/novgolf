@@ -80,7 +80,7 @@ class CourseCalendar extends React.Component {
       <p>Rules:</p>
       <ul>{ this.state.ruleset.valueOf().map( (icalrule, index) => {
         var rrule = rrulestr(icalrule);
-        return (<li key={index}>{icalrule}</li>);
+        return (<li key={index}>{rrule.toText()}</li>);
         })
       }</ul>
     </div>
@@ -229,69 +229,80 @@ var CourseMaintenanceSchGrp = React.createClass({
     // the idea is to show the appropiate schedule based on the option selected
 
     //day of the week schedule
-    var dayOfWeek = (<div>
-      <input type="hidden" name={`course_setting[${random_id}][value_type]`} value="integer" />
-      <select className="form-control" name={`course_setting[${random_id}][value_int]`} defaultValue={this.props.course_setting.value_int}>{
-        arrayFromRange(0,6).map( (day,index) => {
-            return (<option key={index} value={day}>{getDayOfWeek(day)}</option>);
-        })
-      }</select>
-      <label></label>
-    </div>);
-
-    //day of the month schedule
-    var dayOfMonth = (<div>
-      <input type="hidden" name={`course_setting[${random_id}][value_type]`} value="integer" />
-      <select name={`course_setting[${random_id}][value_int]`} className="form-control" defaultValue={this.props.course_setting.value_int}> {
-        arrayFromRange(1,28).map( (day,index) => {
-          return (<option value={day} key={index}>{day}</option>);
-        })
-      }</select>
-    </div>);
-
-    //Xst <day> of the month (1st sunday of the month)
-    var nthDayOfMonth = (<div className="row">
-      <input type="hidden" name={`course_setting[${random_id}][value_type]`} value="string" />
-      <div className="col-4">
-        <select name={`course_setting[${random_id}][value_string][week]`} className="form-control">
-          <option value="1">1st</option>
-          <option value="2">2nd</option>
-          <option value="3">3rd</option>
-          <option value="4">4th</option>
-        </select>
-      </div>
-      <div className="col-8"><select name={`course_setting[${random_id}][value_string][day]`} className="form-control">{
+    var dayOfWeek = () => {
+      return (<div>
+        <input type="hidden" name={`course_setting[${random_id}][value_type]`} value="integer" />
+        <select className="form-control" name={`course_setting[${random_id}][value_int]`} defaultValue={this.props.course_setting.value_int}>{
           arrayFromRange(0,6).map( (day,index) => {
-            return (<option value={day} key={index}>{getDayOfWeek(day)}</option>)
+              return (<option key={index} value={day}>{getDayOfWeek(day)}</option>);
           })
         }</select>
-      </div>
-    </div>);
+        <label></label>
+      </div>);
+    };
+
+    //day of the month schedule
+    var dayOfMonth = () => {
+      return (<div>
+        <input type="hidden" name={`course_setting[${random_id}][value_type]`} value="integer" />
+        <select name={`course_setting[${random_id}][value_int]`} className="form-control" defaultValue={this.props.course_setting.value_int}> {
+          arrayFromRange(1,28).map( (day,index) => {
+            return (<option value={day} key={index}>{day}</option>);
+          })
+        }</select>
+      </div>);
+    }
+
+    //Xst <day> of the month (1st sunday of the month)
+
+    var nthDayOfMonth = () => {
+      return (<div className="row">
+        <input type="hidden" name={`course_setting[${random_id}][value_type]`} value="string" />
+        <div className="col-4">
+          <select name={`course_setting[${random_id}][value_string][week]`} defaultValue={JSON.parse(this.props.course_setting.value_string).week} className="form-control">
+            <option value="1">1st</option>
+            <option value="2">2nd</option>
+            <option value="3">3rd</option>
+            <option value="4">4th</option>
+          </select>
+        </div>
+        <div className="col-8"><select name={`course_setting[${random_id}][value_string][day]`} defaultValue={JSON.parse(this.props.course_setting.value_string).day} className="form-control">{
+            arrayFromRange(0,6).map( (day,index) => {
+              return (<option value={day} key={index}>{getDayOfWeek(day)}</option>)
+            })
+          }</select>
+        </div>
+      </div>);
+
+    }
 
     //specific schedule
-    var specificDateRange = (<div>
-      <input type="hidden" name={`course_setting[${random_id}][value_type]`} value="range" />
-      <div className="form-group">
-        <label>Form: </label>
-        <input type="date" name={`course_setting[${random_id}][value_min]`}
-          defaultValue={this.props.course_setting.value_min}
-          className="form-control" />
-      </div>
-      <div className="form-group">
-        <label>To: </label>
-        <input type="date" name={`course_setting[${random_id}][value_max]`}
-          defaultValue={this.props.course_setting.value_max}
-          className="form-control"/>
-      </div>
-    </div>);
+    var specificDateRange = () => {
+      return (<div>
+        <input type="hidden" name={`course_setting[${random_id}][value_type]`} value="range" />
+        <div className="form-group">
+          <label>Form: </label>
+          <input type="date" name={`course_setting[${random_id}][value_min]`}
+            defaultValue={this.props.course_setting.value_min}
+            className="form-control" />
+        </div>
+        <div className="form-group">
+          <label>To: </label>
+          <input type="date" name={`course_setting[${random_id}][value_max]`}
+            defaultValue={this.props.course_setting.value_max}
+            className="form-control"/>
+        </div>
+      </div>);
+
+    }
 
     var scheduleDisplay = null;
     switch (this.state.prop) {
-      case 1: scheduleDisplay=dayOfWeek; break;
-      case 2: scheduleDisplay=dayOfMonth; break;
-      case 3: scheduleDisplay=nthDayOfMonth; break;
-      case 4: scheduleDisplay=specificDateRange; break;
-      default: scheduleDisplay=dayOfWeek;
+      case 1: scheduleDisplay=dayOfWeek(); break;
+      case 2: scheduleDisplay=dayOfMonth(); break;
+      case 3: scheduleDisplay=nthDayOfMonth(); break;
+      case 4: scheduleDisplay=specificDateRange(); break;
+      default: scheduleDisplay=dayOfWeek();
     }
 
     var cs_id = this.props.course_setting == null ? '' : this.props.course_setting.id;
@@ -378,6 +389,7 @@ var CourseEditForm = React.createClass({
   toggle_edit: function(){
     console.log('show/hide the edit button');
     $(this.edit_button).toggle();
+    $(this.collapse_form).collapse('toggle');
   },
   render: function(){
     var random_id = randomID();
@@ -416,11 +428,11 @@ var CourseEditForm = React.createClass({
             <button type="button" className="btn btn-primary" onClick={this.newCourseSetting}> <i className="fa fa-plus"></i> </button>
           </div>
           <button type="button" className="btn btn-primary mr-2" onClick={this.updateSetting}>Update</button>
-          <button type="button" className="btn btn-secondary" onClick={this.toggle_edit} data-toggle="collapse" data-target={`#form-${random_id}`}>Cancel</button>
+          <button type="button" className="btn btn-secondary" onClick={this.toggle_edit} >Cancel</button>
         </form>
       </div>
-      <p className="card-text" onClick={this.toggle_edit} ref={(button) => {this.edit_button = button;}}>
-        <a href={`#form-${random_id}`} className="btn btn-primary" data-toggle="collapse">Edit</a>
+      <p className="card-text">
+        <button className="btn btn-primary" onClick={this.toggle_edit} ref={(button) => {this.edit_button = button;}}>Edit</button>
       </p>
     </div>)
   }

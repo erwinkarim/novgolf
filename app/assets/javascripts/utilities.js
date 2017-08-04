@@ -84,6 +84,39 @@ var getDayOfWeekISO = function(n){
   return weekday[n];
 }
 
+var toISODate = function(n){
+  return `${n.getFullYear()}${pad(n.getMonth()+1)}${pad(n.getDate())}`;
+};
+
+//return an array of date objects for each start and end date
+var dateRange = function(start_date, end_date){
+
+  var dates = [];
+  //verify all the dates
+  if(!Object.prototype.toString.call(start_date).includes('Date') || !Object.prototype.toString.call(end_date).includes('Date')){
+    console.log('not a date object');
+    return dates;
+  }
+
+  if(start_date > end_date){
+    console.log('start date is earlier than end date');
+    return dates;
+  }
+
+  //now cycle through the date giving each one day
+  var counter = start_date;
+  var end_date = new Date(end_date.valueOf() + 86400000);
+  while(counter < end_date){
+    //dates.push(`${counter.getFullYear()}-${pad(counter.getMonth()+1)}-${pad(counter.getDate())}`);
+    dates.push(counter);
+    counter = new Date(counter.valueOf() + 86400000);
+  }
+
+  return dates;
+
+
+
+}
 //pad the number 0-9 to 01 to 09
 var pad = function(n){
   return n < 10 ? '0'+n : n;
