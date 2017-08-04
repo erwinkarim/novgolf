@@ -35,7 +35,6 @@ class CourseHeatmap extends React.Component {
       course.course_settings.map( (cs, cs_index) => {
         //translate from course_setting_property_id to rrule
         //match the dates and {count += 1, message.push( course N is closed ) }
-        console.log(`processing cs ${cs.id}`);
         rrulestr(
           cs.course_setting_property_id == 1 ? `FREQ=WEEKLY;WKST=MO;BYDAY=${getDayOfWeekISO(cs.value_int)}` :
           cs.course_setting_property_id == 2 ? `FREQ=WEEKLY;WKST=MO;BYMONTHDAY=${cs.value_int}` :

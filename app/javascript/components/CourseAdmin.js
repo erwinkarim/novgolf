@@ -1,100 +1,15 @@
 import React, {PropTypes} from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import {RRule, RRuleSet,rrulestr} from 'rrule';
-
-class CourseCalendar extends React.Component {
-  constructor(props){
-    super(props);
-    //convert from course_settings rules to rrule
-    this.updateCalendar(props);
-  }
-  updateCalendar(props){
-    //update the calendar heat map
-    var ruleset = new RRuleSet();
-
-    props.course_settings.map( (cs, index) => {
-      switch (cs.course_setting_property_id) {
-        case 2:
-          //every Nth day of the month
-          //ru.push(`FREQ=WEEKLY;WKST=MO;BYMONTHDAY=20`);
-          ruleset.rrule(
-            new RRule( RRule.parseString( `FREQ=WEEKLY;WKST=MO;BYMONTHDAY=${cs.value_int}` ) )
-          );
-          break;
-        case 3:
-          //every <x>th <day> of the month
-          var occurance = JSON.parse(cs.value_string);
-          //var occurance = JSON.parse("{\"week\":\"2\",\"day\":\"4\"}" );
-          ruleset.rrule(
-            new RRule( RRule.parseString( `FREQ=MONTHLY;WKST=MO;BYDAY=${getDayOfWeekISO(occurance.day)};BYSETPOS=${occurance.week}` ))
-          );
-          break;
-        case 4:
-          //specific date range
-          var minDate = new Date(cs.value_min);
-          var minDateString = `${minDate.getFullYear()}${pad(minDate.getMonth()+1)}${pad(minDate.getDate())}`
-          var maxDate = new Date(cs.value_max);
-          var maxDateString = `${maxDate.getFullYear()}${pad(maxDate.getMonth()+1)}${pad(maxDate.getDate())}`
-
-          ruleset.rrule(
-            new RRule( RRule.parseString(
-              `FREQ=DAILY;DTSTART=${minDateString}T080100Z;UNTIL=${maxDateString}T080100Z;WKST=MO` ))
-          );
-          break;
-        default:
-          //every <day> of the month
-          ruleset.rrule(
-            new RRule( RRule.parseString( `FREQ=WEEKLY;WKST=MO;BYDAY=${getDayOfWeekISO(cs.value_int)}`) )
-          );
-      }
-
-    });
-    this.state = {ruleset:ruleset};
-
-  }
-  componentDidMount(){
-    $('[data-toggle="tooltip"]').tooltip({
-      delay:{ "show": 500, "hide": 100 }
-    });
-  }
-  componentWillReceiveProps(nextProps){
-    //update the calender if if's different than the last one
-    this.updateCalendar(nextProps)
-  }
-  render(){
-    //lookup and convert to count:1
-    var dateValues = this.state.ruleset.between(new Date( Date.now()), new Date(Date.now() + 7776000000) ).map(
-      (dateValue,index) => {
-        return { date:dateValue, count:1};
-      }
-    );
-
-    return <div className="card-block mb-2 pl-4 pr-4 pb-4">
-      <CalendarHeatmap
-        endDate={new Date(Date.now() + 7776000000)} numDays={90}
-        values={ dateValues }
-        classForValue={(value) => { if (!value) { return 'color-github-1'; } return `color-red-${value.count}`; }}
-        titleForValue={(value) => { if (!value) { return `Open`; } return `Closed on ${value.date.toDateString()}`; }}
-        tooltipDataAttrs={ {'data-toggle':'tooltip'} }
-      />
-      <p>Rules:</p>
-      <ul>{ this.state.ruleset.valueOf().map( (icalrule, index) => {
-        var rrule = rrulestr(icalrule);
-        return (<li key={index}>{rrule.toText()}</li>);
-        })
-      }</ul>
-    </div>
-  }
-}
-
+import CourseHeatmap from './CourseHeatmap';
 
 class CourseCard extends React.Component {
   render(){
     return (<div className="card mb-2">
       <div className="card-block">
         <h4 className="card-title">{this.props.course.name}</h4>
+        <CourseHeatmap courses={[this.props.course]} />
       </div>
-      <CourseCalendar course_settings={this.props.course.course_settings} setting_properties={this.props.setting_properties} />
       <CourseEditForm clubId={this.props.clubId} csrf_token={this.props.csrf_token}
         loadCourses={this.props.loadCourses}
         statuses={this.props.statuses} setting_properties={this.props.setting_properties}
@@ -102,6 +17,7 @@ class CourseCard extends React.Component {
     </div>);
   }
 };
+
 
 CourseCard.propTypes = {
     clubId:React.PropTypes.number,
@@ -345,7 +261,7 @@ var CourseEditForm = React.createClass({
     return {
       course:this.props.course,
       defaultCourseSetting: {
-        golf_clud_id:this.props.clubId, course_setting_property_id:1, value_type:'integer', value_int:0, value_string:'', value_min:0, value_max:0
+        golf_clud_id:this.props.clubId, course_setting_property_id:1, value_type:'integer', value_int:0, value_string:"{\"week\":\"1\",\"day\":\"0\"}", value_min:0, value_max:0
       }
     };
   },
