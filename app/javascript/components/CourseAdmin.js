@@ -170,19 +170,22 @@ var CourseMaintenanceSchGrp = React.createClass({
     }
 
     //Xst <day> of the month (1st sunday of the month)
-
+    //will cause issues if value_string is not JSON parseable
     var nthDayOfMonth = () => {
+      //copy and reassign value_string
+      var new_cs = Object.assign({}, this.props.course_setting);
+      new_cs.value_string = new_cs.value_string == null ? "{\"week\":\"1\",\"day\":\"0\"}" : new_cs.value_string;
       return (<div className="row">
         <input type="hidden" name={`course_setting[${random_id}][value_type]`} value="string" />
         <div className="col-4">
-          <select name={`course_setting[${random_id}][value_string][week]`} defaultValue={JSON.parse(this.props.course_setting.value_string).week} className="form-control">
+          <select name={`course_setting[${random_id}][value_string][week]`} defaultValue={JSON.parse(new_cs.value_string).week} className="form-control">
             <option value="1">1st</option>
             <option value="2">2nd</option>
             <option value="3">3rd</option>
             <option value="4">4th</option>
           </select>
         </div>
-        <div className="col-8"><select name={`course_setting[${random_id}][value_string][day]`} defaultValue={JSON.parse(this.props.course_setting.value_string).day} className="form-control">{
+        <div className="col-8"><select name={`course_setting[${random_id}][value_string][day]`} defaultValue={JSON.parse(new_cs.value_string).day} className="form-control">{
             arrayFromRange(0,6).map( (day,index) => {
               return (<option value={day} key={index}>{getDayOfWeek(day)}</option>)
             })

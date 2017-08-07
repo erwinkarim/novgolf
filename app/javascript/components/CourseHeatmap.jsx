@@ -42,7 +42,7 @@ class CourseHeatmap extends React.Component {
           cs.course_setting_property_id == 4 ? `FREQ=DAILY;DTSTART=${toISODate(new Date(cs.value_min))}T080100Z;UNTIL=${toISODate(new Date(cs.value_max))}T080100Z;WKST=MO` :
           null
         ).between( new Date(Date.now()), new Date(Date.now() + 15552000000 )).map( (selected_date, date_i) => {
-          dateValues.find( (e) => { return parseInt(e.date/1000) == parseInt(selected_date/1000)}).count += 1;
+          dateValues.find( (e) => { return e.date.toDateString() == selected_date.toDateString()}).count += 1;
         });
       });
     });
@@ -57,9 +57,24 @@ class CourseHeatmap extends React.Component {
     //this.updateCalendar(nextProps);
   }
   componentDidUpdate(){
-    $('[data-toggle="tooltip"]').tooltip({
+    //a bit slower, but works
+    this.updateTooltip();
+
+    //console.log('$r.heatmap', $(this.heatMap).find('[data-toggle="tooltip"]')) ;
+    /*
+    $(this.heatMap).find('[data-toggle="tooltip"]').map( (e,i) => {
+      $(e).tooltip('hide').attr('data-original-title', $(e).attr('title')).tooltip('fixTitle').tooltip('show');
+    });
+    */
+  }
+  componentDidMount(){
+    this.updateTooltip();
+  }
+  updateTooltip(){
+    $(this.heatMap).find('[data-toggle="tooltip"]').tooltip('dispose').tooltip({
       delay:{ "show": 500, "hide": 100 }
     });
+
   }
   render(){
     if(this.props.courses == null){
@@ -72,13 +87,15 @@ class CourseHeatmap extends React.Component {
         titleForValue={ (value) => { return value.count == 0 ? `Open on ${value.date.toDateString()}` : `Closed on ${value.date.toDateString()} by ${value.count} policy(ies)`; }}
     */
     return (
-      <CalendarHeatmap
-        endDate={new Date(Date.now() + 15552000000)} numDays={180}
-        values={ handle.state.date_values }
-        classForValue={ (value) => { return !value ? `color-github-1` : value.count == 0 ? `color-github-1` : value.count > 4 ? `color-red-4` :`color-red-${value.count}`; } }
-        titleForValue={ (value) => { return !value ? `Course is open` : value.count == 0 ? `Open on ${value.date.toDateString()}` : `Closed on ${value.date.toDateString()} by ${value.count} policy(ies)`; }}
-        tooltipDataAttrs={ {'data-toggle':'tooltip'} }
-        />
+      <div ref={(calendar) => { this.heatMap=calendar;}}>
+        <CalendarHeatmap
+          endDate={new Date(Date.now() + 15552000000)} numDays={180}
+          values={ handle.state.date_values }
+          classForValue={ (value) => { return !value ? `color-github-1` : value.count == 0 ? `color-github-1` : value.count > 4 ? `color-red-4` :`color-red-${value.count}`; } }
+          titleForValue={ (value) => { return !value ? `Course is open` : value.count == 0 ? `Open on ${value.date.toDateString()}` : `Closed on ${value.date.toDateString()} by ${value.count} policy(ies)`; }}
+          tooltipDataAttrs={ {'data-toggle':'tooltip'} }
+          />
+      </div>
     );
   }
 }
