@@ -76,9 +76,11 @@ class CourseListing < ActiveRecord::Base
           IceCube::Rule.monthly.day_of_week(occurance["day"].to_i => [occurance["week"].to_i])
         )
       when 4
+        Rails.logger.info("cs.value_min = #{cs.value_min}, cs.value_max=#{cs.value_max}")
         # specific date range
         # if it's in the date range then return true
-        dateRange = Date.new(cs.value_min)..Date.new(cs.value_max)
+        #return false
+        dateRange = Date.parse(cs.value_min)..Date.parse(cs.value_max)
         if dateRange.include? date then
           return true
         end
