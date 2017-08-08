@@ -97,7 +97,7 @@ var CourseSelection = React.createClass({
 
                       //default, return label, not special classes
                       return (
-                        <label key={c_index} className={`btn btn-secondary ${active_status}`}
+                        <label key={c_index} className={`btn btn-secondary ${active_status} h-38px`}
                           onClick={handle.props.updatePrice}
                           data-value={course.id} data-index={handle.props.flightInfo.index} data-target={`${course_name}_course_id`}
                           value={course.id}

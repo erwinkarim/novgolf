@@ -630,37 +630,32 @@ var GolfCoursesGroup = React.createClass({
       this.props.reservation.ur_contact.email;
     var ur_contact_telephone = this.props.reservation.ur_contact == null ? "No Info" :
       this.props.reservation.ur_contact.telephone;
-
     var reserved_by_text = this.props.reservation.reserved_by == null ? "Nil" : this.props.reservation.reserved_by.name;
+
     return (
       <div>
         <p>Courses:</p>
         <div className="btn-group w-100 flex-wrap" data-toggle="buttons">{ this.props.flight.course_data.courses.map( (e,i) => {
           //color the course button
-          var reserve_status = "secondary"
-          switch (e.reservation_status) {
-            case 1: reserve_status = "warning"; break;
-            case 8: reserve_status = "info"; break;
-            case 2: reserve_status = "danger"; break;
-            case 3: reserve_status = "danger"; break;
-            default: reserve_status = "secondary";
-          };
-
-          //disable the course if necessary
-          if(!this.props.available_courses.includes(e.id)){
-            var disable_status = 'disabled';
-          };
+          var reserve_status =
+            e.reservation_status == 1 ? 'warning' :
+            e.reservation_status == 2 ? 'danger' :
+            e.reservation_status == 3 ? 'danger' :
+            e.reservation_status == 8 ? 'info' :
+            'secondary';
 
           //set if this the selected course
           var activeState = (i == this.props.selectedCourse) ? "active" : null;
 
-          return (
-            <label className={`btn btn-${reserve_status} ${disable_status} ${activeState}`} key={i} onClick={this.props.selectCourse}
+          return this.props.available_courses.includes(e.id) ? (
+            <label className={`btn btn-${reserve_status} ${activeState} h-38px`} key={i} onClick={this.props.selectCourse}
               data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}
               data-target="first_course_id" data-value={e.id}>
               <input type="radio" name="courses" value={`course-${e.id}`}  />
               {e.name}
             </label>
+          ) : (
+            <button disabled="disabled" key={i} className="btn btn-secondary disabled h-38px">{e.name}</button>
           );
         })}</div>
         <ul className="list-unstyled">
@@ -881,8 +876,9 @@ var GolfClubDashboard = React.createClass({
   },
   handleClick: function(e){
     //happens when i click on a flight time
-    var handle = this;
 
+    //TODO: should choose first available course instead just the first course
+    var handle = this;
     var clickDashPromise = new Promise(function(resolve,reject){
       //first, update the info when selecting a time
 
@@ -895,6 +891,11 @@ var GolfClubDashboard = React.createClass({
         $($('.btn-group')[handle.state.selectedArray]).find('.active').toggleClass('active');
       };
 
+      //setup the selected course, at minimum is 0
+      var selectedCourse = handle.state.flightsArray == null ? 0 :
+       handle.state.flightsArray[0][0].course_data.courses.findIndex((e) => {return handle.state.available_courses[0] == e.id;});
+      selectedCourse = selectedCourse < 0 ? 0 : selectedCourse;
+
       //hide the reservation detail
       $('#reservation-detail').collapse('hide');
 
@@ -905,17 +906,15 @@ var GolfClubDashboard = React.createClass({
       //var newDefaults = Object.assign({}, FLIGHT_INFO_DEFAULTS);
       var newFlightInfo = Object.assign(FLIGHT_INFO_DEFAULTS, {
         pax:flight.minPax, buggy:flight.minCart, caddy:flight.minCaddy,
-        first_course_id:flight.course_data.courses[0].id, second_course_id:flight.course_data.courses[0].id
+        first_course_id:flight.course_data.courses[selectedCourse].id, second_course_id:flight.course_data.courses[selectedCourse].id
       });
-      //console.log("newFlightInfo", newFlightInfo);
-
       newFlightInfo = handle.updatePrice(newFlightInfo, flight);
 
       //setup the state
       handle.setState({
         dashBoardStatusText:newDashText,
         selectedArray:parseInt(e.target.dataset.arrayIndex),
-        selectedFlight: parseInt(e.target.dataset.value), selectedCourse:0, loadFlight:true,
+        selectedFlight: parseInt(e.target.dataset.value), selectedCourse:selectedCourse, loadFlight:true,
         flightInfo:newFlightInfo
       });
 
@@ -924,7 +923,7 @@ var GolfClubDashboard = React.createClass({
 
     clickDashPromise.then(function(data){
       //load the user_reservation_id for the first course
-      //var user_reservation_id = Math.min.apply(null, flight.course_data.courses.map((e,i) => e.reservation_id) );
+      //TODO: load the first available course instead of first course
       var user_reservation_id = data.flight.course_data.courses[0].reservation_id;
       if(user_reservation_id){
         var newFlightInfo = data.newFlightInfo;
@@ -1196,7 +1195,10 @@ var GolfClubDashboard = React.createClass({
       }).then( (response) => {
         return response.json();
       }).then( (json) => {
-        handle.setState({available_courses:json.course_listings_id})
+        handle.setState({
+          available_courses:json.course_listings_id,
+          selectedCourse:handle.state.flightsArray[0][0].course_data.courses.findIndex( (e) => { return e.id == json.course_listings_id[0];})
+        })
       });
     }
 
