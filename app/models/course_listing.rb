@@ -60,6 +60,11 @@ class CourseListing < ActiveRecord::Base
       return true
     end
 
+    #if the course listing is set to unavailable, then return false
+    if !self.course_status.available? then
+      return false
+    end
+
     # convert the rules to the schedule
     schedule = IceCube::Schedule.new
     self.course_settings.each do |cs|
