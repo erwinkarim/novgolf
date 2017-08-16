@@ -10,6 +10,27 @@ class CourseCard extends React.Component {
         <h4 className="card-title">{this.props.course.name}</h4>
         <CourseHeatmap courses={[this.props.course]} />
       </div>
+      <div className="card-block">
+        <h5>Course status and maintenance schedule</h5>
+        <p> { `Course is ${this.props.course.course_status.available ? 'available': 'unavailable'}.`} </p>
+        <p>Maintenance schedule is:-</p>
+        <ul>
+          {
+            this.props.course.course_settings.length == 0 ?
+              (<li>No maintenance schedule</li>) :
+              (
+                this.props.course.course_settings.map( (cs, cs_index) => {
+                  return (<li key={cs_index}>{
+                    cs.course_setting_property_id == 1 ? `Every week on ${getDayOfWeek(cs.value_int)}` :
+                    cs.course_setting_property_id == 2 ? `Every month on the ${cs.value_int}` :
+                    cs.course_setting_property_id == 3 ? `Every ${getGetOrdinal(JSON.parse(cs.value_string).week)} ${getDayOfWeek(JSON.parse(cs.value_string).day)} of the month` :
+                    `Between ${cs.value_min} to ${cs.value_max}`
+                   }</li>)
+                })
+              )
+          }
+        </ul>
+      </div>
       <CourseEditForm clubId={this.props.clubId} csrf_token={this.props.csrf_token}
         loadCourses={this.props.loadCourses}
         statuses={this.props.statuses} setting_properties={this.props.setting_properties}
@@ -306,7 +327,6 @@ var CourseEditForm = React.createClass({
     this.setState({course:newCourse});
   },
   toggle_edit: function(){
-    console.log('show/hide the edit button');
     $(this.edit_button).toggle();
     $(this.collapse_form).collapse('toggle');
   },

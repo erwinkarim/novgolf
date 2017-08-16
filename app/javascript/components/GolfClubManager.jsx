@@ -164,13 +164,11 @@ var GolfClubTabCourses = React.createClass({
             return <ul>{
               course.course_settings.map( (cs, cs_index) => {
                 return (
-                  cs.course_setting_property_id == 1 ? (<li key={cs_index}>{ `Every week on ${getDayOfWeek(cs.value_int)}`}</li>) :
-                  cs.course_setting_property_id == 2 ? (<li key={cs_index}>{`Every month on the ${cs.value_int}`}</li>) :
-                  cs.course_setting_property_id == 3 ? (<li key={cs_index}>{`Every month on ${getDayOfWeek(JSON.parse(cs.value_string).day)}, week ${JSON.parse(cs.value_string).week}`}</li>):
+                  cs.course_setting_property_id == 1 ? (<li key={cs_index}>{ `Every ${getDayOfWeek(cs.value_int)}`}</li>) :
+                  cs.course_setting_property_id == 2 ? (<li key={cs_index}>{`Every month on the ${getGetOrdinal(cs.value_int)}`}</li>) :
+                  cs.course_setting_property_id == 3 ? (<li key={cs_index}>{`Every month on the ${getGetOrdinal(JSON.parse(cs.value_string).week)} ${getDayOfWeek(JSON.parse(cs.value_string).day)}`}</li>):
                   (<li key={cs_index}>{`From ${cs.value_min} to ${cs.value_max}`}</li>)
                 )
-
-                //return <li key={cs_index}>{`${cs.value_int} / ${cs.value_string} / ${cs.value_min} / ${cs.value_max}`}</li>
               })
             }</ul>
           };

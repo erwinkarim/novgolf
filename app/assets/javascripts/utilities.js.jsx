@@ -121,3 +121,11 @@ var dateRange = function(start_date, end_date){
 var pad = function(n){
   return n < 10 ? '0'+n : n;
 }
+
+//convert from integer to Nth
+var getGetOrdinal = function(n) {
+    n = parseInt(n);
+    var s=["th","st","nd","rd"],
+    v=n%100;
+    return n+(s[(v-20)%10]||s[v]||s[0]);
+ };
