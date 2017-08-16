@@ -35,7 +35,7 @@
           paths: { reserve: reserve_golf_club_user_reservations_path(params[:id]),
             golfClub:golf_club_path(params[:id]) },
           flights: @result[:flights], queryData: @result[:queryData], insurance_modes:ChargeSchedule.insurance_modes.map{ |k,v| k},
-          options: {GolfClubTimesShowPrices:true, displayCourseGroup:@result[:club][:course_user_selection] != CourseGlobalSetting.user_selections["user_auto_select"]} } 
+          options: {GolfClubTimesShowPrices:true, displayCourseGroup:@result[:club][:course_user_selection] != CourseGlobalSetting.user_selections["user_auto_select"]} }
 .container
   .row
     .col-12
@@ -67,35 +67,36 @@
           %ul
             - @club.amenity_listings.each do |amenity|
               %ul{ :class => amenity[:available] ? "" : "text-muted"} #{amenity[:label]}
-:javascript
-  var map;
-  var initMap = function(){
-      map = new google.maps.Map(document.getElementById('map'), {
-        center: {lat: #{@club.lat} , lng: #{@club.lng} },
-        scrollwheel:false,
-        zoom: 16
-      });
+- content_for(:other_js) do
+  :javascript
+    var map;
+    var initMap = function(){
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: #{@club.lat} , lng: #{@club.lng} },
+          scrollwheel:false,
+          zoom: 16
+        });
 
-      var golfCircle = new google.maps.Circle({
-        strokeColor: '#FF0000',
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
-        fillColor: '#FF0000',
-        fillOpacity: 0.35,
-        map: map,
-        center: {lat:#{@club.lat}, lng:#{@club.lng} },
-        radius: 300
-      });
-  };
-  initMap();
+        var golfCircle = new google.maps.Circle({
+          strokeColor: '#FF0000',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: '#FF0000',
+          fillOpacity: 0.35,
+          map: map,
+          center: {lat:#{@club.lat}, lng:#{@club.lng} },
+          radius: 300
+        });
+    };
+    initMap();
 
-  var $grid = $('.grid').masonry({
-    itemSelector: '.grid-item',
-    percentPosition: true,
-    columnWidth: '.grid-sizer'
-  });
+    var $grid = $('.grid').masonry({
+      itemSelector: '.grid-item',
+      percentPosition: true,
+      columnWidth: '.grid-sizer'
+    });
 
-  // layout Isotope after each image loads
-  $grid.imagesLoaded().progress( function() {
-    $grid.masonry();
-  });
+    // layout Isotope after each image loads
+    $grid.imagesLoaded().progress( function() {
+      $grid.masonry();
+    });
