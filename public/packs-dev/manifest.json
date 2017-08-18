@@ -1,0 +1,6 @@
+{
+  "application.js": "https://0.0.0.0:5001/packs-dev/application.js",
+  "hello_react.js": "https://0.0.0.0:5001/packs-dev/hello_react.js",
+  "server_rendering.js": "https://0.0.0.0:5001/packs-dev/server_rendering.js",
+  "test.js": "https://0.0.0.0:5001/packs-dev/test.js"
+}

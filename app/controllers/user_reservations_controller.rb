@@ -8,7 +8,7 @@ class UserReservationsController < ApplicationController
   # POST/GET     /golf_clubs/:golf_club_id/user_reservations/reserve(.:format)
   def reserve
     @club = GolfClub.find(params[:golf_club_id])
-    @courses = @club.course_listings
+    #@courses = @club.course_listings
 
     check_passed = true
 
@@ -31,13 +31,24 @@ class UserReservationsController < ApplicationController
           check_passed = false
         end
 
-        if !v.has_key?(:courses) then
-          check_passed = false
-        else
-          #check the first and second course name
-          if !v[:courses].has_key?(:first_course) || !v[:courses].has_key?(:second_course) then
+        # if the club course selection method is user_auto_select then
+        # skip check for keys
+        if @club.course_global_setting.user_selection != "user_auto_select" then
+          if !v.has_key?(:courses) then
             check_passed = false
+          else
+            #check the first and second course name
+            if !v[:courses].has_key?(:first_course) || !v[:courses].has_key?(:second_course) then
+              check_passed = false
+            end
           end
+          #set the course
+          @first_course = @club.course_listings.where(:id => v[:courses][:first_course]).first.name
+          @second_course = @club.course_listings.where(:id => v[:courses][:second_course]).first.name
+        else
+          #auto select the course
+          @first_course = "system_selected"
+          @second_course = "system_selected"
         end
 
         if !v.has_key?(:count) then
@@ -75,7 +86,6 @@ class UserReservationsController < ApplicationController
 
   # POST /golf_clubs/:golf_club_id/user_reservations/processing
   def processing
-
     #set that you need to complete this transaction (get reservation confirmation token) within 10 minutes
     @club = GolfClub.find(params[:golf_club_id])
     club_id = @club.id
@@ -84,12 +94,21 @@ class UserReservationsController < ApplicationController
 
     #Rails.logger.info "session[:flight] is #{session[:flight]}"
     #create a reservation w/o token to show that this flight is being reserved
+    # TODO: course selection can be auto or manual
     UserReservation.transaction do
       session[:flight].each_pair do |k,v|
+        course_selection_options = @club.course_global_setting.user_selection == "user_auto_select" ?
+          {} :
+          { course_selection:UserReservation.course_selection_methods[:manual],
+            course_selection_ids:[ v["courses"]["first_course"], v["courses"]["second_course"] ] }
+
+        Rails.logger.info "
+          ur = UserReservation.create_reservation #{v["matrix_id"]}, #{current_user.id}, #{Date.parse(session[:info]["date"])}, #{v["count"]},
+          #{course_selection_options.inspect}
+        "
         ur = UserReservation.create_reservation v["matrix_id"], current_user.id, Date.parse(session[:info]["date"]), v["count"],
-          {course_selection:UserReservation.course_selection_methods[:manual], course_selection_ids:[
-              v["courses"]["first_course"], v["courses"]["second_course"]
-            ]}
+          course_selection_options
+
         if ur.valid? then
           ur.regenerate_token
 
@@ -107,6 +126,7 @@ class UserReservationsController < ApplicationController
           end
 
         else
+          Rails.logger.error ur.errors.messages.join(',')
           ur.reservation_failed!
         end
       end
@@ -117,11 +137,13 @@ class UserReservationsController < ApplicationController
 
     #check payment status in 11 minutes
     CheckPaymentStatusJob.set(wait: 11.minutes).perform_later(UserReservation.find(session[:reservation_ids]))
+=begin
   rescue
     flash[:error] = "Failure in booking"
 
     #TODO: better to redirect back to root search page w/ stored search parameters
-    redirect_to root_path
+    # redirect_to root_path
+=end
   end
 
   def confirmation

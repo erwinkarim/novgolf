@@ -12,8 +12,8 @@ class WelcomeController < ApplicationController
       params.keys.each do |thisKey|
         if thisKey == "q" then
           queryOptions = queryOptions.merge({ :query => params[:q]})
-        elsif thisKey == "pax" then
-          queryOptions = queryOptions.merge({ :pax => params[:pax]})
+      #  elsif thisKey == "pax" then
+      #    queryOptions = queryOptions.merge({ :pax => params[:pax]})
         elsif (params.has_key?(:time)) || (param.has_key?(:date)) then
           queryOptions = queryOptions.merge({ :dateTimeQuery => Time.parse("#{params[:date]} #{params[:time]} +0000") })
         end

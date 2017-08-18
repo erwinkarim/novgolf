@@ -57,4 +57,16 @@ class GolfClubsController < ApplicationController
     params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour);
   end
 
+  # GET      /golf_clubs/:golf_club_id/open_courses(.:format)
+  # show the open courses for that date
+  def open_courses
+    club = GolfClub.find(params[:golf_club_id])
+    if params.has_key? :date then
+      q_date = Date.parse(params[:date])
+    else
+      q_date = Date.today
+    end
+
+    render json: {course_listings_id:club.open_courses(q_date) }
+  end
 end

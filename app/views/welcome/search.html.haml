@@ -21,4 +21,4 @@
             paths: { img: "images/golf_course_#{rand(1..4)}.jpg", club:golf_club_path(club[:club][:id]), reserve:reserve_golf_club_user_reservations_path(club[:club][:id]) },
             queryData: club[:queryData],
             flights: club[:flights], insurance_modes:ChargeSchedule.insurance_modes.map{ |k,v| k},
-            options: {GolfClubTimesShowPrices:false} }
+            options: {GolfClubTimesShowPrices:false, displayCourseGroup:club[:club][:course_user_selection] != CourseGlobalSetting.user_selections["user_auto_select"]} }

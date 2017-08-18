@@ -21,13 +21,18 @@ environment ENV.fetch("RAILS_ENV")
 #port        ENV.fetch("PORT") { 3000 }
 =begin
 if ENV.fetch("RAILS_ENV") == 'development'
+  port        ENV.fetch("PORT") { 3000 }
   ssl_bind '0.0.0.0', '5000', {
     key: ENV.fetch("SSL_KEY_PATH"),
     cert: ENV.fetch("SSL_CERT_PATH"),
     verify_mode: 'none'
   }
+else
+  bind "unix:////Users/erwinkarim/novgolf/tmp/sockets/puma.sock"
 end
 =end
+
+
 bind "unix:////Users/erwinkarim/novgolf/tmp/sockets/puma.sock"
 
 # Specifies the `environment` that Puma will run in.

@@ -7,8 +7,6 @@
     %title #{ yield :head } JomGolf
     = stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track' => true
     = csrf_meta_tags
-    = javascript_include_tag 'application', 'data-turbolinks-track' => true
-    = javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}&libraries=places"
   %body
     %nav.navbar.navbar-light.navbar-toggleable-md
       %button.navbar-toggler.navbar-toggler-right{ type:'button', data:{ toggle:'collapse', target:'#navbar-target'}}
@@ -37,6 +35,10 @@
                 Login
     = yield
     = render :file => "layouts/modal.template"
+    = javascript_include_tag 'application', 'data-turbolinks-track' => true
+    = javascript_pack_tag 'application'
+    = javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}&libraries=places"
+    = yield :other_js
     %footer.footer.text-muted
       .container
         %p

@@ -1,0 +1,16 @@
+- content_for(:head){ "Admin - Course Management"}
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:admin_path} Admin Console
+        %li.breadcrumb-item
+          %a{href:admin_golf_clubs_path} Clubs
+        %li.breadcrumb-item
+          %a{href:admin_golf_club_path(@club)} #{@club.name}
+        %li.breadcrumb-item.active Course Management
+  .row
+    .col-12
+      %p Course Management Stuff Here
+      = react_component("CourseAdmin", {clubId:@club.id, csrf_token:form_authenticity_token})

@@ -31,11 +31,6 @@
 //= require es6-promise.auto.js
 //= require object-polyfill.js
 //= require fetch.js
-//= require react
-//= require formatted-text
-//= require react_ujs
-//= require components
-//= require ready
 //= require jquery.autocomplete.min.js
 //= require photoswipe
 //= require_tree .

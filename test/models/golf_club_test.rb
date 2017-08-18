@@ -19,6 +19,8 @@ class GolfClubTest < ActiveSupport::TestCase
   should have_many(:course_listings)
   should have_many(:memberships)
 
+  should have_one(:course_global_setting)
+
   should belong_to(:user)
   should belong_to(:tax_schedule)
 

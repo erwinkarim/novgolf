@@ -66,6 +66,13 @@ Rails.application.routes.draw do
       collection do
         get 'tax_schedules'
       end
+      resources :courses, controller:'course_listings', :only => [:index,:update] do
+        collection do
+          patch 'global_setting' => 'course_listings#update_global_setting'
+          get 'statuses'
+          get 'defaults'
+        end
+      end
     end
     resources :user_reservations, :only => [:create, :show, :destroy, :update], constraints: {format:'json'} do
       post 'pay'
@@ -111,6 +118,7 @@ Rails.application.routes.draw do
   end
 
   resources :golf_clubs, :only => [:index, :show] do
+    get 'open_courses'
     resources :flight_matrices, :only => [:index]
     resources :user_reservations, :only => [:index] do
       collection do
