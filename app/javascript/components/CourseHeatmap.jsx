@@ -1,5 +1,6 @@
 import React, {PropTypes} from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
+import pluralize from 'pluralize';
 import {RRule, RRuleSet,rrulestr} from 'rrule';
 
 /*
@@ -106,7 +107,7 @@ class CourseHeatmap extends React.Component {
           endDate={new Date(Date.now() + 15552000000)} numDays={180}
           values={ handle.state.date_values }
           classForValue={ (value) => { return !value ? `color-github-1` : value.count == 0 ? `color-github-1` : value.count > 4 ? `color-red-4` :`color-red-${value.count}`; } }
-          titleForValue={ (value) => { return !value ? `Course is open` : value.count == 0 ? `Open on ${value.date.toDateString()}` : `${value.course.length} course(s) closed on ${value.date.toDateString()} by ${value.count} policy(ies)`; }}
+          titleForValue={ (value) => { return !value ? `Course is open` : value.count == 0 ? `Open on ${value.date.toDateString()}` : `${pluralize('course', value.course.length, true)} closed on ${value.date.toDateString()} by ${pluralize('policy', value.count, true)}`; }}
           tooltipDataAttrs={ {'data-toggle':'tooltip'} }
           />
       </div>
