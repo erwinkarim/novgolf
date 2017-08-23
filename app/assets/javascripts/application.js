@@ -20,6 +20,7 @@
 //= require jquery.sticky.js
 //= require jquery.ui.touch-punch.min.js
 //= require tether
+//= require popper.min.js
 //= require bootstrap
 //= require snackbar
 //= require remarkable.min.js
