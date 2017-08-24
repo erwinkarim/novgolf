@@ -13,17 +13,17 @@
     .col-12.col-md-8
       .card.mb-2
         .card-header Club Name
-        .card-block
+        .card-body
           %p.card-text #{ @golf_club.name}
       .card.mb-2
         .card-header Description
-        .card-block
+        .card-body
           = simple_format( @golf_club.description, { :class => 'card-text'})
       .card.mb-2
         .card-header Address
-        .card-block
+        .card-body
           = simple_format( @golf_club.address, { :class => 'card-text'})
-        .card-block#map{:style => "height: 40vh; padding:0px;"}
+        .card-body#map{:style => "height: 40vh; padding:0px;"}
       .card.mb-2
         .card-header Hours
         %ul.list-group.list-group-flush
@@ -54,7 +54,7 @@
                 %i.fa.fa-bar-chart
                 Courses
           %li.list-group-item
-            %a.card-link.btn.btn-secondary.mr-1{ :href => edit_admin_golf_club_path(@golf_club) }
+            %a.card-link.btn.btn-outline-secondary.mr-1{ :href => edit_admin_golf_club_path(@golf_club) }
               %i.fa.fa-pencil
               Edit
             %button.btn.btn-danger{ type:'button', data:{toggle:'modal', target:'#deleteClubModal'}}
@@ -85,7 +85,7 @@
     .col-12.col-md-8
       .card.mb-2
         .card-header Courses
-        .card-block
+        .card-body
           %table.table
             %thead
               %tr
@@ -104,7 +104,7 @@
     .col-12.col-md-8
       .card.mb-2
         .card-header Taxation
-        .card-block
+        .card-body
           %p.card-text Taxation Country: #{ @golf_club.tax_schedule.country} (#{number_to_percentage(@golf_club.tax_schedule.rate*100)})
     .col-12.col-md-8
       - @golf_club.active_flight_schedules.each do |flight_schedule|
@@ -178,7 +178,7 @@
                 .btn-group.flex-wrap
                   - flight_schedule.active_flight_matrices.where.not(:second_tee_time => nil).map{|x| x.second_tee_time}.sort.each do |flight_time|
                     %button.btn.btn-secondary{ :type => 'button' } #{ flight_time.strftime("%H:%M") }
-          .card-block{ id:"summary-#{random_id}"}
+          .card-body{ id:"summary-#{random_id}"}
             %p.card-text
               Tee Days:
               .btn-group.flex-wrap{ :'data-toggle' => 'buttons'}

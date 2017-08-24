@@ -19,7 +19,7 @@
                 = link_to "Change Password", edit_user_registration_path
       .card.mb-2
         .card-header Info
-        .card-block
+        .card-body
           %table.table
             %tbody
               %tr
@@ -33,7 +33,7 @@
     .col-12.col-md-8
       .card.mb-2
         .card-header Gangs
-        .card-block
+        .card-body
           %p.card-text
             - if @hangouts.empty? then
               None yet...

@@ -54,7 +54,7 @@ var QueryForm = React.createClass({
     if (this.props.showSearchNav){
       var toggleStyle = {backgroundImage:'none', width:'100%', 'border':'none'};
       var searchNav =
-        <nav className="navbar navbar-light bg-faded">
+        <nav className="navbar navbar-light bg-light">
           <button className="btn border-0 btn-block navbar-toggler" type="button" data-toggle="collapse" data-target="#search-query-form">
             <i className="fa fa-search"></i> Refine Search
           </button>
@@ -87,9 +87,8 @@ var QueryForm = React.createClass({
                 </div>
               </div>
             </div>
-            <div className="col-12">
-              <div className="text-center hidden-md-up"><button className="btn btn-primary" type="submit">Search</button></div>
-              <div className="hidden-sm-down"><br /><button className="btn btn-primary" type="submit">Search</button></div>
+            <div className="col-4 ml-auto mr-auto col-md-2 ml-md-0">
+              <button className="btn btn-primary btn-block" type="submit">Search</button>
             </div>
           </form>
         </div>

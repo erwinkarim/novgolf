@@ -318,7 +318,7 @@ var ContactsAdmin = React.createClass({
       <div className="card-columns-4">{ this.state.contacts.map((e,i) => {
         return (
           <div className="card d-inline-block w-100 mb-2" key={i}>
-            <div className="card-block">
+            <div className="card-body">
               <h4 className="card-title">{e.name}</h4>
               <ul className="list-unstyled">
                 <li>{e.email}</li>

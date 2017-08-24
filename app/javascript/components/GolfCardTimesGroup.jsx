@@ -66,7 +66,7 @@ var GolfCardTimes = React.createClass({
     : null;
 
     return (
-      <label ref="teeTimeLabel" className={"btn btn-"+reserve_status} onClick={clickFn} data-tee-time={this.props.flight.tee_time}
+      <label ref="teeTimeLabel" className={"btn btn-outline-"+reserve_status} onClick={clickFn} data-tee-time={this.props.flight.tee_time}
         id={`btn-group-${this.props.randomID}-${this.props.index}`}
         value={this.props.index} data-value={this.props.index} data-array-index={this.props.arrayIndex}>
         <input type={this.props.btnGroupMode} name="teeTimes[]" value={this.props.flight.tee_time} />

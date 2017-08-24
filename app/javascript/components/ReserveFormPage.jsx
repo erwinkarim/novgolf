@@ -135,23 +135,23 @@ var ReserveFormPage = React.createClass({
             <div key={formContentIndex} className="form-group row mb-1">
               <input type="hidden" value={elmPrice} name={`flight[${this.props.flightInfo.id}][price][${formContentElm.value}]`} />
               { hiddenInsuranceCount }
-              <div className="col-2">
+              <div className="col-3 col-md-2">
                 <select name={`flight[${this.props.flightInfo.id}][count][${formContentElm.value}]` } disabled={ disabledSelect}
                   onChange={this.props.updatePrice} value={this.props.flightInfo[formContentElm.value]}
                   data-index={this.props.flightInfo.index} data-target={formContentElm.value}>
                   { arrayFromRange(bottomRange, topRange).map( (e,i) => <option key={i}>{e}</option> )}
                 </select>
               </div>
-              <label className="col-5">{captionDisplay}</label>
-              <label className="col-5">{toCurrency(elmPrice)} </label>
+              <label className="col-9 col-md-5">{captionDisplay}</label>
+              <label className="col-12 col-md-5 text-md-left text-right">{toCurrency(elmPrice)} </label>
             </div>
 
           );
         })}
 
         <div className="form-group row mb-1">
-           <label className="col-5 offset-2">Tax</label>
-           <label className="col-5">
+           <label className="col-12 col-md-5 ml-md-auto">Tax</label>
+           <label className="col-12 col-md-5 text-md-left text-right">
              {toCurrency(this.tax_amount())}
            </label>
          </div>
@@ -172,7 +172,7 @@ var ReserveFormPage = React.createClass({
             </a>
           </h5>
         </div>
-        <div className="card-block text-black pt-2 pb-2">
+        <div className="card-body text-black pt-2 pb-2">
           { formContent }
           { notesContent }
         </div>

@@ -73,7 +73,7 @@ var GolfClubDashStatistics = React.createClass({
         <diuv className="card-header">
           <h3>Stats</h3>
         </diuv>
-        <div className="card-block">
+        <div className="card-body">
           <p>Duration: {this.props.days[0]} to {this.props.days[6]}</p>
           <p>Courses: {this.state.coursesBooked}/{this.state.coursesTotal} </p>
           <div className="progress" value={this.state.coursesBooked} max={this.state.coursesTotal}>
@@ -138,13 +138,13 @@ var GolfClubDashStatus = React.createClass({
         if(course_state.first_reservation_id == null){
           btnRow = (
             <li className="list-group-item">
-              <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
+              <button className="btn btn-outline-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationNew}>Reserve</button>
             </li>
           );
         } else {
           btnRow = (
             <li className="list-group-item">
-              <button className="btn btn-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
+              <button className="btn btn-outline-secondary ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationUpdate}>Update</button>
               <button className="btn btn-danger ml-2 mb-2" type="button" disabled={disableFnBtn} onClick={this.props.reservationCancel}>Cancel</button>
             </li>
           );
@@ -648,14 +648,14 @@ var GolfCoursesGroup = React.createClass({
           var activeState = (i == this.props.selectedCourse) ? "active" : null;
 
           return this.props.available_courses.includes(e.id) ? (
-            <label className={`btn btn-${reserve_status} ${activeState} h-38px`} key={i} onClick={this.props.selectCourse}
+            <label className={`btn btn-outline-${reserve_status} ${activeState} h-38px`} key={i} onClick={this.props.selectCourse}
               data-index={i} data-course-id={e.id} data-reservation-id={e.reservation_id}
               data-target="first_course_id" data-value={e.id}>
               <input type="radio" name="courses" value={`course-${e.id}`}  />
               {e.name}
             </label>
           ) : (
-            <button disabled="disabled" key={i} className="btn btn-secondary disabled h-38px">{e.name}</button>
+            <button disabled="disabled" key={i} className="btn btn-outline-secondary disabled h-38px">{e.name}</button>
           );
         })}</div>
         <ul className="list-unstyled">
@@ -679,7 +679,7 @@ var GolfCoursesGroup = React.createClass({
           {reservation_detail_link}
           {reservation_notify_link}
           <button type="button" className="btn btn-info mb-2 mr-2" data-target="#flight-contact-info-modal" data-toggle="modal">Edit Contact</button>
-          <button type="button" className="btn btn-secondary mb-2 mr-2" data-toggle="collapse" data-target="#reservation-detail">Close</button>
+          <button type="button" className="btn btn-outline-secondary mb-2 mr-2" data-toggle="collapse" data-target="#reservation-detail">Close</button>
         </div>
       </div>
     );

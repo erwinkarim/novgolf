@@ -7,14 +7,14 @@
         .card-header Review
         - if @review.nil? then
           - if @show_review_form then
-            .card-block
+            .card-body
               %p.card-text You haven't review this flight yet.
               %a.btn.btn-primary{ :href => new_user_review_path(current_user, {topic_id:@reservation.id, topic_type:"UserReservation"}) } Review
           - if @allow_to_review then
-            .card-block
+            .card-body
               %p.card-text You can give your review on this flight around 12 hours after the flight.
           - else
-            .card-block
+            .card-body
               %p.card-text You may not review this flight
         - else
           %ul.list-group.list-group-flush

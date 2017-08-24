@@ -1,7 +1,7 @@
 .card.mb-2
   - if (@reservation.payment_confirmed? || @reservation.reservation_confirmed?) && !@reservation.token.nil? then
-    .card-block
-      %img.center-block{ :src => RQRCode::QRCode.new(@reservation.token, :size => 4, :level => :h).to_img.resize(256,256).to_data_url }
+    .card-body
+      %img.mx-auto{ :src => RQRCode::QRCode.new(@reservation.token, :size => 4, :level => :h).to_img.resize(256,256).to_data_url }
   %ul.list-group.list-group-flush
     %li.list-group-item
       %p.mb-0
@@ -30,13 +30,13 @@
         We detect that you attempting to pay for this booking. If you lost the payment page, please wait around 10 minutes for the booking to be released again
 - if (!@reservation.contact.nil?) then
   .card.mb-2
-    .card-block
+    .card-body
       %h3 #{@reservation.contact.name}
       %p.card-text #{@reservation.contact.email || ""}
       %p.card-text #{@reservation.contact.telephone}
 .card.mb-2
   .card-header Details
-  .card-block
+  .card-body
     %h4 Flight Settings
     %table.table
       %thead
@@ -96,7 +96,7 @@
 - if @reservation.count_member > 0 then
   .card
     .card-header Members
-    .card-block
+    .card-body
       %table.table
         %thead
           %tr

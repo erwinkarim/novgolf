@@ -73,7 +73,7 @@ var PhotoUploader = React.createClass({
   render: function(){
     return (
       <div className="card mb-2">
-        <div className="card-block">
+        <div className="card-body">
             <span className="btn btn-success fileinput-button mr-2">
               <i className="fa fa-plus mr-2"></i>
               <span>Select or Drop files...</span>
@@ -264,7 +264,7 @@ var PhotoAdminViewer =  React.createClass({
       </div>
     ) : (
       <div className="card">
-        <div className="card-block">
+        <div className="card-body">
           <p className="card-text">No Photos Yet...</p>
         </div>
       </div>

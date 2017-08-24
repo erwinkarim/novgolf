@@ -19,7 +19,7 @@
         - if @desc_array.length > 1 then
           #desc-therest.collapse
             = @club.description.split(/\n/)[1..-1].join('<br />').html_safe
-          %button.btn.btn-secondary.btn-small.btn-block{ :type => 'button',data:{toggle:'collapse', target:'#desc-therest'}} Show More/Less
+          %button.btn.btn-outline-dark.btn-small.btn-block{ :type => 'button',data:{toggle:'collapse', target:'#desc-therest'}} Show More/Less
           %br
       - if @got_reviews then
         = react_component "ReviewList", {reviews_path:golf_club_reviews_path(@club), showHeader:true}
@@ -62,7 +62,7 @@
     .col-12
       %h2 Ammenities
       .card
-        .card-block
+        .card-body
           %p.card-text Ammenities list here
           %ul
             - @club.amenity_listings.each do |amenity|

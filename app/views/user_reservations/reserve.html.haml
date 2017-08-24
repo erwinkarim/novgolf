@@ -17,7 +17,7 @@
         - params[:flight].each_pair do |k,v|
           .card.mb-2
             .card-header #{v[:tee_time]} Flight Details
-            .card-block
+            .card-body
               %h4 Flight Settings
               %table.table
                 %thead
@@ -47,9 +47,9 @@
                     %td Insurance
                     %td #{ number_to_currency(v[:price][:insurance], { :unit => "RM"}) }
             - if v[:count][:member].to_i > 0 then
-              .card-block
+              .card-body
                 %p.card-text Members Name and ID will be verified at the Club House during registration.
-            .card-block
+            .card-body
               %h4 Courses
               %table.table
                 %thead
