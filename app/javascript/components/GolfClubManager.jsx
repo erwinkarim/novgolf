@@ -259,7 +259,7 @@ var GolfClubTabFlights = React.createClass({
                           var active = (flight.flight_matrices == null) ? '' :
                             (flight.flight_matrices[0][`day${number}`] == 1 ? 'active' : '');
                           return (
-                            <label  key={index} className={`btn btn-secondary ${active}`}>{ getDayOfWeek(day) }</label>
+                            <label  key={index} className={`btn btn-outline-secondary ${active}`}>{ getDayOfWeek(day) }</label>
                           )
                         })
                       }
@@ -267,7 +267,7 @@ var GolfClubTabFlights = React.createClass({
                     <h4 className="w-100">Time Active</h4>
                     <div className="w-100">{
                         flight.flight_matrices.map( (flight_m, index) => {
-                          return (<div className="btn-group mr-2" key={index}>
+                          return (<div className="btn-group mr-2 mb-2" key={index}>
                             <label className="btn btn-secondary">{ flight_m.tee_time}</label>
                             <label className="btn btn-info">{ flight_m.second_tee_time}</label>
                           </div>)
@@ -342,7 +342,7 @@ var GolfClubMgmtCard = React.createClass({
           </div>
         </div>
         <div className="collapse w-100 mt-2" id={`club-${this.state.random_id}`} ref={(collapse)=>{this.clubCollapse=collapse;}} >
-          <ul className="nav nav-pills"> {
+          <ul className="nav nav-tabs"> {
             tabs.map( (e,i) => {
               return (
                 <li className="nav-item mr-2" key={i}>

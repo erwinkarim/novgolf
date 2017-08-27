@@ -182,8 +182,7 @@ var InvoiceManagerSidebar = React.createClass({
     return (
       <div>
         <h4>{ toTitleCase(`${handle.props.invoiceCategory[handle.props.selectedInvoiceCategory]}`)}</h4>
-        <div className="card">
-          <ul className="list-group list-group-flush">
+          <ul className="list-group">
             {
               handle.props.invoiceCategory.map( (e,i) => {
                 var invoiceCount = 0;
@@ -202,24 +201,23 @@ var InvoiceManagerSidebar = React.createClass({
                     invoiceCount = 0;
                 };
                 return (
-                  <li key={i} className={`list-group-item justify-content-between cursor-pointer ${highlightColor}`} data-index={i} onClick={this.props.selectCategory}>
-                    {toTitleCase(e)}
-                    <span className="text-right badge badge-primary">{invoiceCount}</span>
+                  <li key={i} className={`list-group-item row cursor-pointer ${highlightColor}`} data-index={i} onClick={this.props.selectCategory}>
+                    <div className="col-auto mr-auto"> {toTitleCase(e)} </div>
+                    <div className="col-auto">
+                      <span className="badge badge-primary">{invoiceCount}</span>
+                    </div>
                   </li>
                 )
               } )
             }
           </ul>
-        </div>
 
         <h4>Others</h4>
-        <div className="card">
-          <ul className="list-group list-group-flush">
-            <li className="list-group-item">
-              <a href="/monolith/invoices/stats">Stats</a>
-            </li>
-          </ul>
-        </div>
+        <ul className="list-group justify-content-between row">
+          <li className="list-group-item">
+            <a href="/monolith/invoices/stats">Stats</a>
+          </li>
+        </ul>
       </div>
     )
     return (<div>Invoice Manager Sidebar here</div>)

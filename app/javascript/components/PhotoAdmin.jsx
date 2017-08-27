@@ -243,7 +243,7 @@ var PhotoAdminViewer =  React.createClass({
 
     var sequenceNav = (
       <div className="col-12">
-        <nav className="navbar navbar-light bg-faded mb-2 d-none" id="sequenceNav">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light mb-2 d-none" id="sequenceNav">
           <span className="navbar-text">Arrangement: </span>
           <form className="form-inline">
             <button type="button" className="btn btn-outline-primary mr-2" onClick={this.props.setNewSequence}>Set</button>
