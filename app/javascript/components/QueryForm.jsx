@@ -87,7 +87,7 @@ var QueryForm = React.createClass({
                 </div>
               </div>
             </div>
-            <div className="col-4 ml-auto mr-auto col-md-2 ml-md-0">
+            <div className="col-12 ml-auto mr-auto col-md-2 ml-md-0">
               <button className="btn btn-primary btn-block" type="submit">Search</button>
             </div>
           </form>

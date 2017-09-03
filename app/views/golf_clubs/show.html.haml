@@ -10,7 +10,7 @@
         .container
 .container
   .row
-    .col-12.col-md-8
+    .col-12
       %h1 #{ @club.name }
       #desc-parent
         #desc-summary
@@ -21,10 +21,9 @@
             = @club.description.split(/\n/)[1..-1].join('<br />').html_safe
           %button.btn.btn-outline-dark.btn-small.btn-block{ :type => 'button',data:{toggle:'collapse', target:'#desc-therest'}} Show More/Less
           %br
-      - if @got_reviews then
-        = react_component "ReviewList", {reviews_path:golf_club_reviews_path(@club), showHeader:true}
-
-    .col-12.col-md-4
+    .col-12.col-md-8.order-2.order-md-1
+      = react_component "ReviewList", {reviews_path:golf_club_reviews_path(@club), showHeader:true}
+    .col-12.col-md-4.order-1.order-md-2.mb-2
       .card
         %ul.list-group.list-group-flush
           %li.list-group-item.text-center

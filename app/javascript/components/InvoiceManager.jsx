@@ -202,10 +202,7 @@ var InvoiceManagerSidebar = React.createClass({
                 };
                 return (
                   <li key={i} className={`list-group-item row cursor-pointer ${highlightColor}`} data-index={i} onClick={this.props.selectCategory}>
-                    <div className="col-auto mr-auto"> {toTitleCase(e)} </div>
-                    <div className="col-auto">
-                      <span className="badge badge-primary">{invoiceCount}</span>
-                    </div>
+                    <div className=""> {toTitleCase(e)} ({invoiceCount})</div>
                   </li>
                 )
               } )

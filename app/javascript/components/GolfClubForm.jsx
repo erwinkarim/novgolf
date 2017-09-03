@@ -236,9 +236,9 @@ var FlightScheduleControl = React.createClass({
                 <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][tee_time]`} value={e.tee_time} />
                 <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][second_tee_time]`} value={e.second_tee_time} />
                 <input type="hidden" name={`flight[${this.props.random_id}][times][${random_id}][flight_order]`} value={e.flight_order} />
-                <div className={`btn btn-secondary`}>{e.tee_time}</div>
-                <div className={`btn btn-info`}>{e.second_tee_time}</div>
-                <button className={`btn btn-secondary`}
+                <div className={`btn btn-outline-secondary`}>{e.tee_time}</div>
+                <div className={`btn btn-outline-info`}>{e.second_tee_time}</div>
+                <button className={`btn btn-outline-secondary`}
                   type="button"
                   onClick={this.props.deleteTeeTime}
                   data-index-schedule={this.props.scheduleIndex} data-index-time={i} data-flight-order={e.flight_order}
@@ -529,7 +529,7 @@ var FlightSchedulePriceCard = React.createClass({
                     var isActive = (this.props.flightSchedule.flight_matrices[0]["day" + (i + 1)] == 1) ? "active" : ""
                     var isChecked = (this.props.flightSchedule.flight_matrices[0]["day" + (i + 1)] == 1) ? true : false
                     return (
-                      <label className={"btn btn-secondary " + isActive} key={i+1}
+                      <label className={"mb-2 btn btn-outline-secondary " + isActive} key={i+1}
                         data-index={this.props.scheduleIndex} data-target="flight_matrices" data-flight={i+1}
                         onClick={this.props.updateFlightInfo} value={i+1}>
                         <input key={i+1} type="checkbox" autoComplete="off"
