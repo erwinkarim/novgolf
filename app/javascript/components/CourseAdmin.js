@@ -420,7 +420,7 @@ var CourseAdmin = React.createClass({
 
     var handle = this;
 
-    return (<div className="col-12 col-md-8">
+    return (<div className="col-12 col-lg-8">
       <CourseGlobalSettingForm
         clubId={this.props.clubId}
         global_setting={this.state.global_settings} csrf_token={this.props.csrf_token}

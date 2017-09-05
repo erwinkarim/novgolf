@@ -24,10 +24,10 @@
                 %a.dropdown-item{ :href => user_path(current_user)} My Profile
                 - if current_user.superadmin? || current_user.admin? then
                   -# admin namespace is optimized for large screen. no easy way to go to admin in phone
-                  .dropdown-divider.hidden-md-down
-                  %a.dropdown-item.hidden-md-down{href:admin_path } Admin Console
+                  .dropdown-divider.hidden-sm-down
+                  %a.dropdown-item.hidden-sm-down{href:admin_path } Admin Console
                   - if current_user.superadmin? then
-                    %a.dropdown-item.hidden-md-down{href:monolith_path} Monolith
+                    %a.dropdown-item.hidden-sm-down{href:monolith_path} Monolith
                 .dropdown-divider
                 = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
             - else

@@ -1,7 +1,7 @@
 .card.mb-2
   - if (@reservation.payment_confirmed? || @reservation.reservation_confirmed?) && !@reservation.token.nil? then
     .card-body
-      %img.mx-auto{ :src => RQRCode::QRCode.new(@reservation.token, :size => 4, :level => :h).to_img.resize(256,256).to_data_url }
+      %img.d-block.mx-auto{ :src => RQRCode::QRCode.new(@reservation.token, :size => 4, :level => :h).to_img.resize(256,256).to_data_url }
   %ul.list-group.list-group-flush
     %li.list-group-item
       %p.mb-0

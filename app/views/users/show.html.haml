@@ -19,15 +19,13 @@
                 = link_to "Change Password", edit_user_registration_path
       .card.mb-2
         .card-header Info
-        .card-body
-          %table.table
-            %tbody
-              %tr
-                %th Name
-                %td #{ @user.name }
-              %tr
-                %th Handicap
-                %td #{ @user.handicap  || "None Yet"}
+        %ul.list-group.list-group-flush
+          %li.list-group-item
+            %strong Name
+            #{ @user.name }
+          %li.list-group-item
+            %strong Handicap
+            #{ @user.handicap || 'None Yet'}
       = react_component "UserMembershipCard",
         {memberships_path:user_memberships_path(@user), allowEdit: @user == current_user, csrfToken:form_authenticity_token, club_path:golf_clubs_path }
     .col-12.col-md-8
