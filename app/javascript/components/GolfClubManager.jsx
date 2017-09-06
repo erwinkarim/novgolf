@@ -41,14 +41,14 @@ var GolfClubTabSummary = React.createClass({
     //render basic if there's no info yet
     if(!this.props.loaded){
       return (<div className="card">
-          <div className="card-block"><i className="fa fa-cog fa-spin"></i> Loading club .... </div>
+          <div className="card-body"><i className="fa fa-cog fa-spin"></i> Loading club .... </div>
       </div>);
     };
 
     var amenities_card = this.props.club.amenities.length == 0 ? (
-      <div className="card"><div className="card-block">No amenities ... </div></div>
+      <div className="card"><div className="card-body">No amenities ... </div></div>
     ) : (
-      <div className="card"><div className="card-block"><ul>{ this.props.club.amenities.map( (amenity, index) => {
+      <div className="card"><div className="card-body"><ul>{ this.props.club.amenities.map( (amenity, index) => {
           return (<li key={index}>{amenity.label}</li>)
         })
       }</ul></div></div>
@@ -56,11 +56,11 @@ var GolfClubTabSummary = React.createClass({
 
     return (<div>
       <div className="card">
-        <div className="card-block pb-0">
+        <div className="card-body pb-0">
           <h3> {this.props.club.name} </h3>
         </div>
-        <div className="card-block">Operating Hours: {this.props.club.open_hour} - {this.props.club.close_hour}</div>
-        <div className="card-block pt-0">
+        <div className="card-body">Operating Hours: {this.props.club.open_hour} - {this.props.club.close_hour}</div>
+        <div className="card-body pt-0">
           { this.props.club.description.split("\n").map( (para, index) => {
             return (
               <p key={index}>{para}</p>
@@ -70,9 +70,9 @@ var GolfClubTabSummary = React.createClass({
       </div>
       <br />
       <div className="card">
-        <div className="card-block">{this.props.club.address}</div>
+        <div className="card-body">{this.props.club.address}</div>
         <div className="map" id={this.state.mapId} style={{ height:'30vh'}} ref={(map)=>{this.map=map;}}></div>
-        <div className="card-block">Coordinates: {this.props.club.lat}, {this.props.club.lng}</div>
+        <div className="card-body">Coordinates: {this.props.club.lat}, {this.props.club.lng}</div>
       </div>
       <br />
       { amenities_card }
@@ -93,15 +93,15 @@ var GolfClubTabPhotos = React.createClass({
   render: function(){
     if(this.props.photos == null || this.props.photos.length == 0){
       return (<div className="card">
-        <div className="card-block">No Photos</div>
-        <div className="card-block">
+        <div className="card-body">No Photos</div>
+        <div className="card-body">
           <a className="btn btn-primary" href={`/admin/golf_clubs/${this.props.clubId}/photos`}>Edit Photo(s)</a>
         </div>
       </div>)
     };
 
     return (<div className="card">
-      <div className="card-block row">{this.props.photos.map( (photo,index) => {
+      <div className="card-body row">{this.props.photos.map( (photo,index) => {
           return (
             <div className="col-3 pb-2 photo-card" key={index}>
               <img className="img-responsive" src={photo.square200} />
@@ -109,7 +109,7 @@ var GolfClubTabPhotos = React.createClass({
           );
         })
       }</div>
-      <div className="card-block">
+      <div className="card-body">
         <a className="btn btn-primary" href={`/admin/golf_clubs/${this.props.clubId}/photos`}>Edit Photo(s)</a>
       </div>
     </div>)
@@ -133,18 +133,18 @@ var GolfClubTabCourses = React.createClass({
     if(this.props.courses == null){
       return (
         <div className="card">
-          <div className="card-block">No courses ...</div>
+          <div className="card-body">No courses ...</div>
         </div>
       )
     };
 
     return (<div>
       <div className="card mb-2">
-        <div className="card-block">
+        <div className="card-body">
           <h4 className="card-title">Availability</h4>
           <CourseHeatmap courses={this.props.courses}/>
         </div>
-        <div className="card-block">
+        <div className="card-body">
           <h4 className="card-title">Global settings</h4>
           <ul>
             <li>{`Admin course selection: ${handle.props.global_setting.admin_selection}`}</li>
@@ -175,11 +175,11 @@ var GolfClubTabCourses = React.createClass({
 
           return (
             <div className="card mb-2" key={index}>
-              <div className="card-block">
+              <div className="card-body">
                 <a href={`#course-${random_id}`} data-toggle="collapse"> {course.name} ({course.course_status.desc}) </a>
               </div>
               <div className="collapse" id={`course-${random_id}`}>
-                <div className="card-block">
+                <div className="card-body">
                   <p>Maintenance schedule:</p>
                   { cs_div()}
                 </div>
@@ -201,7 +201,7 @@ var GolfClubTabFlights = React.createClass({
   render: function(){
     if(this.props.flights == null){
       return(<div className="card">
-        <div className="card-block">No flights detected ... </div>
+        <div className="card-body">No flights detected ... </div>
       </div>)
     };
 
@@ -212,7 +212,7 @@ var GolfClubTabFlights = React.createClass({
 
           return (
             <div className="card mb-2" key={index}>
-              <div className="card-block">
+              <div className="card-body">
                 <a href={`#collapse-${random_id}`} data-toggle="collapse">
                   {flight.name} Schedule
                 </a>
@@ -259,7 +259,7 @@ var GolfClubTabFlights = React.createClass({
                           var active = (flight.flight_matrices == null) ? '' :
                             (flight.flight_matrices[0][`day${number}`] == 1 ? 'active' : '');
                           return (
-                            <label  key={index} className={`btn btn-secondary ${active}`}>{ getDayOfWeek(day) }</label>
+                            <label  key={index} className={`btn btn-outline-secondary ${active}`}>{ getDayOfWeek(day) }</label>
                           )
                         })
                       }
@@ -267,7 +267,7 @@ var GolfClubTabFlights = React.createClass({
                     <h4 className="w-100">Time Active</h4>
                     <div className="w-100">{
                         flight.flight_matrices.map( (flight_m, index) => {
-                          return (<div className="btn-group mr-2" key={index}>
+                          return (<div className="btn-group mr-2 mb-2" key={index}>
                             <label className="btn btn-secondary">{ flight_m.tee_time}</label>
                             <label className="btn btn-info">{ flight_m.second_tee_time}</label>
                           </div>)
@@ -342,10 +342,10 @@ var GolfClubMgmtCard = React.createClass({
           </div>
         </div>
         <div className="collapse w-100 mt-2" id={`club-${this.state.random_id}`} ref={(collapse)=>{this.clubCollapse=collapse;}} >
-          <ul className="nav nav-pills"> {
+          <ul className="nav nav-tabs"> {
             tabs.map( (e,i) => {
               return (
-                <li className="nav-item" key={i}>
+                <li className="nav-item mr-2" key={i}>
                   <a className={`nav-link cursor-pointer ${i==0 ? "active" : ""}`} key={i}
                     data-target={`#club-${this.state.random_id}-${e}`} data-toggle="tab">{toTitleCase(e)}</a>
                 </li>
@@ -409,7 +409,7 @@ var GolfClubManager = React.createClass({
     if(this.state.clubs.length == 0){
       return (
         <div className="card">
-          <div className="card-block">No clubs yet...</div>
+          <div className="card-body">No clubs yet...</div>
         </div>
       )
     };

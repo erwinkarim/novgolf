@@ -89,7 +89,7 @@ var CourseSelection = React.createClass({
                       //if course status is unavailable due to maintenance or being book, return button w/ appropiate class
                       if(!handle.props.available_courses.includes(course.id) || course_status != 'secondary'){
                         return (
-                          <button key={c_index} disabled="disabled" className={`btn btn-${course_status} ${active_status} disable h-38px`}>
+                          <button key={c_index} disabled="disabled" className={`btn btn-outline-${course_status} ${active_status} disable h-38px`}>
                             {course.name}
                           </button>
                         );
@@ -97,7 +97,7 @@ var CourseSelection = React.createClass({
 
                       //default, return label, not special classes
                       return (
-                        <label key={c_index} className={`btn btn-secondary ${active_status} h-38px`}
+                        <label key={c_index} className={`btn btn-outline-secondary ${active_status} h-38px`}
                           onClick={handle.props.updatePrice}
                           data-value={course.id} data-index={handle.props.flightInfo.index} data-target={`${course_name}_course_id`}
                           value={course.id}

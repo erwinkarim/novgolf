@@ -6,11 +6,11 @@ import CourseHeatmap from './CourseHeatmap';
 class CourseCard extends React.Component {
   render(){
     return (<div className="card mb-2">
-      <div className="card-block">
+      <div className="card-body">
         <h4 className="card-title">{this.props.course.name}</h4>
         <CourseHeatmap courses={[this.props.course]} />
       </div>
-      <div className="card-block">
+      <div className="card-body">
         <h5>Course status and maintenance schedule</h5>
         <p> { `Course is ${this.props.course.course_status.available ? 'available': 'unavailable'}.`} </p>
         <p>Maintenance schedule is:-</p>
@@ -79,7 +79,7 @@ var CourseGlobalSettingForm = React.createClass({
     var random_id = randomID();
 
     return (<div className="card mb-2">
-      <div className="card-block">
+      <div className="card-body">
         <div className="w-100 d-flex justify-content-start">
           <span className="align-self-center">
             <h3> Global Settings </h3>
@@ -337,7 +337,7 @@ var CourseEditForm = React.createClass({
       return (<div>Nothing yet ...</div>);
     };
 
-    return (<div className="card-block">
+    return (<div className="card-body">
       <div className="collapse" id={`form-${random_id}`} ref={(form)=>{this.collapse_form=form;}}>
         <form ref={(form) => {this.settings_form = form;}}>
           <input type="hidden" value={this.props.csrf_token} name="authenticity_token" />
@@ -414,13 +414,13 @@ var CourseAdmin = React.createClass({
     //default render
     if(this.state.courses.length == 0){
       return (<div className="card">
-        <div className="card-block">No courses found ... </div>
+        <div className="card-body">No courses found ... </div>
       </div>);
     };
 
     var handle = this;
 
-    return (<div className="col-12 col-md-8">
+    return (<div className="col-12 col-lg-8">
       <CourseGlobalSettingForm
         clubId={this.props.clubId}
         global_setting={this.state.global_settings} csrf_token={this.props.csrf_token}

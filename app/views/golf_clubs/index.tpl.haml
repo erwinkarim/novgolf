@@ -2,7 +2,7 @@
   - @golf_clubs.each do |golf_club|
     - random_id = SecureRandom.hex(6)
     .card
-      .card-block
+      .card-body
         %h4.card-title #{golf_club.name}
         = simple_format(golf_club.description, :class => 'card-text')
         %p.card-text #{number_to_currency(golf_club.latest_charge_schedule.session_price, :unit => "MYR")}

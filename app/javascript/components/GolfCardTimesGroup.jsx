@@ -27,12 +27,14 @@ var GolfCardTimes = React.createClass({
     if(this.props.adminMode){
       //admin mode - disable disabled
       reserve_status = FlightFunctions.reserveColor(this.props.flight.course_data.status);
+      reserve_status = reserve_status == 'secondary' ? 'outline-secondary' : reserve_status;
       clickFn = this.props.handleClick;
     } else {
       //normal mode
       reserve_status = FlightFunctions.reserveColor(this.props.flight.course_data.status);
       if(reserve_status == "secondary"){
         clickFn = this.props.handleClick;
+        reserve_status = 'outline-secondary';
       } else {
         reserve_status = reserve_status + " disabled";
       }
@@ -55,7 +57,7 @@ var GolfCardTimes = React.createClass({
           indicatorClass = null;
         }
         var result = indicatorClass == null ? null : (
-          <i key={i} className={`text-${indicatorClass} fa fa-circle`}
+          <i key={i} className={`text-${indicatorClass} fa fa-circle mr-1`}
             data-value={this.props.index} data-tee-time={this.props.flight.tee_time} data-array-index={this.props.arrayIndex}>
           </i>
         );
@@ -66,7 +68,7 @@ var GolfCardTimes = React.createClass({
     : null;
 
     return (
-      <label ref="teeTimeLabel" className={"btn btn-"+reserve_status} onClick={clickFn} data-tee-time={this.props.flight.tee_time}
+      <label ref="teeTimeLabel" className={`mb-2 btn btn-${reserve_status}`} onClick={clickFn} data-tee-time={this.props.flight.tee_time}
         id={`btn-group-${this.props.randomID}-${this.props.index}`}
         value={this.props.index} data-value={this.props.index} data-array-index={this.props.arrayIndex}>
         <input type={this.props.btnGroupMode} name="teeTimes[]" value={this.props.flight.tee_time} />

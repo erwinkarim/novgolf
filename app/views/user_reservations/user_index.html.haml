@@ -4,9 +4,9 @@
     .col-12
       .card.mb-2
         .card-header Upcomming Flights
-        .card-block
+        .card-body
           - if @futureFlights.empty? then
-            %p
+            %p.card-text
               You haven't reserved anything yet.
               %a{href:search_path({date:(DateTime.now+1.day).strftime('%d-%m-%Y'), time:'07:00', q:''}) } Find some flights.
 
@@ -27,7 +27,7 @@
     .col-12
       .card.mb-2
         .card-header Most Recent Flights
-        .card-block
+        .card-body
           - if @pastFlights.nil? || @pastFlights.empty? then
             %p You haven't reserved anything yet
           - else

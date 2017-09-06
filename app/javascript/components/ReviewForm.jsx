@@ -28,9 +28,9 @@ var ReviewStarSelection = React.createClass({
           <div className="btn-group" data-toggle="buttons">
             { arrayFromRange(1,5).map( (e,i) => {
               var buttonIsActive = e == this.state.rating;
-              var starState = e <= this.state.hoverRating ? "fa fa-star" : "fa fa-star-o";
+              var starState = e <= parseInt(this.state.hoverRating) ? "fa fa-star" : "fa fa-star-o";
               return (
-                <label className={`btn btn-secondary ${buttonIsActive ? "active" : ""}`} data-value={e} onClick={this.updateRating}
+                <label className={`btn btn-outline-secondary ${buttonIsActive ? "active" : ""}`} data-value={e} onClick={this.updateRating}
                   key={i} onMouseEnter={this.toggleHover} onMouseLeave={this.resetRating}>
                   <input type="radio" name="review[rating]" id={`${e}star`} value={e}
                     checked={ e == this.state.rating } onChange={this.updateRating}/>

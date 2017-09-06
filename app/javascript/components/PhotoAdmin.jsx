@@ -73,7 +73,7 @@ var PhotoUploader = React.createClass({
   render: function(){
     return (
       <div className="card mb-2">
-        <div className="card-block">
+        <div className="card-body">
             <span className="btn btn-success fileinput-button mr-2">
               <i className="fa fa-plus mr-2"></i>
               <span>Select or Drop files...</span>
@@ -243,7 +243,7 @@ var PhotoAdminViewer =  React.createClass({
 
     var sequenceNav = (
       <div className="col-12">
-        <nav className="navbar navbar-light bg-faded mb-2 d-none" id="sequenceNav">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light mb-2 d-none" id="sequenceNav">
           <span className="navbar-text">Arrangement: </span>
           <form className="form-inline">
             <button type="button" className="btn btn-outline-primary mr-2" onClick={this.props.setNewSequence}>Set</button>
@@ -264,7 +264,7 @@ var PhotoAdminViewer =  React.createClass({
       </div>
     ) : (
       <div className="card">
-        <div className="card-block">
+        <div className="card-body">
           <p className="card-text">No Photos Yet...</p>
         </div>
       </div>
