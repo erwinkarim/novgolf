@@ -19,7 +19,7 @@ var QueryForm = React.createClass({
   },
   componentDidMount: function(){
     $(this.refs.queryDate).datepicker({ minDate:0, dateFormat:'dd/mm/yy' });
-    $(this.refs.queryTime).timepicker({ disableTextInput:'true', minTime:'6:00am', maxTime:'7:00pm', timeFormat:'H:i'});
+    //$(this.refs.queryTime).timepicker({ disableTextInput:'true', minTime:'6:00am', maxTime:'7:00pm', timeFormat:'H:i'});
 
     /* what's this for?? */
     var countries = [
@@ -82,8 +82,11 @@ var QueryForm = React.createClass({
                       className="mb-1 form-control" placeholder="Date" value={this.state.queryDate} onChange={function(){}} />
                 </div>
                 <div className="col-12 col-md-3">
-                  <input id="flight-time" name="time" ref="queryTime" className="form-control" type="text"
-                    placeholder="Golf Club" value={this.state.queryTime} onChange={function(){}} />
+                  <select name="session" className="form-control">
+                    <option value="0">Morning</option>
+                    <option value="1">Afternoon</option>
+                    <option value="2">Evening</option>
+                  </select>
                 </div>
               </div>
             </div>

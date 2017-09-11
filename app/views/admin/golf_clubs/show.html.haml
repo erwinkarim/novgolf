@@ -214,6 +214,7 @@
           %li{:class => amenity[:available] ? "" : "text-muted" } #{ amenity[:label]}
 = react_component("GolfClubDeleteModal", {clubName:@golf_club.name, delete_path:admin_golf_club_path(@golf_club),
   token:form_authenticity_token})
+= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}&libraries=places"
 - content_for(:other_js) do
   :javascript
     var map;
