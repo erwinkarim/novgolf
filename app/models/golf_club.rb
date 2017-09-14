@@ -66,7 +66,7 @@ class GolfClub < ActiveRecord::Base
   # 2. club ranking algothrim
   # 3. don't return results if looking for something in the past??
   # TODO: optional capture of course data, by default, just say how many is occupied vs #of courses and min status of the courses
-  # TODO:
+  # TODO: fuzzy search mode, just look for session based on session method
   def self.search options = {}
     default_options = { :query => "", :dateTimeQuery => DateTime.parse("#{Date.tomorrow} 07:00"), :spread => 30.minutes,
       :pax => 8, :club_id => 0..10000000,
