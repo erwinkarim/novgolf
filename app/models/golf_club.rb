@@ -18,8 +18,9 @@ class GolfClub < ActiveRecord::Base
   # and topic_id = UserReservations.id and user_reservations.golf_club_id = id
   belongs_to :tax_schedule, optional:true
 
+  enum flight_selection_method: [:flight_select_fuzzy, :flight_select_exact]
 
-  validates_presence_of :name, :description, :address, :open_hour, :close_hour, :user_id, :tax_schedule_id
+  validates_presence_of :name, :description, :address, :open_hour, :close_hour, :user_id, :tax_schedule_id, :flight_selection_method
 
   #should test that golf_club must have at least 1 course entry on update
 
@@ -61,12 +62,11 @@ class GolfClub < ActiveRecord::Base
 
   #look for clus and give the tee_time at near
   #expected output [ {:club => {:id, :name, :link}, :tee_time => [..]}, { ... }]
-  # to do:
-  # 1. remove clubs that is fully booked
-  # 2. club ranking algothrim
-  # 3. don't return results if looking for something in the past??
+  # TODOL
+  # revamp the search, get the list of clubs that meet criteria and fill up w / other data based on criteria
+  #     * skip clubs that is fully booked
+  #     * load more tee times if the booking method is exact, otherwise, just take this first results that comes out
   # TODO: optional capture of course data, by default, just say how many is occupied vs #of courses and min status of the courses
-  # TODO: fuzzy search mode, just look for session based on session method
   def self.search options = {}
     default_options = { :query => "", :dateTimeQuery => DateTime.parse("#{Date.tomorrow} 07:00"), :spread => 30.minutes,
       :pax => 8, :club_id => 0..10000000,
@@ -122,6 +122,48 @@ class GolfClub < ActiveRecord::Base
       }.limit(options[:limit]
       )
 
+    #round one: get details of the clubs that fit this criteria
+    sql_statement = rel.selecting{[id,
+      name, flight_selection_method
+    ]}.distinct.to_sql
+
+    results = ActiveRecord::Base.connection.exec_query(sql_statement).inject([]){ |p,n|
+      p << {
+        :club => { :tax_schedule => GolfClub.find(n["id"]).tax_schedule, :id => n["id"],
+          :name => n["name"], :photos => GolfClub.find(n["id"]).photos.order(:sequence => :desc).limit(3).map{ |x| x.avatar.banner400.url},
+          :course_user_selection =>  n["user_selection"], :flight_selection_method => n["flight_selection_method"]
+        },
+        :flights => [],
+        :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
+      }
+    }
+
+    #in the future, round 2 and round 3 can be parallelize to improve performance
+    #round two: fill up the flight schedule based on fuzzy criteria
+    sql_statement = rel.selecting{[id,
+        name, flight_schedules.charge_schedule.session_price,
+        flight_schedules.min_pax, #4
+        flight_schedules.max_pax, flight_schedules.charge_schedule.cart, flight_schedules.charge_schedule.caddy, flight_schedules.charge_schedule.insurance,        #8
+        flight_schedules.charge_schedule.note, flight_schedules.min_cart,  #12
+        flight_schedules.max_cart, flight_schedules.min_caddy, flight_schedules.max_caddy, flight_schedules.charge_schedule.insurance_mode,  #16
+        course_global_setting.user_selection
+      ]}.distinct.where.has{ id.in results.select{ |x| x[:club][:flight_selection_method] == 0}.map{ |x| x[:club][:id]} }.to_sql
+
+    ActiveRecord::Base.connection.exec_query(sql_statement).inject(results){ |p,n|
+      club = p.select{ |x| x[:club][:id] == n["id"] }.first
+      club[:flights] << {
+        :minPax => n["min_pax"], :maxPax => n["max_pax"],
+        :minCart => n["min_cart"], :maxCart => n["max_cart"],
+        :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
+        :tee_time => "fuzzy",
+        :second_tee_time => "fuzzy",
+        :matrix_id => 0,
+        :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
+        :course_data => { :status => 0 }
+      }
+      p
+    }
+    #round three: fill up the flihgt schedule based on exact criteria
     sql_statement = rel.group( " golf_clubs.id,
         golf_clubs.name, session_price, tee_time, second_tee_time, min_pax,
         max_pax, cart, caddy, insurance,
@@ -137,10 +179,11 @@ class GolfClub < ActiveRecord::Base
         course_global_setting.user_selection,
         'count(course_listings.id) as cl_count', 'count(tr.course_listing_id) as ur_cl_count'
         ]
-      }.to_sql
+      }.where.has{ id.in results.select{ |x| x[:club][:flight_selection_method] == 1}.map{ |x| x[:club][:id]} }.to_sql
 
       #shoud change this to exec_sql because it'd returns a hash instead of an array (cleaner code)
-      results = ActiveRecord::Base.connection.exec_query(sql_statement).inject([]){ |p,n|
+      #results = ActiveRecord::Base.connection.exec_query(sql_statement).inject([]){ |p,n|
+      ActiveRecord::Base.connection.exec_query(sql_statement).inject(results){ |p,n|
         club = p.select{ |x| x[:club][:id] == n["id"] }.first
         if club.nil? then
           p << {
@@ -178,6 +221,7 @@ class GolfClub < ActiveRecord::Base
       }
 
       #if more details course data require, go ask the database
+      # applies only if the flight selection method is exact
       # TODO: put course data on 2nd tee time
       # TODO: add maintenance data
       if options[:loadCourseData] then
@@ -186,9 +230,10 @@ class GolfClub < ActiveRecord::Base
               flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'), #2
               'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name'), #5
               'tr.second_course_listing_id'
-          ]}.to_sql
+          ]}.where.has{ id.in results.select{ |x| x[:club][:flight_selection_method] == 1}.map{ |x| x[:club][:id]} }.to_sql
           course_results = ActiveRecord::Base.connection.exec_query(course_query_statement)
           course_results.inject(results){ |p,n|
+            Rails.logger.info "current_row=#{n.inspect}"
             flight_handle = p.select{|x| x[:club][:id] == n["id"]}.first[:flights].select{|x| x[:matrix_id] == n["fm_id"]}.first
             if flight_handle[:course_data][:courses].nil? then
               flight_handle[:course_data][:courses] = []

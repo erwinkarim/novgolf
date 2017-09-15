@@ -6,6 +6,7 @@ class GolfClubTest < ActiveSupport::TestCase
   should validate_presence_of(:address)
   should validate_presence_of(:user_id)
   should validate_presence_of(:tax_schedule_id)
+  should validate_presence_of(:flight_selection_method)
   # test "the truth" do
   #   assert true
   # end

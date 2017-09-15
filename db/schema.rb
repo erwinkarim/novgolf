@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170719015146) do
+ActiveRecord::Schema.define(version: 20170914073235) do
 
   create_table "amenities", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "name"
@@ -149,6 +149,7 @@ ActiveRecord::Schema.define(version: 20170719015146) do
     t.string "lat"
     t.string "lng"
     t.integer "tax_schedule_id"
+    t.integer "flight_selection_method", default: 0
     t.index ["tax_schedule_id"], name: "index_golf_clubs_on_tax_schedule_id"
     t.index ["user_id"], name: "index_golf_clubs_on_user_id"
   end

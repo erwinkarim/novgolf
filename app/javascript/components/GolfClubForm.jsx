@@ -564,6 +564,7 @@ var FlightSchedulePriceCard = React.createClass({
   }
 });
 
+
 var FlightBox = React.createClass({
   propTypes: {
     flightSchedules:React.PropTypes.array,
@@ -728,6 +729,9 @@ var FlightBox = React.createClass({
               <TaxationBox tax_schedule_path={this.props.tax_schedule_path} />
             </div>
             <div className="card-body">
+              <FlightSelectionMethodBox flight_selection_method={this.props.club.flight_selection_method} />
+            </div>
+            <div className="card-body">
               { this.state.flightSchedules.map( (e,i) =>
                   <FlightSchedulePriceCard key={i} scheduleIndex={i}
                     flightSchedule={e}
@@ -777,6 +781,23 @@ var TaxationBox = React.createClass({
           </div>
         </div>
     );
+  }
+});
+
+var FlightSelectionMethodBox = React.createClass({
+  propTypes: {flight_selection_method: React.PropTypes.string},
+  render: function(){
+    return (
+      <div className="card">
+        <div className="card-header">Flight Selection Method</div>
+        <div className="card-body">
+          <select name="golf_club[flight_selection_method]" className="form-control" defaultValue={this.props.flight_selection_method}>
+            <option value={`flight_select_fuzzy`}>Fuzzy</option>
+            <option value={`flight_select_exact`}>Exact</option>
+          </select>
+        </div>
+      </div>
+    )
   }
 });
 
@@ -915,6 +936,7 @@ var GolfClubForm = React.createClass({
                 newCourse={this.newCourse} deleteCourse={this.deleteCourse} updateCourse={this.updateCourse}
                 dummyData={this.props.dummy_data} />
               <FlightBox flightSchedules={this.props.flightSchedules} flightDummy={this.props.flightDummy}
+               club={this.props.club}
                deleteTeeTime={this.deleteTeeTime} newTeeTime={this.newTeeTime} insurance_modes={this.props.insurance_modes}
                tax_schedule_path={this.props.paths.tax_schedule_path} />
               <AmenitiesBox amenities={this.props.amenities}/>

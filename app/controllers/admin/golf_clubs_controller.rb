@@ -277,7 +277,7 @@ class Admin::GolfClubsController < ApplicationController
   end
 
   def golf_club_params
-    params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour, :lat, :lng, :tax_schedule_id);
+    params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour, :lat, :lng, :tax_schedule_id, :flight_selection_method);
   end
 
   # DELETE   /admin/golf_clubs/:id(.:format)
