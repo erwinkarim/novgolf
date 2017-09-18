@@ -66,7 +66,9 @@ var GolfReserveForm = React.createClass({
     $(this.refs.reserveBtnLi).hide();
 
     //if this selection mode is fuzzy, pretent click first
-    this.handleClick({value:0, target:{className:''}, currentTarget:{dataset:{value:0} } });
+    if(this.props.selectionMode == 'fuzzy'){
+      this.handleClick({value:0, target:{className:''}, currentTarget:{dataset:{value:0} } });
+    };
   },
   componentWillReceiveProps: function(nextProps){
     var resetState = ()=>{
@@ -204,66 +206,72 @@ var GolfReserveForm = React.createClass({
       </li>
     ) : null;
 
-    var selectedTimesGroup = this.props.selectionMode == 'exact' ? (
-      <ul className="nav nav-pills mb-2 flex-wrap w-100" id={ "nav-" + this.state.random_id }>{ this.state.selectedTeeTimes.map( (e,i) =>
-        {
-          var isActive = (this.state.selectedTeeTimesIndex == i) ? "active" : ""
-          return (
-            <li key={i} className="nav-item">
-              <a href={ `#flight-tab-${this.state.flightInfo[i].id}` } className={`nav-link ${isActive}`} data-toggle="pill"
-                data-flight-index={i} onClick={this.updateSelectedTeeTimesIndex}>
-                {this.props.flights[e].tee_time}
-              </a>
-            </li>
-          )
-        }
-      )}</ul>
-    ) : null;
-
-    var flightPages = this.props.selectionMode == 'exact' ? (
-      <div ref="flightPages" className="tab-content w-100"> { this.state.flightInfo.map( (e,i) =>
-        {
-          var isActive = (this.state.selectedTeeTimesIndex == i) ? true : false;
-          return (
-            <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} isActive={isActive}
-              flightIndex={e.flightIndex} deleteFlight={this.deleteFlight}
-              available_courses={this.state.available_courses}
-              insurance_modes={this.props.insurance_modes} options={this.props.options}
-              taxSchedule = {this.props.club.tax_schedule} />
-          )
-        }
-      )}</div>
-    ) : this.state.flightInfo.length == 0 ? null : (
-      <ReserveFormPage flightInfo={this.state.flightInfo[0]} updatePrice={this.updatePrice} flight={this.props.flights[0]} isActive={true}
-        flightIndex={0} deleteFlight={this.deleteFlight}
-        available_courses={this.state.available_courses}
-        insurance_modes={this.props.insurance_modes} options={this.props.options}
-        taxSchedule = {this.props.club.tax_schedule}  displayAs='flushed-list'/>
-    );
+    var flightPages =
+      this.state.flightInfo.length == 0 ? null :
+      this.props.selectionMode == 'exact' ? (
+        <li className="list-group-item">
+          <ul className="nav nav-pills mb-2 flex-wrap w-100" id={ "nav-" + this.state.random_id }>{ this.state.selectedTeeTimes.map( (e,i) =>
+            {
+              var isActive = (this.state.selectedTeeTimesIndex == i) ? "active" : ""
+              return (
+                <li key={i} className="nav-item">
+                  <a href={ `#flight-tab-${this.state.flightInfo[i].id}` } className={`nav-link ${isActive}`} data-toggle="pill"
+                    data-flight-index={i} onClick={this.updateSelectedTeeTimesIndex}>
+                    {this.props.flights[e].tee_time}
+                  </a>
+                </li>
+              )
+            }
+          )}</ul>
+          <div ref="flightPages" className="tab-content w-100"> { this.state.flightInfo.map( (e,i) =>
+            {
+              var isActive = (this.state.selectedTeeTimesIndex == i) ? true : false;
+              return (
+                <ReserveFormPage flightInfo={e} key={i} updatePrice={this.updatePrice} flight={this.props.flights[e.flightIndex]} isActive={isActive}
+                  flightIndex={e.flightIndex} deleteFlight={this.deleteFlight}
+                  available_courses={this.state.available_courses}
+                  insurance_modes={this.props.insurance_modes} options={this.props.options}
+                  taxSchedule = {this.props.club.tax_schedule} />
+              )
+            }
+          )}</div>
+        </li>
+      ) : (
+        <li className="list-group-item pl-0 pr-0">
+          <ReserveFormPage flightInfo={this.state.flightInfo[0]} updatePrice={this.updatePrice} flight={this.props.flights[0]} isActive={true}
+            flightIndex={0} deleteFlight={this.deleteFlight}
+            available_courses={this.state.available_courses}
+            insurance_modes={this.props.insurance_modes} options={this.props.options}
+            taxSchedule = {this.props.club.tax_schedule}  displayAs='flushed-list'/>
+        </li>
+      );
 
     return (
-      <li className="list-group-item pl-0 pr-0" ref="reserveBtnLi" >
-      <form action={this.props.reserveTarget} method="post">
-        <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
-        <input type="hidden" name="club[id]" value={this.props.club.id} />
-        <input type="hidden" name="info[date]" value={this.props.queryData.date} />
-        { timesGroup }
-          {/* time stamps */}
-          { selectedTimesGroup }
-
-          {/* form pages */}
-          {flightPages }
-          <div className="col-12 text-black">
-            <h4>Grand Total: {toCurrency(this.state.totalPrice + this.state.tax)} </h4>
-            <input type="hidden" name="info[total_price]" value={this.state.totalPrice} />
-          </div>
-          <div className="col-12">
-            <button type="submit" className="btn btn-primary">Book!</button>
-          </div>
-      </form>
-      </li>
-    )
+      <div>
+        <form action={this.props.reserveTarget} method="post">
+          <input type="hidden" name="authenticity_token" value={this.props.crsfToken} />
+          <input type="hidden" name="club[id]" value={this.props.club.id} />
+          <input type="hidden" name="info[date]" value={this.props.queryData.date} />
+          { timesGroup }
+          { flightPages }
+          <li className="list-group-item" ref="reserveBtnLi">
+            <div className="col-12 text-black">
+              <h4>Grand Total: {toCurrency(this.state.totalPrice + this.state.tax)} </h4>
+              <input type="hidden" name="info[total_price]" value={this.state.totalPrice} />
+            </div>
+            <div className="col-12">
+              <button type="submit" className="btn btn-primary">Book!</button>
+            </div>
+          </li>
+        </form>
+      </div>
+    );
   }
 });
 
 module.exports = GolfReserveForm
+
+/*
+
+
+*/

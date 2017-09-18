@@ -91,9 +91,14 @@ class GolfClub < ActiveRecord::Base
     end
 
     #set time range
+    middleHour = Time.parse(options[:dateTimeQuery].strftime("%H:%M"))
     startHour = (options[:dateTimeQuery] - options[:spread]).strftime("%H:%M")
     endHour = (options[:dateTimeQuery] + options[:spread]).strftime("%H:%M")
     timeRange = startHour..endHour
+    fuzzyPeriodName =
+      (Time.parse("06:00")..Time.parse("11:00")).include?(middleHour) ? "Morning" :
+      (Time.parse("11:01")..Time.parse("16:00")).include?(middleHour) ? "Afternoon" :
+      "Evening"
 
     currentTime = DateTime.now
 
@@ -131,10 +136,9 @@ class GolfClub < ActiveRecord::Base
       p << {
         :club => { :tax_schedule => GolfClub.find(n["id"]).tax_schedule, :id => n["id"],
           :name => n["name"], :photos => GolfClub.find(n["id"]).photos.order(:sequence => :desc).limit(3).map{ |x| x.avatar.banner400.url},
-          :course_user_selection =>  n["user_selection"], :flight_selection_method => n["flight_selection_method"]
+          :course_user_selection =>  0, :flight_selection_method => n["flight_selection_method"]
         },
-        :flights => [],
-        :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
+        :flights => []
       }
     }
 
@@ -155,14 +159,15 @@ class GolfClub < ActiveRecord::Base
         :minPax => n["min_pax"], :maxPax => n["max_pax"],
         :minCart => n["min_cart"], :maxCart => n["max_cart"],
         :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
-        :tee_time => "fuzzy",
-        :second_tee_time => "fuzzy",
+        :tee_time => fuzzyPeriodName,
+        :second_tee_time => fuzzyPeriodName,
         :matrix_id => 0,
         :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
-        :course_data => { :status => 0 }
+        :course_data => { :status => 0, :courses => [] }
       }
       p
     }
+
     #round three: fill up the flihgt schedule based on exact criteria
     sql_statement = rel.group( " golf_clubs.id,
         golf_clubs.name, session_price, tee_time, second_tee_time, min_pax,
@@ -200,8 +205,7 @@ class GolfClub < ActiveRecord::Base
               :matrix_id => n["fm_id"],
               :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
               :course_data => { :status => n["ur_cl_count"].nil? || n["ur_cl_count"] < n["cl_count"] ? 0 : n["tr_min_status"] }
-            }],
-            :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
+            }]
           }
         else
           # TODO: find the appropiate flights, add courses, or new flight if necessary
@@ -260,6 +264,14 @@ class GolfClub < ActiveRecord::Base
 
       end
 
+      #add the query data on the first results only
+      if results.empty? then
+        results.push [{ :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]} }]
+      else
+        results[0] = results.first.merge(
+          { :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]} }
+        )
+      end
       results
 
       #inject the photo path after search

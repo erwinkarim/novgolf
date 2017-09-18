@@ -46,10 +46,10 @@ var GolfCards = React.createClass({
     selectionMode: React.PropTypes.oneOf(['fuzzy', 'exact'])
   },
   getDefaultProps:function(){
-      return {options: golfCardDefaultOptions, selectionMode:'fuzzy' }
+    return {options: golfCardDefaultOptions, selectionMode:'fuzzy' };
   },
   getInitialState: function(){
-      return { teeTimes:[], totalPrice: 0, random_id:randomID() }
+      return { teeTimes:[], totalPrice: 0, random_id:randomID()};
   },
   componentDidMount: function(){
       //console.log(this.props);
