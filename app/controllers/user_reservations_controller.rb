@@ -1,3 +1,4 @@
+# TODO: handle fuzzy bookings
 class UserReservationsController < ApplicationController
   before_action :authenticate_user!, except: [:public_view]
 
@@ -5,7 +6,9 @@ class UserReservationsController < ApplicationController
     render file: "public/400.html", status: :bad_request
     return
   end
+
   # POST/GET     /golf_clubs/:golf_club_id/user_reservations/reserve(.:format)
+  # TODO: setup flight_matrix_id for fuzzy selection reservation
   def reserve
     @club = GolfClub.find(params[:golf_club_id])
     #@courses = @club.course_listings
@@ -29,6 +32,16 @@ class UserReservationsController < ApplicationController
       params[:flight].each_pair do |k,v|
         if !v.has_key?(:tee_time) then
           check_passed = false
+        end
+
+        #check the flight_matrix_id
+        if !v.has_key?(:matrix_id) then
+          # if the club is using fuzzy selection method, autofill first flight_matrix_id
+          if @club.flight_select_fuzzy? then
+            v[:matrix_id] = @club.flight_matrices.first.id
+          else
+            check_passed = false
+          end
         end
 
         # if the club course selection method is user_auto_select then
@@ -85,6 +98,7 @@ class UserReservationsController < ApplicationController
   end
 
   # POST /golf_clubs/:golf_club_id/user_reservations/processing
+  # process the payment
   def processing
     #set that you need to complete this transaction (get reservation confirmation token) within 10 minutes
     @club = GolfClub.find(params[:golf_club_id])
@@ -146,9 +160,11 @@ class UserReservationsController < ApplicationController
 =end
   end
 
+  # POST     /golf_clubs/:golf_club_id/user_reservations/confirmation(.:format)
   def confirmation
     #get some grace period for shit happens
     grace = Time.parse(session[:timeout]) + 5.minutes
+    club = GolfClub.find(params[:golf_club_id])
 
     #if token got before session timeout. generate token and show out the confirmation page
     @reservations = UserReservation.find(session[:reservation_ids])
@@ -164,7 +180,12 @@ class UserReservationsController < ApplicationController
           if reservation.count_member > 0 then
             reservation.requires_members_verification!
           else
-            reservation.payment_confirmed!
+            #check if this club is fuzzy or exact
+            if club.flight_select_exact? then
+              reservation.payment_confirmed!
+            else
+              reservation.reservation_await_assignment!
+            end
           end
 
           #destroy the sessions that is not being used anymore
@@ -178,9 +199,12 @@ class UserReservationsController < ApplicationController
         #UserReservationMailer.request_review(reservation).deliver_later(wait_until: reservation.booking_datetime + 12.hours)
       end
 
-      #send out email to confirm
-      UserMailer.reservation_confirmed(@reservations).deliver_later
-
+      #send out email to confirm or tell the user flights are being confirmed later
+      if club.flight_select_exact
+        UserMailer.reservation_confirmed(@reservations).deliver_later
+      else
+        UserMailer.reservation_await_assignment(@reservations).deliver_later
+      end
 
     else
       @reservations.each do |reservation|

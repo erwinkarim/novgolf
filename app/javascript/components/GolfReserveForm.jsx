@@ -270,8 +270,3 @@ var GolfReserveForm = React.createClass({
 });
 
 module.exports = GolfReserveForm
-
-/*
-
-
-*/

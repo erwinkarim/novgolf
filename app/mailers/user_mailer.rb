@@ -18,6 +18,14 @@ class UserMailer < ApplicationMailer
     end
   end
 
+  def reservation_await_assignment user_reservations = []
+    @reservations = user_reservations
+    mail(to: @reservations.first.user.email, subject: "Payment for reservation(s) is Confirmed") do |format|
+      format.text
+      format.mjml
+    end
+  end
+
   #send email notification that invoice is ready
   def invoice_is_ready invoice = Invoice.first
     @invoice = invoice

@@ -25,6 +25,7 @@ class GolfClub < ActiveRecord::Base
   #should test that golf_club must have at least 1 course entry on update
 
   after_initialize :init
+  after_save :enforce_club_policy
 
   def init
     # TODO: consider to skip this if method is not available because of ActiveRelation model is
@@ -38,8 +39,28 @@ class GolfClub < ActiveRecord::Base
     self.lng ||= "101.71165"
 
     self.tax_schedule_id ||= 1
+
+    #setup the CourseGlobalSetting when creating a new golf club
+    self.transaction do
+      if self.course_global_setting.nil? then
+        cgs = CourseGlobalSetting.new({golf_club_id:self.id})
+        cgs.save!
+      end
+    end
   end
 
+  #everytime the club is save / updated, club policy is enforced
+  def enforce_club_policy
+    # if the flight selection method is fuzzy, the course_user_selection is auto
+    if self.flight_select_fuzzy? && self.course_global_setting.user_manual_select? then
+      self.course_global_setting.update_attribute(:user_selection, CourseGlobalSetting.user_selections[:user_auto_select])
+    end
+  end
+
+  # ensure that if the flight_selection_method is fuzzy, the course_global_setting for user is auto
+  def validate_course_global_setting
+
+  end
   #shows how many many slots are available in this club
   # params queryDate date in string fromat
   def get_flight_matrix options = {}
@@ -144,8 +165,17 @@ class GolfClub < ActiveRecord::Base
 
     #in the future, round 2 and round 3 can be parallelize to improve performance
     #round two: fill up the flight schedule based on fuzzy criteria
-    sql_statement = rel.selecting{[id,
+    # TODO: show the first 4-5 flights per golf club per session
+    sql_statement = rel.group(' golf_clubs.id,
+        golf_clubs.name, session_price,
+        min_pax,
+        max_pax, cart, caddy, insurance,
+        note, min_cart,
+        max_cart, min_caddy, max_caddy, insurance_mode,
+        user_selection
+      ').selecting{[id,
         name, flight_schedules.charge_schedule.session_price,
+        min(flight_schedules.flight_matrices.id).as('fm_id'),
         flight_schedules.min_pax, #4
         flight_schedules.max_pax, flight_schedules.charge_schedule.cart, flight_schedules.charge_schedule.caddy, flight_schedules.charge_schedule.insurance,        #8
         flight_schedules.charge_schedule.note, flight_schedules.min_cart,  #12
@@ -161,7 +191,7 @@ class GolfClub < ActiveRecord::Base
         :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
         :tee_time => fuzzyPeriodName,
         :second_tee_time => fuzzyPeriodName,
-        :matrix_id => 0,
+        :matrix_id => n["fm_id"],
         :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
         :course_data => { :status => 0, :courses => [] }
       }
@@ -361,12 +391,6 @@ class GolfClub < ActiveRecord::Base
     current_courses = self.course_listings
 
     self.transaction do
-      # create / update the CourseGlobalSetting model for the club
-      if self.course_global_setting.nil? then
-        cgs = CourseGlobalSetting.new({golf_club_id:self.id})
-        cgs.save!
-      end
-
       #delete courses not in the new list
       CourseListing.where(:id => self.course_listings.map{|x| x.id} -
         new_course_listings.to_unsafe_h.map{ |k,v| v["id"].to_i}.select{ |x| !x.zero?}).each{ |x| x.destroy}
@@ -602,5 +626,11 @@ class GolfClub < ActiveRecord::Base
     courses = []
     self.course_listings.inject([]){ |p,v| if v.isOpen? date then courses << v.id end }
     return courses
+  end
+
+  #get the next available reservation, based on data and given session
+  def next_available_slot date = Date.today, session = 'Morning'
+    #link up get the available slots within time frame
+    # something like search, but spit out slots available
   end
 end

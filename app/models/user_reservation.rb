@@ -37,7 +37,9 @@ class UserReservation < ActiveRecord::Base
   has_secure_token
 
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,
-    :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed, :reservation_failed, :requires_members_verification]
+    :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed, :reservation_failed, :requires_members_verification,
+    :reservation_await_assignment
+  ]
   enum reserve_method: [:online, :dashboard]
   enum course_selection_method: [:auto, :manual]
 
@@ -283,6 +285,7 @@ class UserReservation < ActiveRecord::Base
       course_selection:self.course_selection_methods[:auto], course_selection_ids:[]}
 
     options = default_options.merge(options)
+    Rails.logger.info "create_reservation options = #{options.inspect}"
 
     #sanity checks, expects that flight_info has all the necessary keys and values
     #flight_info = flight_info.symbolize_keys
@@ -323,23 +326,32 @@ class UserReservation < ActiveRecord::Base
       end
 
       if options[:course_selection] == self.course_selection_methods[:auto] then
-        # auto => automatically find the first available courses
-        #find the free coursetime
-        first_course_id = (club.course_listings.map{ |x| x.id } -
-          UserReservation.where.has{
-            (golf_club_id == club_id) &
-            (booking_date == booking_date_clause) &
-            (booking_time == booking_time_clause) &
-            (status.not_in [4,5,6])
-          }.map{|x| x.course_listing_id }).first
-        second_course_id = (club.course_listings.map{ |x| x.id } -
-          UserReservation.where.has{
-            (golf_club_id == club_id) &
-            (booking_date == booking_date_clause) &
-            (booking_time == booking_time_clause) &
-            (status.not_in [4,5,6])
-          }.map{|x| x.second_course_listing_id }).first
-        ur.assign_attributes({course_listing_id:first_course_id, second_course_listing_id:second_course_id})
+        #if user reservation is fuzzy, assign courses first. will be detailed later by turks
+
+        if club.flight_select_fuzzy? then
+          ur.assign_attributes({
+            course_listing_id:club.course_listings.first.id,
+            second_course_listing_id:club.course_listings.last.id
+          })
+        else
+          # auto => automatically find the first available courses
+          #find the free coursetime
+          first_course_id = (club.course_listings.map{ |x| x.id } -
+            UserReservation.where.has{
+              (golf_club_id == club_id) &
+              (booking_date == booking_date_clause) &
+              (booking_time == booking_time_clause) &
+              (status.not_in [4,5,6])
+            }.map{|x| x.course_listing_id }).first
+          second_course_id = (club.course_listings.map{ |x| x.id } -
+            UserReservation.where.has{
+              (golf_club_id == club_id) &
+              (booking_date == booking_date_clause) &
+              (booking_time == booking_time_clause) &
+              (status.not_in [4,5,6])
+            }.map{|x| x.second_course_listing_id }).first
+          ur.assign_attributes({course_listing_id:first_course_id, second_course_listing_id:second_course_id})
+        end
         #Rails.logger.info "new course id = #{first_course_id}"
       else
         # set the course selection manually
