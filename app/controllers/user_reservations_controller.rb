@@ -120,7 +120,9 @@ class UserReservationsController < ApplicationController
           ur = UserReservation.create_reservation #{v["matrix_id"]}, #{current_user.id}, #{Date.parse(session[:info]["date"])}, #{v["count"]},
           #{course_selection_options.inspect}
         "
-        ur = UserReservation.create_reservation v["matrix_id"], current_user.id, Date.parse(session[:info]["date"]), v["count"],
+
+        reservation_options = v["count"].merge({preferred_time:v["preferred_time"]})
+        ur = UserReservation.create_reservation v["matrix_id"], current_user.id, Date.parse(session[:info]["date"]), reservation_options,
           course_selection_options
 
         if ur.valid? then
@@ -200,7 +202,7 @@ class UserReservationsController < ApplicationController
       end
 
       #send out email to confirm or tell the user flights are being confirmed later
-      if club.flight_select_exact
+      if club.flight_select_exact?
         UserMailer.reservation_confirmed(@reservations).deliver_later
       else
         UserMailer.reservation_await_assignment(@reservations).deliver_later

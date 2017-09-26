@@ -83,7 +83,7 @@ class GolfClub < ActiveRecord::Base
 
   #look for clus and give the tee_time at near
   #expected output [ {:club => {:id, :name, :link}, :tee_time => [..]}, { ... }]
-  # TODOL
+  # TODO:
   # revamp the search, get the list of clubs that meet criteria and fill up w / other data based on criteria
   #     * skip clubs that is fully booked
   #     * load more tee times if the booking method is exact, otherwise, just take this first results that comes out
@@ -176,6 +176,7 @@ class GolfClub < ActiveRecord::Base
       ').selecting{[id,
         name, flight_schedules.charge_schedule.session_price,
         min(flight_schedules.flight_matrices.id).as('fm_id'),
+        min(flight_schedules.flight_matrices.tee_time).as('tee_time'),
         flight_schedules.min_pax, #4
         flight_schedules.max_pax, flight_schedules.charge_schedule.cart, flight_schedules.charge_schedule.caddy, flight_schedules.charge_schedule.insurance,        #8
         flight_schedules.charge_schedule.note, flight_schedules.min_cart,  #12
@@ -189,7 +190,7 @@ class GolfClub < ActiveRecord::Base
         :minPax => n["min_pax"], :maxPax => n["max_pax"],
         :minCart => n["min_cart"], :maxCart => n["max_cart"],
         :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
-        :tee_time => fuzzyPeriodName,
+        :tee_time => n["tee_time"],
         :second_tee_time => fuzzyPeriodName,
         :matrix_id => n["fm_id"],
         :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
@@ -296,10 +297,10 @@ class GolfClub < ActiveRecord::Base
 
       #add the query data on the first results only
       if results.empty? then
-        results.push [{ :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]} }]
+        results.push [{ :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query], :session => fuzzyPeriodName } }]
       else
         results[0] = results.first.merge(
-          { :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]} }
+          { :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query], :session => fuzzyPeriodName} }
         )
       end
       results
@@ -629,6 +630,8 @@ class GolfClub < ActiveRecord::Base
   end
 
   #get the next available reservation, based on data and given session
+  # returns: an empty UR with the proper booking date and time based on date and session
+  # to be added w/ other info like user_id, actual pricing, #, etc
   def next_available_slot date = Date.today, session = 'Morning'
     #link up get the available slots within time frame
     # something like search, but spit out slots available

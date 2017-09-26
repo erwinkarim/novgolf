@@ -271,6 +271,7 @@ class UserReservation < ActiveRecord::Base
   #streamline method to generate user reservation
   #includes the sanity checks, etc...
   # flight_info must be format {:pax, :caddy, :buggy, :insurance}, ie- count, everything else will be calculated
+  # TODO: for fuzzy selection, fill up the next available slots in the flight_matrix_id
   def self.create_reservation flight_matrix_id, user_id, booked_date = Date.today, flight_info = {}, options = {}
 
     #sanity check, symbolize_keys
@@ -282,7 +283,8 @@ class UserReservation < ActiveRecord::Base
 
 
     default_options = { reserve_method:UserReservation.reserve_methods[:online],
-      course_selection:self.course_selection_methods[:auto], course_selection_ids:[]}
+      course_selection:self.course_selection_methods[:auto], course_selection_ids:[]
+    }
 
     options = default_options.merge(options)
     Rails.logger.info "create_reservation options = #{options.inspect}"
@@ -296,10 +298,46 @@ class UserReservation < ActiveRecord::Base
     # => will get the associated booking time
     # get the current pricing at this time
     fm = FlightMatrix.find(flight_matrix_id)
+    booking_date_clause = booked_date.class == String ? (Date.parse(booked_date).strftime("%Y-%m-%d")) : booked_date.strftime("%Y-%m-%d")
+
     cs = ChargeSchedule.where(:flight_schedule_id => fm.flight_schedule_id ).first
     club = GolfClub.find(cs.golf_club_id)
     club_id = cs.golf_club_id
-    booking_date_clause = booked_date.class == String ? (Date.parse(booked_date).strftime("%Y-%m-%d")) : booked_date.strftime("%Y-%m-%d")
+
+    #if club flight selection is fuzzy, get the first available slot
+    # in the future, the slot if also based on course availablity
+    # in the future, limit to 4-5 flight slots per session
+    # TOOD: flight matrix must within 30 minutes of the prefered hour
+    if club.flight_select_fuzzy? then
+      #check based on prefered time, otherwise, just use the same flight schedule
+      #and booked date
+
+      preferred_day = booked_date.cwday
+      preferred_time = Time.parse(flight_info[:preferred_time])
+      time_range = ( (preferred_time-30.minutes).strftime('%H:%M') )..( (preferred_time+30.minutes).strftime('%H:%M') )
+      sql_statement = FlightMatrix.joining{
+        [
+          user_reservations.outer.on( (user_reservations.flight_matrix_id.eq id) & (user_reservations.booking_date.eq booking_date_clause)),
+          flight_schedule
+        ]
+        }.where.has{
+          (flight_schedule.golf_club_id.eq club_id) &
+          (tee_time.in time_range) &
+          (self.send("day#{preferred_day}").eq 1) &
+          (user_reservations.id.eq nil) &
+          (start_active_at.lt DateTime.now) &
+          (end_active_at.gt DateTime.now)
+      }.limit(1).to_sql.gsub('user_reservations_flight_matrices', 'user_reservations')
+      Rails.logger.info "sql_statement = #{sql_statement}"
+
+      results = ActiveRecord::Base.connection.exec_query(sql_statement).first
+      if results.nil? then
+        raise "No available slots"
+      else
+        fm = FlightMatrix.find(results["id"])
+      end
+    end
+
     booking_time_clause = fm.tee_time
     second_bookting_time_clause = fm.second_tee_time
 
@@ -349,7 +387,7 @@ class UserReservation < ActiveRecord::Base
               (booking_date == booking_date_clause) &
               (booking_time == booking_time_clause) &
               (status.not_in [4,5,6])
-            }.map{|x| x.second_course_listing_id }).first
+            }.map{|x| x.second_course_listing_id }).last
           ur.assign_attributes({course_listing_id:first_course_id, second_course_listing_id:second_course_id})
         end
         #Rails.logger.info "new course id = #{first_course_id}"

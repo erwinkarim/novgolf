@@ -198,11 +198,28 @@ var GolfReserveForm = React.createClass({
       $(this.refs.reserveBtnLi).slideUp();
     };
 
+    // enable selection based on tee_time, which is the min tee time available
+    var preferredTime = this.props.queryData.session == 'Morning' ? ['06:30', '07:30', '08:30', '09:30', '10:30'] :
+      this.props.queryData.session == 'Afternoon' ? ['11:30', '12:30', '13:30', '14:30', '15:30'] :
+      ['16:30', '17:30', '18:30', '19:30', '20:30']
     // show card times group on exact selection mode
     var timesGroup = this.props.selectionMode == 'exact' ? (
       <li className="list-group-item">
         <GolfCardTimesGroup randomID={this.state.random_id} flights={this.props.flights} handleClick={this.handleClick} queryDate={this.props.queryDate}
           options={this.props.options} displayMode={this.props.timeGroupDisplay}/>
+      </li>
+    ) : this.state.flightInfo.length != 0 ? (
+      <li className="list-group-item">
+        <span> Preferred Time: </span>
+        <select className="form-control" name={`flight[${this.state.flightInfo[0].id}][preferred_time]`}>{ preferredTime.map( (e,i) => {
+            return (
+              <option key={i} value={e}
+                disabled={Date.parse(this.props.flights[0].tee_time) > Date.parse(`2000-01-01 ${e.substring(0,2)}:00:00.000Z`)}>
+                {e}
+              </option>
+            )
+          })
+        }</select>
       </li>
     ) : null;
 
@@ -237,6 +254,7 @@ var GolfReserveForm = React.createClass({
           )}</div>
         </li>
       ) : (
+        //should change based on session
         <li className="list-group-item pl-0 pr-0">
           <ReserveFormPage flightInfo={this.state.flightInfo[0]} updatePrice={this.updatePrice} flight={this.props.flights[0]} isActive={true}
             flightIndex={0} deleteFlight={this.deleteFlight}
