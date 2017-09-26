@@ -235,6 +235,7 @@ class UserReservationsController < ApplicationController
   def show
     @user = User.find(params[:user_id])
     @reservation = UserReservation.includes(:review).find(params[:id])
+    @club = @reservation.golf_club
 
     #you can only see it if you own the reservation or the club
     allowed_to_see = @reservation.user_id == current_user.id || @reservation.golf_club.user.id == current_user.id

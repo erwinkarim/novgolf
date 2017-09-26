@@ -16,7 +16,8 @@
       .col-12.col-md-8.col-md-offset-2
         - params[:flight].each_pair do |k,v|
           .card.mb-2
-            .card-header #{v[:tee_time]} Flight Details
+            .card-header
+              = @club.flight_select_fuzzy? ? "Tentative #{v[:preferred_time]} Flight" : "#{v[:tee_time]} Flight Details"
             .card-body
               %h4 Flight Settings
               %table.table
@@ -57,12 +58,17 @@
                     %th Tee Time
                     %th Course Name
                 %tbody
-                  %tr
-                    %td #{v[:tee_time]}
-                    %td #{@first_course}
-                  %tr
-                    %td #{v[:second_tee_time]}
-                    %td #{@second_course}
+                  - if @club.flight_select_fuzzy? then
+                    %tr
+                      %td Preferred first tee at #{ v[:preferred_time]}
+                      %td TBD
+                  - else
+                    %tr
+                      %td #{ v[:tee_time]}
+                      %td #{@first_course}
+                    %tr
+                      %td #{v[:second_tee_time]}
+                      %td #{@second_course}
     .row
       .col-12.col-md-8.col-md-offset-2
         %table.table
