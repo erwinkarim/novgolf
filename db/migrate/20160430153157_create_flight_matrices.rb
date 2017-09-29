@@ -1,4 +1,4 @@
-class CreateFlightMatrices < ActiveRecord::Migration
+class CreateFlightMatrices < ActiveRecord::Migration[5.1]
   def change
     create_table :flight_matrices do |t|
       t.references :flight_schedule, index: true, foreign_key: true

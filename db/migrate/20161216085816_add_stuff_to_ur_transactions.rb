@@ -1,4 +1,4 @@
-class AddStuffToUrTransactions < ActiveRecord::Migration
+class AddStuffToUrTransactions < ActiveRecord::Migration[5.1]
   def change
     add_reference :ur_transactions, :user_reservation, index: true, foreign_key: true
     add_column :ur_transactions, :trans_amount, :decimal, :precision => 8, :scale => 2

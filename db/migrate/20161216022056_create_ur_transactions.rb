@@ -1,4 +1,4 @@
-class CreateUrTransactions < ActiveRecord::Migration
+class CreateUrTransactions < ActiveRecord::Migration[5.1]
   def change
     create_table :ur_transactions do |t|
 

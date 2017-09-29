@@ -1,4 +1,4 @@
-class CreateCourseStatuses < ActiveRecord::Migration
+class CreateCourseStatuses < ActiveRecord::Migration[5.1]
   def change
     create_table :course_statuses do |t|
       t.text :desc, limit:160

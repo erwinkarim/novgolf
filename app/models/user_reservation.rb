@@ -408,9 +408,10 @@ class UserReservation < ActiveRecord::Base
 
   #generate the random user reservation complete with review
   # TOOD, find a way to specify a date
-  def self.generate_random_reservation user = User.random, club = GolfClub.find( ids[rand(0..ids.length-1)])
+  # change club to club random
+  def self.generate_random_reservation user = User.random, club = GolfClub.random
     #get the club
-    ids = GolfClub.all.limit(100).pluck(:id)
+    #ids = GolfClub.all.limit(100).pluck(:id)
     #club = GolfClub.find( ids[rand(0..ids.length-1)])
 
     #get a random flight_matrix
@@ -421,7 +422,7 @@ class UserReservation < ActiveRecord::Base
 
     #create the proper user reservation based on the flight matrix at a date 6 month in the past
     # see which days are allowed, then pick a random day, and take a day 1..28 weeks ago and create a user reservation
-    days = fm.attributes.select{ |k,v| k =~ /day[1-7]/ && v == 1}.map{|x, y| day_index = x.match(/[1-7]/)[0].to_i }
+    days = fm.attributes.select{ |k,v| k =~ /day[1-7]/ && v == 1}.map{|x, y| x.match(/[1-7]/)[0].to_i }
     proposed_date = Date.today.sunday - rand(6..36).weeks + (days[rand(0..days.length-1)]).days
 
     #randomly create the review based on the reservation

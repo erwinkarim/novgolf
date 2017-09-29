@@ -1,4 +1,4 @@
-class CreateUserReservations < ActiveRecord::Migration
+class CreateUserReservations < ActiveRecord::Migration[5.1]
   def change
     create_table :user_reservations do |t|
       t.references :user, index: true, foreign_key: true

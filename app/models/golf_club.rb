@@ -40,21 +40,26 @@ class GolfClub < ActiveRecord::Base
 
     self.tax_schedule_id ||= 1
 
-    #setup the CourseGlobalSetting when creating a new golf club
-    self.transaction do
-      if self.course_global_setting.nil? then
-        cgs = CourseGlobalSetting.new({golf_club_id:self.id})
-        cgs.save!
-      end
-    end
   end
 
   #everytime the club is save / updated, club policy is enforced
   def enforce_club_policy
-    # if the flight selection method is fuzzy, the course_user_selection is auto
-    if self.flight_select_fuzzy? && self.course_global_setting.user_manual_select? then
-      self.course_global_setting.update_attribute(:user_selection, CourseGlobalSetting.user_selections[:user_auto_select])
+    # ensure that CourseGlobalSetting is there
+    if self.course_global_setting.nil? then
+      cgs = CourseGlobalSetting.new({golf_club_id:self.id})
+      cgs.save!
     end
+
+    # if the flight selection method is fuzzy, the course_user_selection is auto
+    if !self.course_global_setting.nil? then
+      if self.flight_select_fuzzy? && self.course_global_setting.user_manual_select? then
+        self.course_global_setting.update_attribute(:user_selection, CourseGlobalSetting.user_selections[:user_auto_select])
+      end
+    end
+
+    self.transaction do
+    end
+
   end
 
   # ensure that if the flight_selection_method is fuzzy, the course_global_setting for user is auto
@@ -384,6 +389,11 @@ class GolfClub < ActiveRecord::Base
 
       club
     end
+  end
+
+  #get a random club
+  def self.random
+    GolfClub.order("RAND()").first
   end
 
   #set the course listings

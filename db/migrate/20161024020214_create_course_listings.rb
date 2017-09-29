@@ -1,4 +1,4 @@
-class CreateCourseListings < ActiveRecord::Migration
+class CreateCourseListings < ActiveRecord::Migration[5.1]
   def change
     create_table :course_listings do |t|
       t.references :golf_club, index: true, foreign_key: true

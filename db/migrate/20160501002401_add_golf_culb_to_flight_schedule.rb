@@ -1,4 +1,4 @@
-class AddGolfCulbToFlightSchedule < ActiveRecord::Migration
+class AddGolfCulbToFlightSchedule < ActiveRecord::Migration[5.1]
   def change
     add_reference :flight_schedules, :golf_club, index: true, foreign_key: true
   end

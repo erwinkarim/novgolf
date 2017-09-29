@@ -1,4 +1,4 @@
-class CreateFlightSchedules < ActiveRecord::Migration
+class CreateFlightSchedules < ActiveRecord::Migration[5.1]
   def change
     create_table :flight_schedules do |t|
       t.string :flight_times

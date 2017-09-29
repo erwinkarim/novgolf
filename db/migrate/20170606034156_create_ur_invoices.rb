@@ -1,4 +1,4 @@
-class CreateUrInvoices < ActiveRecord::Migration[5.0]
+class CreateUrInvoices < ActiveRecord::Migration[5.1]
   def change
     create_table :ur_invoices do |t|
       t.references :user_reservation, foreign_key: true
