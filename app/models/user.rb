@@ -19,7 +19,7 @@ class User < ActiveRecord::Base
   validates_presence_of :role
   validates_presence_of :image_path
 
-  enum role: [:user, :admin, :superadmin ]
+  enum role: [:user, :admin, :superadmin, :operator ]
   after_initialize :init
   after_create :after_create_callback
 
@@ -80,7 +80,7 @@ class User < ActiveRecord::Base
     hangouts_sql = UserReservation.where.has{ (created_at > 6.months.ago) & (user_id == id)}.
       select("golf_club_id, count(*) as golf_club_count, 0 as status, 0 as count_member").
       group(:golf_club_id).order("golf_club_count desc").limit(3).to_sql
-    results = ActiveRecord::Base.connection.execute(hangouts_sql).map{|x| GolfClub.find(x[0]) }
+    return ActiveRecord::Base.connection.execute(hangouts_sql).map{|x| GolfClub.find(x[0]) }
   end
 
   # setup the billing cycle based on join date

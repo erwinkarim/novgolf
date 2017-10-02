@@ -28,6 +28,8 @@
                   %a.dropdown-item.hidden-sm-down{href:admin_path } Admin Console
                   - if current_user.superadmin? then
                     %a.dropdown-item.hidden-sm-down{href:monolith_path} Monolith
+                  - if current_user.superadmin? || current_user.operator? then
+                    %a.dropdown-item.hidden-sm-down{href:operator_path} Operator
                 .dropdown-divider
                 = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
             - else

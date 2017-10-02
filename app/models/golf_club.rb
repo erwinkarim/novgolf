@@ -126,7 +126,6 @@ class GolfClub < ActiveRecord::Base
       (Time.parse("11:01")..Time.parse("16:00")).include?(middleHour) ? "Afternoon" :
       "Evening"
 
-    currentTime = DateTime.now
 
     # todo: remove clubs that is fully booked in the time period
     #get current reservations, excluding failed/canceled attempts

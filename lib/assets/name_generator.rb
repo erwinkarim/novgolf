@@ -11,7 +11,7 @@ module NameGenerator
   FIRST_NAME = ["Mark", "Luke","Matthew", "Jesus", "Muhammad", "Aaron", "Able", "Cain", "Isaac", "Ishmael", "Daniel", "Angela", "Sophie", "Adrian",
     "Lucas", "David", "Kurt", "James"]
   LAST_NAME = ["Combs", "Trump", "Obama", "Williams", "Mercer", "DuBios", "Karim", "Haziq", "Eiman", "Aziz", "Ashraf", "Beyonce", "Cobain"]
-  EMAIL_PROVIDER = ["gmail.com", "hotmail.com", "yahoo.com", "@facebook.com"]
+  EMAIL_PROVIDER = ["gmail.com", "hotmail.com", "yahoo.com", "facebook.com"]
 
   def NameGenerator.random_name
       #prefix or modifier
