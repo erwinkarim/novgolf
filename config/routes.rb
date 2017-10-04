@@ -112,9 +112,11 @@ Rails.application.routes.draw do
   end
 
   namespace :operator do
-    get '/' => "operator#index"
-    get '/console' => 'operator#turk_console'
-
+    controller :operator do
+      get '/' => 'operator#index'
+      get 'console' => 'operator#turk_console'
+      get 'load' => 'operator#load'
+    end
   end
 
   namespace :invoke do

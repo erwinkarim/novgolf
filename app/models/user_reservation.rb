@@ -38,7 +38,8 @@ class UserReservation < ActiveRecord::Base
 
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,
     :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed, :reservation_failed, :requires_members_verification,
-    :reservation_await_assignment
+    :reservation_await_assignment,
+    :operator_assigned, :operator_confirmed, :operator_new_proposal, :operator_canceled
   ]
   enum reserve_method: [:online, :dashboard]
   enum course_selection_method: [:auto, :manual]
