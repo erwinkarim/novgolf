@@ -140,29 +140,11 @@ class TurkConsole extends React.Component {
       reservations:[]
     };
 
+    //binding
+    this.reservationAssignToMe = this.reservationAssignToMe.bind(this);
   }
-  render() {
-    return (
-      <div className="row">
-        <TurkSidebar {...this.state} />
-        <TurkMainConsole {...this.props} {...this.state} />
-      </div>
-    );
-  }
-};
-
-TurkConsole.propTypes = {
-  reservations:PropTypes.array,
-  reservationAssignToMe:PropTypes.func,
-  reservationConfirm:PropTypes.func,
-  reservationCancel:PropTypes.func,
-  reservationProposeNewTime:PropTypes.func
-}
-
-TurkConsole.defaultProps = {
-  reservationAssignToMe:function(e){
+  reservationAssignToMe(e){
     var handle = this;
-    console.log('this', this);
     console.log(`self assign reservation ${e.target.dataset.reservationId}`);
 
     var formData = new FormData();
@@ -175,13 +157,35 @@ TurkConsole.defaultProps = {
     }).then( (response) => {
       //check if the status is valid, otherwise, update the reservation object
 
+      //if sucessful, send
       return response.json();
     }).then( (json) => {
-
+      //update the reservation with the next status
+      
     });
     //update the reservation object
 
-  },
+  }
+  render() {
+    return (
+      <div className="row">
+        <TurkSidebar {...this.state} />
+        <TurkMainConsole
+          reservationAssignToMe={this.reservationAssignToMe}
+          {...this.props} {...this.state} />
+      </div>
+    );
+  }
+};
+
+TurkConsole.propTypes = {
+  reservations:PropTypes.array,
+  reservationConfirm:PropTypes.func,
+  reservationCancel:PropTypes.func,
+  reservationProposeNewTime:PropTypes.func
+}
+
+TurkConsole.defaultProps = {
   reservationConfirm: function(e){
     console.log(`confirm reservation ${e.target.dataset.reservationId}`);
   },

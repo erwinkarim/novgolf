@@ -24,9 +24,12 @@ class Operator::UserReservationsController < ApplicationController
   # POST     /operator/user_reservations/:user_reservation_id/assign_to_me(.:format)
   def assign_to_me
     # load the reservation and update the status
+    ur = UserReservation.find(params[:user_reservation_id])
+
     # need to create an object to describe who's handing this user reservation / ticketing, etc
     # return the new reservation object
-    head :ok
+
+    render json: ur
   end
 
   def confirm
