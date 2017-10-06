@@ -72,7 +72,13 @@ var GolfClubTabSummary = React.createClass({
       <div className="card">
         <div className="card-body">{this.props.club.address}</div>
         <div className="map" id={this.state.mapId} style={{ height:'30vh'}} ref={(map)=>{this.map=map;}}></div>
-        <div className="card-body">Coordinates: {this.props.club.lat}, {this.props.club.lng}</div>
+        <div className="card-body">
+          <p className="card-text">{`
+            ${ this.props.club.telephone == null ? 'No telephone number' : this.props.club.telephone } /
+            ${ this.props.club.email == null ? 'No email' : this.props.club.email }
+          `}</p>
+          <p className="card-text"> Coordinates: {this.props.club.lat}, {this.props.club.lng} </p>
+        </div>
       </div>
       <br />
       { amenities_card }

@@ -115,7 +115,12 @@ Rails.application.routes.draw do
     controller :operator do
       get '/' => 'operator#index'
       get 'console' => 'operator#turk_console'
-      get 'load' => 'operator#load'
+      resources :user_reservations, :only => [:index, :show] do
+        post 'assign_to_me'
+        post 'confirm'
+        post 'cancel'
+        post 'propose_new_time'
+      end
     end
   end
 

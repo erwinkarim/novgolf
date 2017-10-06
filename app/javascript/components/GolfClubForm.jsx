@@ -132,6 +132,14 @@ var GeneralBox = React.createClass({
                 <label>Close Hour</label>
                 <input type="text" className="form-control" placeholder="22:00" id="closeHour" ref="closeHour" name="golf_club[close_hour]" defaultValue={this.props.club.close_hour}/>
               </div>
+              <div className="form-group">
+                <label>Email</label>
+                <input type="text" className="form-control" placeholder="test@example.com" name="golf_club[email]" defaultValue={this.props.club.email} />
+              </div>
+              <div className="form-group">
+                <label>Telephone</label>
+                <input type="text" className="form-control" placeholder="0113452345" name="golf_club[telephone]" defaultValue={this.props.club.email} />
+              </div>
               <div className="form-group" id="map-container">
                 <label>Location</label>
                 <div className="googlemaps" id="map" ref="map"></div>

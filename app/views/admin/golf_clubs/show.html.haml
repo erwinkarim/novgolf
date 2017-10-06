@@ -25,6 +25,15 @@
           = simple_format( @golf_club.address, { :class => 'card-text'})
         .card-body#map{:style => "height: 40vh; padding:0px;"}
       .card.mb-2
+        .card-header Contact
+        .card-body
+          %p.card-text
+            %strong Email:
+            #{ @golf_club.email.nil? ? 'No email yet ...' : @golf_club.email}
+          %p.card-text
+            %strong Telephone:
+            #{ @golf_club.telephone.nil? ? 'No email yet ...' : @golf_club.telephone}
+      .card.mb-2
         .card-header Hours
         %ul.list-group.list-group-flush
           %li.list-group-item
@@ -209,7 +218,6 @@
               %span #{ prices.insurance_mode}
             %p.card-text
               = simple_format(prices.note)
-
   .row
     .col-12
       %h2 Amenities
