@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  ur_turk_case: one
+  action: 1
+  notes: MyString
+  action_by: 1
+
+two:
+  ur_turk_case: two
+  action: 1
+  notes: MyString
+  action_by: 1

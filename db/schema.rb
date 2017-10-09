@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171004065641) do
+ActiveRecord::Schema.define(version: 20171009011024) do
 
   create_table "amenities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "name"
@@ -293,6 +293,26 @@ ActiveRecord::Schema.define(version: 20171004065641) do
     t.index ["user_reservation_id"], name: "index_ur_transactions_on_user_reservation_id"
   end
 
+  create_table "ur_turk_case_histories", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.bigint "ur_turk_case_id"
+    t.integer "action"
+    t.string "notes", limit: 140
+    t.bigint "action_by"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["action_by"], name: "fk_rails_3d12166fe6"
+    t.index ["ur_turk_case_id"], name: "index_ur_turk_case_histories_on_ur_turk_case_id"
+  end
+
+  create_table "ur_turk_cases", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.bigint "user_reservation_id"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_ur_turk_cases_on_user_id"
+    t.index ["user_reservation_id"], name: "index_ur_turk_cases_on_user_reservation_id"
+  end
+
   create_table "user_reservations", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.bigint "user_id"
     t.bigint "charge_schedule_id"
@@ -401,6 +421,10 @@ ActiveRecord::Schema.define(version: 20171004065641) do
   add_foreign_key "ur_invoices", "user_reservations"
   add_foreign_key "ur_member_details", "user_reservations"
   add_foreign_key "ur_transactions", "user_reservations"
+  add_foreign_key "ur_turk_case_histories", "ur_turk_cases"
+  add_foreign_key "ur_turk_case_histories", "users", column: "action_by"
+  add_foreign_key "ur_turk_cases", "user_reservations"
+  add_foreign_key "ur_turk_cases", "users"
   add_foreign_key "user_reservations", "charge_schedules"
   add_foreign_key "user_reservations", "course_listings"
   add_foreign_key "user_reservations", "flight_matrices"
