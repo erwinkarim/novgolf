@@ -5,11 +5,13 @@ var moment = require('moment');
 class TurkSidebar extends React.Component {
   render() {
     var unassigned_reservations = this.props.reservations.filter((e) => {return e.status == 'reservation_await_assignment'});
+    //need to check that you're the one owning this. Don't need, filtered by the server
+    var pending_reservations = this.props.reservations.filter((e) => {return e.status == 'operator_assigned'});
     return (<div className="col-3">
       <ul className="list-group" ref={(list) => { this.theList = list;}}>
         <li className="list-group-item" style={ {backgroundColor:'papayawhip'}}>{`All (${this.props.reservations.length})`}</li>
         <li className="list-group-item">{`Unassigned (${unassigned_reservations.length})`}</li>
-        <li className="list-group-item">{`Pending (X)`}</li>
+        <li className="list-group-item">{`Pending (${pending_reservations.length})`}</li>
       </ul>
     </div>);
   }
@@ -24,10 +26,17 @@ class TurkCard extends React.Component {
     this.state = { random_id:randomID()};
   }
   render(){
+    var status_badge = this.props.reservation.status == 'reservation_await_assignment' ? (
+      <span className="badge badge-primary">Unassigned</span>
+    ) : (
+      <span className="badge badge-danger">Pending Connfirmation</span>
+    );
+
     return (
       <div className="card mb-2">
         <ul className="list-group list-group-flush">
           <li className="list-group-item">
+            { status_badge}
             <h2 className="card-title"><a href={`#collapse-${this.state.random_id}`} data-toggle="collapse">{this.props.reservation.token}</a></h2>
           </li>
           <li className="list-group-item">
@@ -161,7 +170,7 @@ class TurkConsole extends React.Component {
       return response.json();
     }).then( (json) => {
       //update the reservation with the next status
-      
+
     });
     //update the reservation object
 

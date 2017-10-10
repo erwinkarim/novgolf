@@ -10,6 +10,7 @@ class UserReservation < ActiveRecord::Base
   belongs_to :second_course_listing, class_name:"CourseListing"
 
   has_one :review, as: :topic
+  has_one :ur_turk_case
   belongs_to :contact, polymorphic: true, optional: true
   has_many :ur_member_details, dependent: :destroy
   has_many :ur_transactions, dependent: :destroy

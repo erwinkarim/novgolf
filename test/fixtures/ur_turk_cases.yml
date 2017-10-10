@@ -2,8 +2,8 @@
 
 one:
   user_reservation: one
-  owner: one
+  user_id: 1
 
 two:
   user_reservation: two
-  owner: two
+  user_id: 2
