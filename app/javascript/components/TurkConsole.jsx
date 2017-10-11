@@ -4,17 +4,16 @@ var moment = require('moment');
 
 class TurkSidebar extends React.Component {
   render() {
-    var unassigned_reservations = this.props.reservations.filter((e) => {return e.status == 'reservation_await_assignment'});
-    //need to check that you're the one owning this. Don't need, filtered by the server
-    var pending_reservations = this.props.reservations.filter((e) => {return e.status == 'operator_assigned'});
     return (<div className="col-3">
       <ul className="list-group" ref={(list) => { this.theList = list;}}>
-        <li className="list-group-item" style={ {backgroundColor:'papayawhip'}}>{`All (${this.props.reservations.length})`}</li>
-        <li className="list-group-item">{`Unassigned (${unassigned_reservations.length})`}</li>
-        <li className="list-group-item">{`Pending (${pending_reservations.length})`}</li>
-        <li className="list-group-item">{`Confirmed`}</li>
-        <li className="list-group-item">{`New Time`}</li>
-        <li className="list-group-item">{`Canceled`}</li>
+        <li className={`list-group-item ${this.props.viewMode=='active' ? 'active' : ''}`}>{`Active`}</li>
+        <li className={`list-group-item ${this.props.viewMode=='unassigned' ? 'unassigned' : ''}`}>{`Unassigned`}</li>
+        <li className={`list-group-item ${this.props.viewMode=='pending' ? 'pending' : ''}`}>{`Pending`}</li>
+        <li className={`list-group-item ${this.props.viewMode=='pending' ? 'confimed' : ''}`}>{`Confirmed`}</li>
+        <li className={`list-group-item ${this.props.viewMode=='pending' ? 'newTime' : ''}`}>{`New Time`}</li>
+        <li className={`list-group-item ${this.props.viewMode=='pending' ? 'canceled' : ''}`}>
+          <a href="#" onClick={this.props.reservationAction.showCancel}> {`Canceled`} </a>
+        </li>
       </ul>
     </div>);
   }
@@ -66,15 +65,14 @@ class TurkCard extends React.Component {
             <li className="list-group-item">
               {
                 this.props.reservation.status == 'reservation_await_assignment' ? (
-                  <button className="btn btn-primary mr-2" data-reservation-id={this.props.reservation.id}
-                    onClick={this.props.reservationAction.assignToMe}>
-                      Assign to Me
-                  </button>
+                  <button className="btn btn-primary mr-2"
+                    data-reservation-id={this.props.reservation.id} data-csrf-token={this.props.csrf_token}
+                    onClick={this.props.reservationAction.assignToMe}>Assign to Me</button>
                 ) : (
                   <div>
                     <button className="btn btn-primary mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationAction.confirm}>Confirm</button>
                     <button className="btn btn-secondary mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationProposeNewTime}>Propose New Time</button>
-                    <button className="btn btn-danger mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationCancel}>Cancel</button>
+                    <button className="btn btn-danger mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationAction.cancel}>Cancel</button>
                   </div>
                 )
               }
@@ -147,7 +145,7 @@ class TurkConsole extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      reservations:[]
+      reservations:[], viewMode:'active'
     };
   }
   reservationAction = {
@@ -202,19 +200,47 @@ class TurkConsole extends React.Component {
         handle.setState({reservations:newReservations});
 
       });
-      //update the reservation object
-    }
+    },
     cancel:(e) => {
       var handle = this;
       var reservationId = e.target.dataset.reservationId;
+      var formData = new FormData();
+      formData.append('authenticity_token', handle.props.csrf_token);
 
       console.log(`cancel reservation ${reservationId}`);
+      fetch(`/operator/user_reservations/${reservationId}/cancel`, {
+        credentials:'same-origin',
+        body:formData,
+        method:'POST'
+      }).then( (response) => {
+        if(response.status >= 200 & response.status < 300){
+          //delete the reservation from the active state list
+          var newReservations = handle.state.reservations;
+          newReservations.splice( newReservations.findIndex((ur) => { return ur.id == reservationId}), 1);
+          handle.setState({reservations:newReservations});
+          $.snackbar({style:'notice', content:`Reservation ${reservationId} has been cancelled.`})
+        } else {
+          $.snackbar({style:'error', content:`Problem when canceling reservation ${reservationId}`});
+        }
+
+      })
+    },
+    showCancel: (e) => {
+      //update the reservation list to show canceled reservations
+      e.preventDefault();
+      console.log('should show canceled reservations here')
+    },
+    showConfirmed:(e) => {
+      //show past confirmed reservation
+    },
+    showSearch:(e)=> {
+      //show reservations based on saved results
     }
   }
   render() {
     return (
       <div className="row">
-        <TurkSidebar {...this.state} />
+        <TurkSidebar reservationAction={this.reservationAction} {...this.state} />
         <TurkMainConsole
           reservationAction={this.reservationAction}
           {...this.props} {...this.state} />

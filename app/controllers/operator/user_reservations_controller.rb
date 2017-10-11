@@ -2,7 +2,7 @@ class Operator::UserReservationsController < ApplicationController
   before_action :operators_only
 
   #load the recourses based on user
-  # also based on time_id, if new
+  # also based on time_id, if new and search citeria
   # GET      /operator/user_reservations(.:format)
   def index
     #if time_id is not specified, assume that since begining of time
@@ -83,7 +83,20 @@ class Operator::UserReservationsController < ApplicationController
     head :ok
   end
 
+  # cancels the reservation
+  # find, update the casehistory then update the status
+  # POST     /operator/user_reservations/:user_reservation_id/cancel(.:format)
   def cancel
+    ur = UserReservation.find(params[:user_reservation_id])
+    ur.transaction do
+      case_history = ur.ur_turk_case.ur_turk_case_histories.new({
+        action:UrTurkCaseHistory.actions[:cancel_reservation], action_by:current_user.id
+      })
+      case_history.save!
+      ur.operator_canceled!
+    end
+
+    #TODO: handle if there some issues abount
     head :ok
   end
 
