@@ -532,6 +532,11 @@ class UserReservation < ActiveRecord::Base
     self.course_listing
   end
 
+  #for operator
+  def to_operator_format
+    self.attributes.merge({golf_club:self.golf_club, user:self.user})
+  end
+
   private
   def count_insurance_must_less_eq_count_pax
     self.init

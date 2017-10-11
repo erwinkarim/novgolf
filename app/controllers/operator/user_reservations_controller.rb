@@ -19,7 +19,7 @@ class Operator::UserReservationsController < ApplicationController
           (status.eq 10) & (ur_turk_case.user_id.eq current_user_id)
         }.selecting{:id}
       )
-    }.order(:booking_date, :booking_time).map{ |x| x.attributes.merge({golf_club:x.golf_club, user:x.user})}
+    }.order(:booking_date, :booking_time).map{ |x| x.to_operator_format }
 
 
     # TODO: order by reservation due date, top reservation closest to due date
@@ -58,10 +58,28 @@ class Operator::UserReservationsController < ApplicationController
       ur.operator_assigned!
     end
 
-    render json: ur
+    render json: ur.to_operator_format
   end
 
+  # find the reservation
+  # update add ur case history
+  # update the ur status
+  # send the email
+  # return the updated reservation
+  # POST     /operator/user_reservations/:user_reservation_id/confirm(.:format)
   def confirm
+    ur = UserReservation.find(params[:user_reservation_id])
+
+    ur.transaction do
+      case_history = ur.ur_turk_case.ur_turk_case_histories.new({
+        action:UrTurkCaseHistory.actions[:confirm], action_by:current_user.id
+      })
+      case_history.save!
+      ur.operator_confirmed!
+      ur.reservation_confirmed!
+    end
+
+    #TODO: handle if transaction failed
     head :ok
   end
 
