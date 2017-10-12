@@ -4,17 +4,18 @@ var moment = require('moment');
 
 class TurkSidebar extends React.Component {
   render() {
+    var categories = ['active', 'unassigned', 'pending', 'confirmed', 'newtime', 'canceled'];
     return (<div className="col-3">
-      <ul className="list-group" ref={(list) => { this.theList = list;}}>
-        <li className={`list-group-item ${this.props.viewMode=='active' ? 'active' : ''}`}>{`Active`}</li>
-        <li className={`list-group-item ${this.props.viewMode=='unassigned' ? 'unassigned' : ''}`}>{`Unassigned`}</li>
-        <li className={`list-group-item ${this.props.viewMode=='pending' ? 'pending' : ''}`}>{`Pending`}</li>
-        <li className={`list-group-item ${this.props.viewMode=='pending' ? 'confimed' : ''}`}>{`Confirmed`}</li>
-        <li className={`list-group-item ${this.props.viewMode=='pending' ? 'newTime' : ''}`}>{`New Time`}</li>
-        <li className={`list-group-item ${this.props.viewMode=='pending' ? 'canceled' : ''}`}>
-          <a href="#" onClick={this.props.reservationAction.showCancel}> {`Canceled`} </a>
-        </li>
-      </ul>
+      <ul className="list-group" ref={(list) => { this.theList = list;}}>{
+        categories.map( (category,i) => {
+          return (
+            <li key={i} className={`list-group-item cursor-pointer ${this.props.viewMode==category ? 'active' : ''}`}
+              data-category={category} onClick={this.props.reservationAction.showCategory}>
+                {toTitleCase(category)}
+            </li>
+          )
+        })
+      }</ul>
     </div>);
   }
   componentDidMount(){
@@ -30,8 +31,16 @@ class TurkCard extends React.Component {
   render(){
     var status_badge = this.props.reservation.status == 'reservation_await_assignment' ? (
       <span className="badge badge-primary">Unassigned</span>
+    ) : this.props.reservation.status == 'operator_confirmed' || this.props.reservation.status == 'reservation_confirmed' ? (
+      <span className="badge badge-success">Confirmed</span>
+    ) : this.props.reservation.status == 'operator_canceled' ? (
+      <span className="badge badge-danger">Canceled</span>
+    ) : this.props.reservation.status == 'operator_new_proposal' ? (
+      <span className="badge badge-info">New Time Proposed</span>
+    ) : this.props.reservation.status == 'operator_assigned' ? (
+      <span className="badge badge-warning">Pending Confirmation</span>
     ) : (
-      <span className="badge badge-danger">Pending Connfirmation</span>
+      <span className="badge badge-info">Unknown Status</span>
     );
 
     return (
@@ -63,16 +72,28 @@ class TurkCard extends React.Component {
               <p>More details about clubs here, like owner, alternative times, and actions</p>
             </li>
             <li className="list-group-item">
+              <div className="w-100">
+                <a href={`#case-history-${this.state.random_id}`} data-toggle="collapse">Case History</a>
+              </div>
+              <div className="w-100 collapse" id={`case-history-${this.state.random_id}`}>
+                <i className="fa fa-cog fa-spin"></i> Loading case history...
+              </div>
+            </li>
+            <li className="list-group-item">
               {
                 this.props.reservation.status == 'reservation_await_assignment' ? (
                   <button className="btn btn-primary mr-2"
                     data-reservation-id={this.props.reservation.id} data-csrf-token={this.props.csrf_token}
                     onClick={this.props.reservationAction.assignToMe}>Assign to Me</button>
-                ) : (
+                ) : this.props.reservation.status == 'operator_assigned' ? (
                   <div>
                     <button className="btn btn-primary mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationAction.confirm}>Confirm</button>
                     <button className="btn btn-secondary mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationProposeNewTime}>Propose New Time</button>
                     <button className="btn btn-danger mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationAction.cancel}>Cancel</button>
+                  </div>
+                ) : (
+                  <div>
+                    <button className="btn btn-primary" data-target={`#collapse-${this.state.random_id}`} data-toggle="collapse">Close</button>
                   </div>
                 )
               }
@@ -131,14 +152,9 @@ class TurkConsole extends React.Component {
   componentDidMount(){
     var handle = this;
     console.log('start loading up the user reservations...');
-    //TODO: load the reservations
-    fetch('/operator/user_reservations.json', {
-      credentials:'same-origin'
-    }).then((response) => {
-      return response.json();
-    }).then( (json) => {
-      handle.setState({ reservations:json.reservations});
-    });
+
+    this.reservationAction.showCategory();
+
 
     //TODO: subscribe to chanel so can track change
   }
@@ -149,6 +165,7 @@ class TurkConsole extends React.Component {
     };
   }
   reservationAction = {
+    //TODO: streamline the show(cateory to streamline loading all the reservations)
     confirm:(e) => {
       var handle = this;
       var reservationId = e.target.dataset.reservationId;
@@ -225,13 +242,23 @@ class TurkConsole extends React.Component {
 
       })
     },
-    showCancel: (e) => {
-      //update the reservation list to show canceled reservations
-      e.preventDefault();
-      console.log('should show canceled reservations here')
-    },
-    showConfirmed:(e) => {
-      //show past confirmed reservation
+    showCategory: (e) => {
+      var handle = this;
+      var category = 'active';
+      if(typeof e !== 'undefined'){
+         e.preventDefault();
+         category = e.target.dataset.category;
+       };
+
+      fetch(`/operator/user_reservations.json?` + $.param({view:category}), {
+        credentials:'same-origin'
+      }).then((response) => {
+        //TODO: handle error(s)
+        return response.json();
+      }).then( (json) => {
+        handle.setState({ reservations:json.reservations, viewMode:category })
+      });
+
     },
     showSearch:(e)=> {
       //show reservations based on saved results

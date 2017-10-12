@@ -116,6 +116,7 @@ Rails.application.routes.draw do
       get '/' => 'operator#index'
       get 'console' => 'operator#turk_console'
       resources :user_reservations, :only => [:index, :show] do
+        resources :ur_turk_cases, :only => [:index] 
         post 'assign_to_me'
         post 'confirm'
         post 'cancel'

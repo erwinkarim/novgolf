@@ -11,16 +11,43 @@ class Operator::UserReservationsController < ApplicationController
 
     #all awaiting assignments
     current_user_id = current_user.id
-    reservations = UserReservation.includes(:golf_club, :user).where.has{
-      # status is awaiting assignments
-      (id.in UserReservation.where.has{(status.eq 9)}.selecting{:id}) |
-      # status is assigned by current operator, but no action taken yet
-      (id.in UserReservation.joining{ur_turk_case}.where.has{
-          (status.eq 10) & (ur_turk_case.user_id.eq current_user_id)
-        }.selecting{:id}
-      )
-    }.order(:booking_date, :booking_time).map{ |x| x.to_operator_format }
-
+    # TODO: select reservations based on view mode (default, canceled, pending, etc..)
+    reservations = params[:view] == 'canceled' ? (
+      UserReservation.includes(:golf_club, :user).joining{:ur_turk_case}.where.has{
+        (status.eq 13) &
+        (ur_turk_case.user_id.eq current_user_id)
+      }.order(:booking_date, :booking_time).map{ |x| x.to_operator_format}
+    ) : params[:view] == 'confirmed' ? (
+      UserReservation.includes(:golf_club, :user).joining{:ur_turk_case}.where.has{
+        (status.eq 11) | (status.eq 3) &
+        (ur_turk_case.user_id.eq current_user_id)
+      }.order(:booking_date, :booking_time).map{ |x| x.to_operator_format}
+    ) : params[:view] == 'unassigned' ? (
+      #awaiting assignmnets
+      UserReservation.includes(:golf_club, :user).where.has{
+        (status.eq 9)
+      }.order(:booking_date, :booking_time).map{ |x| x.to_operator_format }
+    ) : params[:view] == 'pending' ? (
+      #assigned to current user, but awaiting confirmation
+      UserReservation.includes(:golf_club, :user).joining{ur_turk_case}.where.has{
+        (status.eq 10) & (ur_turk_case.user_id.eq current_user_id)
+      }.order(:booking_date, :booking_time).map{ |x| x.to_operator_format }
+    ) : params[:view] == 'newtime' ? (
+      UserReservation.includes(:golf_club, :user).joining{ur_turk_case}.where.has{
+        (status.eq 12) & (ur_turk_case.user_id.eq current_user_id)
+      }.order(:booking_date, :booking_time).map{ |x| x.to_operator_format }
+    ) : (
+      #default view
+      UserReservation.includes(:golf_club, :user).where.has{
+        # status is awaiting assignments
+        (id.in UserReservation.where.has{(status.eq 9)}.selecting{:id}) |
+        # status is assigned by current operator, but no action taken yet
+        (id.in UserReservation.joining{ur_turk_case}.where.has{
+            (status.eq 10) & (ur_turk_case.user_id.eq current_user_id)
+          }.selecting{:id}
+        )
+      }.order(:booking_date, :booking_time).map{ |x| x.to_operator_format }
+    )
 
     # TODO: order by reservation due date, top reservation closest to due date
     respond_to do |format|
