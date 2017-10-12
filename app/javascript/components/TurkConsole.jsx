@@ -26,7 +26,27 @@ class TurkSidebar extends React.Component {
 class TurkCard extends React.Component {
   constructor(props){
     super(props);
-    this.state = { random_id:randomID()};
+    var handle = this;
+    handle.state = { random_id:randomID(), case_histories:null};
+
+  }
+  componentDidMount(){
+
+    var handle = this;
+    //when the collapse is shown and case_histories is null, load up the case history
+    $(this.history_list).on('show.bs.collapse', () => {
+      if(handle.state.case_histories === null){
+        console.log('show load case history')
+        fetch(`/operator/user_reservations/${handle.props.reservation.id}/ur_turk_cases.json`, {
+          credentials:'same-origin'
+        }).then( (response) => {
+          return response.json();
+        }).then( (json) => {
+          handle.setState({case_histories:json.ur_turk_case_histories});
+        });
+      }
+    });
+
   }
   render(){
     var status_badge = this.props.reservation.status == 'reservation_await_assignment' ? (
@@ -43,6 +63,30 @@ class TurkCard extends React.Component {
       <span className="badge badge-info">Unknown Status</span>
     );
 
+    var contact_info = this.props.reservation.status != 'reservation_await_assignment' ? (
+      <li className="list-group-item">
+        <p className="card-text">
+          Club contact:
+          {`${this.props.reservation.golf_club.telephone == null ? 'No telephone' : this.props.reservation.golf_club.telephone}`} /
+          {` ${this.props.reservation.golf_club.email == null ? 'No email' : this.props.reservation.golf_club.email}`}
+        </p>
+      </li>
+    ) : null;
+
+    var case_history = this.state.case_histories === null ? (
+      <div>None detected</div>
+    ) : (
+      <table>
+      {
+        this.state.case_histories.map( (e, i) => {
+          return (<tr key={i}>
+            <td>{e.action} by {e.action_by}</td>
+          </tr>);
+        })
+      }
+      </table>
+    )
+
     return (
       <div className="card mb-2">
         <ul className="list-group list-group-flush">
@@ -56,15 +100,9 @@ class TurkCard extends React.Component {
               ${moment.utc(this.props.reservation.booking_time).format('h:mm:ss a Z')} @ ${this.props.reservation.golf_club.name}
             `}</p>
           </li>
-          <li className="list-group-item">
-            <p className="card-text">
-              Club contact: {`${this.props.reservation.golf_club.telephone == null ? 'No telephone' : this.props.reservation.golf_club.telephone}`} /
-              {` ${this.props.reservation.golf_club.email == null ? 'No email' : this.props.reservation.golf_club.email}`}
-            </p>
-          </li>
+          { contact_info }
           <div className="collapse" id={`collapse-${this.state.random_id}`}>
-            <li className="list-group-item">
-              <hr />
+            <li className="list-group-item top-border-black">
               <p className="card-text">
                 User contact: {`${this.props.reservation.user.telephone == null ? 'No telephone' : this.props.reservation.user.telephone}`} /
                 {` ${this.props.reservation.user.email}`}
@@ -75,8 +113,8 @@ class TurkCard extends React.Component {
               <div className="w-100">
                 <a href={`#case-history-${this.state.random_id}`} data-toggle="collapse">Case History</a>
               </div>
-              <div className="w-100 collapse" id={`case-history-${this.state.random_id}`}>
-                <i className="fa fa-cog fa-spin"></i> Loading case history...
+              <div className="w-100 collapse" id={`case-history-${this.state.random_id}`} ref={ (hs) => {this.history_list=hs;} }>
+                { case_history}
               </div>
             </li>
             <li className="list-group-item">
@@ -256,7 +294,9 @@ class TurkConsole extends React.Component {
         //TODO: handle error(s)
         return response.json();
       }).then( (json) => {
-        handle.setState({ reservations:json.reservations, viewMode:category })
+        //propoer reset
+        handle.setState({reservations:[], viewMode:category});
+        handle.setState({ reservations:json.reservations})
       });
 
     },
