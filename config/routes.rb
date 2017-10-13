@@ -116,7 +116,7 @@ Rails.application.routes.draw do
       get '/' => 'operator#index'
       get 'console' => 'operator#turk_console'
       resources :user_reservations, :only => [:index, :show] do
-        resources :ur_turk_cases, :only => [:index] 
+        resources :ur_turk_cases, :only => [:index]
         post 'assign_to_me'
         post 'confirm'
         post 'cancel'
@@ -133,6 +133,7 @@ Rails.application.routes.draw do
 
   resources :golf_clubs, :only => [:index, :show] do
     get 'open_courses'
+    get 'flight_listings'
     resources :flight_matrices, :only => [:index]
     resources :user_reservations, :only => [:index] do
       collection do

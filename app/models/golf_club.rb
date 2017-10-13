@@ -96,7 +96,7 @@ class GolfClub < ActiveRecord::Base
   def self.search options = {}
     default_options = { :query => "", :dateTimeQuery => DateTime.parse("#{Date.tomorrow} 07:00"), :spread => 30.minutes,
       :pax => 8, :club_id => 0..10000000,
-      :limit => 300, :offset => 0 , :adminMode => false, :loadCourseData => true}
+      :limit => 300, :offset => 0 , :adminMode => false, :loadCourseData => true, :forceExact => false}
 
     options = default_options.merge(options)
 
@@ -149,8 +149,7 @@ class GolfClub < ActiveRecord::Base
         (flight_schedules.flight_matrices.start_active_at <= options[:dateTimeQuery]) &
         (flight_schedules.flight_matrices.end_active_at >= options[:dateTimeQuery]) &
         (id.in options[:club_id])
-      }.limit(options[:limit]
-      )
+      }.limit(options[:limit])
 
     #round one: get details of the clubs that fit this criteria
     sql_statement = rel.selecting{[id,
@@ -169,6 +168,7 @@ class GolfClub < ActiveRecord::Base
 
     #in the future, round 2 and round 3 can be parallelize to improve performance
     #round two: fill up the flight schedule based on fuzzy criteria
+    # unless you are forced to put exact
     # TODO: show the first 4-5 flights per golf club per session
     sql_statement = rel.group(' golf_clubs.id,
         golf_clubs.name, session_price,
@@ -644,5 +644,72 @@ class GolfClub < ActiveRecord::Base
   def next_available_slot date = Date.today, session = 'Morning'
     #link up get the available slots within time frame
     # something like search, but spit out slots available
+  end
+
+  # list down flight listing for the day
+  # gives info like flight schedules, who's taking the info
+  def getFlightListing date = Date.today
+    tr = UserReservation.where(:booking_date => date).where(:status => [0,1,2,3,8]).to_sql
+    now = DateTime.parse(date.to_s)
+    queryDay = date.cwday
+    club_id = self.id
+
+    #load the data model
+    rel = GolfClub.joining{
+        flight_schedules.flight_matrices
+      }.joining{ course_listings
+      }.joining{ course_global_setting
+      }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joining{
+        flight_schedules.charge_schedule
+      }.where.has{
+        ( id.eq club_id ) &
+        (flight_schedules.flight_matrices.send("day#{queryDay}") == 1) &
+        (flight_schedules.start_active_at <= now) &
+        (flight_schedules.end_active_at >= now) &
+        (flight_schedules.flight_matrices.start_active_at <= now) &
+        (flight_schedules.flight_matrices.end_active_at >= now)
+      }
+
+    sql_statement = rel.group( "
+        session_price, tee_time, second_tee_time, min_pax,
+        max_pax, cart, caddy, insurance,
+        flight_matrices.id, charge_schedules.note,
+        min_cart, max_cart, min_caddy, max_caddy,
+        insurance_mode, user_selection
+      ").selecting{[
+        flight_schedules.flight_matrices.id.as('fm_id'),
+        # pricing
+        flight_schedules.charge_schedule.session_price, flight_schedules.charge_schedule.cart,
+        flight_schedules.charge_schedule.caddy, flight_schedules.charge_schedule.insurance,
+        #tee time
+        flight_schedules.flight_matrices.tee_time, flight_schedules.flight_matrices.second_tee_time,
+        #min/max + insurance mode
+        flight_schedules.min_pax, flight_schedules.max_pax,
+        flight_schedules.min_cart, flight_schedules.max_cart,
+        flight_schedules.min_caddy, flight_schedules.max_caddy,
+        flight_schedules.charge_schedule.insurance_mode,
+        flight_schedules.charge_schedule.note,
+        #user can select or not
+        course_global_setting.user_selection,
+        #reservation status
+        'min(tr.status) as tr_min_status',
+        #course count vs. reserved course count
+        'count(course_listings.id) as cl_count', 'count(tr.course_listing_id) as ur_cl_count'
+        ]
+      }.distinct.ordering{flight_schedules.flight_matrices.tee_time}.to_sql
+
+    ActiveRecord::Base.connection.exec_query(sql_statement).inject([]){ |p,n|
+      p << {
+        :minPax => n["min_pax"], :maxPax => n["max_pax"],
+        :minCart => n["min_cart"], :maxCart => n["max_cart"],
+        :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
+        :tee_time => n["tee_time"].strftime("%H:%M"),
+        :second_tee_time => n["second_tee_time"].nil? ? nil : n["second_tee_time"].strftime("%H:%M"),
+        :matrix_id => n["fm_id"],
+        :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
+        :course_data => { :status => n["ur_cl_count"].nil? || n["ur_cl_count"] < n["cl_count"] ? 0 : n["tr_min_status"],
+          :cl_count => n["cl_count"], :ur_cl_count => n["ur_cl_count"]}
+      }
+    }
   end
 end

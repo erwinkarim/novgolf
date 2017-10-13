@@ -127,8 +127,16 @@ class Operator::UserReservationsController < ApplicationController
     head :ok
   end
 
+  # update the reservation based on proposed new time
+  # POST     /operator/user_reservations/:user_reservation_id/propose_new_time
   def propose_new_time
-    head :ok
+    ur = UserReservation.find(params[:user_reservation_id])
+
+    # check if new proposal is A-OK
+    # conflict check
+
+    # update the reservation to new date + time
+    render json: ur.to_operator_format
   end
 
   # get individual user_reservation data for turl console

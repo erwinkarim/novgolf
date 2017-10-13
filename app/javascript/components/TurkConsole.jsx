@@ -23,6 +23,83 @@ class TurkSidebar extends React.Component {
   }
 };
 
+class TurkNewTimeProposal extends React.Component {
+  getTimeProposal = (e) => {
+    //query new time proposal everytime the date changes
+    var handle = this;
+    console.log('should ask jomgolf new time');
+    //load the time based on reservation date
+
+    var newDate = moment(e.target.value).format('YYYY-MM-DD');
+
+    fetch(`/golf_clubs/${handle.props.reservation.golf_club_id}/flight_listings?` + $.param({date:newDate}), {
+
+    }).then( (response) => {
+      return response.json();
+    }).then( (json) => {
+      //TODO: should handle when newTimeList is empty
+      handle.setState({timeList:json, newTime:json[0].matrix_id});
+    });
+  }
+  updateTimeProposal = (e) => {
+    //let's see if this works
+    var newTime = e.target.value;
+    this.setState({newTime:newTime});
+  }
+  constructor(props){
+    super(props)
+
+    //setup state on the time list
+    this.state = ({timeList:[], newTime:''})
+  }
+  componentDidMount(){
+    //when shown for the first time,
+    var handle = this;
+    $(this.time_list_collapse).on('shown.collapse.bs', () => {
+      if(handle.state.timeList.length == 0){
+        console.log('should load up the time for the first time');
+        handle.getTimeProposal(
+          { target:{value: handle.props.reservation.booking_date } }
+        )
+      }
+    });
+  }
+  render(){
+    return (
+      <div id={`new-time-proposal-${this.props.random_id}`} className="collapse" ref={(tl) => {this.time_list_collapse = tl;}}>
+        <li className="list-group-item">
+          <div className="w-100 mb-2">
+            <div className="row">
+              <div className="col-4">
+                <label>New time: </label>
+              </div>
+              <div className="col-4">
+                <input type="date" className="form-control"
+                  defaultValue={this.props.reservation.booking_date} onChange={this.getTimeProposal} ref={(d) => {this.newDate = d;}} />
+              </div>
+              <div className="col-4">
+                <select className="form-control" name="flight_matrix_id" onChange={this.updateTimeProposal} ref={(t) => {this.newTime = t;}}>{ this.state.timeList.map( (e,i) => {
+                    return (<option disabled={e.course_data.cl_count==e.course_data.ur_cl_count} key={i} value={e.matrix_id}>{e.tee_time}</option>)
+                  })
+                }</select>
+              </div>
+            </div>
+          </div>
+          <div className="w-100 mb-1">
+            <button className="btn btn-info mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationAction.proposeNewTime}
+              data-new-date={typeof this.newDate === "undefined" ? '' : this.newDate.value}
+              data-new-time={this.state.newTime}
+            >
+              Confirm New Time Proposal
+            </button>
+            <button className="btn btn-danger" data-toggle="collapse" data-target={`#new-time-proposal-${this.props.random_id}`}>Cancel</button>
+          </div>
+        </li>
+      </div>
+    )
+  }
+}
+
 class TurkCard extends React.Component {
   constructor(props){
     super(props);
@@ -77,15 +154,37 @@ class TurkCard extends React.Component {
       <div>None detected</div>
     ) : (
       <table>
-      {
-        this.state.case_histories.map( (e, i) => {
-          return (<tr key={i}>
-            <td>{e.action} by {e.action_by}</td>
-          </tr>);
-        })
-      }
+        <tbody>
+          {
+            this.state.case_histories.map( (e, i) => {
+              return (<tr key={i}>
+                <td>{moment(e.created_at).format()} {e.action} by {e.action_by}</td>
+              </tr>);
+            })
+          }
+        </tbody>
       </table>
     )
+
+    var button_array = this.props.reservation.status == 'reservation_await_assignment' ? (
+      <button className="btn btn-primary mr-2"
+        data-reservation-id={this.props.reservation.id} data-csrf-token={this.props.csrf_token}
+        onClick={this.props.reservationAction.assignToMe}>Assign to Me</button>
+    ) : this.props.reservation.status == 'operator_assigned' ? (
+      <div>
+        <button className="btn btn-primary mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationAction.confirm}>Confirm</button>
+        <button className="btn btn-secondary mr-2" data-toggle="collapse" data-target={`#new-time-proposal-${this.state.random_id}`}>Propose New Time</button>
+        <button className="btn btn-danger mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationAction.cancel}>Cancel</button>
+      </div>
+    ) : (
+      <div>
+        <button className="btn btn-primary" data-target={`#collapse-${this.state.random_id}`} data-toggle="collapse">Close</button>
+      </div>
+    );
+
+    var new_time_proposal = this.props.reservation.status == 'operator_assigned' ? (
+      <TurkNewTimeProposal {...this.props} {...this.state} />
+    ) : null;
 
     return (
       <div className="card mb-2">
@@ -117,25 +216,8 @@ class TurkCard extends React.Component {
                 { case_history}
               </div>
             </li>
-            <li className="list-group-item">
-              {
-                this.props.reservation.status == 'reservation_await_assignment' ? (
-                  <button className="btn btn-primary mr-2"
-                    data-reservation-id={this.props.reservation.id} data-csrf-token={this.props.csrf_token}
-                    onClick={this.props.reservationAction.assignToMe}>Assign to Me</button>
-                ) : this.props.reservation.status == 'operator_assigned' ? (
-                  <div>
-                    <button className="btn btn-primary mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationAction.confirm}>Confirm</button>
-                    <button className="btn btn-secondary mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationProposeNewTime}>Propose New Time</button>
-                    <button className="btn btn-danger mr-2" data-reservation-id={this.props.reservation.id} onClick={this.props.reservationAction.cancel}>Cancel</button>
-                  </div>
-                ) : (
-                  <div>
-                    <button className="btn btn-primary" data-target={`#collapse-${this.state.random_id}`} data-toggle="collapse">Close</button>
-                  </div>
-                )
-              }
-            </li>
+            <li className="list-group-item">{ button_array }</li>
+            { new_time_proposal }
           </div>
         </ul>
       </div>
@@ -279,6 +361,27 @@ class TurkConsole extends React.Component {
         }
 
       })
+    },
+    proposeNewTime:(e) => {
+      console.log('tell the server new time has been proposed');
+      console.log('e.target.dataset', e.target.dataset);
+      var handle = this;
+      var reservationId = e.target.dataset.reservationId;
+
+      var formData = new FormData();
+      formData.append('authenticity_token', handle.props.csrf_token);
+      formData.append('new_date', e.target.dataset.newDate);
+      formData.append('new_time', e.target.dataset.newTime);
+
+      fetch(`/operator/user_reservations/${reservationId}/propose_new_time` , {
+          credentials:'same-origin',
+          method:'POST',
+          body:formData
+      }).then( (response) => {
+        return response.json();
+      }).then( (json) => {
+        //update the revelent reservation
+      });
     },
     showCategory: (e) => {
       var handle = this;
