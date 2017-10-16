@@ -3,13 +3,13 @@
     %mj-container
       %mj-section
         %mj-column
-          %mj-text{ 'font-size':'20px', color:'#595959', align:'center'} Your next flight at #{@reservation.golf_club.name}
+          %mj-text{ 'font-size':'20px', color:'#595959', align:'center'} Your flight at #{@reservation.golf_club.name} is confirmed!
           %mj-divider{ 'border-color':'#F45E43'}
       %mj-section
         %mj-column
-          %mj-text #{@contact.name.titleize || @contact.email},
+          %mj-text #{@user.name.titleize || @user.email},
           %mj-text
-            We would like to remind you about your next flight in #{@reservation.golf_club.name}.
+            We are pleased to inform you that your reservation at #{@reservation.golf_club.name} is confirmed.
           %mj-table
             %tr
               %td

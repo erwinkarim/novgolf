@@ -29,4 +29,23 @@ class UserReservationMailer < ApplicationMailer
       format.mjml
     end
   end
+
+  # operator has confirmed the reservation
+  def operator_confirmed reservation
+    @reservation = reservation
+    @user = @reservation.user
+
+    mail(to:@user.email, subject:"Your Reservations has been confirmed") do |format|
+      format.text
+      format.mjml
+    end
+  end
+
+  # operator canceled the reservation
+  def operator_canceled reservation
+  end
+
+  # operator proposed new time
+  def operator_new_proposal reservation
+  end
 end

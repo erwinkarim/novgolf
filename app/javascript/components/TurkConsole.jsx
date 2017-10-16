@@ -65,6 +65,7 @@ class TurkNewTimeProposal extends React.Component {
     });
   }
   render(){
+    //TODO: submit button only enable when the new date and time is valid
     return (
       <div id={`new-time-proposal-${this.props.random_id}`} className="collapse" ref={(tl) => {this.time_list_collapse = tl;}}>
         <li className="list-group-item">
@@ -140,6 +141,13 @@ class TurkCard extends React.Component {
       <span className="badge badge-info">Unknown Status</span>
     );
 
+    //show past due if status is unassigned or assinged but not confirmed and the reservation date is in the base
+    var past_due_badge = (
+      ['reservation_await_assignment', 'operator_new_proposal', 'operator_assigned'].includes(this.props.reservation.status)
+    ) && ( (new Date()).getTime() > Date.parse(this.props.reservation.booking_date)) ? (
+      <span className="badge badge-danger">Past Due</span>
+    ) : null;
+
     var contact_info = this.props.reservation.status != 'reservation_await_assignment' ? (
       <li className="list-group-item">
         <p className="card-text">
@@ -153,12 +161,13 @@ class TurkCard extends React.Component {
     var case_history = this.state.case_histories === null ? (
       <div>None detected</div>
     ) : (
-      <table>
+      <table className="table mt-2">
         <tbody>
           {
             this.state.case_histories.map( (e, i) => {
               return (<tr key={i}>
-                <td>{moment(e.created_at).format()} {e.action} by {e.action_by}</td>
+                <td>{moment(e.created_at).format('YYYY-MM-DD h:mm:ss a')}</td>
+                <td>{e.action} by {e.user.name}</td>
               </tr>);
             })
           }
@@ -190,7 +199,7 @@ class TurkCard extends React.Component {
       <div className="card mb-2">
         <ul className="list-group list-group-flush">
           <li className="list-group-item">
-            { status_badge}
+            { status_badge} {past_due_badge}
             <h2 className="card-title"><a href={`#collapse-${this.state.random_id}`} data-toggle="collapse">{this.props.reservation.token}</a></h2>
           </li>
           <li className="list-group-item">
@@ -378,9 +387,17 @@ class TurkConsole extends React.Component {
           method:'POST',
           body:formData
       }).then( (response) => {
-        return response.json();
+        if(response.status >= 200 && response.status < 300){
+          return response.json();
+        } else {
+          $.snackbar({style:'error', content:`Error trying to propose new time for reservation ${reservationId}`})
+        }
       }).then( (json) => {
         //update the revelent reservation
+        var newReservations = handle.state.reservations;
+        newReservations[handle.state.reservations.findIndex((e) => {return e.id == json.id})] = json;
+        handle.setState({reservations:newReservations});
+        $.snackbar({style:'notice', content:`Reservation ${reservationId} has been updated.`})
       });
     },
     showCategory: (e) => {

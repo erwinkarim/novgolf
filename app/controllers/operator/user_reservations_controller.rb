@@ -41,11 +41,14 @@ class Operator::UserReservationsController < ApplicationController
       UserReservation.includes(:golf_club, :user).where.has{
         # status is awaiting assignments
         (id.in UserReservation.where.has{(status.eq 9)}.selecting{:id}) |
-        # status is assigned by current operator, but no action taken yet
+        # status is assigned by current operator or proposed new time, but no action taken yet
         (id.in UserReservation.joining{ur_turk_case}.where.has{
-            (status.eq 10) & (ur_turk_case.user_id.eq current_user_id)
+            (status.eq 10) |
+            (status.eq 12) &
+            (ur_turk_case.user_id.eq current_user_id)
           }.selecting{:id}
         )
+        # status is proposed new time
       }.order(:booking_date, :booking_time).map{ |x| x.to_operator_format }
     )
 
@@ -129,13 +132,34 @@ class Operator::UserReservationsController < ApplicationController
 
   # update the reservation based on proposed new time
   # POST     /operator/user_reservations/:user_reservation_id/propose_new_time
+  # required params new_date:new booking date, new_time: flight_matrix_id
   def propose_new_time
-    ur = UserReservation.find(params[:user_reservation_id])
-
     # check if new proposal is A-OK
+
+    ur = UserReservation.find(params[:user_reservation_id])
+    fm = FlightMatrix.find(params[:new_time])
+
     # conflict check
 
-    # update the reservation to new date + time
+    # if everything is ok
+    # update the reservation to new date + time and send back to client
+    ur.transaction do
+      ur.update_attributes({
+        booking_time:DateTime.parse("2000-01-01 #{fm.tee_time}"),
+        booking_date:Date.parse(params[:new_time]),
+        flight_matrix_id:fm.id
+        })
+      #update case history
+      new_case_history = ur.ur_turk_case.ur_turk_case_histories.new({
+        action:UrTurkCaseHistory.actions[:propose_new_time], action_by:current_user.id
+        })
+      new_case_history.save!
+
+      #update status of the reservations
+      ur.operator_new_proposal!
+    end
+
+    #send updates
     render json: ur.to_operator_format
   end
 
