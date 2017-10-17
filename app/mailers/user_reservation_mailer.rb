@@ -35,7 +35,7 @@ class UserReservationMailer < ApplicationMailer
     @reservation = reservation
     @user = @reservation.user
 
-    mail(to:@user.email, subject:"Your Reservations has been confirmed") do |format|
+    mail(to:@user.email, subject:"Your reservation has been confirmed") do |format|
       format.text
       format.mjml
     end
@@ -43,9 +43,41 @@ class UserReservationMailer < ApplicationMailer
 
   # operator canceled the reservation
   def operator_canceled reservation
+    @reservation = reservation
+    @user = @reservation.user
+
+    mail(to:@user.email, subject:"Your reservation has been canceled") do |format|
+      format.text
+      format.mjml
+    end
   end
 
   # operator proposed new time
   def operator_new_proposal reservation
+    @reservation = reservation
+    @user = @reservation.user
+
+    mail(to:@user.email, subject:"New flight time proposal at #{reservation.golf_club.name}") do |format|
+      format.text
+      format.mjml
+    end
+  end
+
+  def user_accept_proposal reservation
+    @reservation = reservation
+    @user = @reservation.user
+    mail(to:@user.email, subject:"Accepted new flight time proposal at #{reservation.golf_club.name}") do |format|
+      format.text
+      format.mjml
+    end
+  end
+
+  def user_reject_proposal reservation
+    @reservation = reservation
+    @user = @reservation.user
+    mail(to:@user.email, subject:"Rejected new flight time proposal at #{reservation.golf_club.name}") do |format|
+      format.text
+      format.mjml
+    end
   end
 end

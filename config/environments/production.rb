@@ -86,7 +86,7 @@ Rails.application.configure do
 
   #user amazon ses
   #config.action_mailer.delivery_method = :aws_sdk
-  config.action_mailer.default_url_options = { host: 'beta.jomgolf.com.my' }
+  config.action_mailer.default_url_options = { host: 'beta.jomgolf.com.my', protocol:'https' }
 
   #config.active_job.queue_adapter = :shoryuken_later
   config.active_job.queue_adapter = :shoryuken

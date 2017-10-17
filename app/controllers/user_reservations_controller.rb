@@ -284,6 +284,7 @@ class UserReservationsController < ApplicationController
     end
 
     @reservation = UserReservation.find(params[:reservation_id])
+    @club = @reservation.golf_club
 
     if @reservation.token != params[:t] then
       Rails.logger.error "Incorrect token to view reservation"
@@ -294,5 +295,73 @@ class UserReservationsController < ApplicationController
     respond_to do |format|
       format.html
     end
+  end
+
+  #accept a proposal by the operator
+  #reservation status must be operator_new_proposal and one of the params must have
+  # the token
+  # GET      /reservations/:reservation_id/accept_proposal(.:format
+  def accept_proposal
+    # ensure token is there
+    if !params.has_key?(:t) then
+      Rails.logger.error "No token to view reservation"
+      render file: "public/401.html", status: :unauthorized
+      return
+    end
+
+    @reservation = UserReservation.find(params[:reservation_id])
+    #ensure that the status is operator_new_proposal
+    if !@reservation.operator_new_proposal? then
+      Rails.logger.error "No token to view reservation"
+      render file: "public/401.html", status: :unauthorized
+      return
+    end
+
+
+    #up the the status and send out notice about this
+    # include case history about the user doing this
+    @reservation.transaction do
+      @reservation.reservation_confirmed!
+      ur_case_history = @reservation.ur_turk_case.ur_turk_case_history.new({
+        action:UrTurkCaseHistory.actions[:user_accept_proposal],
+        action_by: current_user.id
+        })
+      ur_case_history.save!
+    end
+    UserReservationMailer.user_accept_proposal(@reservation).deliver_later
+  end
+
+  #reject a proposal by the operator
+  #reservation status must be operator_new_proposal and one of the params must have
+  # the token
+  def reject_proposal
+    if !params.has_key?(:t) then
+      Rails.logger.error "No token to view reservation"
+      render file: "public/401.html", status: :unauthorized
+      return
+    end
+
+    #ensure that the current status is operator offering new proposal
+    if !@reservation.operator_new_proposal? then
+      Rails.logger.error "No token to view reservation"
+      render file: "public/401.html", status: :unauthorized
+      return
+    end
+
+    #update the status and send out notice about this
+    @reservation = UserReservation.find(params[:reservation_id])
+    @reservation.transaction do
+      @reservation.canceled_by_user!
+      ur_case_history = @reservation.ur_turk_case.ur_turk_case_history.new({
+        action:UrTurkCaseHistory.actions[:user_reject_proposal],
+        action_by: current_user.id
+        })
+      ur_case_history.save!
+    end
+
+    #refund the reservation
+
+    #send email about it
+    UserReservationMailer.user_reject_proposal(@reservation).deliver_later
   end
 end

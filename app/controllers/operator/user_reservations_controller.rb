@@ -107,6 +107,9 @@ class Operator::UserReservationsController < ApplicationController
       case_history.save!
       ur.operator_confirmed!
       ur.reservation_confirmed!
+
+      #send out email
+      UserReservationMailer.operator_confirmed(ur).deliver_later
     end
 
     #TODO: handle if transaction failed
@@ -124,6 +127,8 @@ class Operator::UserReservationsController < ApplicationController
       })
       case_history.save!
       ur.operator_canceled!
+
+      UserReservationMailer.operator_canceled(ur).deliver_later
     end
 
     #TODO: handle if there some issues abount

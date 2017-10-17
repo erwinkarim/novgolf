@@ -1,0 +1,31 @@
+%mjml
+  %mj-body
+    %mj-container
+      %mj-section
+        %mj-column
+          %mj-text{ 'font-size':'20px', color:'#595959', align:'center'} New flight proposal at #{@reservation.golf_club.name}
+          %mj-divider{ 'border-color':'#F45E43'}
+      %mj-section
+        %mj-column
+          %mj-text #{@user.name.titleize || @user.email},
+          %mj-text
+            We are unable to accomodate your requested flight date and time at #{@reservation.golf_club.name}. However, we are proposing a new time slot for you to play with the following details:
+          %mj-table
+            %tr
+              %td
+                %strong Club
+              %td #{@reservation.golf_club.name}
+            %tr
+              %td
+                %strong New Date
+              %td #{@reservation.booking_date}
+            %tr
+              %td
+                %strong New First Flight
+              %td #{@reservation.booking_time.strftime("%I:%M %p")}
+          %mj-text
+            Please indicate if you accept or decline the new proposal. By rejecting our new proposal, we consider you have canceled your current reservation and will be refund accordingly.
+          %mj-button{ 'font-family':"Helvetica", 'background-color':'#007bff', color:'white', href:reservation_accept_proposal_url(@reservation, {t:@reservation.token})} Accept Proposal
+          %mj-button{ 'font-family':"Helvetica", 'background-color':'#dc3545', color:'white', href:reservation_reject_proposal_url(@reservation, {t:@reservation.token})} Reject Proposal
+          %mj-text Thank you,
+          %mj-text JomGolf Team
