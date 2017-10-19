@@ -1,10 +1,10 @@
 {
-  "application.js": "/packs/application-7c5d89a8765575d64b54.js",
-  "application.js.map": "/packs/application-7c5d89a8765575d64b54.js.map",
-  "hello_react.js": "/packs/hello_react-a553fe6f382fbf5d17a2.js",
-  "hello_react.js.map": "/packs/hello_react-a553fe6f382fbf5d17a2.js.map",
-  "server_rendering.js": "/packs/server_rendering-1cedda24d3c3fcfa610b.js",
-  "server_rendering.js.map": "/packs/server_rendering-1cedda24d3c3fcfa610b.js.map",
-  "test.js": "/packs/test-f6a919761a70079bedc4.js",
-  "test.js.map": "/packs/test-f6a919761a70079bedc4.js.map"
+  "application.js": "/packs/application-c20cac3af5f0ccd169cc.js",
+  "application.js.map": "/packs/application-c20cac3af5f0ccd169cc.js.map",
+  "hello_react.js": "/packs/hello_react-47013d8513e9bf69b68d.js",
+  "hello_react.js.map": "/packs/hello_react-47013d8513e9bf69b68d.js.map",
+  "server_rendering.js": "/packs/server_rendering-0095ef32d65858d9a7ef.js",
+  "server_rendering.js.map": "/packs/server_rendering-0095ef32d65858d9a7ef.js.map",
+  "test.js": "/packs/test-b1c9fbc2deaae86e8c44.js",
+  "test.js.map": "/packs/test-b1c9fbc2deaae86e8c44.js.map"
 }
