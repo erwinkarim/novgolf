@@ -4,7 +4,8 @@ class CreateUrTurkCaseHistories < ActiveRecord::Migration[5.1]
       t.references :ur_turk_case, foreign_key: true
       t.integer :action
       t.string :notes, limit:140
-      t.bigint :action_by
+      # change to integer from bigint for AWS
+      t.integer :action_by
       t.timestamps
     end
 
