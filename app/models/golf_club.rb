@@ -648,8 +648,20 @@ class GolfClub < ActiveRecord::Base
 
   # list down flight listing for the day
   # gives info like flight schedules, who's taking the info
-  def getFlightListing date = Date.today
-    tr = UserReservation.where(:booking_date => date).where(:status => [0,1,2,3,8]).to_sql
+  def getFlightListing date = Date.today, options = {}
+    default_options = {timeOnly:false, loadCourseData:false}
+    options = default_options.merge(options)
+
+    tr = UserReservation.where(:booking_date => date).where(:status => [
+      UserReservation.statuses[:reservation_created],
+      UserReservation.statuses[:payment_attempted],
+      UserReservation.statuses[:payment_confirmed],
+      UserReservation.statuses[:reservation_confirmed],
+      UserReservation.statuses[:requires_members_verification],
+      UserReservation.statuses[:reservation_await_assignment],
+      UserReservation.statuses[:operator_assigned],
+      UserReservation.statuses[:operator_new_proposal]
+    ]).to_sql
     now = DateTime.parse(date.to_s)
     queryDay = date.cwday
     club_id = self.id
@@ -698,18 +710,55 @@ class GolfClub < ActiveRecord::Base
         ]
       }.distinct.ordering{flight_schedules.flight_matrices.tee_time}.to_sql
 
-    ActiveRecord::Base.connection.exec_query(sql_statement).inject([]){ |p,n|
+    results = ActiveRecord::Base.connection.exec_query(sql_statement).inject([]){ |p,n|
       p << {
         :minPax => n["min_pax"], :maxPax => n["max_pax"],
         :minCart => n["min_cart"], :maxCart => n["max_cart"],
         :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
-        :tee_time => n["tee_time"].strftime("%H:%M"),
-        :second_tee_time => n["second_tee_time"].nil? ? nil : n["second_tee_time"].strftime("%H:%M"),
+        :tee_time => options[:timeOnly] ? n["tee_time"].strftime('%H:%M') : n["tee_time"],
+        :second_tee_time => n["second_tee_time"].nil? ? nil : options[:timeOnly] ? n["second_tee_time"].strftime("%H:%M") : n["second_tee_time"],
         :matrix_id => n["fm_id"],
         :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
         :course_data => { :status => n["ur_cl_count"].nil? || n["ur_cl_count"] < n["cl_count"] ? 0 : n["tr_min_status"],
           :cl_count => n["cl_count"], :ur_cl_count => n["ur_cl_count"]}
       }
     }
+
+    #load the course data if you have to
+    if(options[:loadCourseData]) then
+      course_query_statement = rel.selecting{ [
+            flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'), #2
+            'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name'), #5
+            'tr.second_course_listing_id'
+      ]}.where.has{ id.eq club_id }.to_sql
+      Rails.logger.info "sql_statement = #{course_query_statement}"
+      course_results = ActiveRecord::Base.connection.exec_query(course_query_statement)
+      course_results.inject(results){ |p,n|
+        Rails.logger.info "current_row=#{n.inspect}"
+        flight_handle = p.select{|x| x[:matrix_id] == n["fm_id"]}.first
+        if flight_handle[:course_data][:courses].nil? then
+          flight_handle[:course_data][:courses] = []
+        end
+        flight_handle[:course_data][:courses] << {
+          id:n["cl_id"], name:n["cl_name"],
+            reservation_id:n["ur_id"], reservation_status:n["tr_status"],
+            first_reservation_id:n["ur_id"], first_reservation_status:n["tr_status"],
+            reservation_status_text: UserReservation.statuses.select{ |k,v| v == n["tr_status"]}.keys.first,
+            second_reservation_id:nil, second_reservation_status:nil
+        }
+        p
+      }
+      course_results.inject(results){ |p,n|
+        course_handle = p.select{|x| x[:matrix_id] == n["fm_id"]}.
+          first[:course_data][:courses].select{|x| x[:id] == n["second_course_listing_id"]}.first
+        if !course_handle.nil? then
+          course_handle[:second_reservation_id] = n["ur_id"]
+          course_handle[:second_reservation_status] = n["tr_status"]
+        end
+        p
+      }
+    end
+
+    results
   end
 end

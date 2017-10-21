@@ -637,12 +637,7 @@ var GolfCoursesGroup = React.createClass({
         <p>Courses:</p>
         <div className="btn-group w-100 flex-wrap" data-toggle="buttons">{ this.props.flight.course_data.courses.map( (e,i) => {
           //color the course button
-          var reserve_status =
-            e.reservation_status == 1 ? 'warning' :
-            e.reservation_status == 2 ? 'danger' :
-            e.reservation_status == 3 ? 'danger' :
-            e.reservation_status == 8 ? 'info' :
-            'secondary';
+          var reserve_status = FlightFunctions.reserveColor(e.reservation_status);
 
           //set if this the selected course
           var activeState = (i == this.props.selectedCourse) ? "active" : null;

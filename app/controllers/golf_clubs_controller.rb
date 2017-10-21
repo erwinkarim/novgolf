@@ -47,9 +47,11 @@ class GolfClubsController < ApplicationController
   def flight_listings
     gc = GolfClub.find(params[:golf_club_id])
     date = params.has_key?(:date) ? Date.parse(params[:date]) : Date.tomorrow
+    timeOnlyOption = params.has_key?(:time_only) ? params[:time_only] == "true" : false
+    loadCourseDataOption = params.has_key?(:course_data) ? params[:course_data] == "true" : false
 
     respond_to do |format|
-      format.json { render json:gc.getFlightListing(date)}
+      format.json { render json:gc.getFlightListing(date, {timeOnly:timeOnlyOption, loadCourseData:loadCourseDataOption})}
     end
   end
 

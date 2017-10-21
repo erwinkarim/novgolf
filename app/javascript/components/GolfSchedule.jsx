@@ -9,6 +9,7 @@ var golfCardDefaultOptions = {
 
 // a simple component to show the day's schedule given the golf_club_id and also the date
 // queryDate must be in DD-MM-YYYY format
+// should load the schedule when the dates are in
 class GolfSchedule extends React.Component {
   static propTypes = {
     crsfToken: PropTypes.string,
@@ -49,11 +50,12 @@ class GolfSchedule extends React.Component {
     //should clear out all flights before selecting dates
     this.setState({flights:[]});
 
-    $.getJSON(this.props.paths.golfClub, { date:e },  function(data){
-      var newFlights = (data == null) ? [] : data.flights;
-      var newQueryData = handle.state.queryData;
-      newQueryData.date = e;
-      handle.setState({flights:newFlights , queryDate:e, queryData:newQueryData})
+    fetch(`/golf_clubs/${this.props.club.id}/flight_listings.json?` + $.param({date:e}), {
+      credentials:'same-origin'
+    }).then( (response) => {
+      return response.json();
+    }).then( (json) => {
+      handle.setState({flights:json, queryDate:e, queryData:{date:e, session:'AllDay'}});
     });
   };
 
@@ -72,12 +74,15 @@ class GolfSchedule extends React.Component {
             </div>
           </form>
         </li>
-        <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
-          club={this.props.club} flights={this.state.flights} queryData={this.state.queryData}
-          insurance_modes={this.props.insurance_modes} options={this.props.options } timeGroupDisplay='overflow'/>
+        <GolfReserveForm {...this.props} {...this.state} timeGroupDisplay='overflow' />
       </ul>
     );
   }
 }
 
+/*
+        <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
+          club={this.props.club} flights={this.state.flights} queryData={this.state.queryData}
+          insurance_modes={this.props.insurance_modes} options={this.props.options } timeGroupDisplay='overflow'/>
+*/
 module.exports = GolfSchedule;

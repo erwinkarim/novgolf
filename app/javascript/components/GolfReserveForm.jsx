@@ -65,27 +65,94 @@ var GolfReserveForm = React.createClass({
   componentDidMount: function(){
     $(this.refs.reserveBtnLi).hide();
 
-    //if this selection mode is fuzzy, pretent click first
+    //if this selection mode is fuzzy, pretend click first to load up the flightInfo
     if(this.props.selectionMode == 'fuzzy'){
       this.handleClick({value:0, target:{className:''}, currentTarget:{dataset:{value:0} } });
     };
   },
   componentWillReceiveProps: function(nextProps){
+    //TODO: will update new prices when the next props changes in fuzzy mode
     var resetState = ()=>{
       this.setState({
         selectedTeeTimes:[], selectedTeeTimesIndex:0,
-        flightInfo:[], totalPrice:0
+        flightInfo:[nextProps.flights[0]], totalPrice:0
       });
+      this.updateFlightInfo(
+        {value:0, target:{className:''}, currentTarget:{dataset:{value:0} } }
+        , nextProps);
     };
 
     if(nextProps.queryDate != this.props.queryDate){
+      console.log('resetState invoke because date changed');
       resetState();
     };
 
     if(nextProps.flights.length == 0){
+      console.log('resetState invoked because flights lenght is zero');
       resetState();
     }
 
+
+  },
+  updateFlightInfo: function(e, props){
+    //check if this is inside current state
+    var newTeeTimes = this.state.selectedTeeTimes;
+    var newIndex = this.state.selectedTeeTimesIndex;
+    var newFlightInfo = this.state.flightInfo;
+    var value = e.currentTarget.dataset.value;
+    var arrayPos = $.inArray(value, newTeeTimes);
+
+    if( arrayPos != -1){
+        //console.log('value is in array');
+        newTeeTimes.splice(arrayPos, 1);
+        newIndex = 0;
+
+        newFlightInfo.splice(arrayPos, 1);
+    }else {
+      //console.log('value is not in array');
+      newTeeTimes.push(value);
+      newTeeTimes.sort();
+      newIndex = $.inArray(value, newTeeTimes);
+
+      //var fi = Object.assign({}, this.state.defaultFlightInfo);
+      var fi = Object.assign({}, FLIGHT_INFO_DEFAULTS);
+      Object.assign( fi,
+        {
+          id:randomID(),
+          teeTime:props.flights[value].tee_time,
+          first_tee_time:props.flights[value].tee_time,
+          second_tee_time:props.flights[value].second_tee_time,
+          index:newIndex, flightIndex:value,
+          pax:props.flights[value].minPax,
+          insurance:props.flights[value].minPax,
+          buggy:props.flights[value].minCart,
+          caddy:props.flights[value].minCaddy
+        }
+      );
+      newFlightInfo.splice($.inArray(value, newTeeTimes), 0, fi ) ;
+    }
+
+    //need to re-adjust each child of flightInfo.index into order as this can be issue when flights are not clicked in-order
+    newFlightInfo.map( (e,i) => Object.assign(e, {index:i}));
+
+    this.setState({selectedTeeTimes:newTeeTimes, selectedTeeTimesIndex:newIndex, flightInfo:newFlightInfo});
+
+    /*
+      load the course availablity if
+      * you can actually choose a course
+      * course availablity data is not loaded yet
+    */
+
+    if(props.options.displayCourseGroup && !this.state.course_availablity_loaded){
+      console.log('check available_courses');
+      this.checkAvailableCourses();
+    }
+    /*
+    var newTotalPrice = this.updateTotalPrice();
+    var newTax = (newTotalPrice * this.props.club.tax_schedule.rate);
+    */
+    var totals = FlightFunctions.updateTotals(newFlightInfo, props.flights, props.club)
+    this.setState({totalPrice:totals.total, tax:totals.tax});
 
   },
   updatePrice: function(e){
@@ -104,67 +171,10 @@ var GolfReserveForm = React.createClass({
       //ensure that if you click, nothing happens
       e.target.className = e.target.className.replace(/active/, "");
       return;
-    } else {
-      //check if this is inside current state
-      var newTeeTimes = this.state.selectedTeeTimes;
-      var newIndex = this.state.selectedTeeTimesIndex;
-      var newFlightInfo = this.state.flightInfo;
-      var value = e.currentTarget.dataset.value;
-      var arrayPos = $.inArray(value, newTeeTimes);
-
-      if( arrayPos != -1){
-          //console.log('value is in array');
-          newTeeTimes.splice(arrayPos, 1);
-          newIndex = 0;
-
-          newFlightInfo.splice(arrayPos, 1);
-      }else {
-        //console.log('value is not in array');
-        newTeeTimes.push(value);
-        newTeeTimes.sort();
-        newIndex = $.inArray(value, newTeeTimes);
-
-        //var fi = Object.assign({}, this.state.defaultFlightInfo);
-        var fi = Object.assign({}, FLIGHT_INFO_DEFAULTS);
-        Object.assign( fi,
-          {
-            id:randomID(),
-            teeTime:this.props.flights[value].tee_time,
-            first_tee_time:this.props.flights[value].tee_time,
-            second_tee_time:this.props.flights[value].second_tee_time,
-            index:newIndex, flightIndex:value,
-            pax:this.props.flights[value].minPax,
-            insurance:this.props.flights[value].minPax,
-            buggy:this.props.flights[value].minCart,
-            caddy:this.props.flights[value].minCaddy
-          }
-        );
-        newFlightInfo.splice($.inArray(value, newTeeTimes), 0, fi ) ;
-      }
-
-      //need to re-adjust each child of flightInfo.index into order as this can be issue when flights are not clicked in-order
-      newFlightInfo.map( (e,i) => Object.assign(e, {index:i}));
-
-      this.setState({selectedTeeTimes:newTeeTimes, selectedTeeTimesIndex:newIndex, flightInfo:newFlightInfo});
-
-      /*
-        load the course availablity if
-        * you can actually choose a course
-        * course availablity data is not loaded yet
-      */
-
-      if(this.props.options.displayCourseGroup && !this.state.course_availablity_loaded){
-        console.log('check available_courses');
-        this.checkAvailableCourses();
-      }
-      /*
-      var newTotalPrice = this.updateTotalPrice();
-      var newTax = (newTotalPrice * this.props.club.tax_schedule.rate);
-      */
-      var totals = FlightFunctions.updateTotals(newFlightInfo, this.props.flights, this.props.club)
-      this.setState({totalPrice:totals.total, tax:totals.tax});
-
     }
+
+    this.updateFlightInfo(e,this.props)
+
   },
   deleteFlight: function(e){
     e.preventDefault();
@@ -199,9 +209,12 @@ var GolfReserveForm = React.createClass({
     };
 
     // enable selection based on tee_time, which is the min tee time available
+    // TODO: do include all-day option
     var preferredTime = this.props.queryData.session == 'Morning' ? ['06:30', '07:30', '08:30', '09:30', '10:30'] :
       this.props.queryData.session == 'Afternoon' ? ['11:30', '12:30', '13:30', '14:30', '15:30'] :
-      ['16:30', '17:30', '18:30', '19:30', '20:30']
+      this.props.queryData.session == 'Evening' ? ['16:30', '17:30', '18:30', '19:30', '20:30'] :
+      ['06:30', '07:30', '08:30', '09:30', '10:30', '11:30', '12:30', '13:30', '14:30', '15:30','16:30', '17:30', '18:30', '19:30', '20:30']
+    ;
     // show card times group on exact selection mode
     var timesGroup = this.props.selectionMode == 'exact' ? (
       <li className="list-group-item">
@@ -212,9 +225,13 @@ var GolfReserveForm = React.createClass({
       <li className="list-group-item">
         <span> Preferred Time: </span>
         <select className="form-control" name={`flight[${this.state.flightInfo[0].id}][preferred_time]`}>{ preferredTime.map( (e,i) => {
+            //TODO: only enable flights that are in the schedule
+            // check if there's any flights.tee_time within 0.5 hours of e's time
             return (
               <option key={i} value={e}
-                disabled={Date.parse(this.props.flights[0].tee_time) > Date.parse(`2000-01-01 ${e.substring(0,2)}:00:00.000Z`)}>
+                disabled={
+                  Date.parse(this.props.flights[0].tee_time) > Date.parse(`2000-01-01 ${e.substring(0,2)}:00:00.000Z`)
+                }>
                 {e}
               </option>
             )

@@ -267,9 +267,13 @@ class Admin::GolfClubsController < ApplicationController
     date = params.has_key?(:date) ? Date.parse(params[:date]) : Date.today + 1.day
     results = []
     (date..date+6).each do |date_query|
+=begin
       result = GolfClub.search({ dateTimeQuery:Time.parse("#{date_query} 14:00 +0000"), spread:9.hours, club_id:club.id,
         loadCourseData:true, adminMode:true}).first
       results << (result.nil? ? {:club => [], :flights => [], :queryData => []} : result)
+=end
+
+      results << {club:[], flights:club.getFlightListing(date_query, {timeOnly:true, loadCourseData:true}), queryData:[]}
     end
 
     render json:results

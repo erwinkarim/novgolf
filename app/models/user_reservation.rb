@@ -285,7 +285,8 @@ class UserReservation < ActiveRecord::Base
 
 
     default_options = { reserve_method:UserReservation.reserve_methods[:online],
-      course_selection:self.course_selection_methods[:auto], course_selection_ids:[]
+      course_selection:self.course_selection_methods[:auto], course_selection_ids:[],
+      admin_mode:false
     }
 
     options = default_options.merge(options)
@@ -310,7 +311,7 @@ class UserReservation < ActiveRecord::Base
     # in the future, the slot if also based on course availablity
     # in the future, limit to 4-5 flight slots per session
     # TOOD: flight matrix must within 30 minutes of the prefered hour
-    if club.flight_select_fuzzy? then
+    if club.flight_select_fuzzy? && !options[:admin_mode] then
       #check based on prefered time, otherwise, just use the same flight schedule
       #and booked date
 
