@@ -1,0 +1,30 @@
+- content_for(:head){ "Marketplace -" }
+- lorem = NameGenerator::LOREM.split(' ')
+.container
+  .row
+    .col-12
+      %ol.breadcrumb
+        %li.breadcrumb-item
+          %a{href:root_path} JomGolf
+        %li.breadcrumb-item.active Marketplace
+    .col-12
+      %h3 JomGolf Marketplace
+    .col-12.col-md-3.mb-2
+      %ul.list-group
+        - (0..10).each do |list_item|
+          %li.list-group-item Item #{list_item}
+    .col-12.col-md-9
+      .card-columns
+        - (0..20).each do |card_item|
+          .card
+            %a{href:"marketplace/item?id=#{card_item}"}
+              %img.card-img-top{ src:"https://s3-ap-southeast-1.amazonaws.com/jomgolf-marketplace/marketplace/#{card_item}.jpg", alt:'Image for Item to be sold'}
+            %ul.list-group.list-group-flush
+              %li.list-group-item
+                %h3 #{(0..(rand(3)+1)).each.map{ |x| lorem[rand(lorem.length)].titleize }.join(' ')}
+              %li.list-group-item
+                = number_to_currency(rand*([100,1000,10000][rand(2)]), {unit:'RM '})
+              %li.list-group-item
+                = (0..(rand(20))).each.map{ |x| lorem[rand(lorem.length)]}.join(' ').titleize
+              %li.list-group-item
+                %a{href:"marketplace/item?id=#{card_item}"} More details
