@@ -200,6 +200,8 @@ var GolfReserveForm = React.createClass({
     this.setState({selectedTeeTimesIndex:newFlightIndex});
   },
   render: function(){
+    var handle = this;
+
     //handle slide up and down function here
     //if(this.state.selectedTeeTimes.length >= Math.ceil(this.props.flight.selectedPax/this.props.flight.maxPax)){
     if(this.state.flightInfo.length > 0){
@@ -208,8 +210,24 @@ var GolfReserveForm = React.createClass({
       $(this.refs.reserveBtnLi).slideUp();
     };
 
+    //return true if the give time frame e is in the current list of tee times
+    // format e "06:30" to "20:30"
+    var withinTimeFrame = (e) => {
+      //cycle through the flight, returns true if found within .5 hours of give time frame
+      var startTime = Date.parse(`2000-01-01 ${e.substring(0,2)}:00:00.000Z`);
+      var endTime = Date.parse(`2000-01-01 ${e.substring(0,2)}:59:59.000Z`);
+      var isWithinTimeFrame = false;
+
+      //cycle through the flight times, return true immediately if the flight between
+      // start and end times
+      return handle.props.flights.reduce((init, value) => {
+        console.log(`init = `, init)
+        currentDate = Date.parse(value.tee_time);
+        return ((startTime <= currentDate) && (currentDate <= endTime)) || init;
+      }, false);
+    };
+
     // enable selection based on tee_time, which is the min tee time available
-    // TODO: do include all-day option
     var preferredTime = this.props.queryData.session == 'Morning' ? ['06:30', '07:30', '08:30', '09:30', '10:30'] :
       this.props.queryData.session == 'Afternoon' ? ['11:30', '12:30', '13:30', '14:30', '15:30'] :
       this.props.queryData.session == 'Evening' ? ['16:30', '17:30', '18:30', '19:30', '20:30'] :
@@ -225,12 +243,11 @@ var GolfReserveForm = React.createClass({
       <li className="list-group-item">
         <span> Preferred Time: </span>
         <select className="form-control" name={`flight[${this.state.flightInfo[0].id}][preferred_time]`}>{ preferredTime.map( (e,i) => {
-            //TODO: only enable flights that are in the schedule
             // check if there's any flights.tee_time within 0.5 hours of e's time
             return (
               <option key={i} value={e}
                 disabled={
-                  Date.parse(this.props.flights[0].tee_time) > Date.parse(`2000-01-01 ${e.substring(0,2)}:00:00.000Z`)
+                  !withinTimeFrame(e)
                 }>
                 {e}
               </option>

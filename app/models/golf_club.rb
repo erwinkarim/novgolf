@@ -168,19 +168,10 @@ class GolfClub < ActiveRecord::Base
 
     #in the future, round 2 and round 3 can be parallelize to improve performance
     #round two: fill up the flight schedule based on fuzzy criteria
-    # unless you are forced to put exact
-    # TODO: show the first 4-5 flights per golf club per session
-    sql_statement = rel.group(' golf_clubs.id,
-        golf_clubs.name, session_price,
-        min_pax,
-        max_pax, cart, caddy, insurance,
-        note, min_cart,
-        max_cart, min_caddy, max_caddy, insurance_mode,
-        user_selection
-      ').selecting{[id,
+      sql_statement = rel.selecting{[id,
         name, flight_schedules.charge_schedule.session_price,
-        min(flight_schedules.flight_matrices.id).as('fm_id'),
-        min(flight_schedules.flight_matrices.tee_time).as('tee_time'),
+        (flight_schedules.flight_matrices.id).as('fm_id'),
+        (flight_schedules.flight_matrices.tee_time).as('tee_time'),
         flight_schedules.min_pax, #4
         flight_schedules.max_pax, flight_schedules.charge_schedule.cart, flight_schedules.charge_schedule.caddy, flight_schedules.charge_schedule.insurance,        #8
         flight_schedules.charge_schedule.note, flight_schedules.min_cart,  #12
@@ -244,7 +235,6 @@ class GolfClub < ActiveRecord::Base
           }
         else
           # TODO: find the appropiate flights, add courses, or new flight if necessary
-          selected_flight = club[:flights].select{ |x| x[:matrix_id] == n["fm_id"]}
           club[:flights] << {
             :minPax => n["min_pax"], :maxPax => n["max_pax"],
             :minCart => n["min_cart"], :maxCart => n["max_cart"],
@@ -264,7 +254,6 @@ class GolfClub < ActiveRecord::Base
       # TODO: put course data on 2nd tee time
       # TODO: add maintenance data
       if options[:loadCourseData] then
-        queryDate =  options[:dateTimeQuery].strftime("%Y-%m-%d")
         course_query_statement = rel.selecting{ [id,
               flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'), #2
               'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name'), #5

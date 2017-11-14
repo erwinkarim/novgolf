@@ -285,12 +285,18 @@ class TurkConsole extends React.Component {
     this.reservationAction.showCategory();
 
 
-    //TODO: subscribe to chanel so can track change
+    //TODO: setup timer so it'd refresh the data every 30 seconds
+    //      based on current view mode
+    setInterval(() => {
+      handle.reservationAction.showCategory();
+      handle.setState({lastUpdate:Date()})
+    }, 30*1000);
   }
   constructor(props){
     super(props);
+    handle = this;
     this.state = {
-      reservations:[], viewMode:'active'
+      reservations:[], viewMode:'active', lastUpdate:Date()
     };
   }
   reservationAction = {
@@ -401,6 +407,7 @@ class TurkConsole extends React.Component {
       });
     },
     showCategory: (e) => {
+      $.snackbar({content:'Loading user reservations ...'});
       var handle = this;
       var category = 'active';
       if(typeof e !== 'undefined'){
@@ -419,6 +426,7 @@ class TurkConsole extends React.Component {
         handle.setState({ reservations:json.reservations})
       });
 
+      $.snackbar({content:'Done loading reservations'});
     },
     showSearch:(e)=> {
       //show reservations based on saved results
@@ -427,6 +435,7 @@ class TurkConsole extends React.Component {
   render() {
     return (
       <div className="row">
+        <div className="col-12">Last update: { this.state.lastUpdate } </div>
         <TurkSidebar reservationAction={this.reservationAction} {...this.state} />
         <TurkMainConsole
           reservationAction={this.reservationAction}
