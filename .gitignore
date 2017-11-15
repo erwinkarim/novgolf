@@ -32,3 +32,6 @@ public/uploads/*
 
 #/public/packs
 /node_modules
+
+#mac droppings
+.DS_Store

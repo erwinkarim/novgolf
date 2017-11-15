@@ -15,10 +15,7 @@
       %p.mb-0
         %strong Flight Date and Time:
         #{ @reservation.booking_date} @ #{@reservation.booking_time.strftime("%H:%M")}
-    %li.list-group-item
-      %p.mb-0
-        %strong Course:
-        #{ @reservation.course_listing.name }
+        = @club.flight_select_fuzzy? && @reservation.reservation_await_assignment? ? "(Tentative)" : ""
     %li.list-group-item
       %p.mb-0
         %strong Location:
@@ -87,12 +84,17 @@
           %th Tee Time
           %th Course
       %tbody
-        %tr
-          %td #{@reservation.first_booking_time.strftime("%H:%M")}
-          %td #{@reservation.first_course_listing.name}
-        %tr
-          %td #{@reservation.second_booking_time.nil? ? "" : @reservation.second_booking_time.strftime("%H:%M")}
-          %td #{@reservation.second_course_listing.name}
+        - if @club.flight_select_fuzzy? && @reservation.reservation_await_assignment? then
+          %tr
+            %td Tentative at #{@reservation.first_booking_time.strftime("%H:%M")}
+            %td TBD
+        - else
+          %tr
+            %td #{@reservation.first_booking_time.strftime("%H:%M")}
+            %td #{@reservation.first_course_listing.name}
+          %tr
+            %td #{@reservation.second_booking_time.nil? ? "" : @reservation.second_booking_time.strftime("%H:%M")}
+            %td #{@reservation.second_course_listing.name}
 - if @reservation.count_member > 0 then
   .card
     .card-header Members

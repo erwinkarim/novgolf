@@ -25,6 +25,15 @@
           = simple_format( @golf_club.address, { :class => 'card-text'})
         .card-body#map{:style => "height: 40vh; padding:0px;"}
       .card.mb-2
+        .card-header Contact
+        .card-body
+          %p.card-text
+            %strong Email:
+            #{ @golf_club.email.nil? ? 'No email yet ...' : @golf_club.email}
+          %p.card-text
+            %strong Telephone:
+            #{ @golf_club.telephone.nil? ? 'No email yet ...' : @golf_club.telephone}
+      .card.mb-2
         .card-header Hours
         %ul.list-group.list-group-flush
           %li.list-group-item
@@ -106,6 +115,11 @@
         .card-header Taxation
         .card-body
           %p.card-text Taxation Country: #{ @golf_club.tax_schedule.country} (#{number_to_percentage(@golf_club.tax_schedule.rate*100)})
+    .col-12.col-md-8
+      .card.mb-2
+        .card-header Flight Selection Method
+        .card-body
+          %p.card-text Flight Selection Method: #{ @golf_club.flight_selection_method == 'flight_select_fuzzy' ? 'fuzzy' : 'exact' }
     .col-12.col-md-8
       - @golf_club.active_flight_schedules.each do |flight_schedule|
         - prices = flight_schedule.charge_schedule
@@ -204,7 +218,6 @@
               %span #{ prices.insurance_mode}
             %p.card-text
               = simple_format(prices.note)
-
   .row
     .col-12
       %h2 Amenities
@@ -214,6 +227,7 @@
           %li{:class => amenity[:available] ? "" : "text-muted" } #{ amenity[:label]}
 = react_component("GolfClubDeleteModal", {clubName:@golf_club.name, delete_path:admin_golf_club_path(@golf_club),
   token:form_authenticity_token})
+= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}&libraries=places"
 - content_for(:other_js) do
   :javascript
     var map;

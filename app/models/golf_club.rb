@@ -18,12 +18,14 @@ class GolfClub < ActiveRecord::Base
   # and topic_id = UserReservations.id and user_reservations.golf_club_id = id
   belongs_to :tax_schedule, optional:true
 
+  enum flight_selection_method: [:flight_select_fuzzy, :flight_select_exact]
 
-  validates_presence_of :name, :description, :address, :open_hour, :close_hour, :user_id, :tax_schedule_id
+  validates_presence_of :name, :description, :address, :open_hour, :close_hour, :user_id, :tax_schedule_id, :flight_selection_method
 
   #should test that golf_club must have at least 1 course entry on update
 
   after_initialize :init
+  after_save :enforce_club_policy
 
   def init
     # TODO: consider to skip this if method is not available because of ActiveRelation model is
@@ -37,8 +39,33 @@ class GolfClub < ActiveRecord::Base
     self.lng ||= "101.71165"
 
     self.tax_schedule_id ||= 1
+
   end
 
+  #everytime the club is save / updated, club policy is enforced
+  def enforce_club_policy
+    # ensure that CourseGlobalSetting is there
+    if self.course_global_setting.nil? then
+      cgs = CourseGlobalSetting.new({golf_club_id:self.id})
+      cgs.save!
+    end
+
+    # if the flight selection method is fuzzy, the course_user_selection is auto
+    if !self.course_global_setting.nil? then
+      if self.flight_select_fuzzy? && self.course_global_setting.user_manual_select? then
+        self.course_global_setting.update_attribute(:user_selection, CourseGlobalSetting.user_selections[:user_auto_select])
+      end
+    end
+
+    self.transaction do
+    end
+
+  end
+
+  # ensure that if the flight_selection_method is fuzzy, the course_global_setting for user is auto
+  def validate_course_global_setting
+
+  end
   #shows how many many slots are available in this club
   # params queryDate date in string fromat
   def get_flight_matrix options = {}
@@ -61,16 +88,15 @@ class GolfClub < ActiveRecord::Base
 
   #look for clus and give the tee_time at near
   #expected output [ {:club => {:id, :name, :link}, :tee_time => [..]}, { ... }]
-  # to do:
-  # 1. remove clubs that is fully booked
-  # 2. club ranking algothrim
-  # 3. don't return results if looking for something in the past??
-  # TODO: optional capture of course data, by default, just say how many is occupied vs #of courses and min status of the courses
   # TODO:
+  # revamp the search, get the list of clubs that meet criteria and fill up w / other data based on criteria
+  #     * skip clubs that is fully booked
+  #     * load more tee times if the booking method is exact, otherwise, just take this first results that comes out
+  # TODO: optional capture of course data, by default, just say how many is occupied vs #of courses and min status of the courses
   def self.search options = {}
     default_options = { :query => "", :dateTimeQuery => DateTime.parse("#{Date.tomorrow} 07:00"), :spread => 30.minutes,
       :pax => 8, :club_id => 0..10000000,
-      :limit => 300, :offset => 0 , :adminMode => false, :loadCourseData => true}
+      :limit => 300, :offset => 0 , :adminMode => false, :loadCourseData => true, :forceExact => false}
 
     options = default_options.merge(options)
 
@@ -91,11 +117,15 @@ class GolfClub < ActiveRecord::Base
     end
 
     #set time range
+    middleHour = Time.parse(options[:dateTimeQuery].strftime("%H:%M"))
     startHour = (options[:dateTimeQuery] - options[:spread]).strftime("%H:%M")
     endHour = (options[:dateTimeQuery] + options[:spread]).strftime("%H:%M")
     timeRange = startHour..endHour
+    fuzzyPeriodName =
+      (Time.parse("06:00")..Time.parse("11:00")).include?(middleHour) ? "Morning" :
+      (Time.parse("11:01")..Time.parse("16:00")).include?(middleHour) ? "Afternoon" :
+      "Evening"
 
-    currentTime = DateTime.now
 
     # todo: remove clubs that is fully booked in the time period
     #get current reservations, excluding failed/canceled attempts
@@ -119,9 +149,52 @@ class GolfClub < ActiveRecord::Base
         (flight_schedules.flight_matrices.start_active_at <= options[:dateTimeQuery]) &
         (flight_schedules.flight_matrices.end_active_at >= options[:dateTimeQuery]) &
         (id.in options[:club_id])
-      }.limit(options[:limit]
-      )
+      }.limit(options[:limit])
 
+    #round one: get details of the clubs that fit this criteria
+    sql_statement = rel.selecting{[id,
+      name, flight_selection_method
+    ]}.distinct.to_sql
+
+    results = ActiveRecord::Base.connection.exec_query(sql_statement).inject([]){ |p,n|
+      p << {
+        :club => { :tax_schedule => GolfClub.find(n["id"]).tax_schedule, :id => n["id"],
+          :name => n["name"], :photos => GolfClub.find(n["id"]).photos.order(:sequence => :desc).limit(3).map{ |x| x.avatar.banner400.url},
+          :course_user_selection =>  0, :flight_selection_method => n["flight_selection_method"]
+        },
+        :flights => []
+      }
+    }
+
+    #in the future, round 2 and round 3 can be parallelize to improve performance
+    #round two: fill up the flight schedule based on fuzzy criteria
+      sql_statement = rel.selecting{[id,
+        name, flight_schedules.charge_schedule.session_price,
+        (flight_schedules.flight_matrices.id).as('fm_id'),
+        (flight_schedules.flight_matrices.tee_time).as('tee_time'),
+        flight_schedules.min_pax, #4
+        flight_schedules.max_pax, flight_schedules.charge_schedule.cart, flight_schedules.charge_schedule.caddy, flight_schedules.charge_schedule.insurance,        #8
+        flight_schedules.charge_schedule.note, flight_schedules.min_cart,  #12
+        flight_schedules.max_cart, flight_schedules.min_caddy, flight_schedules.max_caddy, flight_schedules.charge_schedule.insurance_mode,  #16
+        course_global_setting.user_selection
+      ]}.distinct.where.has{ id.in results.select{ |x| x[:club][:flight_selection_method] == 0}.map{ |x| x[:club][:id]} }.to_sql
+
+    ActiveRecord::Base.connection.exec_query(sql_statement).inject(results){ |p,n|
+      club = p.select{ |x| x[:club][:id] == n["id"] }.first
+      club[:flights] << {
+        :minPax => n["min_pax"], :maxPax => n["max_pax"],
+        :minCart => n["min_cart"], :maxCart => n["max_cart"],
+        :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
+        :tee_time => n["tee_time"],
+        :second_tee_time => fuzzyPeriodName,
+        :matrix_id => n["fm_id"],
+        :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
+        :course_data => { :status => 0, :courses => [] }
+      }
+      p
+    }
+
+    #round three: fill up the flihgt schedule based on exact criteria
     sql_statement = rel.group( " golf_clubs.id,
         golf_clubs.name, session_price, tee_time, second_tee_time, min_pax,
         max_pax, cart, caddy, insurance,
@@ -137,10 +210,11 @@ class GolfClub < ActiveRecord::Base
         course_global_setting.user_selection,
         'count(course_listings.id) as cl_count', 'count(tr.course_listing_id) as ur_cl_count'
         ]
-      }.to_sql
+      }.where.has{ id.in results.select{ |x| x[:club][:flight_selection_method] == 1}.map{ |x| x[:club][:id]} }.to_sql
 
       #shoud change this to exec_sql because it'd returns a hash instead of an array (cleaner code)
-      results = ActiveRecord::Base.connection.exec_query(sql_statement).inject([]){ |p,n|
+      #results = ActiveRecord::Base.connection.exec_query(sql_statement).inject([]){ |p,n|
+      ActiveRecord::Base.connection.exec_query(sql_statement).inject(results){ |p,n|
         club = p.select{ |x| x[:club][:id] == n["id"] }.first
         if club.nil? then
           p << {
@@ -157,12 +231,10 @@ class GolfClub < ActiveRecord::Base
               :matrix_id => n["fm_id"],
               :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
               :course_data => { :status => n["ur_cl_count"].nil? || n["ur_cl_count"] < n["cl_count"] ? 0 : n["tr_min_status"] }
-            }],
-            :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query]}
+            }]
           }
         else
           # TODO: find the appropiate flights, add courses, or new flight if necessary
-          selected_flight = club[:flights].select{ |x| x[:matrix_id] == n["fm_id"]}
           club[:flights] << {
             :minPax => n["min_pax"], :maxPax => n["max_pax"],
             :minCart => n["min_cart"], :maxCart => n["max_cart"],
@@ -178,17 +250,18 @@ class GolfClub < ActiveRecord::Base
       }
 
       #if more details course data require, go ask the database
+      # applies only if the flight selection method is exact
       # TODO: put course data on 2nd tee time
       # TODO: add maintenance data
       if options[:loadCourseData] then
-        queryDate =  options[:dateTimeQuery].strftime("%Y-%m-%d")
         course_query_statement = rel.selecting{ [id,
               flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'), #2
               'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name'), #5
               'tr.second_course_listing_id'
-          ]}.to_sql
+          ]}.where.has{ id.in results.select{ |x| x[:club][:flight_selection_method] == 1}.map{ |x| x[:club][:id]} }.to_sql
           course_results = ActiveRecord::Base.connection.exec_query(course_query_statement)
           course_results.inject(results){ |p,n|
+            Rails.logger.info "current_row=#{n.inspect}"
             flight_handle = p.select{|x| x[:club][:id] == n["id"]}.first[:flights].select{|x| x[:matrix_id] == n["fm_id"]}.first
             if flight_handle[:course_data][:courses].nil? then
               flight_handle[:course_data][:courses] = []
@@ -215,6 +288,14 @@ class GolfClub < ActiveRecord::Base
 
       end
 
+      #add the query data on the first results only
+      if results.empty? then
+        results.push [{ :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query], :session => fuzzyPeriodName } }]
+      else
+        results[0] = results.first.merge(
+          { :queryData => { :date => options[:dateTimeQuery].strftime('%d/%m/%Y'), :query => options[:query], :session => fuzzyPeriodName} }
+        )
+      end
       results
 
       #inject the photo path after search
@@ -298,18 +379,17 @@ class GolfClub < ActiveRecord::Base
     end
   end
 
+  #get a random club
+  def self.random
+    GolfClub.order("RAND()").first
+  end
+
   #set the course listings
   # this function is usually called during update / create fn in admin/GolfClubsController
   def setCourseListing new_course_listings = []
     current_courses = self.course_listings
 
     self.transaction do
-      # create / update the CourseGlobalSetting model for the club
-      if self.course_global_setting.nil? then
-        cgs = CourseGlobalSetting.new({golf_club_id:self.id})
-        cgs.save!
-      end
-
       #delete courses not in the new list
       CourseListing.where(:id => self.course_listings.map{|x| x.id} -
         new_course_listings.to_unsafe_h.map{ |k,v| v["id"].to_i}.select{ |x| !x.zero?}).each{ |x| x.destroy}
@@ -545,5 +625,129 @@ class GolfClub < ActiveRecord::Base
     courses = []
     self.course_listings.inject([]){ |p,v| if v.isOpen? date then courses << v.id end }
     return courses
+  end
+
+  #get the next available reservation, based on data and given session
+  # returns: an empty UR with the proper booking date and time based on date and session
+  # to be added w/ other info like user_id, actual pricing, #, etc
+  def next_available_slot date = Date.today, session = 'Morning'
+    #link up get the available slots within time frame
+    # something like search, but spit out slots available
+  end
+
+  # list down flight listing for the day
+  # gives info like flight schedules, who's taking the info
+  def getFlightListing date = Date.today, options = {}
+    default_options = {timeOnly:false, loadCourseData:false}
+    options = default_options.merge(options)
+
+    tr = UserReservation.where(:booking_date => date).where(:status => [
+      UserReservation.statuses[:reservation_created],
+      UserReservation.statuses[:payment_attempted],
+      UserReservation.statuses[:payment_confirmed],
+      UserReservation.statuses[:reservation_confirmed],
+      UserReservation.statuses[:requires_members_verification],
+      UserReservation.statuses[:reservation_await_assignment],
+      UserReservation.statuses[:operator_assigned],
+      UserReservation.statuses[:operator_new_proposal]
+    ]).to_sql
+    now = DateTime.parse(date.to_s)
+    queryDay = date.cwday
+    club_id = self.id
+
+    #load the data model
+    rel = GolfClub.joining{
+        flight_schedules.flight_matrices
+      }.joining{ course_listings
+      }.joining{ course_global_setting
+      }.joins("left outer join (#{tr}) as tr on (flight_matrices.id = tr.flight_matrix_id and flight_matrices.tee_time = tr.booking_time and tr.course_listing_id = course_listings.id)").joining{
+        flight_schedules.charge_schedule
+      }.where.has{
+        ( id.eq club_id ) &
+        (flight_schedules.flight_matrices.send("day#{queryDay}") == 1) &
+        (flight_schedules.start_active_at <= now) &
+        (flight_schedules.end_active_at >= now) &
+        (flight_schedules.flight_matrices.start_active_at <= now) &
+        (flight_schedules.flight_matrices.end_active_at >= now)
+      }
+
+    sql_statement = rel.group( "
+        session_price, tee_time, second_tee_time, min_pax,
+        max_pax, cart, caddy, insurance,
+        flight_matrices.id, charge_schedules.note,
+        min_cart, max_cart, min_caddy, max_caddy,
+        insurance_mode, user_selection
+      ").selecting{[
+        flight_schedules.flight_matrices.id.as('fm_id'),
+        # pricing
+        flight_schedules.charge_schedule.session_price, flight_schedules.charge_schedule.cart,
+        flight_schedules.charge_schedule.caddy, flight_schedules.charge_schedule.insurance,
+        #tee time
+        flight_schedules.flight_matrices.tee_time, flight_schedules.flight_matrices.second_tee_time,
+        #min/max + insurance mode
+        flight_schedules.min_pax, flight_schedules.max_pax,
+        flight_schedules.min_cart, flight_schedules.max_cart,
+        flight_schedules.min_caddy, flight_schedules.max_caddy,
+        flight_schedules.charge_schedule.insurance_mode,
+        flight_schedules.charge_schedule.note,
+        #user can select or not
+        course_global_setting.user_selection,
+        #reservation status
+        'min(tr.status) as tr_min_status',
+        #course count vs. reserved course count
+        'count(course_listings.id) as cl_count', 'count(tr.course_listing_id) as ur_cl_count'
+        ]
+      }.distinct.ordering{flight_schedules.flight_matrices.tee_time}.to_sql
+
+    results = ActiveRecord::Base.connection.exec_query(sql_statement).inject([]){ |p,n|
+      p << {
+        :minPax => n["min_pax"], :maxPax => n["max_pax"],
+        :minCart => n["min_cart"], :maxCart => n["max_cart"],
+        :minCaddy => n["min_caddy"], :maxCaddy => n["max_caddy"],
+        :tee_time => options[:timeOnly] ? n["tee_time"].strftime('%H:%M') : n["tee_time"],
+        :second_tee_time => n["second_tee_time"].nil? ? nil : options[:timeOnly] ? n["second_tee_time"].strftime("%H:%M") : n["second_tee_time"],
+        :matrix_id => n["fm_id"],
+        :prices => { :flight => n["session_price"], :cart => n["cart"], :caddy => n["caddy"], :insurance => n["insurance"], :note => n["note"], :insurance_mode => n["insurance_mode"]},
+        :course_data => { :status => n["ur_cl_count"].nil? || n["ur_cl_count"] < n["cl_count"] ? 0 : n["tr_min_status"],
+          :cl_count => n["cl_count"], :ur_cl_count => n["ur_cl_count"]}
+      }
+    }
+
+    #load the course data if you have to
+    if(options[:loadCourseData]) then
+      course_query_statement = rel.selecting{ [
+            flight_schedules.flight_matrices.id.as('fm_id'), course_listings.id.as('cl_id'), #2
+            'tr.id as ur_id', 'tr.status as tr_status', course_listings.name.as('cl_name'), #5
+            'tr.second_course_listing_id'
+      ]}.where.has{ id.eq club_id }.to_sql
+      Rails.logger.info "sql_statement = #{course_query_statement}"
+      course_results = ActiveRecord::Base.connection.exec_query(course_query_statement)
+      course_results.inject(results){ |p,n|
+        Rails.logger.info "current_row=#{n.inspect}"
+        flight_handle = p.select{|x| x[:matrix_id] == n["fm_id"]}.first
+        if flight_handle[:course_data][:courses].nil? then
+          flight_handle[:course_data][:courses] = []
+        end
+        flight_handle[:course_data][:courses] << {
+          id:n["cl_id"], name:n["cl_name"],
+            reservation_id:n["ur_id"], reservation_status:n["tr_status"],
+            first_reservation_id:n["ur_id"], first_reservation_status:n["tr_status"],
+            reservation_status_text: UserReservation.statuses.select{ |k,v| v == n["tr_status"]}.keys.first,
+            second_reservation_id:nil, second_reservation_status:nil
+        }
+        p
+      }
+      course_results.inject(results){ |p,n|
+        course_handle = p.select{|x| x[:matrix_id] == n["fm_id"]}.
+          first[:course_data][:courses].select{|x| x[:id] == n["second_course_listing_id"]}.first
+        if !course_handle.nil? then
+          course_handle[:second_reservation_id] = n["ur_id"]
+          course_handle[:second_reservation_status] = n["tr_status"]
+        end
+        p
+      }
+    end
+
+    results
   end
 end

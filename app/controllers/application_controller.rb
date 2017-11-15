@@ -17,6 +17,13 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def operators_only
+    authenticate_user!
+    unless current_user.superadmin? || current_user.operator? then
+      render :file => "public/401.html", :status => :not_authoerized
+    end
+  end
+
 
 =begin
   def authenticate_user!

@@ -10,6 +10,7 @@ class UserReservation < ActiveRecord::Base
   belongs_to :second_course_listing, class_name:"CourseListing"
 
   has_one :review, as: :topic
+  has_one :ur_turk_case
   belongs_to :contact, polymorphic: true, optional: true
   has_many :ur_member_details, dependent: :destroy
   has_many :ur_transactions, dependent: :destroy
@@ -37,7 +38,10 @@ class UserReservation < ActiveRecord::Base
   has_secure_token
 
   enum status: [:reservation_created, :payment_attempted, :payment_confirmed,
-    :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed, :reservation_failed, :requires_members_verification]
+    :reservation_confirmed, :canceled_by_club, :canceled_by_user, :payment_failed, :reservation_failed, :requires_members_verification,
+    :reservation_await_assignment,
+    :operator_assigned, :operator_confirmed, :operator_new_proposal, :operator_canceled
+  ]
   enum reserve_method: [:online, :dashboard]
   enum course_selection_method: [:auto, :manual]
 
@@ -269,6 +273,7 @@ class UserReservation < ActiveRecord::Base
   #streamline method to generate user reservation
   #includes the sanity checks, etc...
   # flight_info must be format {:pax, :caddy, :buggy, :insurance}, ie- count, everything else will be calculated
+  # TODO: for fuzzy selection, fill up the next available slots in the flight_matrix_id
   def self.create_reservation flight_matrix_id, user_id, booked_date = Date.today, flight_info = {}, options = {}
 
     #sanity check, symbolize_keys
@@ -280,9 +285,12 @@ class UserReservation < ActiveRecord::Base
 
 
     default_options = { reserve_method:UserReservation.reserve_methods[:online],
-      course_selection:self.course_selection_methods[:auto], course_selection_ids:[]}
+      course_selection:self.course_selection_methods[:auto], course_selection_ids:[],
+      admin_mode:false
+    }
 
     options = default_options.merge(options)
+    Rails.logger.info "create_reservation options = #{options.inspect}"
 
     #sanity checks, expects that flight_info has all the necessary keys and values
     #flight_info = flight_info.symbolize_keys
@@ -293,10 +301,46 @@ class UserReservation < ActiveRecord::Base
     # => will get the associated booking time
     # get the current pricing at this time
     fm = FlightMatrix.find(flight_matrix_id)
+    booking_date_clause = booked_date.class == String ? (Date.parse(booked_date).strftime("%Y-%m-%d")) : booked_date.strftime("%Y-%m-%d")
+
     cs = ChargeSchedule.where(:flight_schedule_id => fm.flight_schedule_id ).first
     club = GolfClub.find(cs.golf_club_id)
     club_id = cs.golf_club_id
-    booking_date_clause = booked_date.class == String ? (Date.parse(booked_date).strftime("%Y-%m-%d")) : booked_date.strftime("%Y-%m-%d")
+
+    #if club flight selection is fuzzy, get the first available slot
+    # in the future, the slot if also based on course availablity
+    # in the future, limit to 4-5 flight slots per session
+    # TOOD: flight matrix must within 30 minutes of the prefered hour
+    if club.flight_select_fuzzy? && !options[:admin_mode] then
+      #check based on prefered time, otherwise, just use the same flight schedule
+      #and booked date
+
+      preferred_day = booked_date.cwday
+      preferred_time = Time.parse(flight_info[:preferred_time])
+      time_range = ( (preferred_time-30.minutes).strftime('%H:%M') )..( (preferred_time+30.minutes).strftime('%H:%M') )
+      sql_statement = FlightMatrix.joining{
+        [
+          user_reservations.outer.on( (user_reservations.flight_matrix_id.eq id) & (user_reservations.booking_date.eq booking_date_clause)),
+          flight_schedule
+        ]
+        }.where.has{
+          (flight_schedule.golf_club_id.eq club_id) &
+          (tee_time.in time_range) &
+          (self.send("day#{preferred_day}").eq 1) &
+          (user_reservations.id.eq nil) &
+          (start_active_at.lt DateTime.now) &
+          (end_active_at.gt DateTime.now)
+      }.limit(1).to_sql.gsub('user_reservations_flight_matrices', 'user_reservations')
+      Rails.logger.info "sql_statement = #{sql_statement}"
+
+      results = ActiveRecord::Base.connection.exec_query(sql_statement).first
+      if results.nil? then
+        raise "No available slots"
+      else
+        fm = FlightMatrix.find(results["id"])
+      end
+    end
+
     booking_time_clause = fm.tee_time
     second_bookting_time_clause = fm.second_tee_time
 
@@ -323,23 +367,32 @@ class UserReservation < ActiveRecord::Base
       end
 
       if options[:course_selection] == self.course_selection_methods[:auto] then
-        # auto => automatically find the first available courses
-        #find the free coursetime
-        first_course_id = (club.course_listings.map{ |x| x.id } -
-          UserReservation.where.has{
-            (golf_club_id == club_id) &
-            (booking_date == booking_date_clause) &
-            (booking_time == booking_time_clause) &
-            (status.not_in [4,5,6])
-          }.map{|x| x.course_listing_id }).first
-        second_course_id = (club.course_listings.map{ |x| x.id } -
-          UserReservation.where.has{
-            (golf_club_id == club_id) &
-            (booking_date == booking_date_clause) &
-            (booking_time == booking_time_clause) &
-            (status.not_in [4,5,6])
-          }.map{|x| x.second_course_listing_id }).first
-        ur.assign_attributes({course_listing_id:first_course_id, second_course_listing_id:second_course_id})
+        #if user reservation is fuzzy, assign courses first. will be detailed later by turks
+
+        if club.flight_select_fuzzy? then
+          ur.assign_attributes({
+            course_listing_id:club.course_listings.first.id,
+            second_course_listing_id:club.course_listings.last.id
+          })
+        else
+          # auto => automatically find the first available courses
+          #find the free coursetime
+          first_course_id = (club.course_listings.map{ |x| x.id } -
+            UserReservation.where.has{
+              (golf_club_id == club_id) &
+              (booking_date == booking_date_clause) &
+              (booking_time == booking_time_clause) &
+              (status.not_in [4,5,6])
+            }.map{|x| x.course_listing_id }).first
+          second_course_id = (club.course_listings.map{ |x| x.id } -
+            UserReservation.where.has{
+              (golf_club_id == club_id) &
+              (booking_date == booking_date_clause) &
+              (booking_time == booking_time_clause) &
+              (status.not_in [4,5,6])
+            }.map{|x| x.second_course_listing_id }).last
+          ur.assign_attributes({course_listing_id:first_course_id, second_course_listing_id:second_course_id})
+        end
         #Rails.logger.info "new course id = #{first_course_id}"
       else
         # set the course selection manually
@@ -358,9 +411,10 @@ class UserReservation < ActiveRecord::Base
 
   #generate the random user reservation complete with review
   # TOOD, find a way to specify a date
-  def self.generate_random_reservation user = User.random, club = GolfClub.find( ids[rand(0..ids.length-1)])
+  # change club to club random
+  def self.generate_random_reservation user = User.random, club = GolfClub.random
     #get the club
-    ids = GolfClub.all.limit(100).pluck(:id)
+    #ids = GolfClub.all.limit(100).pluck(:id)
     #club = GolfClub.find( ids[rand(0..ids.length-1)])
 
     #get a random flight_matrix
@@ -371,7 +425,7 @@ class UserReservation < ActiveRecord::Base
 
     #create the proper user reservation based on the flight matrix at a date 6 month in the past
     # see which days are allowed, then pick a random day, and take a day 1..28 weeks ago and create a user reservation
-    days = fm.attributes.select{ |k,v| k =~ /day[1-7]/ && v == 1}.map{|x, y| day_index = x.match(/[1-7]/)[0].to_i }
+    days = fm.attributes.select{ |k,v| k =~ /day[1-7]/ && v == 1}.map{|x, y| x.match(/[1-7]/)[0].to_i }
     proposed_date = Date.today.sunday - rand(6..36).weeks + (days[rand(0..days.length-1)]).days
 
     #randomly create the review based on the reservation
@@ -477,6 +531,11 @@ class UserReservation < ActiveRecord::Base
 
   def first_course_listing
     self.course_listing
+  end
+
+  #for operator
+  def to_operator_format
+    self.attributes.merge({golf_club:self.golf_club, user:self.user})
   end
 
   private

@@ -28,6 +28,8 @@
                   %a.dropdown-item.hidden-sm-down{href:admin_path } Admin Console
                   - if current_user.superadmin? then
                     %a.dropdown-item.hidden-sm-down{href:monolith_path} Monolith
+                  - if current_user.superadmin? || current_user.operator? then
+                    %a.dropdown-item.hidden-sm-down{href:operator_path} Operator
                 .dropdown-divider
                 = link_to "Log Out", destroy_user_session_path, :method => :delete, :class => 'dropdown-item'
             - else
@@ -37,7 +39,7 @@
     = render :file => "layouts/modal.template"
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
     = javascript_pack_tag 'application'
-    = javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}&libraries=places"
+    = # javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}&libraries=places"
     = yield :other_js
     %footer.footer.text-muted
       .container

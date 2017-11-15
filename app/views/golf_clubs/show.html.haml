@@ -66,6 +66,7 @@
           %ul
             - @club.amenity_listings.each do |amenity|
               %ul{ :class => amenity[:available] ? "" : "text-muted"} #{amenity[:label]}
+= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}&libraries=places"
 - content_for(:other_js) do
   :javascript
     var map;

@@ -1,4 +1,5 @@
 - content_for(:head){ "Admin - Clubs"}
+= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_ID']}&libraries=places"
 .container
   .row
     .col-12

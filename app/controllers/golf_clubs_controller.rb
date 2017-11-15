@@ -43,6 +43,18 @@ class GolfClubsController < ApplicationController
   def join
   end
 
+  # GET      /golf_clubs/:golf_club_id/flight_listings(.:format)
+  def flight_listings
+    gc = GolfClub.find(params[:golf_club_id])
+    date = params.has_key?(:date) ? Date.parse(params[:date]) : Date.tomorrow
+    timeOnlyOption = params.has_key?(:time_only) ? params[:time_only] == "true" : false
+    loadCourseDataOption = params.has_key?(:course_data) ? params[:course_data] == "true" : false
+
+    respond_to do |format|
+      format.json { render json:gc.getFlightListing(date, {timeOnly:timeOnlyOption, loadCourseData:loadCourseDataOption})}
+    end
+  end
+
   # GET      /golf_clubs/:golf_club_id/schedule(.:format)
   # get the golf club schedule, defaults to today's schedule
   def schedule

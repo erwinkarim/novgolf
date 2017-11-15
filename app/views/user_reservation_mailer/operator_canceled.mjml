@@ -1,0 +1,27 @@
+%mjml
+  %mj-body
+    %mj-container
+      %mj-section
+        %mj-column
+          %mj-text{ 'font-size':'20px', color:'#595959', align:'center'} Your flight at #{@reservation.golf_club.name} is canceled
+          %mj-divider{ 'border-color':'#F45E43'}
+      %mj-section
+        %mj-column
+          %mj-text #{@user.name.titleize || @user.email},
+          %mj-text
+            We regret to inform you that your reservation at #{@reservation.golf_club.name} has been canceled.
+          %mj-table
+            %tr
+              %td
+                %strong Club
+              %td #{@reservation.golf_club.name}
+            %tr
+              %td
+                %strong Date
+              %td #{@reservation.booking_date}
+            %tr
+              %td
+                %strong First Flight
+              %td #{@reservation.booking_time.strftime("%I:%M %p")}
+          %mj-text Thank you,
+          %mj-text JomGolf Team

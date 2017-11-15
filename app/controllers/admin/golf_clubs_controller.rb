@@ -267,9 +267,13 @@ class Admin::GolfClubsController < ApplicationController
     date = params.has_key?(:date) ? Date.parse(params[:date]) : Date.today + 1.day
     results = []
     (date..date+6).each do |date_query|
+=begin
       result = GolfClub.search({ dateTimeQuery:Time.parse("#{date_query} 14:00 +0000"), spread:9.hours, club_id:club.id,
         loadCourseData:true, adminMode:true}).first
       results << (result.nil? ? {:club => [], :flights => [], :queryData => []} : result)
+=end
+
+      results << {club:[], flights:club.getFlightListing(date_query, {timeOnly:true, loadCourseData:true}), queryData:[]}
     end
 
     render json:results
@@ -277,7 +281,9 @@ class Admin::GolfClubsController < ApplicationController
   end
 
   def golf_club_params
-    params.require(:golf_club).permit(:name, :description, :address, :open_hour, :close_hour, :lat, :lng, :tax_schedule_id);
+    params.require(:golf_club).permit(:name, :description, :address,
+      :open_hour, :close_hour, :telephone, :email, :lat, :lng, :tax_schedule_id, :flight_selection_method
+    );
   end
 
   # DELETE   /admin/golf_clubs/:id(.:format)

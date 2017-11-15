@@ -1,3 +1,4 @@
+# TODO: handle fuzzy bookings
 class UserReservationsController < ApplicationController
   before_action :authenticate_user!, except: [:public_view]
 
@@ -5,7 +6,9 @@ class UserReservationsController < ApplicationController
     render file: "public/400.html", status: :bad_request
     return
   end
+
   # POST/GET     /golf_clubs/:golf_club_id/user_reservations/reserve(.:format)
+  # TODO: setup flight_matrix_id for fuzzy selection reservation
   def reserve
     @club = GolfClub.find(params[:golf_club_id])
     #@courses = @club.course_listings
@@ -29,6 +32,16 @@ class UserReservationsController < ApplicationController
       params[:flight].each_pair do |k,v|
         if !v.has_key?(:tee_time) then
           check_passed = false
+        end
+
+        #check the flight_matrix_id
+        if !v.has_key?(:matrix_id) then
+          # if the club is using fuzzy selection method, autofill first flight_matrix_id
+          if @club.flight_select_fuzzy? then
+            v[:matrix_id] = @club.flight_matrices.first.id
+          else
+            check_passed = false
+          end
         end
 
         # if the club course selection method is user_auto_select then
@@ -85,6 +98,7 @@ class UserReservationsController < ApplicationController
   end
 
   # POST /golf_clubs/:golf_club_id/user_reservations/processing
+  # process the payment
   def processing
     #set that you need to complete this transaction (get reservation confirmation token) within 10 minutes
     @club = GolfClub.find(params[:golf_club_id])
@@ -106,7 +120,9 @@ class UserReservationsController < ApplicationController
           ur = UserReservation.create_reservation #{v["matrix_id"]}, #{current_user.id}, #{Date.parse(session[:info]["date"])}, #{v["count"]},
           #{course_selection_options.inspect}
         "
-        ur = UserReservation.create_reservation v["matrix_id"], current_user.id, Date.parse(session[:info]["date"]), v["count"],
+
+        reservation_options = v["count"].merge({preferred_time:v["preferred_time"]})
+        ur = UserReservation.create_reservation v["matrix_id"], current_user.id, Date.parse(session[:info]["date"]), reservation_options,
           course_selection_options
 
         if ur.valid? then
@@ -146,9 +162,11 @@ class UserReservationsController < ApplicationController
 =end
   end
 
+  # POST     /golf_clubs/:golf_club_id/user_reservations/confirmation(.:format)
   def confirmation
     #get some grace period for shit happens
     grace = Time.parse(session[:timeout]) + 5.minutes
+    club = GolfClub.find(params[:golf_club_id])
 
     #if token got before session timeout. generate token and show out the confirmation page
     @reservations = UserReservation.find(session[:reservation_ids])
@@ -164,7 +182,12 @@ class UserReservationsController < ApplicationController
           if reservation.count_member > 0 then
             reservation.requires_members_verification!
           else
-            reservation.payment_confirmed!
+            #check if this club is fuzzy or exact
+            if club.flight_select_exact? then
+              reservation.payment_confirmed!
+            else
+              reservation.reservation_await_assignment!
+            end
           end
 
           #destroy the sessions that is not being used anymore
@@ -178,9 +201,12 @@ class UserReservationsController < ApplicationController
         #UserReservationMailer.request_review(reservation).deliver_later(wait_until: reservation.booking_datetime + 12.hours)
       end
 
-      #send out email to confirm
-      UserMailer.reservation_confirmed(@reservations).deliver_later
-
+      #send out email to confirm or tell the user flights are being confirmed later
+      if club.flight_select_exact?
+        UserMailer.reservation_confirmed(@reservations).deliver_later
+      else
+        UserMailer.reservation_await_assignment(@reservations).deliver_later
+      end
 
     else
       @reservations.each do |reservation|
@@ -209,6 +235,7 @@ class UserReservationsController < ApplicationController
   def show
     @user = User.find(params[:user_id])
     @reservation = UserReservation.includes(:review).find(params[:id])
+    @club = @reservation.golf_club
 
     #you can only see it if you own the reservation or the club
     allowed_to_see = @reservation.user_id == current_user.id || @reservation.golf_club.user.id == current_user.id
@@ -257,6 +284,7 @@ class UserReservationsController < ApplicationController
     end
 
     @reservation = UserReservation.find(params[:reservation_id])
+    @club = @reservation.golf_club
 
     if @reservation.token != params[:t] then
       Rails.logger.error "Incorrect token to view reservation"
@@ -267,5 +295,73 @@ class UserReservationsController < ApplicationController
     respond_to do |format|
       format.html
     end
+  end
+
+  #accept a proposal by the operator
+  #reservation status must be operator_new_proposal and one of the params must have
+  # the token
+  # GET      /reservations/:reservation_id/accept_proposal(.:format
+  def accept_proposal
+    # ensure token is there
+    if !params.has_key?(:t) then
+      Rails.logger.error "No token to view reservation"
+      render file: "public/401.html", status: :unauthorized
+      return
+    end
+
+    @reservation = UserReservation.find(params[:reservation_id])
+    #ensure that the status is operator_new_proposal
+    if !@reservation.operator_new_proposal? then
+      Rails.logger.error "No token to view reservation"
+      render file: "public/401.html", status: :unauthorized
+      return
+    end
+
+
+    #up the the status and send out notice about this
+    # include case history about the user doing this
+    @reservation.transaction do
+      @reservation.reservation_confirmed!
+      ur_case_history = @reservation.ur_turk_case.ur_turk_case_history.new({
+        action:UrTurkCaseHistory.actions[:user_accept_proposal],
+        action_by: current_user.id
+        })
+      ur_case_history.save!
+    end
+    UserReservationMailer.user_accept_proposal(@reservation).deliver_later
+  end
+
+  #reject a proposal by the operator
+  #reservation status must be operator_new_proposal and one of the params must have
+  # the token
+  def reject_proposal
+    if !params.has_key?(:t) then
+      Rails.logger.error "No token to view reservation"
+      render file: "public/401.html", status: :unauthorized
+      return
+    end
+
+    #ensure that the current status is operator offering new proposal
+    if !@reservation.operator_new_proposal? then
+      Rails.logger.error "No token to view reservation"
+      render file: "public/401.html", status: :unauthorized
+      return
+    end
+
+    #update the status and send out notice about this
+    @reservation = UserReservation.find(params[:reservation_id])
+    @reservation.transaction do
+      @reservation.canceled_by_user!
+      ur_case_history = @reservation.ur_turk_case.ur_turk_case_history.new({
+        action:UrTurkCaseHistory.actions[:user_reject_proposal],
+        action_by: current_user.id
+        })
+      ur_case_history.save!
+    end
+
+    #refund the reservation
+
+    #send email about it
+    UserReservationMailer.user_reject_proposal(@reservation).deliver_later
   end
 end

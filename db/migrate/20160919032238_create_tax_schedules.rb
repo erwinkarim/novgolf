@@ -1,4 +1,4 @@
-class CreateTaxSchedules < ActiveRecord::Migration
+class CreateTaxSchedules < ActiveRecord::Migration[5.1]
   def change
     create_table :tax_schedules do |t|
       t.text :country, limit:3

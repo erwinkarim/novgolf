@@ -100,6 +100,10 @@ class FlightFunctions {
       case 2: reserve_status = "danger"; break;
       case 3: reserve_status = "danger"; break;
       case 8: reserve_status = "info"; break;
+      case 9: reserve_status = "info"; break;
+      case 10: reserve_status = "info"; break;
+      case 11: reserve_status = "info"; break;
+      case 12: reserve_status = "info"; break;
       default: true;
     }
 

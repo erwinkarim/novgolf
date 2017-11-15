@@ -308,3 +308,12 @@ span.step {
       display: none !important;
   }
 }
+
+/*
+  sometime used for list-group-item
+  will overide defaults
+*/
+.top-border-black{
+  border-top: 1px solid rgba(0, 0, 0, 0.125) !important;
+  border-radius: 0 !important;
+}

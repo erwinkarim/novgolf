@@ -12,10 +12,11 @@ class WelcomeController < ApplicationController
       params.keys.each do |thisKey|
         if thisKey == "q" then
           queryOptions = queryOptions.merge({ :query => params[:q]})
-      #  elsif thisKey == "pax" then
-      #    queryOptions = queryOptions.merge({ :pax => params[:pax]})
-        elsif (params.has_key?(:time)) || (param.has_key?(:date)) then
-          queryOptions = queryOptions.merge({ :dateTimeQuery => Time.parse("#{params[:date]} #{params[:time]} +0000") })
+        elsif (params.has_key?(:session)) || (param.has_key?(:date)) then
+          sessionTime = params[:session] == "0" ? "08:30" :
+            params[:session] == "1" ? "12:30" :
+            "18:30"
+          queryOptions = queryOptions.merge({ :dateTimeQuery => Time.parse("#{params[:date]} #{sessionTime} +0000") , :spread => (2.5).hours})
         end
       end
       @clubs = GolfClub.search(queryOptions)

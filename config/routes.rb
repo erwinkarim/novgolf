@@ -35,6 +35,8 @@ Rails.application.routes.draw do
   #public view for reservation
   resources :reservations, :only => [], :controller => "user_reservations" do
     get '/' => 'user_reservations#public_view'
+    get 'accept_proposal'
+    get 'reject_proposal'
   end
   #to manage golf clubs
   namespace :admin do
@@ -111,6 +113,20 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :operator do
+    controller :operator do
+      get '/' => 'operator#index'
+      get 'console' => 'operator#turk_console'
+      resources :user_reservations, :only => [:index, :show] do
+        resources :ur_turk_cases, :only => [:index]
+        post 'assign_to_me'
+        post 'confirm'
+        post 'cancel'
+        post 'propose_new_time'
+      end
+    end
+  end
+
   namespace :invoke do
     controller :jobs do
       get 'invoices'
@@ -119,6 +135,7 @@ Rails.application.routes.draw do
 
   resources :golf_clubs, :only => [:index, :show] do
     get 'open_courses'
+    get 'flight_listings'
     resources :flight_matrices, :only => [:index]
     resources :user_reservations, :only => [:index] do
       collection do

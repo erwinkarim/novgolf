@@ -1,4 +1,4 @@
-class CreateUrMemberDetails < ActiveRecord::Migration
+class CreateUrMemberDetails < ActiveRecord::Migration[5.1]
   def change
     create_table :ur_member_details do |t|
       t.string :name

@@ -1,0 +1,6 @@
+- content_for(:head){ "Operator Console -" }
+.container
+  .row
+    .col-12
+      %h1 Operator Console
+      = react_component "TurkConsole", {csrf_token:form_authenticity_token}

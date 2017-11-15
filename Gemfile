@@ -111,6 +111,7 @@ gem 'seed-fu', '~> 2.3'
 
 #amazon aws
 gem 'aws-sdk-rails'
+gem 'aws-sdk-sqs'
 
 #file upload handle
 gem 'carrierwave-aws'

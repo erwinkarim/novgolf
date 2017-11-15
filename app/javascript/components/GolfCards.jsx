@@ -16,6 +16,25 @@ var golfCardDefaultOptions = {
     displayCourseGroup:false
 };
 
+/*
+  TODO:
+  * change the click button to show up the club, to a collapse toggle to show
+    the form + link to club details
+  * consider to chang the wording to link to club details
+  * presentation mode: exact or fuzzy
+      exact: show exact flight tee times
+      fuzzy: show general session, to be completed by turks
+
+      how things should be shown:-
+      exact:-
+        when click, first show tee time selection
+        when tee time selected, show the flight configuration
+        able to select multiple flights
+      fuzzy:
+        when click,
+          straight away show the flight configuration
+        only 1 flight can be configured at a time
+*/
 var GolfCards = React.createClass({
   propTypes: {
     crsfToken: React.PropTypes.string,
@@ -23,13 +42,14 @@ var GolfCards = React.createClass({
     paths: React.PropTypes.object,
     queryData: React.PropTypes.object,
     flights: React.PropTypes.array,
-    options: React.PropTypes.object
+    options: React.PropTypes.object,
+    selectionMode: React.PropTypes.oneOf(['fuzzy', 'exact'])
   },
   getDefaultProps:function(){
-      return {options: golfCardDefaultOptions }
+    return {options: golfCardDefaultOptions, selectionMode:'fuzzy' };
   },
   getInitialState: function(){
-      return { teeTimes:[], totalPrice: 0, random_id:randomID() }
+      return { teeTimes:[], totalPrice: 0, random_id:randomID()};
   },
   componentDidMount: function(){
       //console.log(this.props);
@@ -66,16 +86,23 @@ var GolfCards = React.createClass({
     return (
       <div className="card d-inline-block">
         { hasCarousel ? (carouselDiv) : (<img className="img-responsive card-img-top" src={photoPath} />) }
-        <a href={this.props.paths.club} target="_blank">
+        <a href={`#collapse-${this.props.club.id}`} data-toggle="collapse">
           <div className="card-img-overlay">
-              <h4 className="text-white card-title text-shadow">{ toCurrency(Math.min.apply(null, this.props.flights.map( (e,i) => parseFloat(e.prices.flight))) )}</h4>
-              <h4 className="text-white card-title text-shadow">{this.props.club.name}</h4>
+            <h4 className="text-white card-title text-shadow">{ toCurrency(Math.min.apply(null, this.props.flights.map( (e,i) => parseFloat(e.prices.flight))) )}</h4>
+            <h4 className="text-white card-title text-shadow">{this.props.club.name}</h4>
           </div>
         </a>
+        <div className="collapse" id={`collapse-${this.props.club.id}`}>
+          <ul className="list-group list-group-flush">
+            <li className="list-group-item">
+              <a href={this.props.paths.club} className="btn btn-info" target="_blank">Details</a>
+            </li>
+            <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
+              club={this.props.club} flights={this.props.flights} queryData={this.props.queryData}
+              insurance_modes={this.props.insurance_modes} options={this.props.options}  selectionMode={this.props.selectionMode} />
+          </ul>
+        </div>
         <ul className="list-group-flush list-group">
-          <GolfReserveForm crsfToken={this.props.crsfToken} reserveTarget={this.props.paths.reserve}
-            club={this.props.club} flights={this.props.flights} queryData={this.props.queryData}
-            insurance_modes={this.props.insurance_modes} options={this.props.options} />
         </ul>
       </div>
     );

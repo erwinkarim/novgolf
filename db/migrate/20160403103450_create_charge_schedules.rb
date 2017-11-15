@@ -1,4 +1,4 @@
-class CreateChargeSchedules < ActiveRecord::Migration
+class CreateChargeSchedules < ActiveRecord::Migration[5.1]
   def change
     create_table :charge_schedules do |t|
       t.references :golf_club, index: true, foreign_key: true

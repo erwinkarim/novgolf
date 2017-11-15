@@ -179,7 +179,6 @@ var ReserveFormPage = React.createClass({
       </div>
     ) : (
       <div className="w-100">
-        <li className="list-group-item p-0"></li>
         <li className="list-group-item">
           { formContent}
         </li>

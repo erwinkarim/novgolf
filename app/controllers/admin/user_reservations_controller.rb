@@ -64,7 +64,8 @@ class Admin::UserReservationsController < ApplicationController
         {
           reserve_method:UserReservation.reserve_methods[:dashboard],
           course_selection:UserReservation.course_selection_methods[:manual],
-          course_selection_ids:[params[:flight_info][:first_course_id], params[:flight_info][:second_course_id]]
+          course_selection_ids:[params[:flight_info][:first_course_id], params[:flight_info][:second_course_id]],
+          admin_mode:true
         }
       unless params.has_key?(:flight_info) then
         flight_info["members"].each_pair do |index, member|
