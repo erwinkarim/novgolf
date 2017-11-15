@@ -90,7 +90,7 @@ end
 
 #styling
 #gem 'bootstrap', '= 4.0.0.alpha6'
-gem 'bootstrap', '~> 4.0.0.beta'
+gem 'bootstrap', '~> 4.0.0.beta2'
 
 # js management + view handler
 gem 'webpacker', '~> 2.0'
